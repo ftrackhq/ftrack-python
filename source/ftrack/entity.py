@@ -172,6 +172,14 @@ class Entity(collections.MutableMapping):
         '''Return count of attributes.'''
         return len(self.__class__.attributes)
 
+    def values(self):
+        '''Return list of values.'''
+        # Optimisation: Populate all missing attributes in one query.
+        if self.session.auto_populate:
+            self._populate_unset_remote_values()
+
+        return super(Entity, self).values()
+
     def items(self):
         '''Return list of tuples of (key, value) pairs.
 
@@ -181,5 +189,18 @@ class Entity(collections.MutableMapping):
             locally.
 
         '''
-        # TODO: Populate all missing attributes in one query as optimisation.
+        # Optimisation: Populate all missing attributes in one query.
+        if self.session.auto_populate:
+            self._populate_unset_remote_values()
+
         return super(Entity, self).items()
+
+    def _populate_unset_remote_values(self):
+        '''Populate all unset remote values in one query.'''
+        projections = []
+        for attribute in self.attributes:
+            if attribute.get_remote_value(self) is ftrack.symbol.NOT_SET:
+                projections.append(attribute.name)
+
+        if projections:
+            self.session.populate([self], ','.join(projections))
