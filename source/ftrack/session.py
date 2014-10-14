@@ -96,6 +96,19 @@ class Session(object):
         self._states['deleted'].clear()
         self._request.close()
 
+    def auto_populating(self, auto_populate):
+        '''Temporarily set auto populate to *auto_populate*.
+
+        The current setting will be restored automatically when done.
+
+        Example::
+
+            with session.auto_populating(False):
+                print entity['name']
+
+        '''
+        return AutoPopulatingContext(self, auto_populate)
+
     @property
     def created(self):
         '''Return list of newly created entities.'''
@@ -170,14 +183,22 @@ class Session(object):
         # set as normal attributes?
 
         '''
+        return self._create(entity_type, data, reconstructing=False)
+
+    def _create(self, entity_type, data, reconstructing):
+        '''Create and return an entity of *entity_type* with initial *data*.
+
+        If *reconstructing* is True then will merge into any existing entity.
+
+        '''
         try:
             EntityTypeClass = self.types[entity_type]
         except KeyError:
             raise ftrack.exception.UnrecognisedEntityTypeError(entity_type)
 
-        entity = EntityTypeClass(self, data=data)
+        entity = EntityTypeClass(self, data=data, reconstructing=reconstructing)
 
-        # Check entity does not already exist locally.
+        # Check for existing instance of entity in cache.
         key = self._key_maker.key(entity)
         try:
             existing = self._cache.get(key)
@@ -185,12 +206,25 @@ class Session(object):
             existing = None
 
         if existing:
-            raise ftrack.exception.NotUniqueError(
-                'Entity with same identity {0} already exists in session.'
-                .format(key)
-            )
+            if not reconstructing:
+                raise ftrack.exception.NotUniqueError(
+                    'Entity with same identity {0} already exists in session.'
+                    .format(key)
+                )
+            else:
+                # Merge attributes.
+                for attribute in entity.attributes:
+                    value = attribute.get_remote_value(entity)
+                    if value is not ftrack.symbol.NOT_SET:
+                        existing_attribute = existing.attributes.get(
+                            attribute.name
+                        )
+                        existing_attribute.set_remote_value(existing, value)
 
-        self._cache.set(key, entity)
+        else:
+            # Record new instance in cache.
+            self._cache.set(key, entity)
+
         return entity
 
     def ensure(self, entity_type, data):
@@ -348,7 +382,9 @@ class Session(object):
             # Process operation results.
             for result in results:
                 if result['action'] == 'create':
-                    # Result already merged into session via decode.
+                    # Result already merged into session via decode. Just need
+                    # to mark attributes as loaded which will happen in
+                    # _post_commit.
                     pass
 
             self._post_commit()
@@ -356,6 +392,10 @@ class Session(object):
     def _post_commit(self):
         '''Reset following successful commit.'''
         del self._batches['write'][:]
+
+        for entity in self.created:
+            for attribute in entity.attributes:
+                attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
 
         for entity in self.modified:
             for attribute in entity.attributes:
@@ -451,39 +491,36 @@ class Session(object):
 
         If no matching entity exists then create it.
 
+        *entity_data* must contain a '__type__' key that matches a registered
+        entity type class and also the required primary key values for that
+        type.
+
         Return entity.
 
         '''
-        # TODO: Should this be able to reuse key maker with logic in key maker
-        # to handle difference in data structure?
         entity_type = str(entity_data.pop('__type__'))
-        EntityTypeClass = self.types[entity_type]
-
-        entity_key = ftrack.inspection.primary_key(
-            entity_data, EntityTypeClass.schema
-        )
-
-        key = str((entity_type, entity_key))
-        try:
-            entity = self._cache.get(key)
-        except KeyError:
-            # TODO: Should just pass entity_data into constructor?
-            entity = EntityTypeClass(self, reconstructing=True)
-            self._cache.set(key, entity)
-
-        for key, value in entity_data.items():
-            attribute = entity.attributes.get(key)
-            if attribute is None:
-                self.logger.debug(
-                    'Cannot populate attribute with name {0!r} as '
-                    'no such attribute found on entity {1!r}.'
-                    .format(key, entity)
-                )
-                continue
-
-            attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
-            attribute.set_remote_value(entity, value)
+        entity = self._create(entity_type, entity_data, reconstructing=True)
 
         # TODO: Should entity be given a 'persisted' state?
 
         return entity
+
+
+class AutoPopulatingContext(object):
+    '''Context manager for temporary change of session auto_populate value.'''
+
+    def __init__(self, session, auto_populate):
+        '''Initialise context.'''
+        super(AutoPopulatingContext, self).__init__()
+        self._session = session
+        self._auto_populate = auto_populate
+        self._current_auto_populate = None
+
+    def __enter__(self):
+        '''Enter context switching to desired auto populate setting.'''
+        self._current_auto_populate = self._session.auto_populate
+        self._session.auto_populate = self._auto_populate
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        '''Exit context resetting auto populate to original setting.'''
+        self._session.auto_populate = self._current_auto_populate

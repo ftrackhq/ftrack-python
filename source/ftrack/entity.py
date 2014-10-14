@@ -5,9 +5,11 @@ import sys
 import abc
 import uuid
 import collections
+import logging
 
 import ftrack.symbol
 import ftrack.attribute
+import ftrack.inspection
 
 
 def class_factory(schema):
@@ -72,33 +74,59 @@ class Entity(collections.MutableMapping):
     def __init__(self, session, data=None, reconstructing=False):
         '''Initialise entity.'''
         super(Entity, self).__init__()
+        self.logger = logging.getLogger(
+            __name__ + '.' + self.__class__.__name__
+        )
         self.session = session
 
-        if data is not None:
-            if reconstructing:
-                # Data represents remote values.
-                for key, value in data.items():
-                    attribute = self.__class__.attributes.get(key)
-                    attribute.set_remote_value(self, value)
-            else:
-                # Marks as created for later commit.
-                self.session.set_state(self, 'created')
+        if data is None:
+            data = {}
 
-                # Data represents locally set values.
-                for key, value in data.items():
-                    attribute = self.__class__.attributes.get(key)
-                    attribute.set_local_value(self, value)
+        if not reconstructing:
+            # Mark as newly created for later commit.
+            # Done here so that entity has correct state, otherwise would
+            # receive a state of "modified" following setting of attribute
+            # values from *data*.
+            self.session.set_state(self, 'created')
 
-                # Set defaults for any unset local attributes.
-                for attribute in self.__class__.attributes:
-                    if not attribute.name in data:
-                        default_value = attribute.default_value
-                        if callable(default_value):
-                            default_value = default_value(self)
+            # Data represents locally set values.
+            for key, value in data.items():
+                attribute = self.__class__.attributes.get(key)
+                if attribute is None:
+                    self.logger.debug(
+                        'Cannot populate {0!r} attribute as no such attribute '
+                        'found on entity {1!r}.'.format(key, self)
+                    )
+                    continue
 
-                        attribute.set_local_value(self, default_value)
+                attribute.set_local_value(self, value)
 
-        # TODO: Error if identity not discernible at this point?
+            # Set defaults for any unset local attributes.
+            for attribute in self.__class__.attributes:
+                if not attribute.name in data:
+                    default_value = attribute.default_value
+                    if callable(default_value):
+                        default_value = default_value(self)
+
+                    attribute.set_local_value(self, default_value)
+
+        else:
+            # Data represents remote values.
+            for key, value in data.items():
+                attribute = self.__class__.attributes.get(key)
+                if attribute is None:
+                    self.logger.debug(
+                        'Cannot populate {0!r} attribute as no such attribute '
+                        'found on entity {1!r}.'.format(key, self)
+                    )
+                    continue
+
+                attribute.set_remote_value(self, value)
+
+        # Assert that primary key is set. Suspend auto populate temporarily to
+        # avoid infinite recursion if primary key values are not present.
+        with self.session.auto_populating(False):
+            ftrack.inspection.primary_key(self)
 
     def __repr__(self):
         '''Return representation of instance.'''

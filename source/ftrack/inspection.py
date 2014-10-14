@@ -18,17 +18,9 @@ def entity_type(entity):
     return str(type(entity).__name__)
 
 
-def primary_key(entity, schema=None):
-    '''Return primary key of *entity* according to *schema*.
-
-    If *schema* is not passed, attempt to access 'schema' as a property of the
-    passed *entity*.
-
-    '''
-    if schema is None:
-        schema = entity.schema
-
-    primary_key_definition = schema['primary_key']
+def primary_key(entity):
+    '''Return primary key of *entity* according to its schema.'''
+    primary_key_definition = entity.schema['primary_key']
 
     primary_key_value = []
     for key in primary_key_definition:
