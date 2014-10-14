@@ -37,8 +37,8 @@ class PyTest(TestCommand):
         raise SystemExit(pytest.main(self.test_args))
 
 
-# General configuration.
-configuration = dict(
+# Call main setup.
+setup(
     name='ftrack-python-api',
     version=VERSION,
     description='Python API for ftrack.',
@@ -57,6 +57,7 @@ configuration = dict(
         'sphinx_rtd_theme >= 0.1.6, < 1'
     ],
     install_requires=[
+        'requests >= 2, <3'
     ],
     tests_require=[
         'pytest >= 2.3.5, < 3'
@@ -65,7 +66,3 @@ configuration = dict(
         'test': PyTest
     }
 )
-
-
-# Call main setup.
-setup(**configuration)
