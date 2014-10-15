@@ -45,7 +45,7 @@ def class_factory(schema):
     class_namespace['attributes'] = attributes
 
     cls = type(
-        class_name,
+        str(class_name),  # type doesn't accept unicode.
         tuple(class_bases),
         class_namespace
     )

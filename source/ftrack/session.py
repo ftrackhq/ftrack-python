@@ -407,7 +407,8 @@ class Session(object):
 
     def _fetch_schemas(self):
         '''Return schemas fetched from server.'''
-        return []
+        result = self._call([{'action': 'query_schemas'}])
+        return result[0]
 
     def _build_entity_type_classes(self, schemas):
         '''Build default entity type classes.'''
