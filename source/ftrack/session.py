@@ -129,7 +129,7 @@ class Session(object):
 
         Transition from current state to new state.
 
-        Raise :exc:`ftrack.exception.InvalidState` if new state is invalid.
+        Raise :exc:`ftrack.exception.InvalidStateError` if new state is invalid.
 
         .. note::
 
@@ -149,12 +149,12 @@ class Session(object):
                 return
 
         if current_state == 'deleted':
-            raise ftrack.exception.InvalidStateTransition(
+            raise ftrack.exception.InvalidStateTransitionError(
                 current_state, state, entity
             )
 
         if current_state == 'modified' and state != 'deleted':
-            raise ftrack.exception.InvalidStateTransition(
+            raise ftrack.exception.InvalidStateTransitionError(
                 current_state, state, entity
             )
 

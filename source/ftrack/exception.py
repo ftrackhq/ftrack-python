@@ -69,13 +69,13 @@ class UnrecognisedEntityTypeError(EntityTypeError):
     defaultMessage = 'Entity type "{entity_type}" not recognised.'
 
 
-class InvalidState(Error):
+class InvalidStateError(Error):
     '''Raise when an invalid state detected.'''
 
     defaultMessage = 'Invalid state.'
 
 
-class InvalidStateTransition(InvalidState):
+class InvalidStateTransitionError(InvalidStateError):
     '''Raise when an invalid state transition detected.'''
 
     def __init__(self, current_state, target_state, entity, **kw):
@@ -83,7 +83,7 @@ class InvalidStateTransition(InvalidState):
         self.current_state = current_state
         self.target_state = target_state
         self.entity = entity
-        super(InvalidStateTransition, self).__init__(**kw)
+        super(InvalidStateTransitionError, self).__init__(**kw)
 
     defaultMessage = (
         'Invalid transition from {current_state!r} to {target_state!r} state '
