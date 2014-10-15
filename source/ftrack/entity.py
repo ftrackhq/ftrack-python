@@ -206,4 +206,4 @@ class Entity(collections.MutableMapping):
                 projections.append(attribute.name)
 
         if projections:
-            self.session.populate([self], ','.join(projections))
+            self.session.populate([self], ', '.join(projections))
