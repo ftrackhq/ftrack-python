@@ -307,6 +307,7 @@ class Session(object):
             entities_to_process.append(entity)
 
         if entities_to_process:
+            # TODO: Mark attributes as 'fetching'?
             reference_entity = entities_to_process[0]
             entity_type = ftrack.inspection.entity_type(reference_entity)
             query = 'select {0} from {1}'.format(projections, entity_type)
@@ -339,6 +340,10 @@ class Session(object):
             # Fetch all results now. Doing so will cause them to populate the
             # relevant entities in the cache.
             result.all()
+
+            # TODO: Should we check that all requested attributes were
+            # actually populated? If some weren't would we mark that to avoid
+            # repeated calls or perhaps raise an error?
 
     # TODO: Make atomic.
     def commit(self):
