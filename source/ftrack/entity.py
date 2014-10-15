@@ -41,6 +41,13 @@ def class_factory(schema):
                 )
                 attributes.add(attribute)
 
+        else:
+            reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
+            if reference is not ftrack.symbol.NOT_SET:
+                attribute = ftrack.attribute.ReferenceAttribute(name, reference)
+                attributes.add(attribute)
+
+    # Construct class.
     class_namespace['schema'] = schema
     class_namespace['attributes'] = attributes
 
