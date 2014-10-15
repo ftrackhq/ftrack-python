@@ -192,9 +192,10 @@ class Attribute(object):
 
     def is_set(self, entity):
         '''Return whether a value is set for *entity*.'''
-        return ftrack.symbol.NOT_SET not in (
-            self.get_local_value(entity), self.get_remote_value(entity)
-        )
+        return any([
+            self.get_local_value(entity) is not ftrack.symbol.NOT_SET,
+            self.get_remote_value(entity) is not ftrack.symbol.NOT_SET
+        ])
 
 
 class ScalarAttribute(Attribute):
