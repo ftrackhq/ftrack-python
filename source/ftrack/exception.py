@@ -89,3 +89,22 @@ class InvalidStateTransition(InvalidState):
         'Invalid transition from {current_state!r} to {target_state!r} state '
         'for entity {entity!r}'
     )
+
+
+class AttributeError(Error):
+    '''Raise when an error related to an attribute occurs.'''
+
+    defaultMessage = 'Attribute error.'
+
+
+class ImmutableAttributeError(AttributeError):
+    '''Raise when modification of immutable attribute attempted.'''
+
+    def __init__(self, attribute, **kw):
+        '''Initialise error.'''
+        self.attribute = attribute
+        super(ImmutableAttributeError, self).__init__(**kw)
+
+    defaultMessage = (
+        'Cannot modify value of immutable {attribute.name!r} attribute.'
+    )

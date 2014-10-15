@@ -23,7 +23,9 @@ def class_factory(schema):
 
     # Build attributes for class.
     attributes = ftrack.attribute.Attributes()
+    immutable = schema.get('immutable', [])
     for name, fragment in schema.get('properties', {}).items():
+        mutable = name not in immutable
 
         default = fragment.get('default', ftrack.symbol.NOT_SET)
         if default == '{uid}':
@@ -34,7 +36,8 @@ def class_factory(schema):
         if data_type is not ftrack.symbol.NOT_SET:
             if data_type in ('string', 'boolean', 'integer', 'float'):
                 attribute = ftrack.attribute.ScalarAttribute(
-                    name, data_type=data_type, default_value=default
+                    name, data_type=data_type, default_value=default,
+                    mutable=mutable
                 )
                 attributes.add(attribute)
 

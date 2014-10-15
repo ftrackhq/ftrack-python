@@ -66,11 +66,22 @@ class Attribute(object):
     '''A name and value pair persisted remotely.'''
 
     def __init__(
-        self, name, default_value=ftrack.symbol.NOT_SET
+        self, name, default_value=ftrack.symbol.NOT_SET, mutable=True
     ):
-        '''Initialise attribute with *name*.'''
+        '''Initialise attribute with *name*.
+
+        *default_value* represents the default value for the attribute. It may
+        be a callable. It is not used within the attribute when providing
+        values, but instead exists for other parts of the system to reference.
+
+        If *mutable* is set to False then the value of the attribute on an
+        entity can only be set when the existing value is
+        :attr:`ftrack.symbol.NOT_SET`.
+
+        '''
         super(Attribute, self).__init__()
         self._name = name
+        self._mutable = mutable
         self.default_value = default_value
 
         self._local_key = 'local'
@@ -107,6 +118,11 @@ class Attribute(object):
     def name(self):
         '''Return name.'''
         return self._name
+
+    @property
+    def mutable(self):
+        '''Return whether attribute is mutable.'''
+        return self._mutable
 
     def get_value(self, entity):
         '''Return current value for *entity*.
@@ -150,11 +166,10 @@ class Attribute(object):
         return storage[self.name][self._remote_key]
 
     def set_local_value(self, entity, value):
-        '''Set local *value* for *entity*.
+        '''Set local *value* for *entity*.'''
+        if not self.mutable and self.is_set(entity):
+            raise ftrack.exception.ImmutableAttributeError(self)
 
-        If *mark* is True then mark *entity* as modified in associated session.
-
-        '''
         storage = self.get_entity_storage(entity)
         storage[self.name][self._local_key] = value
 
