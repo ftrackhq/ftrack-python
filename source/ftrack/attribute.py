@@ -200,26 +200,18 @@ class Attribute(object):
 class ScalarAttribute(Attribute):
     '''Represent a scalar value.'''
 
-    def __init__(
-        self, name, data_type, default_value=ftrack.symbol.NOT_SET
-    ):
+    def __init__(self, name, data_type, **kw):
         '''Initialise property.'''
-        super(ScalarAttribute, self).__init__(
-            name, default_value=default_value
-        )
+        super(ScalarAttribute, self).__init__(name, **kw)
         self.data_type = data_type
 
 
 class ReferenceAttribute(Attribute):
     '''Reference another entity.'''
 
-    def __init__(
-        self, name, entity_type, default_value=ftrack.symbol.NOT_SET
-    ):
+    def __init__(self, name, entity_type, **kw):
         '''Initialise property.'''
-        super(ReferenceAttribute, self).__init__(
-            name, default_value=default_value
-        )
+        super(ReferenceAttribute, self).__init__(name, **kw)
         self.entity_type = entity_type
 
     def is_modified(self, entity):
