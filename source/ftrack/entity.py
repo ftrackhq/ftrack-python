@@ -14,7 +14,7 @@ import ftrack.inspection
 
 def class_factory(schema):
     '''Create entity class from *schema*.'''
-    class_name = schema['title']
+    class_name = schema['id']
     class_bases = schema.get('bases', list())
     if not class_bases:
         class_bases = [Entity]
