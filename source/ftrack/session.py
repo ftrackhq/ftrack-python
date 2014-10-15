@@ -439,6 +439,10 @@ class Session(object):
             data=data
         )
 
+        self.logger.debug(
+            'Call took: {0}'.format(response.elapsed.total_seconds())
+        )
+
         if response.status_code != 200:
             # TODO: Process error.
             raise Exception('Failed!')
