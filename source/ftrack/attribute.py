@@ -143,10 +143,7 @@ class Attribute(object):
         if not entity.session.auto_populate:
             return value
 
-        # Fetch remote value and set on entity via attached session.
-        # TODO: Is there a way to decouple this tight binding?
-        entity.session.populate([entity], self.name)
-
+        self.populate_remote_value(entity)
         return self.get_remote_value(entity)
 
     def get_local_value(self, entity):
@@ -189,6 +186,10 @@ class Attribute(object):
         storage = self.get_entity_storage(entity)
         storage[self.name][self._remote_key] = value
 
+    def populate_remote_value(self, entity):
+        '''Populate remote value for *entity*.'''
+        entity.session.populate([entity], self.name)
+
     def is_modified(self, entity):
         '''Return whether local value set and differs from remote.
 
@@ -229,6 +230,26 @@ class ReferenceAttribute(Attribute):
         '''Initialise property.'''
         super(ReferenceAttribute, self).__init__(name, **kw)
         self.entity_type = entity_type
+
+    def populate_remote_value(self, entity):
+        '''Populate remote value for *entity*.
+
+        As attribute references another entity, use that entity's configured
+        default projections to auto populate useful attributes when loading.
+
+        '''
+        reference_entity_type = entity.session.types[self.entity_type]
+        default_projections = reference_entity_type.schema.get(
+            'default_projections', None
+        )
+
+        projections = self.name
+        if default_projections is not None:
+            projections = '{0}[{1}]'.format(
+                projections, ', '.join(default_projections)
+            )
+
+        entity.session.populate([entity], projections)
 
     def is_modified(self, entity):
         '''Return whether a local value has been set and differs from remote.
