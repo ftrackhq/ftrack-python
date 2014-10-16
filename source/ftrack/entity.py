@@ -214,6 +214,11 @@ class Entity(collections.MutableMapping):
 
         return super(Entity, self).items()
 
+    def clear(self):
+        '''Reset all locally modified attribute values.'''
+        for attribute in self:
+            del self[attribute]
+
     def _populate_unset_remote_values(self):
         '''Populate all unset remote values in one query.'''
         projections = []
