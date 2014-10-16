@@ -74,9 +74,10 @@ class Attribute(object):
         be a callable. It is not used within the attribute when providing
         values, but instead exists for other parts of the system to reference.
 
-        If *mutable* is set to False then the value of the attribute on an
-        entity can only be set when the existing value is
-        :attr:`ftrack.symbol.NOT_SET`.
+        If *mutable* is set to False then the local value of the attribute on an
+        entity can only be set when both the existing local and remote values
+        are :attr:`ftrack.symbol.NOT_SET`. The exception to this is when the
+        target value is also :attr:`ftrack.symbol.NOT_SET`.
 
         '''
         super(Attribute, self).__init__()
@@ -164,7 +165,11 @@ class Attribute(object):
 
     def set_local_value(self, entity, value):
         '''Set local *value* for *entity*.'''
-        if not self.mutable and self.is_set(entity):
+        if (
+            not self.mutable
+            and self.is_set(entity)
+            and value is not ftrack.symbol.NOT_SET
+        ):
             raise ftrack.exception.ImmutableAttributeError(self)
 
         storage = self.get_entity_storage(entity)
