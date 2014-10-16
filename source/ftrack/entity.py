@@ -14,6 +14,8 @@ import ftrack.inspection
 
 def class_factory(schema):
     '''Create entity class from *schema*.'''
+    logger = logging.getLogger(__name__ + '.class_factory')
+
     class_name = schema['id']
     class_bases = schema.get('bases', list())
     if not class_bases:
@@ -41,6 +43,11 @@ def class_factory(schema):
                 )
                 attributes.add(attribute)
 
+            else:
+                logger.debug(
+                    'Skipping {0}.{1} attribute with unrecognised data type {2}'
+                    .format(class_name, name, data_type)
+                )
         else:
             reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
             if reference is not ftrack.symbol.NOT_SET:
