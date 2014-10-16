@@ -245,6 +245,22 @@ class Session(object):
         call on access.
 
         '''
+        # Add in sensible projections if none specified. Note that this is
+        # done here rather than on the server to allow local modification of the
+        # schema setting to include commonly used custom attributes for example.
+        # TODO: Use a proper parser perhaps?
+        if not expression.startswith('select'):
+            entity_type = expression.split(' ', 1)[0]
+            schema = self.types[entity_type].schema
+            projections = schema.get(
+                'default_projections', schema['primary_key']
+            )
+
+            expression = 'select {0} from {1}'.format(
+                ', '.join(projections),
+                expression
+            )
+
         query_result = ftrack.query.QueryResult(self, expression)
         return query_result
 
