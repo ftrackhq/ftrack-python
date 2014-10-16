@@ -57,7 +57,8 @@ setup(
         'sphinx_rtd_theme >= 0.1.6, < 1'
     ],
     install_requires=[
-        'requests >= 2, <3'
+        'requests >= 2, <3',
+        'arrow >= 0.4.4, < 1'
     ],
     tests_require=[
         'pytest >= 2.3.5, < 3'

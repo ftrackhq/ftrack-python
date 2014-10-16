@@ -36,7 +36,9 @@ def class_factory(schema):
         data_type = fragment.get('type', ftrack.symbol.NOT_SET)
 
         if data_type is not ftrack.symbol.NOT_SET:
-            if data_type in ('string', 'boolean', 'integer', 'float'):
+            if data_type in (
+                'string', 'boolean', 'integer', 'float', 'datetime'
+            ):
                 attribute = ftrack.attribute.ScalarAttribute(
                     name, data_type=data_type, default_value=default,
                     mutable=mutable

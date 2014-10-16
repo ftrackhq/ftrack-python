@@ -4,9 +4,11 @@
 import json
 import logging
 import collections
+import datetime
 
 import requests
 import requests.auth
+import arrow
 
 import ftrack.exception
 import ftrack.entity
@@ -489,6 +491,12 @@ class Session(object):
 
     def _encode(self, item):
         '''Return JSON encodable version of *item*.'''
+        if isinstance(item, (arrow.Arrow, datetime.datetime, datetime.date)):
+            return {
+                '__type__': 'datetime',
+                'value': item.isoformat()
+            }
+
         if isinstance(item, ftrack.entity.Entity):
             data = {}
             for attribute in item.attributes:
@@ -507,7 +515,11 @@ class Session(object):
     def _decode(self, item):
         '''Return *item* transformed into appropriate representation.'''
         if isinstance(item, collections.Mapping):
-            if '__entity_type__' in item:
+            if '__type__' in item:
+                if item['__type__'] == 'datetime':
+                    item = arrow.get(item['value'])
+
+            elif '__entity_type__' in item:
                 item = self._load_entity(item)
 
         return item
