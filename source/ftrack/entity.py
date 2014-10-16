@@ -101,6 +101,14 @@ class Entity(collections.MutableMapping):
         if data is None:
             data = {}
 
+        self.logger.debug(
+            '{0} entity from {1!r}.'
+            .format(
+                ('Reconstructing' if reconstructing else 'Constructing'),
+                data
+            )
+        )
+
         if not reconstructing:
             # Mark as newly created for later commit.
             # Done here so that entity has correct state, otherwise would
