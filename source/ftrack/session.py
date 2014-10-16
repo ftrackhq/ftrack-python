@@ -507,7 +507,7 @@ class Session(object):
     def _decode(self, item):
         '''Return *item* transformed into appropriate representation.'''
         if isinstance(item, collections.Mapping):
-            if '__type__' in item:
+            if '__entity_type__' in item:
                 item = self._load_entity(item)
 
         return item
@@ -517,14 +517,14 @@ class Session(object):
 
         If no matching entity exists then create it.
 
-        *entity_data* must contain a '__type__' key that matches a registered
-        entity type class and also the required primary key values for that
-        type.
+        *entity_data* must contain a '__entity_type__' key that matches a
+        *registered entity type class and also the required primary key values
+        *for that type.
 
         Return entity.
 
         '''
-        entity_type = str(entity_data.pop('__type__'))
+        entity_type = str(entity_data.pop('__entity_type__'))
         entity = self._create(entity_type, entity_data, reconstructing=True)
 
         # TODO: Should entity be given a 'persisted' state?
