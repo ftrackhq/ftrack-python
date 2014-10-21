@@ -253,10 +253,8 @@ class Session(object):
         # TODO: Use a proper parser perhaps?
         if not expression.startswith('select'):
             entity_type = expression.split(' ', 1)[0]
-            schema = self.types[entity_type].schema
-            projections = schema.get(
-                'default_projections', schema['primary_key']
-            )
+            EntityTypeClass = self.types[entity_type]
+            projections = EntityTypeClass.default_projections
 
             expression = 'select {0} from {1}'.format(
                 ', '.join(projections),

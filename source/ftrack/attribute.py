@@ -244,12 +244,10 @@ class ReferenceAttribute(Attribute):
 
         '''
         reference_entity_type = entity.session.types[self.entity_type]
-        default_projections = reference_entity_type.schema.get(
-            'default_projections', None
-        )
+        default_projections = reference_entity_type.default_projections
 
         projections = self.name
-        if default_projections is not None:
+        if default_projections:
             projections = '{0}[{1}]'.format(
                 projections, ', '.join(default_projections)
             )

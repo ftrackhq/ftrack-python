@@ -56,9 +56,12 @@ def class_factory(schema):
                 attribute = ftrack.attribute.ReferenceAttribute(name, reference)
                 attributes.add(attribute)
 
+    default_projections = schema.get('default_projections', [])
+
     # Construct class.
     class_namespace['schema'] = schema
     class_namespace['attributes'] = attributes
+    class_namespace['default_projections'] = default_projections
 
     cls = type(
         str(class_name),  # type doesn't accept unicode.
@@ -89,6 +92,7 @@ class Entity(collections.MutableMapping):
 
     schema = None
     attributes = None
+    default_projections = None
 
     def __init__(self, session, data=None, reconstructing=False):
         '''Initialise entity.'''
