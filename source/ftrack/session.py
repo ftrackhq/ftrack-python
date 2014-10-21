@@ -304,11 +304,10 @@ class Session(object):
         if not isinstance(entities, (list, tuple)):
             entities = [entities]
 
-        # TODO: How to handle a mixed collection of different entity types.
+        # TODO: How to handle a mixed collection of different entity types
         # Should probably fail, but need to consider handling hierarchies such
-        # as User and Group both deriving from Resource.
-        # Actually, could just proceed and ignore projections that are
-        # not present in entity type.
+        # as User and Group both deriving from Resource. Actually, could just
+        # proceed and ignore projections that are not present in entity type.
 
         entities_to_process = []
 
@@ -439,6 +438,7 @@ class Session(object):
         # first.
         for schema in schemas:
             entity_type_class = ftrack.entity.class_factory(schema)
+            # TODO: Use schema name instead of class?
             classes[entity_type_class.__name__] = entity_type_class
 
         return classes
@@ -499,7 +499,9 @@ class Session(object):
             data = {}
             for attribute in item.attributes:
                 if attribute.is_modified(item):
-                    # TODO: Handle Collections as list of identities.
+                    # TODO: Handle References and Collections as list of
+                    # identities. Any changes to those entities will be a
+                    # separate item.
                     data[attribute.name] = attribute.get_local_value(item)
 
             return data
