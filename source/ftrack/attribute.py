@@ -246,13 +246,14 @@ class ReferenceAttribute(Attribute):
         reference_entity_type = entity.session.types[self.entity_type]
         default_projections = reference_entity_type.default_projections
 
-        projections = self.name
+        projections = []
         if default_projections:
-            projections = '{0}[{1}]'.format(
-                projections, ', '.join(default_projections)
-            )
+            for projection in default_projections:
+                projections.append('{0}.{1}'.format(self.name, projection))
+        else:
+            projections.append(self.name)
 
-        entity.session.populate([entity], projections)
+        entity.session.populate([entity], ', '.join(projections))
 
     def is_modified(self, entity):
         '''Return whether a local value has been set and differs from remote.
