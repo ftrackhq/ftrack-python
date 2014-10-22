@@ -286,6 +286,33 @@ class ReferenceAttribute(Attribute):
 class CollectionAttribute(Attribute):
     '''Represent a collection of other entities.'''
 
+    def get_value(self, entity):
+        '''Return current value for *entity*.
+
+        If a value was set locally then return it, otherwise return last known
+        remote value. If no remote value yet retrieved, make a request for it
+        via the session and block until available.
+
+        .. note::
+
+            As value is a collection that is mutable, will transfer a remote
+            value into the local value on access if no local value currently
+            set.
+
+        '''
+        local_value = self.get_local_value(entity)
+        remote_value = self.get_remote_value(entity)
+        if (
+            local_value is ftrack.symbol.NOT_SET
+            and isinstance(remote_value, ftrack.collection.Collection)
+        ):
+            try:
+                self.set_local_value(entity, remote_value[:])
+            except ftrack.exception.ImmutableAttributeError:
+                pass
+
+        return super(CollectionAttribute, self).get_value(entity)
+
     def set_local_value(self, entity, value):
         '''Set local *value* for *entity*.'''
         if value is not ftrack.symbol.NOT_SET:
@@ -305,13 +332,6 @@ class CollectionAttribute(Attribute):
         if value is not ftrack.symbol.NOT_SET:
             value = self._adapt_to_collection(entity, value)
             value.mutable = False
-
-            if self.get_local_value(entity) is ftrack.symbol.NOT_SET:
-                try:
-                    # Mirror to local value where modifications can occur.
-                    self.set_local_value(entity, value[:])
-                except ftrack.exception.ImmutableAttributeError:
-                    pass
 
         super(CollectionAttribute, self).set_remote_value(entity, value)
 
