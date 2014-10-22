@@ -288,7 +288,7 @@ class CollectionAttribute(Attribute):
 
     def set_local_value(self, entity, value):
         '''Set local *value* for *entity*.'''
-        value = self._adapt_to_collection(value)
+        value = self._adapt_to_collection(entity, value)
         value.mutable = self.mutable
         super(CollectionAttribute, self).set_local_value(entity, value)
 
@@ -300,7 +300,7 @@ class CollectionAttribute(Attribute):
             Only set locally stored remote value, do not persist to remote.
 
         '''
-        value = self._adapt_to_collection(value)
+        value = self._adapt_to_collection(entity, value)
         value.mutable = False
         super(CollectionAttribute, self).set_remote_value(entity, value)
 
@@ -311,10 +311,10 @@ class CollectionAttribute(Attribute):
             except ftrack.exception.ImmutableAttributeError:
                 pass
 
-    def _adapt_to_collection(self, value):
-        '''Adapt *value* to a Collection instance if not already.'''
+    def _adapt_to_collection(self, entity, value):
+        '''Adapt *value* to a Collection instance on *entity*.'''
         if not isinstance(value, ftrack.collection.Collection):
-            value = ftrack.collection.Collection(self, data=value)
+            value = ftrack.collection.Collection(entity, self, data=value)
         else:
             if not value.attribute is self:
                 raise ftrack.exception.AttributeError(
