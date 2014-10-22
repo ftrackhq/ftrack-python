@@ -289,6 +289,7 @@ class CollectionAttribute(Attribute):
     def set_local_value(self, entity, value):
         '''Set local *value* for *entity*.'''
         value = self._adapt_to_collection(value)
+        value.mutable = self.mutable
         super(CollectionAttribute, self).set_local_value(entity, value)
 
     def set_remote_value(self, entity, value):
@@ -304,8 +305,11 @@ class CollectionAttribute(Attribute):
         super(CollectionAttribute, self).set_remote_value(entity, value)
 
         if self.get_local_value(entity) is ftrack.symbol.NOT_SET:
-            # Mirror to local value where modifications can occur.
-            self.set_local_value(entity, value[:])
+            try:
+                # Mirror to local value where modifications can occur.
+                self.set_local_value(entity, value[:])
+            except ftrack.exception.ImmutableAttributeError:
+                pass
 
     def _adapt_to_collection(self, value):
         '''Adapt *value* to a Collection instance if not already.'''

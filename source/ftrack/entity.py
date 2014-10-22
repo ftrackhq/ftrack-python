@@ -50,7 +50,9 @@ def class_factory(schema):
             elif data_type == 'array':
                 # Collection attribute.
                 # reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
-                attribute = ftrack.attribute.CollectionAttribute(name)
+                attribute = ftrack.attribute.CollectionAttribute(
+                    name, mutable=mutable
+                )
                 attributes.add(attribute)
 
             else:

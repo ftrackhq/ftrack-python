@@ -23,6 +23,9 @@ class Collection(collections.MutableSequence):
 
     def insert(self, index, item):
         '''Insert *item* at *index*.'''
+        if not self.mutable:
+            raise ftrack.exception.ImmutableCollectionError(self)
+
         self._data.insert(index, item)
 
     def __getitem__(self, index):
