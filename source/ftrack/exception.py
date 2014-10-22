@@ -49,7 +49,7 @@ class ServerError(Error):
 class NotUniqueError(Error):
     '''Raise when unique value required and duplicate detected.'''
 
-    defaultMessage = 'Configuration error.'
+    defaultMessage = 'Non-unique value detected.'
 
 
 class EntityTypeError(Error):
@@ -110,14 +110,33 @@ class ImmutableAttributeError(AttributeError):
     )
 
 
-class ImmutableCollectionError(Error):
-    '''Raise when modification of immutable collection attempted.'''
+class CollectionError(Error):
+    '''Raise when an error related to collections occurs.'''
+
+    defaultMessage = 'Collection error.'
 
     def __init__(self, collection, **kw):
         '''Initialise error.'''
         self.collection = collection
-        super(ImmutableCollectionError, self).__init__(**kw)
+        super(CollectionError, self).__init__(**kw)
+
+
+class ImmutableCollectionError(CollectionError):
+    '''Raise when modification of immutable collection attempted.'''
 
     defaultMessage = (
         'Cannot modify value of immutable collection {collection!r}.'
+    )
+
+
+class DuplicateItemInCollectionError(CollectionError):
+    '''Raise when duplicate item in collection detected.'''
+
+    def __init__(self, item, collection, **kw):
+        '''Initialise error.'''
+        self.item = item
+        super(DuplicateItemInCollectionError, self).__init__(collection, **kw)
+
+    defaultMessage = (
+        'Item {item!r} already exists in collection {collection!r}.'
     )

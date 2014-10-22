@@ -31,6 +31,9 @@ class Collection(collections.MutableSequence):
         if not self.mutable:
             raise ftrack.exception.ImmutableCollectionError(self)
 
+        if item in self:
+            raise ftrack.exception.DuplicateItemInCollectionError(item, self)
+
         self._data.insert(index, item)
         self._notify()
 
@@ -42,6 +45,9 @@ class Collection(collections.MutableSequence):
         '''Set *item* against *index*.'''
         if not self.mutable:
             raise ftrack.exception.ImmutableCollectionError(self)
+
+        if item in self:
+            raise ftrack.exception.DuplicateItemInCollectionError(item, self)
 
         self._data[index] = item
         self._notify()
