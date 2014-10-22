@@ -4,6 +4,7 @@
 import collections
 
 import ftrack.exception
+import ftrack.inspection
 
 
 class Collection(collections.MutableSequence):
@@ -45,3 +46,24 @@ class Collection(collections.MutableSequence):
     def __len__(self):
         '''Return count of items.'''
         return len(self._data)
+
+    def __eq__(self, other):
+        '''Return whether this collection is equal to *other*.'''
+        if not isinstance(other, Collection):
+            return False
+
+        identities = [
+            ftrack.inspection.identity(entity)
+            for entity in self
+        ]
+
+        other_identities = [
+            ftrack.inspection.identity(entity)
+            for entity in other
+        ]
+
+        return sorted(identities) == sorted(other_identities)
+
+    def __ne__(self, other):
+        '''Return whether this collection is not equal to *other*.'''
+        return not self == other
