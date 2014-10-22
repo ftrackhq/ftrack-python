@@ -16,6 +16,8 @@ import ftrack.inspection
 import ftrack.cache
 import ftrack.symbol
 import ftrack.query
+import ftrack.attribute
+import ftrack.collection
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -381,19 +383,12 @@ class Session(object):
 
         # Add all modifications.
         for entity in self.modified:
-            data = {}
-            for attribute in entity.attributes:
-                if attribute.is_modified(entity):
-                    new_value = attribute.get_local_value(entity)
-                    data[attribute.name] = new_value
-
-            if data:
-                self._batches['write'].append({
-                    'action': 'update',
-                    'entity_type': ftrack.inspection.entity_type(entity),
-                    'entity_key': ftrack.inspection.primary_key(entity),
-                    'entity_data': data
-                })
+            self._batches['write'].append({
+                'action': 'update',
+                'entity_type': ftrack.inspection.entity_type(entity),
+                'entity_key': ftrack.inspection.primary_key(entity),
+                'entity_data': entity
+            })
 
         batch = self._batches['write']
         if batch:
@@ -496,13 +491,33 @@ class Session(object):
             }
 
         if isinstance(item, ftrack.entity.Entity):
-            data = {}
+            data = {
+                '__entity_type__': ftrack.inspection.entity_type(item)
+            }
+
             for attribute in item.attributes:
                 if attribute.is_modified(item):
-                    # TODO: Handle References and Collections as list of
-                    # identities. Any changes to those entities will be a
-                    # separate item.
-                    data[attribute.name] = attribute.get_local_value(item)
+                    value = attribute.get_local_value(item)
+
+                    if isinstance(
+                        attribute, ftrack.attribute.ReferenceAttribute
+                    ):
+                        value = {
+                            'entity_type': ftrack.inspection.entity_type(value),
+                            'entity_key': ftrack.inspection.primary_key(value)
+                        }
+
+                    data[attribute.name] = value
+
+            return data
+
+        if isinstance(item, ftrack.collection.Collection):
+            data = []
+            for entity in item:
+                data.append({
+                    'entity_type': ftrack.inspection.entity_type(entity),
+                    'entity_key': ftrack.inspection.primary_key(entity)
+                })
 
             return data
 
