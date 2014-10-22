@@ -7,6 +7,7 @@ import collections
 import ftrack.symbol
 import ftrack.inspection
 import ftrack.exception
+import ftrack.collection
 
 
 class Attributes(object):
@@ -284,3 +285,36 @@ class ReferenceAttribute(Attribute):
 
 class CollectionAttribute(Attribute):
     '''Represent a collection of other entities.'''
+
+    def set_local_value(self, entity, value):
+        '''Set local *value* for *entity*.'''
+        value = self._adapt_to_collection(value)
+        super(CollectionAttribute, self).set_local_value(entity, value)
+
+    def set_remote_value(self, entity, value):
+        '''Set remote *value*.
+
+        .. note::
+
+            Only set locally stored remote value, do not persist to remote.
+
+        '''
+        value = self._adapt_to_collection(value)
+        value.mutable = False
+        super(CollectionAttribute, self).set_remote_value(entity, value)
+
+        if self.get_local_value(entity) is ftrack.symbol.NOT_SET:
+            # Mirror to local value where modifications can occur.
+            self.set_local_value(entity, value[:])
+
+    def _adapt_to_collection(self, value):
+        '''Adapt *value* to a Collection instance if not already.'''
+        if not isinstance(value, ftrack.collection.Collection):
+            value = ftrack.collection.Collection(self, data=value)
+        else:
+            if not value.attribute is self:
+                raise ftrack.exception.AttributeError(
+                    'Collection already bound to a different attribute'
+                )
+
+        return value

@@ -108,3 +108,16 @@ class ImmutableAttributeError(AttributeError):
     defaultMessage = (
         'Cannot modify value of immutable {attribute.name!r} attribute.'
     )
+
+
+class ImmutableCollectionError(Error):
+    '''Raise when modification of immutable collection attempted.'''
+
+    def __init__(self, collection, **kw):
+        '''Initialise error.'''
+        self.collection = collection
+        super(ImmutableCollectionError, self).__init__(**kw)
+
+    defaultMessage = (
+        'Cannot modify value of immutable collection {collection!r}.'
+    )

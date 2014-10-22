@@ -36,13 +36,21 @@ def class_factory(schema):
         data_type = fragment.get('type', ftrack.symbol.NOT_SET)
 
         if data_type is not ftrack.symbol.NOT_SET:
+
             if data_type in (
                 'string', 'boolean', 'integer', 'float', 'datetime'
             ):
+                # Basic scalar attribute.
                 attribute = ftrack.attribute.ScalarAttribute(
                     name, data_type=data_type, default_value=default,
                     mutable=mutable
                 )
+                attributes.add(attribute)
+
+            elif data_type == 'array':
+                # Collection attribute.
+                # reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
+                attribute = ftrack.attribute.CollectionAttribute(name)
                 attributes.add(attribute)
 
             else:
@@ -51,6 +59,7 @@ def class_factory(schema):
                     .format(class_name, name, data_type)
                 )
         else:
+            # Reference attribute.
             reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
             if reference is not ftrack.symbol.NOT_SET:
                 attribute = ftrack.attribute.ReferenceAttribute(name, reference)
@@ -164,6 +173,24 @@ class Entity(collections.MutableMapping):
         return '<dynamic ftrack {0} object at {1:#0{2}x}>'.format(
             self.__class__.__name__, id(self),
             '18' if sys.maxsize > 2**32 else '10'
+        )
+
+    def __hash__(self):
+        '''Return hash representing instance.'''
+        return hash(ftrack.inspection.identity(self))
+
+    def __eq__(self, other):
+        '''Return whether *other* is equal to this instance.
+
+        .. note::
+
+            Equality is determined by both instances having the same identity.
+            Values of attributes are not considered.
+
+        '''
+        return (
+            ftrack.inspection.identity(other)
+            == ftrack.inspection.identity(self)
         )
 
     def __getitem__(self, key):
