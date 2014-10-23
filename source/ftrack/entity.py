@@ -38,9 +38,17 @@ def class_factory(schema):
         if data_type is not ftrack.symbol.NOT_SET:
 
             if data_type in (
-                'string', 'boolean', 'integer', 'float', 'datetime'
+                'string', 'boolean', 'integer', 'number'
             ):
                 # Basic scalar attribute.
+                if data_type == 'number':
+                    data_type = 'float'
+
+                if data_type == 'string':
+                    data_format = fragment.get('format')
+                    if data_format == 'date-time':
+                        data_type = 'datetime'
+
                 attribute = ftrack.attribute.ScalarAttribute(
                     name, data_type=data_type, default_value=default,
                     mutable=mutable
