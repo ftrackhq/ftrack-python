@@ -58,7 +58,8 @@ setup(
     ],
     install_requires=[
         'requests >= 2, <3',
-        'arrow >= 0.4.4, < 1'
+        'arrow >= 0.4.4, < 1',
+        'termcolor >= 1.1.0, < 2'
     ],
     tests_require=[
         'pytest >= 2.3.5, < 3'
