@@ -225,6 +225,9 @@ class Session(object):
                         )
                         existing_attribute.set_remote_value(existing, value)
 
+                # Set returned entity to be existing cached instance.
+                entity = existing
+
         else:
             # Record new instance in cache.
             self._cache.set(key, entity)
