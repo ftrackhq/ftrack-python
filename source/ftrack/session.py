@@ -254,6 +254,9 @@ class Session(object):
             raise ValueError('Composite primary keys not supported.')
 
         primary_key_definition = primary_key_definition[0]
+        if not isinstance(entity_key, basestring):
+            entity_key = entity_key[0]
+
         expression = '{0} where {1} is {2}'.format(
             entity_type, primary_key_definition, entity_key
         )
