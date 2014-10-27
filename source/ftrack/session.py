@@ -242,7 +242,27 @@ class Session(object):
         self.set_state(entity, 'deleted')
 
     def get(self, entity_type, entity_key):
-        '''Return entity of *entity_type* with unique *entity_key*.'''
+        '''Return entity of *entity_type* with unique *entity_key*.
+
+        If no matching entity found, return None.
+
+        '''
+        primary_key_definition = self.types[entity_type].primary_key
+        if len(primary_key_definition) > 1:
+            # TODO: Handle composite primary key using a syntax of
+            # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
+            raise ValueError('Composite primary keys not supported.')
+
+        primary_key_definition = primary_key_definition[0]
+        expression = '{0} where {1} is {2}'.format(
+            entity_type, primary_key_definition, entity_key
+        )
+
+        results = self.query(expression).all()
+        if results:
+            return results[0]
+        else:
+            return None
 
     def query(self, expression):
         '''Query against remote data according to *expression*.
