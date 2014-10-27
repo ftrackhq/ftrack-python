@@ -80,6 +80,7 @@ def class_factory(schema):
     # Construct class.
     class_namespace['schema'] = schema
     class_namespace['attributes'] = attributes
+    class_namespace['primary_key'] = schema['primary_key'][:]
     class_namespace['default_projections'] = default_projections
 
     cls = type(
@@ -111,6 +112,7 @@ class Entity(collections.MutableMapping):
 
     schema = None
     attributes = None
+    primary_key = None
     default_projections = None
 
     def __init__(self, session, data=None, reconstructing=False):

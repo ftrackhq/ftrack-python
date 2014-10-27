@@ -332,7 +332,7 @@ class Session(object):
             entity_type = ftrack.inspection.entity_type(reference_entity)
             query = 'select {0} from {1}'.format(projections, entity_type)
 
-            primary_key_definition = reference_entity.schema['primary_key']
+            primary_key_definition = reference_entity.primary_key
             if len(primary_key_definition) > 1:
                 # TODO: Handle composite primary key using a syntax of
                 # (pka, pkb) in ((v1a,v1b), (v2a, v2b))

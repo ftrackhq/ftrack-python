@@ -19,8 +19,8 @@ def entity_type(entity):
 
 
 def primary_key(entity):
-    '''Return primary key of *entity* according to its schema.'''
-    primary_key_definition = entity.schema['primary_key']
+    '''Return primary key of *entity*.'''
+    primary_key_definition = entity.primary_key
 
     primary_key_value = []
     for key in primary_key_definition:
