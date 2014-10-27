@@ -20,7 +20,11 @@ def Session(server_url=None, api_key=None, api_user=None):
         )
 
     if api_key is None:
-        api_key = os.environ.get('FTRACK_API_KEY')
+        api_key = os.environ.get(
+            'FTRACK_API_KEY',
+            # Backwards compatibility
+            os.environ.get('FTRACK_APIKEY')
+        )
 
     if not api_key:
         raise ValueError(
