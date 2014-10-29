@@ -265,9 +265,8 @@ class Entity(collections.MutableMapping):
 
     def values(self):
         '''Return list of values.'''
-        # Optimisation: Populate all missing attributes in one query.
         if self.session.auto_populate:
-            self._populate_unset_remote_values()
+            self._populate_unset_scalar_attributes()
 
         return super(Entity, self).values()
 
@@ -280,9 +279,8 @@ class Entity(collections.MutableMapping):
             locally.
 
         '''
-        # Optimisation: Populate all missing attributes in one query.
         if self.session.auto_populate:
-            self._populate_unset_remote_values()
+            self._populate_unset_scalar_attributes()
 
         return super(Entity, self).items()
 
@@ -291,12 +289,13 @@ class Entity(collections.MutableMapping):
         for attribute in self:
             del self[attribute]
 
-    def _populate_unset_remote_values(self):
-        '''Populate all unset remote values in one query.'''
+    def _populate_unset_scalar_attributes(self):
+        '''Populate all unset scalar attributes in one query.'''
         projections = []
         for attribute in self.attributes:
-            if attribute.get_remote_value(self) is ftrack.symbol.NOT_SET:
-                projections.append(attribute.name)
+            if isinstance(attribute, ftrack.attribute.ScalarAttribute):
+                if attribute.get_remote_value(self) is ftrack.symbol.NOT_SET:
+                    projections.append(attribute.name)
 
         if projections:
             self.session.populate([self], ', '.join(projections))
