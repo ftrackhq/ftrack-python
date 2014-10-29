@@ -79,7 +79,6 @@ def class_factory(schema):
     default_projections = schema.get('default_projections', [])
 
     # Construct class.
-    class_namespace['schema'] = schema
     class_namespace['entity_type'] = entity_type
     class_namespace['attributes'] = attributes
     class_namespace['primary_key'] = schema['primary_key'][:]
@@ -112,7 +111,6 @@ class Entity(collections.MutableMapping):
 
     __metaclass__ = DynamicEntityTypeMetaclass
 
-    schema = None
     entity_type = 'Entity'
     attributes = None
     primary_key = None
