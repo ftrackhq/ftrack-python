@@ -459,8 +459,7 @@ class Session(object):
         # first.
         for schema in schemas:
             entity_type_class = ftrack.entity.class_factory(schema)
-            # TODO: Use schema name instead of class?
-            classes[entity_type_class.__name__] = entity_type_class
+            classes[entity_type_class.entity_type] = entity_type_class
 
         return classes
 

@@ -14,8 +14,7 @@ def identity(entity):
 
 def entity_type(entity):
     '''Return entity type of *entity*.'''
-    # Should this actually use the schema name?
-    return str(type(entity).__name__)
+    return entity.entity_type
 
 
 def primary_key(entity):

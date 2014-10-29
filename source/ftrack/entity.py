@@ -16,7 +16,8 @@ def class_factory(schema):
     '''Create entity class from *schema*.'''
     logger = logging.getLogger(__name__ + '.class_factory')
 
-    class_name = schema['id']
+    entity_type = schema['id']
+    class_name = entity_type
     class_bases = schema.get('bases', list())
     if not class_bases:
         class_bases = [Entity]
@@ -79,6 +80,7 @@ def class_factory(schema):
 
     # Construct class.
     class_namespace['schema'] = schema
+    class_namespace['entity_type'] = entity_type
     class_namespace['attributes'] = attributes
     class_namespace['primary_key'] = schema['primary_key'][:]
     class_namespace['default_projections'] = default_projections
@@ -111,6 +113,7 @@ class Entity(collections.MutableMapping):
     __metaclass__ = DynamicEntityTypeMetaclass
 
     schema = None
+    entity_type = 'Entity'
     attributes = None
     primary_key = None
     default_projections = None

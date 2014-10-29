@@ -75,14 +75,14 @@ def format(
     if identifier in _seen:
         return (
             first_line_spacer +
-            formatters['header'](type(entity).__name__) + '{...}'
+            formatters['header'](entity.entity_type) + '{...}'
         )
 
     _seen.add(identifier)
     information = list()
 
     information.append(
-        first_line_spacer + formatters['header'](type(entity).__name__)
+        first_line_spacer + formatters['header'](entity.entity_type)
     )
     for key, value in sorted(entity.items()):
         if attribute_filter is not None:
