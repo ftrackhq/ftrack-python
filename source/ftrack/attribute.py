@@ -5,7 +5,6 @@ import sys
 import collections
 
 import ftrack.symbol
-import ftrack.inspection
 import ftrack.exception
 import ftrack.collection
 
@@ -44,7 +43,7 @@ class Attributes(object):
         return self._data.keys()
 
     def values(self):
-        '''Return list of attribute entitys.'''
+        '''Return list of attribute instances.'''
         return self._data.values()
 
     def __contains__(self, item):
@@ -274,10 +273,7 @@ class ReferenceAttribute(Attribute):
         if remote_value is ftrack.symbol.NOT_SET:
             return True
 
-        if (
-            ftrack.inspection.identity(local_value)
-            != ftrack.inspection.identity(remote_value)
-        ):
+        if local_value.identity != remote_value.identity:
             return True
 
         return False

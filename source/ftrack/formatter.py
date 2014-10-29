@@ -3,7 +3,6 @@
 
 from termcolor import colored
 
-import ftrack.inspection
 import ftrack.entity
 import ftrack.collection
 import ftrack.symbol
@@ -72,7 +71,7 @@ def format(
     if _seen is None:
         _seen = set()
 
-    identifier = ftrack.inspection.identity(entity)
+    identifier = entity.identity
     if identifier in _seen:
         return (
             first_line_spacer +

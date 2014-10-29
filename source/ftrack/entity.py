@@ -9,7 +9,6 @@ import logging
 
 import ftrack.symbol
 import ftrack.attribute
-import ftrack.inspection
 
 
 def class_factory(schema):
@@ -81,7 +80,7 @@ def class_factory(schema):
     # Construct class.
     class_namespace['entity_type'] = entity_type
     class_namespace['attributes'] = attributes
-    class_namespace['primary_key'] = schema['primary_key'][:]
+    class_namespace['primary_key_attributes'] = schema['primary_key'][:]
     class_namespace['default_projections'] = default_projections
 
     cls = type(
@@ -113,7 +112,7 @@ class Entity(collections.MutableMapping):
 
     entity_type = 'Entity'
     attributes = None
-    primary_key = None
+    primary_key_attributes = None
     default_projections = None
 
     def __init__(self, session, data=None, reconstructing=False):
@@ -179,7 +178,7 @@ class Entity(collections.MutableMapping):
         # Assert that primary key is set. Suspend auto populate temporarily to
         # avoid infinite recursion if primary key values are not present.
         with self.session.auto_populating(False):
-            ftrack.inspection.primary_key(self)
+            self.primary_key
 
     def __repr__(self):
         '''Return representation of instance.'''
@@ -190,7 +189,7 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(ftrack.inspection.identity(self))
+        return hash(self.identity)
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.
@@ -201,10 +200,7 @@ class Entity(collections.MutableMapping):
             Values of attributes are not considered.
 
         '''
-        return (
-            ftrack.inspection.identity(other)
-            == ftrack.inspection.identity(self)
-        )
+        return other.identity == self.identity
 
     def __getitem__(self, key):
         '''Return attribute value for *key*.'''
@@ -242,6 +238,30 @@ class Entity(collections.MutableMapping):
     def __len__(self):
         '''Return count of attributes.'''
         return len(self.__class__.attributes)
+
+    @property
+    def identity(self):
+        '''Return unique identity.'''
+        return (
+            self.entity_type,
+            self.primary_key
+        )
+
+    @property
+    def primary_key(self):
+        '''Return primary key values as a tuple.'''
+        primary_key = []
+        for name in self.primary_key_attributes:
+            value = self[name]
+            if value is ftrack.symbol.NOT_SET:
+                raise KeyError(
+                    'Missing required value for primary key attribute "{0}" on '
+                    'entity {1}.'.format(name, self)
+                )
+
+            primary_key.append(str(value))
+
+        return tuple(primary_key)
 
     def values(self):
         '''Return list of values.'''

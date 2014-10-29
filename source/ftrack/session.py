@@ -12,7 +12,6 @@ import arrow
 
 import ftrack.exception
 import ftrack.entity
-import ftrack.inspection
 import ftrack.cache
 import ftrack.symbol
 import ftrack.query
@@ -352,7 +351,7 @@ class Session(object):
         if entities_to_process:
             # TODO: Mark attributes as 'fetching'?
             reference_entity = entities_to_process[0]
-            entity_type = ftrack.inspection.entity_type(reference_entity)
+            entity_type = reference_entity.entity_type
             query = 'select {0} from {1}'.format(projections, entity_type)
 
             primary_key_definition = reference_entity.primary_key
@@ -364,7 +363,7 @@ class Session(object):
             primary_key = primary_key_definition[0]
 
             entity_keys = [
-                ftrack.inspection.primary_key(entity)[0]
+                entity.primary_key[0]
                 for entity in entities_to_process
             ]
 
@@ -395,15 +394,15 @@ class Session(object):
         for entity in self.deleted:
             self._batches['write'].append({
                 'action': 'delete',
-                'entity_type': ftrack.inspection.entity_type(entity),
-                'entity_key': ftrack.inspection.primary_key(entity)
+                'entity_type': entity.entity_type,
+                'entity_key': entity.primary_key
             })
 
         # Add all creations in order.
         for entity in self.created:
             self._batches['write'].append({
                 'action': 'create',
-                'entity_type': ftrack.inspection.entity_type(entity),
+                'entity_type': entity.entity_type,
                 'entity_data': entity
             })
 
@@ -411,8 +410,8 @@ class Session(object):
         for entity in self.modified:
             self._batches['write'].append({
                 'action': 'update',
-                'entity_type': ftrack.inspection.entity_type(entity),
-                'entity_key': ftrack.inspection.primary_key(entity),
+                'entity_type': entity.entity_type,
+                'entity_key': entity.primary_key,
                 'entity_data': entity
             })
 
@@ -517,7 +516,7 @@ class Session(object):
 
         if isinstance(item, ftrack.entity.Entity):
             data = {
-                '__entity_type__': ftrack.inspection.entity_type(item)
+                '__entity_type__': item.entity_type
             }
 
             for attribute in item.attributes:
@@ -528,8 +527,8 @@ class Session(object):
                         attribute, ftrack.attribute.ReferenceAttribute
                     ):
                         value = {
-                            'entity_type': ftrack.inspection.entity_type(value),
-                            'entity_key': ftrack.inspection.primary_key(value)
+                            'entity_type': value.entity_type,
+                            'entity_key': value.primary_key
                         }
 
                     data[attribute.name] = value
@@ -540,8 +539,8 @@ class Session(object):
             data = []
             for entity in item:
                 data.append({
-                    'entity_type': ftrack.inspection.entity_type(entity),
-                    'entity_key': ftrack.inspection.primary_key(entity)
+                    'entity_type': entity.entity_type,
+                    'entity_key': entity.primary_key
                 })
 
             return data
