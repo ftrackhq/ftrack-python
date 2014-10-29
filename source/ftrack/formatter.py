@@ -6,6 +6,7 @@ from termcolor import colored
 import ftrack.inspection
 import ftrack.entity
 import ftrack.collection
+import ftrack.symbol
 
 
 #: Useful filters to pass to :py:func:`format`.`
