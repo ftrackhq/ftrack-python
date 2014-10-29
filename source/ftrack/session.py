@@ -246,7 +246,7 @@ class Session(object):
         If no matching entity found, return None.
 
         '''
-        primary_key_definition = self.types[entity_type].primary_key
+        primary_key_definition = self.types[entity_type].primary_key_attributes
         if len(primary_key_definition) > 1:
             # TODO: Handle composite primary key using a syntax of
             # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
@@ -354,7 +354,7 @@ class Session(object):
             entity_type = reference_entity.entity_type
             query = 'select {0} from {1}'.format(projections, entity_type)
 
-            primary_key_definition = reference_entity.primary_key
+            primary_key_definition = reference_entity.primary_key_attributes
             if len(primary_key_definition) > 1:
                 # TODO: Handle composite primary key using a syntax of
                 # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
