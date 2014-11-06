@@ -485,8 +485,10 @@ class Session(object):
         )
 
         if response.status_code != 200:
-            # TODO: Process error.
-            raise Exception('Failed!')
+            raise ftrack.exception.ServerError(
+                'Unanticipated server error occurred. '
+                'Please contact support@ftrack.com'
+            )
 
         else:
             result = self.decode(response.text)
