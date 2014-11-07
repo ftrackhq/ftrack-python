@@ -42,10 +42,6 @@ class Attributes(object):
         '''Return list of attribute names.'''
         return self._data.keys()
 
-    def values(self):
-        '''Return list of attribute instances.'''
-        return self._data.values()
-
     def __contains__(self, item):
         '''Return whether *item* present.'''
         if not isinstance(item, Attribute):
