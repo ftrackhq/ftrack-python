@@ -341,7 +341,7 @@ class Session(object):
             skipped as they have no remote values to fetch.
 
         '''
-        if not isinstance(entities, (list, tuple)):
+        if not isinstance(entities, (list, tuple, ftrack.query.QueryResult)):
             entities = [entities]
 
         # TODO: How to handle a mixed collection of different entity types
