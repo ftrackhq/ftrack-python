@@ -17,6 +17,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     :maxdepth: 2
 
     installing
+    api_reference/index
     glossary
 
 ******************
