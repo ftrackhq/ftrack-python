@@ -100,7 +100,6 @@ class Attribute(object):
 
     def get_entity_storage(self, entity):
         '''Return attribute storage on *entity* creating if missing.'''
-        # TODO: Make thread-safe.
         storage_key = '_ftrack_attribute_storage'
         storage = getattr(entity, storage_key, None)
         if storage is None:
@@ -176,7 +175,6 @@ class Attribute(object):
         storage[self.name][self._local_key] = value
 
         # Add to modified session list.
-        # TODO: Use events?
         if self.is_modified(entity):
             entity.session.set_state(entity, 'modified')
 

@@ -468,8 +468,6 @@ class Session(object):
         '''Build default entity type classes.'''
         classes = {}
 
-        # TODO: Order by mro hierarchy to ensure parent classes constructed
-        # first.
         for schema in schemas:
             entity_type_class = ftrack.entity.class_factory(schema)
             classes[entity_type_class.entity_type] = entity_type_class
@@ -510,11 +508,6 @@ class Session(object):
             if 'exception' in result:
                 # Handle exceptions.
                 raise ftrack.exception.ServerError(result['content'])
-
-            else:
-                # TODO: Process result.
-                # Is there where entity merge should happen to centralise it?
-                pass
 
         return result
 
