@@ -65,7 +65,6 @@ class Session(object):
         self._api_user = api_user
 
         self._batches = {
-            'read': [],
             'write': []
         }
 
@@ -431,33 +430,25 @@ class Session(object):
 
         batch = self._batches['write']
         if batch:
-            results = self._call(batch)
+            try:
+                self._call(batch)
 
-            # Process operation results.
-            for result in results:
-                if result['action'] == 'create':
-                    # Result already merged into session via decode. Just need
-                    # to mark attributes as loaded which will happen in
-                    # _post_commit.
-                    pass
+            finally:
+                # Always clear write batches.
+                del self._batches['write'][:]
 
-            self._post_commit()
+            # If successful commit then update states.
+            for entity in self.created:
+                for attribute in entity.attributes:
+                    attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
 
-    def _post_commit(self):
-        '''Reset following successful commit.'''
-        del self._batches['write'][:]
+            for entity in self.modified:
+                for attribute in entity.attributes:
+                    attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
 
-        for entity in self.created:
-            for attribute in entity.attributes:
-                attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
-
-        for entity in self.modified:
-            for attribute in entity.attributes:
-                attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
-
-        self._states['created'].clear()
-        self._states['modified'].clear()
-        self._states['deleted'].clear()
+            self._states['created'].clear()
+            self._states['modified'].clear()
+            self._states['deleted'].clear()
 
     def _fetch_schemas(self):
         '''Return schemas fetched from server.'''
