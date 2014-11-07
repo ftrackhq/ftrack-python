@@ -93,7 +93,21 @@ class Session(object):
 
     def close(self):
         '''Close session clearing all locally stored data.'''
-        # TODO: Run final batches?
+        if self._states['created']:
+            self.logger.warning(
+                'Closing session with pending creations not persisted.'
+            )
+
+        if self._states['modified']:
+            self.logger.warning(
+                'Closing session with pending modifications not persisted.'
+            )
+
+        if self._states['deleted']:
+            self.logger.warning(
+                'Closing session with pending deletions not persisted.'
+            )
+
         self._states['created'].clear()
         self._states['modified'].clear()
         self._states['deleted'].clear()
