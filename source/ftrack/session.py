@@ -91,21 +91,21 @@ class Session(object):
 
         self.auto_populate = auto_populate
 
-    def close(self):
-        '''Close session clearing all locally stored data.'''
+    def reset(self):
+        '''Reset session clearing all locally stored data.'''
         if self._states['created']:
             self.logger.warning(
-                'Closing session with pending creations not persisted.'
+                'Resetting session with pending creations not persisted.'
             )
 
         if self._states['modified']:
             self.logger.warning(
-                'Closing session with pending modifications not persisted.'
+                'Resetting session with pending modifications not persisted.'
             )
 
         if self._states['deleted']:
             self.logger.warning(
-                'Closing session with pending deletions not persisted.'
+                'Resetting session with pending deletions not persisted.'
             )
 
         self._states['created'].clear()
