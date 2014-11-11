@@ -90,6 +90,11 @@ class Session(object):
 
         self.auto_populate = auto_populate
 
+    @property
+    def api_user(self):
+        '''Return username bound to session.'''
+        return self._api_user
+
     def reset(self):
         '''Reset session clearing all locally stored data.'''
         if self._states['created']:
