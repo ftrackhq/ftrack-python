@@ -7,6 +7,8 @@ import collections
 import datetime
 import os
 import getpass
+import uuid
+import imp
 
 import requests
 import requests.auth
@@ -44,7 +46,8 @@ class Session(object):
     '''An isolated session for interaction with an ftrack server.'''
 
     def __init__(
-        self, server_url=None, api_key=None, api_user=None, auto_populate=True
+        self, server_url=None, api_key=None, api_user=None, auto_populate=True,
+        plugin_paths=None
     ):
         '''Initialise session.
 
@@ -62,6 +65,9 @@ class Session(object):
         attributes will cause them to be automatically fetched from the server
         if they are not already. This flag can be changed on the session
         directly at any time.
+
+        *plugin_paths* should be a list of paths to search for plugins. If not
+        specified, default to looking up :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
 
         '''
         super(Session, self).__init__()
@@ -131,8 +137,17 @@ class Session(object):
             self._api_key, self._api_user
         )
 
-        self.event_hub = ftrack.event.hub.EventHub(self._server_url)
-        self.event_hub.connect()
+        # Construct event hub and load plugins.
+        self._event_hub = ftrack.event.hub.EventHub(self._server_url)
+        self._event_hub.connect()
+
+        self._plugin_paths = plugin_paths
+        if self._plugin_paths is None:
+            self._plugin_paths = os.environ.get(
+                'FTRACK_EVENT_PLUGIN_PATH', ''
+            ).split(os.pathsep)
+
+        self._discover_plugins()
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?
@@ -155,6 +170,11 @@ class Session(object):
     def api_key(self):
         '''Return API key used for session.'''
         return self._api_key
+
+    @property
+    def event_hub(self):
+        '''Return event hub.'''
+        return self._event_hub
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
@@ -515,6 +535,55 @@ class Session(object):
             self._states['created'].clear()
             self._states['modified'].clear()
             self._states['deleted'].clear()
+
+    def _discover_plugins(self):
+        '''Find and load plugins in search paths.
+
+        Each discovered module should implement a register function that
+        accepts this session as first argument. Typically the function should
+        register appropriate event listeners against the session's event hub.
+
+            def register(session):
+                session.event_hub.subscribe(
+                    'topic=ftrack.session.construct_entity_type',
+                    construct_entity_type
+                )
+
+        '''
+        for path in self._plugin_paths:
+            # Ignore empty paths that could resolve to current directory.
+            path = path.strip()
+            if not path:
+                continue
+
+            for base, directories, filenames in os.walk(path):
+                for filename in filenames:
+                    name, extension = os.path.splitext(filename)
+                    if extension != '.py':
+                        continue
+
+                    module_path = os.path.join(base, filename)
+                    unique_name = uuid.uuid4().hex
+
+                    try:
+                        module = imp.load_source(unique_name, module_path)
+                    except Exception as error:
+                        self.logger.warning(
+                            'Failed to load plugin from "{0}": {1}'
+                            .format(module_path, error)
+                        )
+                        continue
+
+                    try:
+                        module.register
+                    except AttributeError:
+                        self.logger.warning(
+                            'Failed to load plugin that did not define a '
+                            '"register" function at the module level: {0}'
+                            .format(module_path)
+                        )
+                    else:
+                        module.register(self)
 
     def _fetch_schemas(self):
         '''Return schemas fetched from server.'''
