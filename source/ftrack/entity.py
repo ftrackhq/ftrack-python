@@ -17,9 +17,7 @@ def class_factory(schema):
 
     entity_type = schema['id']
     class_name = entity_type
-    class_bases = schema.get('bases', list())
-    if not class_bases:
-        class_bases = [Entity]
+    class_bases = [Entity]
 
     class_namespace = dict()
 
