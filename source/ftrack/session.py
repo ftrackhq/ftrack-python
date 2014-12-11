@@ -19,6 +19,7 @@ import ftrack.symbol
 import ftrack.query
 import ftrack.attribute
 import ftrack.collection
+import ftrack.event.hub
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -129,6 +130,9 @@ class Session(object):
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
         )
+
+        self.event_hub = ftrack.event.hub.EventHub(self._server_url)
+        self.event_hub.connect()
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?

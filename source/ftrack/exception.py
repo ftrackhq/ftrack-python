@@ -46,6 +46,12 @@ class ServerError(Error):
     defaultMessage = 'Server reported error processing request.'
 
 
+class NotFoundError(Error):
+    '''Raise when something that should exist is not found.'''
+
+    defaultMessage = 'Not found.'
+
+
 class NotUniqueError(Error):
     '''Raise when unique value required and duplicate detected.'''
 
@@ -140,3 +146,27 @@ class DuplicateItemInCollectionError(CollectionError):
     defaultMessage = (
         'Item {item!r} already exists in collection {collection!r}.'
     )
+
+
+class ParseError(Error):
+    '''Raise when a parsing error occurs.'''
+
+    defaultMessage = 'Failed to parse.'
+
+
+class EventHubError(Error):
+    '''Raise when issues related to event hub occur.'''
+
+    defaultMessage = 'Event hub error occurred.'
+
+
+class EventHubConnectionError(EventHubError):
+    '''Raise when event hub encounters connection problem.'''
+
+    defaultMessage = 'Event hub is not connected.'
+
+
+class EventHubPacketError(EventHubError):
+    '''Raise when event hub encounters an issue with a packet.'''
+
+    defaultMessage = 'Invalid packet.'
