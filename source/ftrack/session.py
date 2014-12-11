@@ -7,6 +7,7 @@ import collections
 import datetime
 import os
 import getpass
+import pkg_resources
 
 import requests
 import requests.auth
@@ -20,6 +21,7 @@ import ftrack.query
 import ftrack.attribute
 import ftrack.collection
 import ftrack.event.hub
+import ftrack.event.base
 import ftrack.plugin
 
 
@@ -142,8 +144,17 @@ class Session(object):
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
+            try:
+                default_plugin_path = pkg_resources.resource_filename(
+                    pkg_resources.Requirement.parse('ftrack-python-api'),
+                    'ftrack_default_plugins'
+                )
+            except pkg_resources.DistributionNotFound:
+                default_plugin_path = ''
+
             self._plugin_paths = os.environ.get(
-                'FTRACK_EVENT_PLUGIN_PATH', ''
+                'FTRACK_EVENT_PLUGIN_PATH',
+                default_plugin_path
             ).split(os.pathsep)
 
         self._discover_plugins()
@@ -561,7 +572,27 @@ class Session(object):
         classes = {}
 
         for schema in schemas:
-            entity_type_class = ftrack.entity.class_factory(schema)
+            results = self.event_hub.publish(
+                ftrack.event.base.Event(
+                    topic='ftrack.session.construct-entity-type',
+                    data=dict(
+                        schema=schema,
+                        schemas=schemas
+                    )
+                ),
+                synchronous=True
+            )
+
+            results = [result for result in results if result is not None]
+
+            if len(results) != 1:
+                raise ValueError(
+                    'Expected single entity type to represent schema "{0}" but '
+                    'received {1} entity types instead.'
+                    .format(schema['id'], len(results))
+                )
+
+            entity_type_class = results[0]
             classes[entity_type_class.entity_type] = entity_type_class
 
         return classes
