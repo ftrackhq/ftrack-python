@@ -142,9 +142,19 @@ class Session(object):
         self.auto_populate = auto_populate
 
     @property
+    def server_url(self):
+        '''Return server ulr used for session.'''
+        return self._server_url
+
+    @property
     def api_user(self):
-        '''Return username bound to session.'''
+        '''Return username used for session.'''
         return self._api_user
+
+    @property
+    def api_key(self):
+        '''Return API key used for session.'''
+        return self._api_key
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
