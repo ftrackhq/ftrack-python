@@ -5,6 +5,8 @@ import json
 import logging
 import collections
 import datetime
+import os
+import getpass
 
 import requests
 import requests.auth
@@ -40,15 +42,20 @@ class SessionAuthentication(requests.auth.AuthBase):
 class Session(object):
     '''An isolated session for interaction with an ftrack server.'''
 
-    def __init__(self, server_url, api_key, api_user, auto_populate=True):
+    def __init__(
+        self, server_url=None, api_key=None, api_user=None, auto_populate=True
+    ):
         '''Initialise session.
 
         *server_url* should be the URL of the ftrack server to connect to
-        including any port number.
+        including any port number. If not specified attempt to look up from
+        :envvar:`FTRACK_SERVER`.
 
         *api_key* should be the API key to use for authentication whilst
         *api_user* should be the username of the user in ftrack to record
-        operations against.
+        operations against. If not specified, *api_key* should be retrieved
+        from :envvar:`FTRACK_API_KEY` and *api_user* from
+        :envvar:`FTRACK_API_USER`.
 
         If *auto_populate* is True (the default), then accessing entity
         attributes will cause them to be automatically fetched from the server
@@ -60,8 +67,48 @@ class Session(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
+
+        if server_url is None:
+            server_url = os.environ.get('FTRACK_SERVER')
+
+        if not server_url:
+            raise TypeError(
+                'Required "server_url" not specified. Pass as argument or set '
+                'in environment variable FTRACK_SERVER.'
+            )
+
         self._server_url = server_url
+
+        if api_key is None:
+            api_key = os.environ.get(
+                'FTRACK_API_KEY',
+                # Backwards compatibility
+                os.environ.get('FTRACK_APIKEY')
+            )
+
+        if not api_key:
+            raise TypeError(
+                'Required "api_key" not specified. Pass as argument or set in '
+                'environment variable FTRACK_API_KEY.'
+            )
+
         self._api_key = api_key
+
+        if api_user is None:
+            api_user = os.environ.get('FTRACK_API_USER')
+            if not api_user:
+                try:
+                    api_user = getpass.getuser()
+                except Exception:
+                    pass
+
+        if not api_user:
+            raise TypeError(
+                'Required "api_user" not specified. Pass as argument, set in '
+                'environment variable FTRACK_API_USER or one of the standard '
+                'environment variables used by Python\'s getpass module.'
+            )
+
         self._api_user = api_user
 
         self._batches = {
