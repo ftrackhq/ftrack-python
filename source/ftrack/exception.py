@@ -67,12 +67,12 @@ class EntityTypeError(Error):
 class UnrecognisedEntityTypeError(EntityTypeError):
     '''Raise when an unrecognised entity type detected.'''
 
+    default_message = 'Entity type "{entity_type}" not recognised.'
+
     def __init__(self, entity_type, **kw):
         '''Initialise with *entity_type* that is unrecognised.'''
         self.entity_type = entity_type
         super(UnrecognisedEntityTypeError, self).__init__(**kw)
-
-    default_message = 'Entity type "{entity_type}" not recognised.'
 
 
 class InvalidStateError(Error):
@@ -84,17 +84,17 @@ class InvalidStateError(Error):
 class InvalidStateTransitionError(InvalidStateError):
     '''Raise when an invalid state transition detected.'''
 
+    default_message = (
+        'Invalid transition from {current_state!r} to {target_state!r} state '
+        'for entity {entity!r}'
+    )
+
     def __init__(self, current_state, target_state, entity, **kw):
         '''Initialise error.'''
         self.current_state = current_state
         self.target_state = target_state
         self.entity = entity
         super(InvalidStateTransitionError, self).__init__(**kw)
-
-    default_message = (
-        'Invalid transition from {current_state!r} to {target_state!r} state '
-        'for entity {entity!r}'
-    )
 
 
 class AttributeError(Error):
@@ -106,14 +106,14 @@ class AttributeError(Error):
 class ImmutableAttributeError(AttributeError):
     '''Raise when modification of immutable attribute attempted.'''
 
+    default_message = (
+        'Cannot modify value of immutable {attribute.name!r} attribute.'
+    )
+
     def __init__(self, attribute, **kw):
         '''Initialise error.'''
         self.attribute = attribute
         super(ImmutableAttributeError, self).__init__(**kw)
-
-    default_message = (
-        'Cannot modify value of immutable {attribute.name!r} attribute.'
-    )
 
 
 class CollectionError(Error):
@@ -138,14 +138,14 @@ class ImmutableCollectionError(CollectionError):
 class DuplicateItemInCollectionError(CollectionError):
     '''Raise when duplicate item in collection detected.'''
 
+    default_message = (
+        'Item {item!r} already exists in collection {collection!r}.'
+    )
+
     def __init__(self, item, collection, **kw):
         '''Initialise error.'''
         self.item = item
         super(DuplicateItemInCollectionError, self).__init__(collection, **kw)
-
-    default_message = (
-        'Item {item!r} already exists in collection {collection!r}.'
-    )
 
 
 class ParseError(Error):
