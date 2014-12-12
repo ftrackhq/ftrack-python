@@ -8,16 +8,16 @@ import traceback
 class Error(Exception):
     '''ftrack specific error.'''
 
-    defaultMessage = 'Unspecified error occurred.'
+    default_message = 'Unspecified error occurred.'
 
     def __init__(self, message=None, details=None, **kw):
         '''Initialise exception with *message*.
 
-        If *message* is None, the class 'defaultMessage' will be used.
+        If *message* is None, the class 'default_message' will be used.
 
         '''
         if message is None:
-            message = self.defaultMessage
+            message = self.default_message
 
         self.message = message
         self.details = details
@@ -37,31 +37,31 @@ class Error(Exception):
 class AuthenticationError(Error):
     '''Raise when an authentication error occurs.'''
 
-    defaultMessage = 'Authentication error.'
+    default_message = 'Authentication error.'
 
 
 class ServerError(Error):
     '''Raise when the server reports an error.'''
 
-    defaultMessage = 'Server reported error processing request.'
+    default_message = 'Server reported error processing request.'
 
 
 class NotFoundError(Error):
     '''Raise when something that should exist is not found.'''
 
-    defaultMessage = 'Not found.'
+    default_message = 'Not found.'
 
 
 class NotUniqueError(Error):
     '''Raise when unique value required and duplicate detected.'''
 
-    defaultMessage = 'Non-unique value detected.'
+    default_message = 'Non-unique value detected.'
 
 
 class EntityTypeError(Error):
     '''Raise when an entity type error occurs.'''
 
-    defaultMessage = 'Entity type error.'
+    default_message = 'Entity type error.'
 
 
 class UnrecognisedEntityTypeError(EntityTypeError):
@@ -72,13 +72,13 @@ class UnrecognisedEntityTypeError(EntityTypeError):
         self.entity_type = entity_type
         super(UnrecognisedEntityTypeError, self).__init__(**kw)
 
-    defaultMessage = 'Entity type "{entity_type}" not recognised.'
+    default_message = 'Entity type "{entity_type}" not recognised.'
 
 
 class InvalidStateError(Error):
     '''Raise when an invalid state detected.'''
 
-    defaultMessage = 'Invalid state.'
+    default_message = 'Invalid state.'
 
 
 class InvalidStateTransitionError(InvalidStateError):
@@ -91,7 +91,7 @@ class InvalidStateTransitionError(InvalidStateError):
         self.entity = entity
         super(InvalidStateTransitionError, self).__init__(**kw)
 
-    defaultMessage = (
+    default_message = (
         'Invalid transition from {current_state!r} to {target_state!r} state '
         'for entity {entity!r}'
     )
@@ -100,7 +100,7 @@ class InvalidStateTransitionError(InvalidStateError):
 class AttributeError(Error):
     '''Raise when an error related to an attribute occurs.'''
 
-    defaultMessage = 'Attribute error.'
+    default_message = 'Attribute error.'
 
 
 class ImmutableAttributeError(AttributeError):
@@ -111,7 +111,7 @@ class ImmutableAttributeError(AttributeError):
         self.attribute = attribute
         super(ImmutableAttributeError, self).__init__(**kw)
 
-    defaultMessage = (
+    default_message = (
         'Cannot modify value of immutable {attribute.name!r} attribute.'
     )
 
@@ -119,7 +119,7 @@ class ImmutableAttributeError(AttributeError):
 class CollectionError(Error):
     '''Raise when an error related to collections occurs.'''
 
-    defaultMessage = 'Collection error.'
+    default_message = 'Collection error.'
 
     def __init__(self, collection, **kw):
         '''Initialise error.'''
@@ -130,7 +130,7 @@ class CollectionError(Error):
 class ImmutableCollectionError(CollectionError):
     '''Raise when modification of immutable collection attempted.'''
 
-    defaultMessage = (
+    default_message = (
         'Cannot modify value of immutable collection {collection!r}.'
     )
 
@@ -143,7 +143,7 @@ class DuplicateItemInCollectionError(CollectionError):
         self.item = item
         super(DuplicateItemInCollectionError, self).__init__(collection, **kw)
 
-    defaultMessage = (
+    default_message = (
         'Item {item!r} already exists in collection {collection!r}.'
     )
 
@@ -151,22 +151,22 @@ class DuplicateItemInCollectionError(CollectionError):
 class ParseError(Error):
     '''Raise when a parsing error occurs.'''
 
-    defaultMessage = 'Failed to parse.'
+    default_message = 'Failed to parse.'
 
 
 class EventHubError(Error):
     '''Raise when issues related to event hub occur.'''
 
-    defaultMessage = 'Event hub error occurred.'
+    default_message = 'Event hub error occurred.'
 
 
 class EventHubConnectionError(EventHubError):
     '''Raise when event hub encounters connection problem.'''
 
-    defaultMessage = 'Event hub is not connected.'
+    default_message = 'Event hub is not connected.'
 
 
 class EventHubPacketError(EventHubError):
     '''Raise when event hub encounters an issue with a packet.'''
 
-    defaultMessage = 'Invalid packet.'
+    default_message = 'Invalid packet.'
