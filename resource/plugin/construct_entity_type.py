@@ -1,7 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-import ftrack.entity
+import ftrack.entity.factory
 
 
 def default_task_status(entity):
@@ -22,7 +22,7 @@ def default_task_priority(entity):
 def construct_entity_type(event):
     '''Return class to represent entity type specified by *event*.'''
     schema = event['data']['schema']
-    cls = ftrack.entity.class_factory(schema)
+    cls = ftrack.entity.factory.class_factory(schema)
 
     if schema['id'] in ('Episode', 'Sequence'):
         # Add dynamic default values to appropriate attributes so that end users

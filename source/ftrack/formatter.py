@@ -3,12 +3,12 @@
 
 from termcolor import colored
 
-import ftrack.entity
+import ftrack.entity.base
 import ftrack.collection
 import ftrack.symbol
 
 
-#: Useful filters to pass to :py:func:`format`.`
+#: Useful filters to pass to :func:`format`.`
 FILTER = {
     'ignore_unset': (
         lambda entity, name, value: value is not ftrack.symbol.NOT_SET
@@ -91,7 +91,7 @@ def format(
 
         child_indent = indent + len(key) + 3
 
-        if isinstance(value, ftrack.entity.Entity):
+        if isinstance(value, ftrack.entity.base.Entity):
             value = format(
                 value,
                 formatters=formatters,

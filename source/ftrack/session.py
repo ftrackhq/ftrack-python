@@ -7,14 +7,14 @@ import collections
 import datetime
 import os
 import getpass
-import pkg_resources
 
+import pkg_resources
 import requests
 import requests.auth
 import arrow
 
 import ftrack.exception
-import ftrack.entity
+import ftrack.entity.base
 import ftrack.cache
 import ftrack.symbol
 import ftrack.query
@@ -646,7 +646,7 @@ class Session(object):
                 'value': item.isoformat()
             }
 
-        if isinstance(item, ftrack.entity.Entity):
+        if isinstance(item, ftrack.entity.base.Entity):
             data = {
                 '__entity_type__': item.entity_type
             }
