@@ -19,11 +19,19 @@ class Factory(object):
             __name__ + '.' + self.__class__.__name__
         )
 
-    def create(self, schema):
-        '''Create and return entity class from *schema*.'''
+    def create(self, schema, bases=None):
+        '''Create and return entity class from *schema*.
+
+        *bases* should be a list of bases to give the constructed class. If not
+        specified, default to :class:`ftrack.entity.base.Entity`.
+
+        '''
         entity_type = schema['id']
         class_name = entity_type
-        class_bases = [ftrack.entity.base.Entity]
+
+        class_bases = bases
+        if class_bases is None:
+            class_bases = [ftrack.entity.base.Entity]
 
         class_namespace = dict()
 
