@@ -3,14 +3,14 @@
 
 '''Caching framework.
 
-Defines a standardised :py:class:`Cache` interface for storing data against
-specific keys. Key generation is also standardised using a :py:class:`KeyMaker`
+Defines a standardised :class:`Cache` interface for storing data against
+specific keys. Key generation is also standardised using a :class:`KeyMaker`
 interface.
 
 Combining a Cache and KeyMaker allows for memoisation of function calls with
-respect to the arguments used by using a :py:class:`Memoiser`.
+respect to the arguments used by using a :class:`Memoiser`.
 
-As a convenience a simple :py:func:`memoise` decorator is included for quick
+As a convenience a simple :func:`memoise` decorator is included for quick
 memoisation of function using a global cache and standard key maker.
 
 '''
@@ -42,7 +42,7 @@ class Cache(object):
     def get(self, key):
         '''Return value for *key*.
 
-        Raise :py:exc:`KeyError` if *key* not found.
+        Raise :exc:`KeyError` if *key* not found.
 
         '''
 
@@ -54,7 +54,7 @@ class Cache(object):
     def remove(self, key):
         '''Remove *key* and return stored value.
 
-        Raise :py:exc:`KeyError` if *key* not found.
+        Raise :exc:`KeyError` if *key* not found.
 
         '''
 
@@ -101,7 +101,7 @@ class MemoryCache(Cache):
     def get(self, key):
         '''Return value for *key*.
 
-        Raise :py:exc:`KeyError` if *key* not found.
+        Raise :exc:`KeyError` if *key* not found.
 
         '''
         return self._cache[key]
@@ -113,7 +113,7 @@ class MemoryCache(Cache):
     def remove(self, key):
         '''Remove *key*.
 
-        Raise :py:exc:`KeyError` if *key* not found.
+        Raise :exc:`KeyError` if *key* not found.
 
         '''
         del self._cache[key]
@@ -276,9 +276,9 @@ class Memoiser(object):
     def __init__(self, cache=None, key_maker=None):
         '''Initialise with *cache* and *key_maker* to use.
 
-        If *cache* is not specified a default :py:class:`MemoryCache` will be
+        If *cache* is not specified a default :class:`MemoryCache` will be
         used. Similarly, if *key_maker* is not specified a default
-        :py:class:`ObjectKeyMaker` will be used.
+        :class:`ObjectKeyMaker` will be used.
 
         '''
         self.cache = cache

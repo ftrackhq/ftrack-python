@@ -14,7 +14,7 @@ ParserElement.enablePackrat()
 
 
 class Parser(object):
-    '''Parse string based expression into :py:class:`Expression` instance.'''
+    '''Parse string based expression into :class:`Expression` instance.'''
 
     def __init__(self):
         '''Initialise parser.'''
@@ -75,7 +75,7 @@ class Parser(object):
         return expression('expression')
 
     def parse(self, expression):
-        '''Parse string *expression* into :py:class:`Expression`.
+        '''Parse string *expression* into :class:`Expression`.
 
         Raise :exc:`ftrack.exception.ParseError` if *expression* could not be
         parsed.
