@@ -19,6 +19,10 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     introduction
     installing
     tutorial
+    using_sessions
+    querying
+    working_with_entities
+    environment_variables
     api_reference/index
     glossary
 

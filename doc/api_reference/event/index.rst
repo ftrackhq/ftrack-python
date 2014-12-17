@@ -1,18 +1,14 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-.. _api_reference:
+************
+ftrack.event
+************
 
-*************
-API Reference
-*************
-
-ftrack
-======
+.. automodule:: ftrack.event
 
 .. toctree::
     :maxdepth: 1
     :glob:
 
-    */index
     *

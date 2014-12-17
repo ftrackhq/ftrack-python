@@ -6,3 +6,9 @@ ftrack.entity
 *************
 
 .. automodule:: ftrack.entity
+
+.. toctree::
+    :maxdepth: 1
+    :glob:
+
+    *
