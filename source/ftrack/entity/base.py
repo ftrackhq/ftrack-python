@@ -34,7 +34,19 @@ class Entity(collections.MutableMapping):
     default_projections = None
 
     def __init__(self, session, data=None, reconstructing=False):
-        '''Initialise entity.'''
+        '''Initialise entity.
+
+        *session* is an instance of :class:`ftrack.session.Session` that this
+        entity instance is bound to.
+
+        *data* is a mapping of key, value pairs to apply as initial attribute
+        values.
+
+        *reconstructing* indicates whether this entity is being reconstructed,
+        such as from a query, and therefore should not have any special creation
+        logic applied, such as initialising defaults for missing data.
+
+        '''
         super(Entity, self).__init__()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
