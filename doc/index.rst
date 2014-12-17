@@ -16,6 +16,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
 .. toctree::
     :maxdepth: 2
 
+    introduction
     installing
     api_reference/index
     glossary
