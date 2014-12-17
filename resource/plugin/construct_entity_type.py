@@ -22,9 +22,9 @@ def default_task_priority(entity):
 class Factory(ftrack.entity.factory.Factory):
     '''Entity class factory.'''
 
-    def create(self, schema):
+    def create(self, schema, bases=None):
         '''Create and return entity class from *schema*.'''
-        cls = super(Factory, self).create(schema)
+        cls = super(Factory, self).create(schema, bases=bases)
 
         if schema['id'] in ('Episode', 'Sequence'):
             # Add dynamic default values to appropriate attributes so that end
