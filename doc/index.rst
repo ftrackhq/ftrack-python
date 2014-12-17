@@ -18,6 +18,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
 
     introduction
     installing
+    tutorial
     api_reference/index
     glossary
 
