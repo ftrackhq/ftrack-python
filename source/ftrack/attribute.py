@@ -290,6 +290,10 @@ class CollectionAttribute(Attribute):
             set.
 
         '''
+        super(CollectionAttribute, self).get_value(entity)
+
+        # Conditionally, copy remote value into local value so that it can be
+        # mutated without side effects.
         local_value = self.get_local_value(entity)
         remote_value = self.get_remote_value(entity)
         if (
@@ -301,7 +305,7 @@ class CollectionAttribute(Attribute):
             except ftrack.exception.ImmutableAttributeError:
                 pass
 
-        return super(CollectionAttribute, self).get_value(entity)
+        return self.get_local_value(entity)
 
     def set_local_value(self, entity, value):
         '''Set local *value* for *entity*.'''
