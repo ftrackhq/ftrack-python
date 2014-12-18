@@ -77,4 +77,5 @@ setup(
             glob.glob(os.path.join(RESOURCE_PATH, 'plugin', '*.py'))
         )
     ],
+    zip_safe=False
 )
