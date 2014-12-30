@@ -146,7 +146,8 @@ class Session(object):
         if self._plugin_paths is None:
             try:
                 default_plugin_path = pkg_resources.resource_filename(
-                    'ftrack', 'ftrack_default_plugins'
+                    pkg_resources.Requirement.parse('ftrack-python-api'),
+                    'ftrack_default_plugins'
                 )
             except pkg_resources.DistributionNotFound:
                 default_plugin_path = ''
