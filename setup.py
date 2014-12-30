@@ -3,6 +3,7 @@
 
 import os
 import re
+import glob
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
@@ -37,8 +38,8 @@ class PyTest(TestCommand):
         raise SystemExit(pytest.main(self.test_args))
 
 
-# General configuration.
-configuration = dict(
+# Call main setup.
+setup(
     name='ftrack-python-api',
     version=VERSION,
     description='Python API for ftrack.',
@@ -57,15 +58,24 @@ configuration = dict(
         'sphinx_rtd_theme >= 0.1.6, < 1'
     ],
     install_requires=[
+        'requests >= 2, <3',
+        'arrow >= 0.4.4, < 1',
+        'termcolor >= 1.1.0, < 2',
+        'pyparsing >= 2.0, < 3',
+        'clique >= 1.2.0, < 2',
+        'websocket-client == 0.12'
     ],
     tests_require=[
         'pytest >= 2.3.5, < 3'
     ],
     cmdclass={
         'test': PyTest
-    }
+    },
+    data_files=[
+        (
+            'ftrack_default_plugins',
+            glob.glob(os.path.join(RESOURCE_PATH, 'plugin', '*.py'))
+        )
+    ],
+    zip_safe=False
 )
-
-
-# Call main setup.
-setup(**configuration)
