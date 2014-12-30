@@ -619,10 +619,27 @@ class Session(object):
         )
 
         if response.status_code != 200:
-            raise ftrack.exception.ServerError(
+            message = (
                 'Unanticipated server error occurred. '
                 'Please contact support@ftrack.com'
             )
+
+            # TODO: Would be good if the server returned structured errors
+            # rather than HTML for error codes so that extraction /
+            # reinterpreting is not necessary.
+            if response.status_code == 402:
+                message = (
+                    'Server reported a license error. Please check your server '
+                    'license is valid and try again.'
+                )
+
+            elif 'Python API is disabled' in response.text:
+                message = (
+                    'Python API is disabled on the server. Please ask your '
+                    'system administrator to enable it.'
+                )
+
+            raise ftrack.exception.ServerError(message)
 
         else:
             result = self.decode(response.text)
