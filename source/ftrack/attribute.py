@@ -409,8 +409,8 @@ class DictionaryAttributeCollection():
         self._entity.session.delete(self._get(key))
         self._store.pop(key)
 
-    def keys(self):
-        '''Return keys for all objects in collection.'''
+    def _loadStore(self):
+        '''Populate store with all remote values.'''
         results = self._entity.session.query(
             '{0} where {1} = {2}'.format(
                 self._class,
@@ -423,7 +423,19 @@ class DictionaryAttributeCollection():
             if key_value_object[self._key_field] not in self._store:
                 self._store[key_value_object[self._key_field]] = key_value_object
 
+    def keys(self):
+        '''Return keys for all objects in collection.'''
+        self._loadStore()
+
         return self._store.keys()
+
+    def items(self):
+        '''Return list of tuples.'''
+        result = []
+        for index, key_value_object in self._store.items():
+            result.append((index, key_value_object[self._value_field]))
+
+        return result
 
     def replace(self, data):
         '''Replace collection with *data*.'''
