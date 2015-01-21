@@ -353,9 +353,9 @@ class DictionaryAttributeCollection():
 
         self._schema = schema
         keys = self._schema.get('keys', {})
-        self._key_field = keys.get('key', 'key')
-        self._value_field = keys.get('value', 'value')
-        self._foreign_key_field = keys.get('parent_id', 'parent_id')
+        self._key_property = keys.get('key', 'key')
+        self._value_property = keys.get('value', 'value')
+        self._foreign_key_property = keys.get('parent_id', 'parent_id')
         self._class = self._schema.get('items').get('$ref')
 
     def _get(self, key):
@@ -366,9 +366,9 @@ class DictionaryAttributeCollection():
             results = self._entity.session.query(
                 '{0} where {1} = {2} and {3} = {4}'.format(
                     self._class,
-                    self._foreign_key_field,
+                    self._foreign_key_property,
                     self._entity['id'],
-                    self._key_field,
+                    self._key_property,
                     key
                 )
             )
@@ -386,7 +386,7 @@ class DictionaryAttributeCollection():
 
     def __getitem__(self, key):
         '''Return value for *key*.'''
-        return self._get(key)[self._value_field]
+        return self._get(key)[self._value_property]
 
     def __setitem__(self, key, value):
         '''Set *value* for *key*.'''
@@ -394,15 +394,15 @@ class DictionaryAttributeCollection():
             key_value_object = self._get(key)
         except KeyError:
             data = {
-                self._foreign_key_field: self._entity['id'],
-                self._key_field: key,
-                self._value_field: value
+                self._foreign_key_property: self._entity['id'],
+                self._key_property: key,
+                self._value_property: value
             }
             data.update(self._schema.get('defaults', {}))
             key_value_object = self._entity.session.create(self._class, data)
             self._store[key] = key_value_object
         else:
-            key_value_object[self._value_field] = value
+            key_value_object[self._value_property] = value
 
     def __delitem__(self, key):
         '''Delete *key*.'''
@@ -414,14 +414,15 @@ class DictionaryAttributeCollection():
         results = self._entity.session.query(
             '{0} where {1} = {2}'.format(
                 self._class,
-                self._foreign_key_field,
+                self._foreign_key_property,
                 self._entity['id']
             )
         )
 
         for key_value_object in results:
-            if key_value_object[self._key_field] not in self._store:
-                self._store[key_value_object[self._key_field]] = key_value_object
+            key = key_value_object[self._key_property]
+            if key not in self._store:
+                self._store[key] = key_value_object
 
     def keys(self):
         '''Return keys for all objects in collection.'''
@@ -433,7 +434,7 @@ class DictionaryAttributeCollection():
         '''Return list of tuples.'''
         result = []
         for index, key_value_object in self._store.items():
-            result.append((index, key_value_object[self._value_field]))
+            result.append((index, key_value_object[self._value_property]))
 
         return result
 
