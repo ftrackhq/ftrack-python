@@ -340,3 +340,127 @@ class CollectionAttribute(Attribute):
                 )
 
         return value
+
+
+class DictionaryAttributeCollection():
+    '''Class representing a dictionary collection.'''
+
+    def __init__(self, entity, name, schema):
+        '''Initialise collection from *entity*, *name* and *schema*.'''
+        self._entity = entity
+        self._name = name
+        self._store = {}
+
+        self._schema = schema
+        keys = self._schema.get('keys', {})
+        self._key_field = keys.get('key', 'key')
+        self._value_field = keys.get('value', 'value')
+        self._foreign_key_field = keys.get('parent_id', 'parent_id')
+        self._class = self._schema.get('items').get('$ref')
+
+    def _get(self, key):
+        '''Return object by *key* or raise KeyError.'''
+        try:
+            self._store[key]
+        except KeyError:
+            results = self._entity.session.query(
+                '{0} where {1} = {2} and {3} = {4}'.format(
+                    self._class,
+                    self._foreign_key_field,
+                    self._entity['id'],
+                    self._key_field,
+                    key
+                )
+            )
+
+            if len(results):
+                self._store[key] = results[0]
+        try:
+            return self._store[key]
+        except:
+            raise KeyError(
+                '{0} key {1} was not found for {2}'.format(
+                    self._name, key, self._entity
+                )
+            )
+
+    def __getitem__(self, key):
+        '''Return value for *key*.'''
+        return self._get(key)[self._value_field]
+
+    def __setitem__(self, key, value):
+        '''Set *value* for *key*.'''
+        try:
+            key_value_object = self._get(key)
+        except KeyError:
+            data = {
+                self._foreign_key_field: self._entity['id'],
+                self._key_field: key,
+                self._value_field: value
+            }
+            data.update(self._schema.get('defaults', {}))
+            key_value_object = self._entity.session.create(self._class, data)
+            self._store[key] = key_value_object
+        else:
+            key_value_object[self._value_field] = value
+
+    def __delitem__(self, key):
+        '''Delete *key*.'''
+        self._entity.session.delete(self._get(key))
+        self._store.pop(key)
+
+    def keys(self):
+        '''Return keys for all objects in collection.'''
+        results = self._entity.session.query(
+            '{0} where {1} = {2}'.format(
+                self._class,
+                self._foreign_key_field,
+                self._entity['id']
+            )
+        )
+
+        for key_value_object in results:
+            if key_value_object[self._key_field] not in self._store:
+                self._store[key_value_object[self._key_field]] = key_value_object
+
+        return self._store.keys()
+
+    def replace(self, data):
+        '''Replace collection with *data*.'''
+        # Delete.
+        for key in self._store.keys():
+            if key not in data:
+                del self[key]
+
+        for key, value in data.items():
+            self[key] = value
+
+
+class DictionaryAttribute(Attribute):
+    '''Represent a dictionary attribute.'''
+
+    def __init__(self, name, schema, **kw):
+        '''Initialise property.'''
+        super(DictionaryAttribute, self).__init__(name, **kw)
+        self._collections = {}
+        self._schema = schema
+
+    def _getCollection(self, entity):
+        '''Return collection for *entity*.'''
+        if entity.primary_key not in self._collections:
+            key_value_collection = DictionaryAttributeCollection(
+                entity=entity,
+                name=self._name,
+                schema=self._schema
+            )
+            self._collections[entity.primary_key] = key_value_collection
+
+        return self._collections[entity.primary_key]
+
+    def get_value(self, entity):
+        '''Return collection for *entity*.'''
+        return self._getCollection(entity)
+
+    def set_local_value(self, entity, value):
+        '''Update collection for *entity* with *value*.'''
+        self._getCollection(entity).replace(value)
