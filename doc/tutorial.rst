@@ -190,7 +190,7 @@ any existing metadata::
 
     >>> new_sequence['metadata']['frame_padding'] = '5'
     ... new_sequence['metadata']['frame_padding'] = {
-    ...     'frame_padding': 4
+    ...     'frame_padding': '4'
     ... }
 
 Entities can also be queried using metadata::

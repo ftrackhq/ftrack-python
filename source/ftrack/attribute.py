@@ -342,7 +342,7 @@ class CollectionAttribute(Attribute):
         return value
 
 
-class DictionaryAttributeCollection():
+class DictionaryAttributeCollection(object):
     '''Class representing a dictionary collection.'''
 
     def __init__(self, entity, name, schema):
@@ -362,22 +362,14 @@ class DictionaryAttributeCollection():
         '''Return object by *key* or raise KeyError.'''
         try:
             self._store[key]
-        except KeyError:
-            results = self._entity.session.query(
-                '{0} where {1} = {2} and {3} = {4}'.format(
-                    self._class,
-                    self._foreign_key_property,
-                    self._entity['id'],
-                    self._key_property,
-                    key
-                )
-            )
 
-            if len(results):
-                self._store[key] = results[0]
+        except KeyError:
+            self._loadStore()
+
         try:
             return self._store[key]
-        except:
+
+        except KeyError:
             raise KeyError(
                 '{0} key {1} was not found for {2}'.format(
                     self._name, key, self._entity
@@ -392,6 +384,7 @@ class DictionaryAttributeCollection():
         '''Set *value* for *key*.'''
         try:
             key_value_object = self._get(key)
+
         except KeyError:
             data = {
                 self._foreign_key_property: self._entity['id'],
@@ -401,6 +394,7 @@ class DictionaryAttributeCollection():
             data.update(self._schema.get('defaults', {}))
             key_value_object = self._entity.session.create(self._class, data)
             self._store[key] = key_value_object
+
         else:
             key_value_object[self._value_property] = value
 
