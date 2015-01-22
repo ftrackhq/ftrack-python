@@ -222,6 +222,18 @@ class ScalarAttribute(Attribute):
         self.data_type = data_type
 
 
+class CustomAttribute(Attribute):
+
+    def __init__(self, name, variations, **kw):
+        super(CustomAttribute, self).__init__(name, **kw)
+        self.variations = variations
+
+    def populate_remote_value(self, entity):
+        '''Populate remote value for *entity*.'''
+        print '!! populate_remote_value', self.name
+        entity.session.populate([entity], self.name)
+
+
 class ReferenceAttribute(Attribute):
     '''Reference another entity.'''
 

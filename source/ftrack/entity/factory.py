@@ -67,6 +67,13 @@ class Factory(object):
                     )
                     attributes.add(attribute)
 
+                elif data_type == 'object':
+                    # print name, fragment, data_type
+                    attribute = ftrack.attribute.CustomAttribute(
+                        name=name, variations=fragment['oneOf'], mutable=True
+                    )
+                    attributes.add(attribute)
+
                 elif data_type == 'array':
                     # Collection attribute.
                     # reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
