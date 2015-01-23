@@ -75,6 +75,12 @@ class Factory(object):
                     )
                     attributes.add(attribute)
 
+                elif data_type == 'dict':
+                    attribute = ftrack.attribute.DictionaryAttribute(
+                        name, schema=fragment, mutable=mutable
+                    )
+                    attributes.add(attribute)
+
                 else:
                     self.logger.debug(
                         'Skipping {0}.{1} attribute with unrecognised data '
