@@ -473,4 +473,7 @@ class DictionaryAttribute(Attribute):
 
     def set_local_value(self, entity, value):
         '''Update collection for *entity* with *value*.'''
+        if value == ftrack.symbol.NOT_SET:
+            return
+
         self._getCollection(entity).replace(value)
