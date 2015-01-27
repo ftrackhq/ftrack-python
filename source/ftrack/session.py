@@ -650,6 +650,9 @@ class Session(object):
                     'system administrator to enable it.'
                 )
 
+            elif response.status_code == 500:
+                message = response.text
+
             raise ftrack.exception.ServerError(message)
 
         else:
