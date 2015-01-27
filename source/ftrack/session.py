@@ -585,7 +585,17 @@ class Session(object):
 
             results = [result for result in results if result is not None]
 
-            if len(results) != 1:
+            if len(results) == 0:
+                raise ValueError(
+                    'Expected entity type to represent schema "{0}" but '
+                    'received 0 entity types. Ensure '
+                    'FTRACK_EVENT_PLUGIN_PATH has been set to point to '
+                    'resource/plugin.'.format(
+                        schema['id']
+                    )
+                )
+
+            elif len(results) > 1:
                 raise ValueError(
                     'Expected single entity type to represent schema "{0}" but '
                     'received {1} entity types instead.'
