@@ -35,7 +35,7 @@ class ProjectSchema(ftrack.entity.base.Entity):
                 overrides = self['_overrides']
                 for override in overrides:
                     if override['type_id'] == type_id:
-                        return override['workflow_scheme']['statuses'][:]
+                        return override['workflow_schema']['statuses'][:]
 
             return self['_task_workflow']['statuses'][:]
 
@@ -62,7 +62,7 @@ class ProjectSchema(ftrack.entity.base.Entity):
         '''Return statuses for *schema*.'''
         # TODO: Refactor this once arbitrary context is supported on server.
         if schema == 'Task':
-            return self['_task_type_scheme']['types'][:]
+            return self['_task_type_schema']['types'][:]
 
         elif schema == 'AssetBuild':
             for _schema in self['_schemas']:
