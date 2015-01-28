@@ -585,7 +585,7 @@ class Session(object):
 
             results = [result for result in results if result is not None]
 
-            if len(results) == 0:
+            if not results:
                 raise ValueError(
                     'Expected entity type to represent schema "{0}" but '
                     'received 0 entity types. Ensure '

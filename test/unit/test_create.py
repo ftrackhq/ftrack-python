@@ -1,12 +1,13 @@
 # :coding: utf-8
-# :copyright: Copyright (c) 2014 ftrack
+# :copyright: Copyright (c) 2015 ftrack
 
 import uuid
 
 import ftrack
 
 
-class TestCreateProject:
+class TestCreateProject(object):
+    '''Class for testing create.'''
 
     def setup_method(self, method):
         '''Setup the test.'''
@@ -69,3 +70,9 @@ class TestCreateProject:
                     })
 
         self.session.commit()
+
+        results = self.session.query(
+            'Task where project_id is {0}'.format(project['id'])
+        )
+
+        assert len(results) == 64

@@ -1,12 +1,12 @@
 # :coding: utf-8
-# :copyright: Copyright (c) 2014 ftrack
+# :copyright: Copyright (c) 2015 ftrack
 
 import uuid
 
 import ftrack
 
 
-class TestMetadata:
+class TestMetadata(object):
     '''Class for testing metadata.'''
 
     def setup_method(self, method):
