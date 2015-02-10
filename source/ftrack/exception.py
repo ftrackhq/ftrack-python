@@ -170,3 +170,84 @@ class EventHubPacketError(EventHubError):
     '''Raise when event hub encounters an issue with a packet.'''
 
     default_message = 'Invalid packet.'
+
+
+class AccessorError(Error):
+    '''Base for errors associated with accessors.'''
+
+    defaultMessage = 'Unspecified accessor error'
+
+
+class AccessorOperationFailedError(AccessorError):
+    '''Base for failed operations on accessors.'''
+
+    defaultMessage = 'Operation {operation} failed: {details}'
+
+    def __init__(self, operation='', resource_identifier=None, **kw):
+        self.operation = operation
+        self.resource_identifier = resource_identifier
+        super(AccessorOperationFailedError, self).__init__(**kw)
+
+
+class AccessorUnsupportedOperationError(AccessorOperationFailedError):
+    '''Raise when operation is unsupported.'''
+
+    defaultMessage = 'Operation {operation} unsupported.'
+
+
+class AccessorPermissionDeniedError(AccessorOperationFailedError):
+    '''Raise when permission denied.'''
+
+    defaultMessage = ('Cannot {operation} {resource_identifier}. '
+                      'Permission denied.')
+
+
+class AccessorResourceIdentifierError(AccessorError):
+    '''Raise when a error related to a resource_identifier occurs.'''
+
+    defaultMessage = 'Resource identifier is invalid: {resource_identifier}.'
+
+    def __init__(self, resource_identifier, **kw):
+        self.resource_identifier = resource_identifier
+        super(AccessorResourceIdentifierError, self).__init__(**kw)
+
+
+class AccessorFilesystemPathError(AccessorResourceIdentifierError):
+    '''Raise when a error related to an accessor filesystem path occurs.'''
+
+    defaultMessage = ('Could not determine filesystem path from resource '
+                      'identifier: {resource_identifier}.')
+
+
+class AccessorResourceError(AccessorError):
+    '''Base for errors associated with specific resource.'''
+
+    defaultMessage = 'Unspecified resource error: {resource_identifier}'
+
+    def __init__(self, resource_identifier, **kw):
+        self.resource_identifier = resource_identifier
+        super(AccessorResourceError, self).__init__(**kw)
+
+
+class AccessorResourceNotFoundError(AccessorResourceError):
+    '''Raise when a required resource is not found.'''
+
+    defaultMessage = 'Resource not found: {resource_identifier}'
+
+
+class AccessorParentResourceNotFoundError(AccessorResourceError):
+    '''Raise when a parent resource (such as directory) is not found.'''
+
+    defaultMessage = 'Parent resource is missing: {resource_identifier}'
+
+
+class AccessorResourceInvalidError(AccessorResourceError):
+    '''Raise when a resource is not the right type.'''
+
+    defaultMessage = 'Resource invalid: {resource_identifier}'
+
+
+class AccessorContainerNotEmptyError(AccessorResourceError):
+    '''Raise when container is not empty.'''
+
+    defaultMessage = 'Container is not empty: {resource_identifier}'
