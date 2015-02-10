@@ -423,9 +423,7 @@ class EventHub(object):
 
     def _on_subscribed(self, subscriber, response):
         '''Handle acknowledgement of subscription.'''
-        if response.get('success') is True:
-            subscriber.active = True
-        else:
+        if response.get('success') is False:
             self.logger.warning(
                 'Server failed to subscribe subscriber {0}: {1}'
                 .format(subscriber.metadata['id'], response.get('message'))
@@ -449,7 +447,6 @@ class EventHub(object):
                 .format(subscriber_identifier)
             )
 
-        subscriber.active = False
         self._subscribers.pop(self._subscribers.index(subscriber))
 
         # Notify the server if possible.

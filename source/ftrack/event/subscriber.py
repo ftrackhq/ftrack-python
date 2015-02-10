@@ -13,7 +13,6 @@ class Subscriber(object):
         self.callback = callback
         self.metadata = metadata
         self.priority = priority
-        self.active = False
 
     def __str__(self):
         '''Return string representation.'''
@@ -23,7 +22,4 @@ class Subscriber(object):
 
     def interested_in(self, event):
         '''Return whether subscriber interested in *event*.'''
-        if not self.active:
-            return False
-
         return self.subscription.includes(event)
