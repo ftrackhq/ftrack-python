@@ -5,11 +5,12 @@ import os
 import sys
 import errno
 import contextlib
+import ntpath
 
 from .base import Accessor
 from ..data import File
 from ftrack.exception import (
-    Accessorfilesystem_pathError,
+    AccessorFilesystemPathError,
     AccessorUnsupportedOperationError,
     AccessorResourceNotFoundError,
     AccessorOperationFailedError,
@@ -103,13 +104,13 @@ class DiskAccessor(Accessor):
         '''
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
-        if self.isFile(resource_identifier):
+        if self.is_file(resource_identifier):
             with error_handler(
                 operation='remove', resource_identifier=resource_identifier
             ):
                 os.remove(filesystem_path)
 
-        elif self.isContainer(resource_identifier):
+        elif self.is_container(resource_identifier):
             with error_handler(
                 operation='remove', resource_identifier=resource_identifier
             ):
@@ -190,7 +191,7 @@ class DiskAccessor(Accessor):
             >>> print accessor.get_filesystem_path('/mountpoint/test.txt')
             /mountpoint/test.txt
 
-        Raise Accessorfilesystem_pathError if filesystem path could not be
+        Raise AccessorFilesystemPathError if filesystem path could not be
         determined from *resource_identifier*.
 
         '''
@@ -205,7 +206,7 @@ class DiskAccessor(Accessor):
                 )
 
             if not filesystem_path.startswith(self.prefix):
-                raise Accessorfilesystem_pathError(
+                raise AccessorFilesystemPathError(
                     resource_identifier,
                     message='Could not determine access path for '
                             'resource_identifier outside of configured prefix: '
