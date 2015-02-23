@@ -737,10 +737,13 @@ class Session(object):
                         if isinstance(
                             attribute, ftrack.attribute.ReferenceAttribute
                         ):
-                            value = {
-                                'entity_type': value.entity_type,
-                                'entity_key': value.primary_key
-                            }
+                            if isinstance(value, ftrack.entity.base.Entity):
+                                # Encode entity reference using lightweight
+                                # form.
+                                value = {
+                                    'entity_type': value.entity_type,
+                                    'entity_key': value.primary_key
+                                }
 
                         data[attribute.name] = value
 
