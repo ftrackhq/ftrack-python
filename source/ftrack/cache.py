@@ -90,6 +90,55 @@ class Cache(object):
                 pass
 
 
+class ProxyCache(Cache):
+    '''Proxy another cache.'''
+
+    def __init__(self, proxied):
+        '''Initialise cache with *proxied* cache instance.'''
+        self.proxied = proxied
+        super(ProxyCache, self).__init__()
+
+    def get(self, key):
+        '''Return value for *key*.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        '''
+        return self.proxied.get(key)
+
+    def set(self, key, value):
+        '''Set *value* for *key*.'''
+        return self.proxied.set(key, value)
+
+    def remove(self, key):
+        '''Remove *key* and return stored value.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        '''
+        return self.proxied.remove(key)
+
+    def keys(self):
+        '''Return list of keys at this current time.
+
+        .. warning::
+
+            Actual keys may differ from those returned due to timing of access.
+
+        '''
+        return self.proxied.keys()
+
+    def clear(self, pattern=None):
+        '''Remove all keys matching *pattern*.
+
+        *pattern* should be a regular expression string.
+
+        If *pattern* is None then all keys will be removed.
+
+        '''
+        return self.proxied.clear(pattern=pattern)
+
+
 class MemoryCache(Cache):
     '''Memory based cache.'''
 
