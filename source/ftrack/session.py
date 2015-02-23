@@ -7,6 +7,7 @@ import collections
 import datetime
 import os
 import getpass
+import functools
 
 import pkg_resources
 import requests
@@ -613,7 +614,7 @@ class Session(object):
         headers = {
             'content-type': 'application/json'
         }
-        data = self.encode(data)
+        data = self.encode(data, entity_attribute_strategy='modified_only')
 
         self.logger.debug(
             'Calling server {0} with {1}'.format(url, data)
@@ -664,12 +665,45 @@ class Session(object):
 
         return result
 
-    def encode(self, data):
-        '''Return *data* encoded as JSON formatted string.'''
-        return json.dumps(data, default=self._encode)
+    def encode(self, data, entity_attribute_strategy='set_only'):
+        '''Return *data* encoded as JSON formatted string.
 
-    def _encode(self, item):
-        '''Return JSON encodable version of *item*.'''
+        *entity_attribute_strategy* specifies how entity attributes should be
+        handled. The following strategies are available:
+
+        * *all* - Encode all attributes, loading any that are currently NOT_SET.
+        * *set_only* - Encode only attributes that are currently set without
+          loading any from the remote.
+        * *modified_only* - Encode only attributes that have been modified
+          locally.
+
+        '''
+        entity_attribute_strategies = ('all', 'set_only', 'modified_only')
+        if entity_attribute_strategy not in entity_attribute_strategies:
+            raise ValueError(
+                'Unsupported entity_attribute_strategy "{0}". Must be one of '
+                '{1}'.format(
+                    entity_attribute_strategy,
+                    ', '.join(entity_attribute_strategies)
+                )
+            )
+
+        return json.dumps(
+            data,
+            sort_keys=True,
+            default=functools.partial(
+                self._encode,
+                entity_attribute_strategy=entity_attribute_strategy
+            )
+        )
+
+    def _encode(self, item, entity_attribute_strategy='set_only'):
+        '''Return JSON encodable version of *item*.
+
+        *entity_attribute_strategy* specifies how entity attributes should be
+        handled. See :meth:`Session.encode` for available strategies.
+
+        '''
         if isinstance(item, (arrow.Arrow, datetime.datetime, datetime.date)):
             return {
                 '__type__': 'datetime',
@@ -681,19 +715,34 @@ class Session(object):
                 '__entity_type__': item.entity_type
             }
 
-            for attribute in item.attributes:
-                if attribute.is_modified(item):
-                    value = attribute.get_local_value(item)
+            auto_populate = False
+            if entity_attribute_strategy == 'all':
+                auto_populate = True
 
-                    if isinstance(
-                        attribute, ftrack.attribute.ReferenceAttribute
-                    ):
-                        value = {
-                            'entity_type': value.entity_type,
-                            'entity_key': value.primary_key
-                        }
+            with self.auto_populating(auto_populate):
 
-                    data[attribute.name] = value
+                for attribute in item.attributes:
+                    value = ftrack.symbol.NOT_SET
+
+                    if entity_attribute_strategy in ('all', 'set_only'):
+                        # Note: Auto-populate setting ensures correct behaviour
+                        # when attribute has not been set.
+                        value = attribute.get_value(item)
+
+                    elif entity_attribute_strategy == 'modified_only':
+                        if attribute.is_modified(item):
+                            value = attribute.get_local_value(item)
+
+                    if value is not ftrack.symbol.NOT_SET:
+                        if isinstance(
+                            attribute, ftrack.attribute.ReferenceAttribute
+                        ):
+                            value = {
+                                'entity_type': value.entity_type,
+                                'entity_key': value.primary_key
+                            }
+
+                        data[attribute.name] = value
 
             return data
 
