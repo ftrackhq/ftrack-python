@@ -86,8 +86,8 @@ class Session(object):
 
         *cache_key_maker* should be an instance of a key maker that fulfils the
         :class:`ftrack.cache.KeyMaker` interface and will be used to generate
-        keys for objects being stored in the *cache*. If not specified, an
-        :class:`~ftrack.cache.EntityKeyMaker` will be used.
+        keys for objects being stored in the *cache*. If not specified, a
+        :class:`~ftrack.cache.StringKeyMaker` will be used.
 
         '''
         super(Session, self).__init__()
@@ -144,7 +144,7 @@ class Session(object):
 
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
-            self.cache_key_maker = ftrack.cache.EntityKeyMaker()
+            self.cache_key_maker = ftrack.cache.StringKeyMaker()
 
         self.cache = cache
         if self.cache is None:
@@ -351,6 +351,9 @@ class Session(object):
     def get(self, entity_type, entity_key):
         '''Return entity of *entity_type* with unique *entity_key*.
 
+        First check for an existing entry in the configured cache, otherwise
+        issue a query to the server.
+
         If no matching entity found, return None.
 
         '''
@@ -364,15 +367,27 @@ class Session(object):
         if not isinstance(entity_key, basestring):
             entity_key = entity_key[0]
 
-        expression = '{0} where {1} is {2}'.format(
-            entity_type, primary_key_definition, entity_key
-        )
+        entity = None
 
-        results = self.query(expression).all()
-        if results:
-            return results[0]
-        else:
-            return None
+        # Check cache for existing entity emulating ftrack.inspection.identity
+        # result object to pass to key maker.
+        cache_key = self.cache_key_maker.key(
+            (entity_type, [entity_key])
+        )
+        try:
+            entity = self.cache.get(cache_key)
+
+        except KeyError:
+            # Query for matching entity.
+            expression = '{0} where {1} is {2}'.format(
+                entity_type, primary_key_definition, entity_key
+            )
+
+            results = self.query(expression).all()
+            if results:
+                entity = results[0]
+
+        return entity
 
     def query(self, expression):
         '''Query against remote data according to *expression*.
@@ -432,7 +447,9 @@ class Session(object):
 
         with self.auto_populating(False):
             # Check for existing instance of entity in cache.
-            entity_key = self.cache_key_maker.key(entity)
+            entity_key = self.cache_key_maker.key(
+                ftrack.inspection.identity(entity)
+            )
             try:
                 existing_entity = self.cache.get(entity_key)
 
