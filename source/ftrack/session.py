@@ -142,13 +142,13 @@ class Session(object):
             'write': []
         }
 
-        self._cache_key_maker = cache_key_maker
-        if self._cache_key_maker is None:
-            self._cache_key_maker = ftrack.cache.EntityKeyMaker()
+        self.cache_key_maker = cache_key_maker
+        if self.cache_key_maker is None:
+            self.cache_key_maker = ftrack.cache.EntityKeyMaker()
 
-        self._cache = cache
-        if self._cache is None:
-            self._cache = ftrack.cache.MemoryCache()
+        self.cache = cache
+        if self.cache is None:
+            self.cache = ftrack.cache.MemoryCache()
 
         self._states = dict(
             created=collections.OrderedDict(),
@@ -432,13 +432,13 @@ class Session(object):
 
         with self.auto_populating(False):
             # Check for existing instance of entity in cache.
-            entity_key = self._cache_key_maker.key(entity)
+            entity_key = self.cache_key_maker.key(entity)
             try:
-                existing_entity = self._cache.get(entity_key)
+                existing_entity = self.cache.get(entity_key)
 
             except KeyError:
                 # Record new instance in cache.
-                self._cache.set(entity_key, entity)
+                self.cache.set(entity_key, entity)
 
             else:
                 if entity is not existing_entity:
