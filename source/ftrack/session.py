@@ -57,7 +57,7 @@ class Session(object):
 
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
-        plugin_paths=None
+        plugin_paths=None, cache=None, cache_key_maker=None
     ):
         '''Initialise session.
 
@@ -78,6 +78,16 @@ class Session(object):
 
         *plugin_paths* should be a list of paths to search for plugins. If not
         specified, default to looking up :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
+
+        *cache* should be an instance of a cache that fulfils the
+        :class:`ftrack.cache.Cache` interface and will be used as the cache for
+        the session. If not specified, a :class:`~ftrack.cache.MemoryCache` will
+        be used.
+
+        *cache_key_maker* should be an instance of a key maker that fulfils the
+        :class:`ftrack.cache.KeyMaker` interface and will be used to generate
+        keys for objects being stored in the *cache*. If not specified, an
+        :class:`~ftrack.cache.EntityKeyMaker` will be used.
 
         '''
         super(Session, self).__init__()
@@ -132,9 +142,13 @@ class Session(object):
             'write': []
         }
 
-        # TODO: Make cache configurable.
-        self._key_maker = ftrack.cache.EntityKeyMaker()
-        self._cache = ftrack.cache.MemoryCache()
+        self._cache_key_maker = cache_key_maker
+        if self._cache_key_maker is None:
+            self._cache_key_maker = ftrack.cache.EntityKeyMaker()
+
+        self._cache = cache
+        if self._cache is None:
+            self._cache = ftrack.cache.MemoryCache()
 
         self._states = dict(
             created=collections.OrderedDict(),
@@ -418,7 +432,7 @@ class Session(object):
 
         with self.auto_populating(False):
             # Check for existing instance of entity in cache.
-            entity_key = self._key_maker.key(entity)
+            entity_key = self._cache_key_maker.key(entity)
             try:
                 existing_entity = self._cache.get(entity_key)
 
