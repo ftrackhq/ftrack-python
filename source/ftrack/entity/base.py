@@ -174,13 +174,19 @@ class Entity(collections.MutableMapping):
         '''Return unique identity.'''
         return (
             self.entity_type,
-            self.primary_key
+            self.primary_key.values()
         )
 
     @property
     def primary_key(self):
-        '''Return primary key values as a tuple.'''
-        primary_key = []
+        '''Return primary key as an ordered mapping of {field: value}.
+
+        To get just the primary key values::
+
+            entity.primary_key.values()
+
+        '''
+        primary_key = collections.OrderedDict()
         for name in self.primary_key_attributes:
             value = self[name]
             if value is ftrack.symbol.NOT_SET:
@@ -189,9 +195,9 @@ class Entity(collections.MutableMapping):
                     'entity {1}.'.format(name, self)
                 )
 
-            primary_key.append(str(value))
+            primary_key[str(name)] = str(value)
 
-        return tuple(primary_key)
+        return primary_key
 
     def values(self):
         '''Return list of values.'''

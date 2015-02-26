@@ -292,11 +292,10 @@ class Session(object):
         If specified, *data* should be a dictionary of key, value pairs that
         should be used to populate attributes on the entity.
 
-        # TODO: What should happen to unrecognised keys? Should they just be
-        # set as normal attributes?
-
         '''
-        return self._create(entity_type, data, reconstructing=False)
+        entity = self._create(entity_type, data, reconstructing=False)
+        entity = self.merge(entity)
+        return entity
 
     def _create(self, entity_type, data, reconstructing):
         '''Create and return an entity of *entity_type* with initial *data*.
@@ -309,39 +308,7 @@ class Session(object):
         except KeyError:
             raise ftrack.exception.UnrecognisedEntityTypeError(entity_type)
 
-        entity = EntityTypeClass(self, data=data, reconstructing=reconstructing)
-
-        # Check for existing instance of entity in cache.
-        key = self._key_maker.key(entity)
-        try:
-            existing = self._cache.get(key)
-        except KeyError:
-            existing = None
-
-        if existing:
-            if not reconstructing:
-                raise ftrack.exception.NotUniqueError(
-                    'Entity with same identity {0} already exists in session.'
-                    .format(key)
-                )
-            else:
-                # Merge attributes.
-                for attribute in entity.attributes:
-                    value = attribute.get_remote_value(entity)
-                    if value is not ftrack.symbol.NOT_SET:
-                        existing_attribute = existing.attributes.get(
-                            attribute.name
-                        )
-                        existing_attribute.set_remote_value(existing, value)
-
-                # Set returned entity to be existing cached instance.
-                entity = existing
-
-        else:
-            # Record new instance in cache.
-            self._cache.set(key, entity)
-
-        return entity
+        return EntityTypeClass(self, data=data, reconstructing=reconstructing)
 
     def ensure(self, entity_type, data):
         '''Ensure entity of *entity_type* with *data* exists.'''
@@ -412,7 +379,83 @@ class Session(object):
 
         # TODO: When should this execute? How to handle background=True?
         results = self._call(batch)
-        return results[0]['data']
+
+        # Merge entities into local cache and return merged entities.
+        data = []
+        for entity in results[0]['data']:
+            data.append(self.merge(entity))
+
+        return data
+
+    def merge(self, entity, _seen=None):
+        '''Merge *entity* into session returning merged entity.
+
+        Merge is recursive so any references to other entities will also be
+        merged and *entity* may be modified in place.
+
+        '''
+        merged_entity = entity
+
+        if _seen is None:
+            _seen = {}
+
+        with self.auto_populating(False):
+            # Check for existing instance of entity in cache.
+            entity_key = self._key_maker.key(entity)
+            try:
+                existing_entity = self._cache.get(entity_key)
+
+            except KeyError:
+                # Record new instance in cache.
+                self._cache.set(entity_key, entity)
+
+            else:
+                if entity is not existing_entity:
+                    # Merge set attributes from entity to cache.
+                    for attribute in entity.attributes:
+                        value = attribute.get_remote_value(entity)
+                        if value is not ftrack.symbol.NOT_SET:
+                            existing_attribute = existing_entity.attributes.get(
+                                attribute.name
+                            )
+                            existing_attribute.set_remote_value(
+                                existing_entity, value
+                            )
+
+                    # Set returned entity to be existing cached instance.
+                    merged_entity = existing_entity
+
+            # Recursively merge entity references that were present in source
+            # entity if not already done.
+            if entity_key not in _seen:
+                _seen[entity_key] = True
+
+                for attribute in entity.attributes:
+                    source_value = attribute.get_remote_value(entity)
+                    if source_value is not ftrack.symbol.NOT_SET:
+                        value = attribute.get_remote_value(merged_entity)
+
+                        if isinstance(value, ftrack.entity.base.Entity):
+                            attribute.set_remote_value(
+                                merged_entity, self.merge(value, _seen=_seen)
+                            )
+
+                        elif isinstance(value, ftrack.collection.Collection):
+                            # Temporarily make collection mutable so that
+                            # entities within it can be merged.
+                            mutable = value.mutable
+                            value.mutable = True
+                            try:
+                                for index, entry in enumerate(value):
+                                    value[index] = self.merge(
+                                        entry, _seen=_seen
+                                    )
+                            finally:
+                                value.mutable = mutable
+
+                        # TODO: Handle DictionaryAttributeCollection.
+
+        return merged_entity
 
     def populate(self, entities, projections, background=False):
         '''Populate *entities* with attributes specified by *projections*.
@@ -473,7 +516,7 @@ class Session(object):
             primary_key = primary_key_definition[0]
 
             entity_keys = [
-                entity.primary_key[0]
+                entity.primary_key.values()[0]
                 for entity in entities_to_process
             ]
 
@@ -500,39 +543,53 @@ class Session(object):
     # TODO: Make atomic.
     def commit(self):
         '''Commit all local changes to the server.'''
-        # Add all deletions in order.
-        for entity in self.deleted:
-            self._batches['write'].append({
-                'action': 'delete',
-                'entity_type': entity.entity_type,
-                'entity_key': entity.primary_key
-            })
+        with self.auto_populating(False):
 
-        # Add all creations in order.
-        for entity in self.created:
-            self._batches['write'].append({
-                'action': 'create',
-                'entity_type': entity.entity_type,
-                'entity_data': entity
-            })
+            # Add all deletions in order.
+            for entity in self.deleted:
 
-        # Add all modifications.
-        for entity in self.modified:
-            self._batches['write'].append({
-                'action': 'update',
-                'entity_type': entity.entity_type,
-                'entity_key': entity.primary_key,
-                'entity_data': entity
-            })
+                self._batches['write'].append({
+                    'action': 'delete',
+                    'entity_type': entity.entity_type,
+                    'entity_key': entity.primary_key.values()
+                })
+
+            # Add all creations in order.
+            for entity in self.created:
+                self._batches['write'].append({
+                    'action': 'create',
+                    'entity_type': entity.entity_type,
+                    'entity_data': entity
+                })
+
+            # Add all modifications.
+            for entity in self.modified:
+                self._batches['write'].append({
+                    'action': 'update',
+                    'entity_type': entity.entity_type,
+                    'entity_key': entity.primary_key.values(),
+                    'entity_data': entity
+                })
 
         batch = self._batches['write']
         if batch:
             try:
-                self._call(batch)
+                result = self._call(batch)
 
             finally:
                 # Always clear write batches.
                 del self._batches['write'][:]
+
+            # Process result.
+            for entry in result:
+
+                if entry['action'] in ('create', 'update'):
+                    # Merge returned entities into local cache.
+                    self.merge(entry['data'])
+
+                elif entry['action'] == 'delete':
+                    # TODO: Expunge entity from cache.
+                    pass
 
             # If successful commit then update states.
             for entity in self.created:
@@ -711,9 +768,7 @@ class Session(object):
             }
 
         if isinstance(item, ftrack.entity.base.Entity):
-            data = {
-                '__entity_type__': item.entity_type
-            }
+            data = self._entity_reference(item)
 
             auto_populate = False
             if entity_attribute_strategy == 'all':
@@ -738,12 +793,7 @@ class Session(object):
                             attribute, ftrack.attribute.ReferenceAttribute
                         ):
                             if isinstance(value, ftrack.entity.base.Entity):
-                                # Encode entity reference using lightweight
-                                # form.
-                                value = {
-                                    'entity_type': value.entity_type,
-                                    'entity_key': value.primary_key
-                                }
+                                value = self._entity_reference(value)
 
                         data[attribute.name] = value
 
@@ -752,14 +802,26 @@ class Session(object):
         if isinstance(item, ftrack.collection.Collection):
             data = []
             for entity in item:
-                data.append({
-                    'entity_type': entity.entity_type,
-                    'entity_key': entity.primary_key
-                })
+                data.append(self._entity_reference(entity))
 
             return data
 
         raise TypeError('{0!r} is not JSON serializable'.format(item))
+
+    def _entity_reference(self, entity):
+        '''Return reference to *entity*.
+
+        Return a mapping containing the __entity_type__ of the entity along with
+        the key, value pairs that make up it's primary key.
+
+        '''
+        reference = {
+            '__entity_type__': entity.entity_type
+        }
+        with self.auto_populating(False):
+            reference.update(entity.primary_key)
+
+        return reference
 
     def decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
@@ -773,28 +835,11 @@ class Session(object):
                     item = arrow.get(item['value'])
 
             elif '__entity_type__' in item:
-                item = self._load_entity(item)
+                item = self._create(
+                    item['__entity_type__'], item, reconstructing=True
+                )
 
         return item
-
-    def _load_entity(self, entity_data):
-        '''Load *entity_data* into local entity.
-
-        If no matching entity exists then create it.
-
-        *entity_data* must contain a '__entity_type__' key that matches a
-        *registered entity type class and also the required primary key values
-        *for that type.
-
-        Return entity.
-
-        '''
-        entity_type = str(entity_data.pop('__entity_type__'))
-        entity = self._create(entity_type, entity_data, reconstructing=True)
-
-        # TODO: Should entity be given a 'persisted' state?
-
-        return entity
 
 
 class AutoPopulatingContext(object):

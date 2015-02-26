@@ -457,15 +457,16 @@ class DictionaryAttribute(Attribute):
 
     def _getCollection(self, entity):
         '''Return collection for *entity*.'''
-        if entity.primary_key not in self._collections:
+        primary_key = tuple(entity.primary_key.values())
+        if primary_key not in self._collections:
             key_value_collection = DictionaryAttributeCollection(
                 entity=entity,
                 name=self._name,
                 schema=self._schema
             )
-            self._collections[entity.primary_key] = key_value_collection
+            self._collections[primary_key] = key_value_collection
 
-        return self._collections[entity.primary_key]
+        return self._collections[primary_key]
 
     def get_value(self, entity):
         '''Return collection for *entity*.'''
