@@ -45,8 +45,15 @@ class Collection(collections.MutableSequence):
         if not self.mutable:
             raise ftrack.exception.ImmutableCollectionError(self)
 
-        if item in self:
-            raise ftrack.exception.DuplicateItemInCollectionError(item, self)
+        try:
+            existing_index = self.index(item)
+        except ValueError:
+            pass
+        else:
+            if index != existing_index:
+                raise ftrack.exception.DuplicateItemInCollectionError(
+                    item, self
+                )
 
         self._data[index] = item
         self._notify()
