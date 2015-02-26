@@ -8,6 +8,7 @@ import logging
 
 import ftrack.symbol
 import ftrack.attribute
+import ftrack.inspection
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -108,7 +109,7 @@ class Entity(collections.MutableMapping):
         # Assert that primary key is set. Suspend auto populate temporarily to
         # avoid infinite recursion if primary key values are not present.
         with self.session.auto_populating(False):
-            self.primary_key
+            ftrack.inspection.primary_key(self)
 
     def __repr__(self):
         '''Return representation of instance.'''
@@ -119,7 +120,7 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(self.identity)
+        return hash(ftrack.inspection.identity(self))
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.
@@ -130,7 +131,10 @@ class Entity(collections.MutableMapping):
             Values of attributes are not considered.
 
         '''
-        return other.identity == self.identity
+        return (
+            ftrack.inspection.identity(other)
+            == ftrack.inspection.identity(self)
+        )
 
     def __getitem__(self, key):
         '''Return attribute value for *key*.'''
@@ -168,36 +172,6 @@ class Entity(collections.MutableMapping):
     def __len__(self):
         '''Return count of attributes.'''
         return len(self.__class__.attributes)
-
-    @property
-    def identity(self):
-        '''Return unique identity.'''
-        return (
-            self.entity_type,
-            self.primary_key.values()
-        )
-
-    @property
-    def primary_key(self):
-        '''Return primary key as an ordered mapping of {field: value}.
-
-        To get just the primary key values::
-
-            entity.primary_key.values()
-
-        '''
-        primary_key = collections.OrderedDict()
-        for name in self.primary_key_attributes:
-            value = self[name]
-            if value is ftrack.symbol.NOT_SET:
-                raise KeyError(
-                    'Missing required value for primary key attribute "{0}" on '
-                    'entity {1}.'.format(name, self)
-                )
-
-            primary_key[str(name)] = str(value)
-
-        return primary_key
 
     def values(self):
         '''Return list of values.'''

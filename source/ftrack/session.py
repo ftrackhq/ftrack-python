@@ -24,6 +24,7 @@ import ftrack.collection
 import ftrack.event.hub
 import ftrack.event.base
 import ftrack.plugin
+import ftrack.inspection
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -516,7 +517,7 @@ class Session(object):
             primary_key = primary_key_definition[0]
 
             entity_keys = [
-                entity.primary_key.values()[0]
+                ftrack.inspection.primary_key(entity).values()[0]
                 for entity in entities_to_process
             ]
 
@@ -551,7 +552,7 @@ class Session(object):
                 self._batches['write'].append({
                     'action': 'delete',
                     'entity_type': entity.entity_type,
-                    'entity_key': entity.primary_key.values()
+                    'entity_key': ftrack.inspection.primary_key(entity).values()
                 })
 
             # Add all creations in order.
@@ -567,7 +568,7 @@ class Session(object):
                 self._batches['write'].append({
                     'action': 'update',
                     'entity_type': entity.entity_type,
-                    'entity_key': entity.primary_key.values(),
+                    'entity_key': ftrack.inspection.primary_key(entity).values(),
                     'entity_data': entity
                 })
 
@@ -819,7 +820,7 @@ class Session(object):
             '__entity_type__': entity.entity_type
         }
         with self.auto_populating(False):
-            reference.update(entity.primary_key)
+            reference.update(ftrack.inspection.primary_key(entity))
 
         return reference
 

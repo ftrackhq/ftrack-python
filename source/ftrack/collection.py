@@ -4,6 +4,7 @@
 import collections
 
 import ftrack.exception
+import ftrack.inspection
 
 
 class Collection(collections.MutableSequence):
@@ -75,8 +76,14 @@ class Collection(collections.MutableSequence):
         if not isinstance(other, Collection):
             return False
 
-        identities = [entity.identity for entity in self]
-        other_identities = [entity.identity for entity in other]
+        identities = [
+            ftrack.inspection.identity(entity)
+            for entity in self
+        ]
+        other_identities = [
+            ftrack.inspection.identity(entity)
+            for entity in other
+        ]
 
         return sorted(identities) == sorted(other_identities)
 
