@@ -21,8 +21,8 @@ def unique_name():
 
 
 @pytest.fixture()
-def unique_entity(request, session, unique_name):
-    '''Return a newly created unique entity.'''
+def new_user(request, session, unique_name):
+    '''Return a newly created unique user.'''
     entity = session.create('User', {'username': unique_name})
     session.commit()
 
@@ -37,8 +37,8 @@ def unique_entity(request, session, unique_name):
 
 
 @pytest.fixture(scope='session')
-def entity(session):
-    '''Return the same entity for entire session.'''
+def user(session):
+    '''Return the same user entity for entire session.'''
     # Jenkins user
     entity = session.get('User', 'd07ae5d0-66e1-11e1-b5e9-f23c91df25eb')
     assert entity is not None

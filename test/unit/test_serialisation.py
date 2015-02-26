@@ -6,10 +6,10 @@ import textwrap
 import pytest
 
 
-def test_encode_entity_using_all_attributes_strategy(session, unique_entity):
+def test_encode_entity_using_all_attributes_strategy(session, new_user):
     '''Encode entity using "all" entity_attribute_strategy.'''
     encoded = session.encode(
-        unique_entity, entity_attribute_strategy='all'
+        new_user, entity_attribute_strategy='all'
     )
 
     assert encoded == textwrap.dedent('''
@@ -26,16 +26,16 @@ def test_encode_entity_using_all_attributes_strategy(session, unique_entity):
          "timelogs": [],
          "username": "{1}"}}
     '''.format(
-        unique_entity['id'], unique_entity['username']
+        new_user['id'], new_user['username']
     )).replace('\n', '')
 
 
 def test_encode_entity_using_only_set_attributes_strategy(
-    session, unique_entity
+    session, new_user
 ):
     '''Encode entity using "set_only" entity_attribute_strategy.'''
     encoded = session.encode(
-        unique_entity, entity_attribute_strategy='set_only'
+        new_user, entity_attribute_strategy='set_only'
     )
 
     assert encoded == textwrap.dedent('''
@@ -47,18 +47,18 @@ def test_encode_entity_using_only_set_attributes_strategy(
          "resource_type": "user",
          "username": "{1}"}}
     '''.format(
-        unique_entity['id'], unique_entity['username']
+        new_user['id'], new_user['username']
     )).replace('\n', '')
 
 
 def test_encode_entity_using_only_modified_attributes_strategy(
-    session, unique_entity
+    session, new_user
 ):
     '''Encode entity using "modified_only" entity_attribute_strategy.'''
-    unique_entity['first_name'] = 'Modified'
+    new_user['first_name'] = 'Modified'
 
     encoded = session.encode(
-        unique_entity, entity_attribute_strategy='modified_only'
+        new_user, entity_attribute_strategy='modified_only'
     )
 
     assert encoded == textwrap.dedent('''
@@ -66,25 +66,25 @@ def test_encode_entity_using_only_modified_attributes_strategy(
          "first_name": "Modified",
          "id": "{0}"}}
     '''.format(
-        unique_entity['id']
+        new_user['id']
     )).replace('\n', '')
 
 
-def test_encode_entity_using_invalid_strategy(session, unique_entity):
+def test_encode_entity_using_invalid_strategy(session, new_user):
     '''Fail to encode entity using invalid strategy.'''
     with pytest.raises(ValueError):
-        session.encode(unique_entity, entity_attribute_strategy='invalid')
+        session.encode(new_user, entity_attribute_strategy='invalid')
 
 
 def test_decode_partial_entity(
-    session, unique_entity
+    session, new_user
 ):
     '''Decode partially encoded entity.'''
     encoded = session.encode(
-        unique_entity, entity_attribute_strategy='set_only'
+        new_user, entity_attribute_strategy='set_only'
     )
 
     entity = session.decode(encoded)
 
-    assert entity == unique_entity
-    assert entity is not unique_entity
+    assert entity == new_user
+    assert entity is not new_user
