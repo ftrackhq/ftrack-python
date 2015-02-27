@@ -55,7 +55,8 @@ setup(
     },
     setup_requires=[
         'sphinx >= 1.2.2, < 2',
-        'sphinx_rtd_theme >= 0.1.6, < 1'
+        'sphinx_rtd_theme >= 0.1.6, < 1',
+        'lowdown >= 0.1.0, < 2'
     ],
     install_requires=[
         'requests >= 2, <3',
@@ -71,6 +72,10 @@ setup(
     cmdclass={
         'test': PyTest
     },
+    dependency_links=[
+        'https://bitbucket.org/ftrack/lowdown/get/0.1.0.zip'
+        '#egg=lowdown-0.1.0'
+    ],
     data_files=[
         (
             'ftrack_default_plugins',
