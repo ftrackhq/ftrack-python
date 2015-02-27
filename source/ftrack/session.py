@@ -548,7 +548,6 @@ class Session(object):
 
             # Add all deletions in order.
             for entity in self.deleted:
-
                 self._batches['write'].append({
                     'action': 'delete',
                     'entity_type': entity.entity_type,
