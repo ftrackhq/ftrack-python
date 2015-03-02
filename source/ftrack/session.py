@@ -806,6 +806,11 @@ class Session(object):
 
             return data
 
+        if isinstance(item, ftrack.attribute.DictionaryAttributeCollection):
+            # TODO: Correctly encode dictionary collection so that it can be
+            # decoded properly.
+            return {}
+
         raise TypeError('{0!r} is not JSON serializable'.format(item))
 
     def _entity_reference(self, entity):
