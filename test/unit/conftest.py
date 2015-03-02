@@ -49,7 +49,9 @@ def user(session):
 @pytest.fixture()
 def new_task(request, session, unique_name):
     '''Return a new task.'''
-    project = session.query('Project')[0]
+    project = session.query(
+        'Project where id is 5671dcb0-66de-11e1-8e6e-f23c91df25eb'
+    )[0]
     project_schema = project['project_schema']
     default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(
