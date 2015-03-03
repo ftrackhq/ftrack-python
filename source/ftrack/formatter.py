@@ -6,6 +6,7 @@ from termcolor import colored
 import ftrack.entity.base
 import ftrack.collection
 import ftrack.symbol
+import ftrack.inspection
 
 
 #: Useful filters to pass to :func:`format`.`
@@ -71,7 +72,7 @@ def format(
     if _seen is None:
         _seen = set()
 
-    identifier = entity.identity
+    identifier = ftrack.inspection.identity(entity)
     if identifier in _seen:
         return (
             first_line_spacer +
