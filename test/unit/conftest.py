@@ -21,9 +21,37 @@ def unique_name():
 
 
 @pytest.fixture()
+def new_user(request, session, unique_name):
+    '''Return a newly created unique user.'''
+    entity = session.create('User', {'username': unique_name})
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(entity)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return entity
+
+
+@pytest.fixture(scope='session')
+def user(session):
+    '''Return the same user entity for entire session.'''
+    # Jenkins user
+    entity = session.get('User', 'd07ae5d0-66e1-11e1-b5e9-f23c91df25eb')
+    assert entity is not None
+
+    return entity
+
+
+@pytest.fixture()
 def new_task(request, session, unique_name):
     '''Return a new task.'''
-    project = session.query('Project')[0]
+    project = session.query(
+        'Project where id is 5671dcb0-66de-11e1-8e6e-f23c91df25eb'
+    )[0]
     project_schema = project['project_schema']
     default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(

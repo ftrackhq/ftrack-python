@@ -4,6 +4,7 @@
 import collections
 
 import ftrack.exception
+import ftrack.inspection
 
 
 class Collection(collections.MutableSequence):
@@ -45,8 +46,15 @@ class Collection(collections.MutableSequence):
         if not self.mutable:
             raise ftrack.exception.ImmutableCollectionError(self)
 
-        if item in self:
-            raise ftrack.exception.DuplicateItemInCollectionError(item, self)
+        try:
+            existing_index = self.index(item)
+        except ValueError:
+            pass
+        else:
+            if index != existing_index:
+                raise ftrack.exception.DuplicateItemInCollectionError(
+                    item, self
+                )
 
         self._data[index] = item
         self._notify()
@@ -68,8 +76,14 @@ class Collection(collections.MutableSequence):
         if not isinstance(other, Collection):
             return False
 
-        identities = [entity.identity for entity in self]
-        other_identities = [entity.identity for entity in other]
+        identities = [
+            ftrack.inspection.identity(entity)
+            for entity in self
+        ]
+        other_identities = [
+            ftrack.inspection.identity(entity)
+            for entity in other
+        ]
 
         return sorted(identities) == sorted(other_identities)
 
