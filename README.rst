@@ -9,7 +9,7 @@ Documentation
 *************
 
 Full documentation, including installation and setup guides, can be found at
-https://doc.ftrack.com/ftrack-python-api
+http://ftrack.rtd.ftrack.com/en/latest/ftrack-python-api
 
 *********************
 Copyright and license
@@ -27,4 +27,3 @@ Unless required by applicable law or agreed to in writing, software distributed
 under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
-
