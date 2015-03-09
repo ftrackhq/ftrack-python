@@ -5,10 +5,10 @@ import os
 import sys
 import errno
 import contextlib
-import ntpath
 
-from .base import Accessor
-from ..data import File
+import ftrack._python_ntpath as ntpath
+import ftrack.accessor.base
+import ftrack.data
 from ftrack.exception import (
     AccessorFilesystemPathError,
     AccessorUnsupportedOperationError,
@@ -21,7 +21,7 @@ from ftrack.exception import (
 )
 
 
-class DiskAccessor(Accessor):
+class DiskAccessor(ftrack.accessor.base.Accessor):
     '''Provide disk access to a location.
 
     Expect resource identifiers to refer to relative filesystem paths.
@@ -48,9 +48,9 @@ class DiskAccessor(Accessor):
 
         Each entry in the returned list should be a valid resource identifier.
 
-        Raise :py:class:`~ftrack.ftrackerror.AccessorResourceNotFoundError` if
+        Raise :exc:`~ftrack.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist or
-        :py:class:`~ftrack.ftrackerror.AccessorResourceInvalidError` if
+        :exc:`~ftrack.exception.AccessorResourceInvalidError` if
         *resource_identifier* is not a container.
 
         '''
@@ -82,23 +82,23 @@ class DiskAccessor(Accessor):
 
     def is_sequence(self, resource_identifier):
         '''Return whether *resource_identifier* refers to a file sequence.'''
-        raise AccessorUnsupportedOperationError('isSequence')
+        raise AccessorUnsupportedOperationError('is_sequence')
 
     def open(self, resource_identifier, mode='rb'):
-        '''Return :py:class:`~ftrack.Data` for *resource_identifier*.'''
+        '''Return :class:`~ftrack.Data` for *resource_identifier*.'''
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
         with error_handler(
             operation='open', resource_identifier=resource_identifier
         ):
-            data = File(filesystem_path, mode)
+            data = ftrack.data.File(filesystem_path, mode)
 
         return data
 
     def remove(self, resource_identifier):
         '''Remove *resource_identifier*.
 
-        Raise :py:class:`~ftrack.ftrackerror.AccessorResourceNotFoundError` if
+        Raise :exc:`~ftrack.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist.
 
         '''
@@ -151,8 +151,7 @@ class DiskAccessor(Accessor):
     def get_container(self, resource_identifier):
         '''Return resource_identifier of container for *resource_identifier*.
 
-        Raise
-        :py:class:`~ftrack.ftrackerror.AccessorParentResourceNotFoundError` if
+        Raise :exc:`~ftrack.exception.AccessorParentResourceNotFoundError` if
         container of *resource_identifier* could not be determined.
 
         '''
@@ -191,8 +190,8 @@ class DiskAccessor(Accessor):
             >>> print accessor.get_filesystem_path('/mountpoint/test.txt')
             /mountpoint/test.txt
 
-        Raise AccessorFilesystemPathError if filesystem path could not be
-        determined from *resource_identifier*.
+        Raise :exc:`ftrack.exception.AccessorFilesystemPathError` if filesystem
+        path could not be determined from *resource_identifier*.
 
         '''
         filesystem_path = resource_identifier
@@ -223,7 +222,7 @@ def error_handler(**kw):
         yield
 
     except (OSError, IOError) as error:
-        (exceptionType, exceptionValue, traceback) = sys.exc_info()
+        (exception_type, exception_value, traceback) = sys.exc_info()
         kw.setdefault('details', error)
 
         error_code = getattr(error, 'errno')

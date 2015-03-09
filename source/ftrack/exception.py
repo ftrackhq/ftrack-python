@@ -172,16 +172,62 @@ class EventHubPacketError(EventHubError):
     default_message = 'Invalid packet.'
 
 
+class PermissionDeniedError(Error):
+    '''Raise when permission is denied.'''
+
+    default_message = 'Permission denied.'
+
+
+class LocationError(Error):
+    '''Base for errors associated with locations.'''
+
+    default_message = 'Unspecified location error'
+
+
+class ComponentNotInAnyLocationError(LocationError):
+    '''Raise when component not available in any location.'''
+
+    default_message = 'Component not available in any location.'
+
+
+class ComponentNotInLocationError(LocationError):
+    '''Raise when component(s) not in location.'''
+
+    default_message = (
+        'Component(s) {component_ids} not found in location "{location_id}".'
+    )
+
+    def __init__(self, component_ids, location_id, **kw):
+        '''Initialise with *component_ids* and *location_id*.'''
+        self.component_ids = '"{0}"'.format('", "'.join(component_ids))
+        self.location_id = location_id
+        super(ComponentNotInLocationError, self).__init__(**kw)
+
+
+class ComponentInLocationError(LocationError):
+    '''Raise when component already exists in location.'''
+
+    default_message = (
+        'Component "{component_id}" already exists in location "{location_id}".'
+    )
+
+    def __init__(self, component_id, location_id, **kw):
+        '''Initialise with *component_id* and *location_id*.'''
+        self.component_id = component_id
+        self.location_id = location_id
+        super(ComponentInLocationError, self).__init__(**kw)
+
+
 class AccessorError(Error):
     '''Base for errors associated with accessors.'''
 
-    defaultMessage = 'Unspecified accessor error'
+    default_message = 'Unspecified accessor error'
 
 
 class AccessorOperationFailedError(AccessorError):
     '''Base for failed operations on accessors.'''
 
-    defaultMessage = 'Operation {operation} failed: {details}'
+    default_message = 'Operation {operation} failed: {details}'
 
     def __init__(self, operation='', resource_identifier=None, **kw):
         self.operation = operation
@@ -192,20 +238,21 @@ class AccessorOperationFailedError(AccessorError):
 class AccessorUnsupportedOperationError(AccessorOperationFailedError):
     '''Raise when operation is unsupported.'''
 
-    defaultMessage = 'Operation {operation} unsupported.'
+    default_message = 'Operation {operation} unsupported.'
 
 
 class AccessorPermissionDeniedError(AccessorOperationFailedError):
     '''Raise when permission denied.'''
 
-    defaultMessage = ('Cannot {operation} {resource_identifier}. '
-                      'Permission denied.')
+    default_message = (
+        'Cannot {operation} {resource_identifier}. Permission denied.'
+    )
 
 
 class AccessorResourceIdentifierError(AccessorError):
     '''Raise when a error related to a resource_identifier occurs.'''
 
-    defaultMessage = 'Resource identifier is invalid: {resource_identifier}.'
+    default_message = 'Resource identifier is invalid: {resource_identifier}.'
 
     def __init__(self, resource_identifier, **kw):
         self.resource_identifier = resource_identifier
@@ -215,14 +262,16 @@ class AccessorResourceIdentifierError(AccessorError):
 class AccessorFilesystemPathError(AccessorResourceIdentifierError):
     '''Raise when a error related to an accessor filesystem path occurs.'''
 
-    defaultMessage = ('Could not determine filesystem path from resource '
-                      'identifier: {resource_identifier}.')
+    default_message = (
+        'Could not determine filesystem path from resource identifier: '
+        '{resource_identifier}.'
+    )
 
 
 class AccessorResourceError(AccessorError):
     '''Base for errors associated with specific resource.'''
 
-    defaultMessage = 'Unspecified resource error: {resource_identifier}'
+    default_message = 'Unspecified resource error: {resource_identifier}'
 
     def __init__(self, resource_identifier, **kw):
         self.resource_identifier = resource_identifier
@@ -232,22 +281,22 @@ class AccessorResourceError(AccessorError):
 class AccessorResourceNotFoundError(AccessorResourceError):
     '''Raise when a required resource is not found.'''
 
-    defaultMessage = 'Resource not found: {resource_identifier}'
+    default_message = 'Resource not found: {resource_identifier}'
 
 
 class AccessorParentResourceNotFoundError(AccessorResourceError):
     '''Raise when a parent resource (such as directory) is not found.'''
 
-    defaultMessage = 'Parent resource is missing: {resource_identifier}'
+    default_message = 'Parent resource is missing: {resource_identifier}'
 
 
 class AccessorResourceInvalidError(AccessorResourceError):
     '''Raise when a resource is not the right type.'''
 
-    defaultMessage = 'Resource invalid: {resource_identifier}'
+    default_message = 'Resource invalid: {resource_identifier}'
 
 
 class AccessorContainerNotEmptyError(AccessorResourceError):
     '''Raise when container is not empty.'''
 
-    defaultMessage = 'Container is not empty: {resource_identifier}'
+    default_message = 'Container is not empty: {resource_identifier}'

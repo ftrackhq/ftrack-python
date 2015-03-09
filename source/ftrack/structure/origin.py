@@ -1,5 +1,5 @@
 # :coding: utf-8
-# :copyright: Copyright (c) 2015 ftrack
+# :copyright: Copyright (c) 2014 ftrack
 
 from .base import Structure
 
@@ -12,7 +12,7 @@ class OriginStructure(Structure):
     '''
 
     def get_resource_identifier(self, entity):
-        '''Return a *resourceIdentifier* for supplied *entity*.'''
+        '''Return a resource identifier for supplied *entity*.'''
         if entity.entity_type not in (
             'FileComponent', 'ContainerComponent', 'SequenceComponent'
         ):

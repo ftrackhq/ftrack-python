@@ -1,9 +1,9 @@
 # :coding: utf-8
-# :copyright: Copyright (c) 2015 ftrack
+# :copyright: Copyright (c) 2013 ftrack
 
-from abc import ABCMeta, abstractmethod
+import abc
 
-from ftrack.exception import AccessorUnsupportedOperationError
+import ftrack.exception
 
 
 class Accessor(object):
@@ -26,55 +26,55 @@ class Accessor(object):
 
     '''
 
-    __metaclass__ = ABCMeta
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         '''Initialise location accessor.'''
         super(Accessor, self).__init__()
 
-    @abstractmethod
+    @abc.abstractmethod
     def list(self, resource_identifier):
         '''Return list of entries in *resource_identifier* container.
 
         Each entry in the returned list should be a valid resource identifier.
 
-        Raise :py:class:`~ftrack.ftrackerror.AccessorResourceNotFoundError` if
+        Raise :exc:`~ftrack.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist or
-        :py:class:`~ftrack.ftrackerror.AccessorResourceInvalidError` if
+        :exc:`~ftrack.exception.AccessorResourceInvalidError` if
         *resource_identifier* is not a container.
 
         '''
 
-    @abstractmethod
+    @abc.abstractmethod
     def exists(self, resource_identifier):
         '''Return if *resource_identifier* is valid and exists in location.'''
 
-    @abstractmethod
+    @abc.abstractmethod
     def is_file(self, resource_identifier):
         '''Return whether *resource_identifier* refers to a file.'''
 
-    @abstractmethod
+    @abc.abstractmethod
     def is_container(self, resource_identifier):
         '''Return whether *resource_identifier* refers to a container.'''
 
-    @abstractmethod
+    @abc.abstractmethod
     def is_sequence(self, resource_identifier):
         '''Return whether *resource_identifier* refers to a file sequence.'''
 
-    @abstractmethod
+    @abc.abstractmethod
     def open(self, resource_identifier, mode='rb'):
-        '''Return :py:class:`~ftrack.Data` for *resource_identifier*.'''
+        '''Return :class:`~ftrack.data.Data` for *resource_identifier*.'''
 
-    @abstractmethod
+    @abc.abstractmethod
     def remove(self, resource_identifier):
         '''Remove *resource_identifier*.
 
-        Raise :py:class:`~ftrack.ftrackerror.AccessorResourceNotFoundError` if
+        Raise :exc:`~ftrack.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist.
 
         '''
 
-    @abstractmethod
+    @abc.abstractmethod
     def make_container(self, resource_identifier, recursive=True):
         '''Make a container at *resource_identifier*.
 
@@ -84,12 +84,11 @@ class Accessor(object):
 
         '''
 
-    @abstractmethod
+    @abc.abstractmethod
     def get_container(self, resource_identifier):
         '''Return resource_identifier of container for *resource_identifier*.
 
-        Raise
-        :py:class:`~ftrack.ftrackerror.AccessorParentResourceNotFoundError` if
+        Raise :exc:`~ftrack.exception.AccessorParentResourceNotFoundError` if
         container of *resource_identifier* could not be determined.
 
         '''
@@ -101,12 +100,12 @@ class Accessor(object):
     def get_filesystem_path(self, resource_identifier):
         '''Return filesystem path for *resource_identifier*.
 
-        Raise AccessorFilesystemPathError if filesystem path could not be
-        determined from *resource_identifier* or
-        AccessorUnsupportedOperationError if retrieving filesystem paths is not
-        supported by this accessor.
+        Raise :exc:`~ftrack.exception.AccessorFilesystemPathError` if filesystem
+        path could not be determined from *resource_identifier* or
+        :exc:`~ftrack.exception.AccessorUnsupportedOperationError` if retrieving
+        filesystem paths is not supported by this accessor.
 
         '''
-        raise AccessorUnsupportedOperationError(
+        raise ftrack.exception.AccessorUnsupportedOperationError(
             'get_filesystem_path', resource_identifier=resource_identifier
         )

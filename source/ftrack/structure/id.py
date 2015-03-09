@@ -1,13 +1,13 @@
 # :coding: utf-8
-# :copyright: Copyright (c) 2015 ftrack
+# :copyright: Copyright (c) 2014 ftrack
 
 import os
 
-import ftrack
-from .base import Structure
+import ftrack.symbol
+import ftrack.structure.base
 
 
-class IdStructure(Structure):
+class IdStructure(ftrack.structure.base.Structure):
     '''Id based structure supporting Components only.
 
     A components unique id will be used to form a path to store the data at.
@@ -35,7 +35,7 @@ class IdStructure(Structure):
     '''
 
     def get_resource_identifier(self, entity):
-        '''Return a *resourceIdentifier* for supplied *entity*.'''
+        '''Return a resource identifier for supplied *entity*.'''
         if entity.entity_type not in (
             'FileComponent', 'ContainerComponent', 'SequenceComponent'
         ):
@@ -90,4 +90,4 @@ class IdStructure(Structure):
             raise NotImplementedError('Cannot generate path for unsupported '
                                       'entity {0}'.format(entity))
 
-        return self.path_separator.join(parts)
+        return self.path_separator.join(parts).strip('/')
