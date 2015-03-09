@@ -413,15 +413,7 @@ class Session(object):
             else:
                 if entity is not existing_entity:
                     # Merge set attributes from entity to cache.
-                    for attribute in entity.attributes:
-                        value = attribute.get_remote_value(entity)
-                        if value is not ftrack.symbol.NOT_SET:
-                            existing_attribute = existing_entity.attributes.get(
-                                attribute.name
-                            )
-                            existing_attribute.set_remote_value(
-                                existing_entity, value
-                            )
+                    existing_entity.merge(entity)
 
                     # Set returned entity to be existing cached instance.
                     merged_entity = existing_entity

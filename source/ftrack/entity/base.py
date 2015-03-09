@@ -206,6 +206,14 @@ class Entity(collections.MutableMapping):
         for attribute in self:
             del self[attribute]
 
+    def merge(self, entity):
+        '''Merge *entity* attribute values and other data into this entity.'''
+        for other_attribute in entity.attributes:
+            value = other_attribute.get_remote_value(entity)
+            if value is not ftrack.symbol.NOT_SET:
+                attribute = self.attributes.get(other_attribute.name)
+                attribute.set_remote_value(self, value)
+
     def _populate_unset_scalar_attributes(self):
         '''Populate all unset scalar attributes in one query.'''
         projections = []
