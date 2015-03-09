@@ -140,6 +140,8 @@ class Session(object):
             self._api_key, self._api_user
         )
 
+        self.auto_populate = auto_populate
+
         # Construct event hub and load plugins.
         self._event_hub = ftrack.event.hub.EventHub(self._server_url)
         self._event_hub.connect()
@@ -165,8 +167,6 @@ class Session(object):
         # rebuilding types)?
         self.schemas = self._fetch_schemas()
         self.types = self._build_entity_type_classes(self.schemas)
-
-        self.auto_populate = auto_populate
 
     @property
     def server_url(self):
