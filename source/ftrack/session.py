@@ -287,14 +287,21 @@ class Session(object):
 
         return None
 
-    def create(self, entity_type, data=None):
+    def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
 
         If specified, *data* should be a dictionary of key, value pairs that
         should be used to populate attributes on the entity.
 
+        If *reconstructing* is False then create a new entity setting
+        appropriate defaults for missing data. If True then reconstruct an
+        existing entity.
+
+        Constructed entity will be automatically :meth:`merged <Session.merge>`
+        into the session.
+
         '''
-        entity = self._create(entity_type, data, reconstructing=False)
+        entity = self._create(entity_type, data, reconstructing=reconstructing)
         entity = self.merge(entity)
         return entity
 
