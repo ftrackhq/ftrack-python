@@ -70,7 +70,7 @@ class Session(object):
         directly at any time.
 
         *plugin_paths* should be a list of paths to search for plugins. If not
-        specified, default to looking up :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
+        specified, default to looking up :envvar:`FTRACK_PYTHON_API_PLUGIN_PATH`.
 
         '''
         super(Session, self).__init__()
@@ -155,7 +155,7 @@ class Session(object):
                 default_plugin_path = ''
 
             self._plugin_paths = os.environ.get(
-                'FTRACK_EVENT_PLUGIN_PATH',
+                'FTRACK_PYTHON_API_PLUGIN_PATH',
                 default_plugin_path
             ).split(os.pathsep)
 
@@ -647,7 +647,7 @@ class Session(object):
                 raise ValueError(
                     'Expected entity type to represent schema "{0}" but '
                     'received 0 entity types. Ensure '
-                    'FTRACK_EVENT_PLUGIN_PATH has been set to point to '
+                    'FTRACK_PYTHON_API_PLUGIN_PATH has been set to point to '
                     'resource/plugin.'.format(
                         schema['id']
                     )
