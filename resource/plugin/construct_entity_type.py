@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import ftrack.entity.factory
+import ftrack.entity.base
 
 
 def default_task_status(entity):
