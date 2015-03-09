@@ -66,50 +66,57 @@ class Entity(collections.MutableMapping):
         )
 
         if not reconstructing:
-            # Mark as newly created for later commit.
-            # Done here so that entity has correct state, otherwise would
-            # receive a state of "modified" following setting of attribute
-            # values from *data*.
-            self.session.set_state(self, 'created')
-
-            # Data represents locally set values.
-            for key, value in data.items():
-                attribute = self.__class__.attributes.get(key)
-                if attribute is None:
-                    self.logger.debug(
-                        'Cannot populate {0!r} attribute as no such attribute '
-                        'found on entity {1!r}.'.format(key, self)
-                    )
-                    continue
-
-                attribute.set_local_value(self, value)
-
-            # Set defaults for any unset local attributes.
-            for attribute in self.__class__.attributes:
-                if not attribute.name in data:
-                    default_value = attribute.default_value
-                    if callable(default_value):
-                        default_value = default_value(self)
-
-                    attribute.set_local_value(self, default_value)
-
+            self._construct(data)
         else:
-            # Data represents remote values.
-            for key, value in data.items():
-                attribute = self.__class__.attributes.get(key)
-                if attribute is None:
-                    self.logger.debug(
-                        'Cannot populate {0!r} attribute as no such attribute '
-                        'found on entity {1!r}.'.format(key, self)
-                    )
-                    continue
-
-                attribute.set_remote_value(self, value)
+            self._reconstruct(data)
 
         # Assert that primary key is set. Suspend auto populate temporarily to
         # avoid infinite recursion if primary key values are not present.
         with self.session.auto_populating(False):
             ftrack.inspection.primary_key(self)
+
+    def _construct(self, data):
+        '''Construct from *data*.'''
+        # Mark as newly created for later commit.
+        # Done here so that entity has correct state, otherwise would
+        # receive a state of "modified" following setting of attribute
+        # values from *data*.
+        self.session.set_state(self, 'created')
+
+        # Data represents locally set values.
+        for key, value in data.items():
+            attribute = self.__class__.attributes.get(key)
+            if attribute is None:
+                self.logger.debug(
+                    'Cannot populate {0!r} attribute as no such attribute '
+                    'found on entity {1!r}.'.format(key, self)
+                )
+                continue
+
+            attribute.set_local_value(self, value)
+
+        # Set defaults for any unset local attributes.
+        for attribute in self.__class__.attributes:
+            if not attribute.name in data:
+                default_value = attribute.default_value
+                if callable(default_value):
+                    default_value = default_value(self)
+
+                attribute.set_local_value(self, default_value)
+
+    def _reconstruct(self, data):
+        '''Reconstruct from *data*.'''
+        # Data represents remote values.
+        for key, value in data.items():
+            attribute = self.__class__.attributes.get(key)
+            if attribute is None:
+                self.logger.debug(
+                    'Cannot populate {0!r} attribute as no such attribute '
+                    'found on entity {1!r}.'.format(key, self)
+                )
+                continue
+
+            attribute.set_remote_value(self, value)
 
     def __repr__(self):
         '''Return representation of instance.'''
