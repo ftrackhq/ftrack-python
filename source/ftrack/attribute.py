@@ -7,6 +7,7 @@ import collections
 import ftrack.symbol
 import ftrack.exception
 import ftrack.collection
+import ftrack.inspection
 
 
 class Attributes(object):
@@ -267,7 +268,10 @@ class ReferenceAttribute(Attribute):
         if remote_value is ftrack.symbol.NOT_SET:
             return True
 
-        if local_value.identity != remote_value.identity:
+        if (
+            ftrack.inspection.identity(local_value)
+            != ftrack.inspection.identity(remote_value)
+        ):
             return True
 
         return False
@@ -457,15 +461,16 @@ class DictionaryAttribute(Attribute):
 
     def _getCollection(self, entity):
         '''Return collection for *entity*.'''
-        if entity.primary_key not in self._collections:
+        primary_key = tuple(ftrack.inspection.primary_key(entity).values())
+        if primary_key not in self._collections:
             key_value_collection = DictionaryAttributeCollection(
                 entity=entity,
                 name=self._name,
                 schema=self._schema
             )
-            self._collections[entity.primary_key] = key_value_collection
+            self._collections[primary_key] = key_value_collection
 
-        return self._collections[entity.primary_key]
+        return self._collections[primary_key]
 
     def get_value(self, entity):
         '''Return collection for *entity*.'''

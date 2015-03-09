@@ -11,7 +11,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
 
     Each discovered module should implement a register function that accepts
-    *positional_arguments* and *keyword_arguments* as *args and **kwargs
+    *positional_arguments* and *keyword_arguments* as \*args and \*\*kwargs
     respectively.
 
     '''
