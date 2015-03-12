@@ -13,6 +13,7 @@ import pkg_resources
 import requests
 import requests.auth
 import arrow
+import clique
 
 import ftrack
 import ftrack.exception
