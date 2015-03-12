@@ -936,6 +936,140 @@ class Session(object):
 
         return item
 
+    def create_component(
+        self, path, data=None, location=None
+    ):
+        '''Create a new component from *path* with additional *data*
+
+        .. note::
+
+            This is a helper method. To create components manually use the
+            standard :meth:`Session.create` method.
+
+        *path* can be a string representing a filesystem path to the data to
+        use for the component. The *path* can also be specified as a sequence
+        string, in which case a sequence component with child components for
+        each item in the sequence will be created automatically. The accepted
+        format for a sequence is '{head}{padding}{tail} [{ranges}]'. For
+        example::
+
+            '/path/to/file.%04d.ext [1-5, 7, 8, 10-20]'
+
+        .. seealso::
+
+            `Clique documentation <http://clique.readthedocs.org>`_
+
+        *data* should be a dictionary of any additional data to construct the
+        component with (as passed to :meth:`Session.create`).
+
+        If *location* is specified then automatically add component to that
+        location.
+
+        '''
+        if data is None:
+            data = {}
+
+        try:
+            collection = clique.parse(path)
+
+        except ValueError:
+            # Assume is a single file.
+            if 'size' not in data:
+                data['size'] = self._get_filesystem_size(path)
+
+            data.setdefault('file_type', os.path.splitext(path)[-1])
+
+            return self._create_component(
+                'FileComponent', path, data, location
+            )
+
+        else:
+            # Calculate size of container and members.
+            member_sizes = {}
+            container_size = data.get('size')
+
+            if container_size is not None:
+                if len(collection.indexes) > 0:
+                    member_size = int(
+                        round(container_size / len(collection.indexes))
+                    )
+                    for item in collection:
+                        member_sizes[item] = member_size
+
+            else:
+                container_size = 0
+                for item in collection:
+                    member_sizes[item] = self._get_filesystem_size(item)
+                    container_size += member_sizes[item]
+
+            # Create sequence component
+            container_path = collection.format('{head}{padding}{tail}')
+            data.setdefault('padding', collection.padding)
+            data.setdefault('file_type', os.path.splitext(path)[-1])
+
+            container = self._create_component(
+                'SequenceComponent', container_path, data, location
+            )
+
+            # Create member components for sequence.
+            for member_path in collection:
+                member_data = {
+                    'name': collection.match(item).group('index'),
+                    'size': member_sizes[item],
+                    'file_type': os.path.splitext(member_path)[-1]
+                }
+
+                self._create_component(
+                    'FileComponent', member_path, member_data, location
+                )
+
+            return container
+
+    def _create_component(self, entity_type, path, data, location):
+        '''Create and return component.
+
+        See public function :py:func:`createComponent` for argument details.
+
+        '''
+        component = self.create(entity_type, data)
+
+        # Add to special origin location so that it is possible to add to other
+        # locations.
+        origin_location = self.get(
+            'Location', ftrack.symbol.ORIGIN_LOCATION_ID
+        )
+        origin_location.add_component(component, path, recursive=False)
+
+        if location == 'auto':
+            # Check if the component name matches one of the ftrackreview
+            # specific names. Add the component to the ftrack.review location if
+            # so. This is used to not break backwards compatibility.
+            if data.get('name') in (
+                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
+            ):
+                location = self.get(
+                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
+                )
+
+            else:
+                location = None
+                # TODO: pick location.
+                #location = self.pick_location()
+
+        if location:
+            location.add_component(component, origin_location, recursive=False)
+
+        return component
+
+    def _get_filesystem_size(self, path):
+        '''Return size from *path*'''
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            size = 0
+
+        return size
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''
