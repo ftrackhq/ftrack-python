@@ -7,6 +7,7 @@ import uuid
 import ftrack.attribute
 import ftrack.entity.base
 import ftrack.entity.location
+import ftrack.entity.asset_version
 import ftrack.symbol
 
 
@@ -121,6 +122,11 @@ class StandardFactory(Factory):
         if schema['id'] == 'Location':
             cls = super(StandardFactory, self).create(
                 schema, bases=[ftrack.entity.location.Location]
+            )
+
+        elif schema['id'] == 'AssetVersion':
+            cls = super(StandardFactory, self).create(
+                schema, bases=[ftrack.entity.asset_version.AssetVersion]
             )
 
         else:
