@@ -133,7 +133,7 @@ class Location(ftrack.entity.base.Entity):
                 source = sources[index]
 
             # Add members first for container components.
-            is_container = component.attributes.get('members') is not None
+            is_container = 'members' in component.keys()
             if is_container and recursive:
                 self.add_components(
                     component['members'], source, recursive=recursive
@@ -212,7 +212,7 @@ class Location(ftrack.entity.base.Entity):
                 details=dict(location=self)
             )
 
-        is_container = component.attributes.get('members') is not None
+        is_container = 'members' in component.keys()
         if is_container:
             # TODO: Improve this check. Possibly introduce an inspection
             # such as ftrack.inspection.is_sequence_component.
@@ -284,7 +284,7 @@ class Location(ftrack.entity.base.Entity):
             component = self.get_resource_identifier(component)
 
             # Remove members first for container components.
-            is_container = component.attributes.get('members') is not None
+            is_container = 'members' in component.keys()
             if is_container and recursive:
                 self.remove_components(
                     component['members'], recursive=recursive
