@@ -809,7 +809,12 @@ class Session(object):
 
             if 'exception' in result:
                 # Handle exceptions.
-                raise ftrack.exception.ServerError(result['content'])
+                raise ftrack.exception.ServerError(
+                    'Server reported error {0}({1})'.format(
+                        result['exception'],
+                        result['content']
+                    )
+                )
 
         return result
 
