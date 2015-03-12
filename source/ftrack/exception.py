@@ -26,6 +26,9 @@ class Error(Exception):
 
         self.message = message
         self.details = details
+        if self.details is None:
+            self.details = {}
+
         self.traceback = traceback.format_exc()
 
     def __str__(self):
