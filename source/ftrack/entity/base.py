@@ -151,6 +151,9 @@ class Entity(collections.MutableMapping):
             Values of attributes are not considered.
 
         '''
+        if not isinstance(other, self.__class__):
+            return False
+
         return (
             ftrack.inspection.identity(other)
             == ftrack.inspection.identity(self)
