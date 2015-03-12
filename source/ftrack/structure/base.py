@@ -20,8 +20,12 @@ class Structure(object):
         super(Structure, self).__init__()
 
     @abstractmethod
-    def get_resource_identifier(self, entity):
-        '''Return a resource identifier for supplied *entity*.'''
+    def get_resource_identifier(self, entity, context=None):
+        '''Return a resource identifier for supplied *entity*.
+
+        *context* can be a mapping that supplies additional information.
+
+        '''
 
     def _get_sequence_expression(self, sequence):
         '''Return a sequence expression for *sequence* component.'''

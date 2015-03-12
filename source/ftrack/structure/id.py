@@ -34,8 +34,12 @@ class IdStructure(ftrack.structure.base.Structure):
 
     '''
 
-    def get_resource_identifier(self, entity):
-        '''Return a resource identifier for supplied *entity*.'''
+    def get_resource_identifier(self, entity, context=None):
+        '''Return a resource identifier for supplied *entity*.
+
+        *context* can be a mapping that supplies additional information.
+
+        '''
         if entity.entity_type not in (
             'FileComponent', 'ContainerComponent', 'SequenceComponent'
         ):

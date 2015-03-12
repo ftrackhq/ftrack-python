@@ -5,23 +5,24 @@ from .base import Structure
 
 
 class OriginStructure(Structure):
-    '''Origin structure supporting Components only.
+    '''Origin structure that passes through existing resource identifier.'''
 
-    Will maintain original internal component path.
+    def get_resource_identifier(self, entity, context=None):
+        '''Return a resource identifier for supplied *entity*.
 
-    '''
+        *context* should be a mapping that includes at least a
+        'source_resource_identifier' key that refers to the resource identifier
+        to pass through.
 
-    def get_resource_identifier(self, entity):
-        '''Return a resource identifier for supplied *entity*.'''
-        if entity.entity_type not in (
-            'FileComponent', 'ContainerComponent', 'SequenceComponent'
-        ):
-            raise NotImplementedError('Cannot generate path for unsupported '
-                                      'entity {0}'.format(entity))
+        '''
+        if context is None:
+            context = {}
 
-        path = entity.get_resource_identifier()
-        if path is None:
-            raise ValueError('Could not generate path for component that has '
-                             'no original path.')
+        resource_identifier = context.get('source_resource_identifier')
+        if resource_identifier is None:
+            raise ValueError(
+                'Could not generate resource identifier as no source resource '
+                'identifier found in passed context.'
+            )
 
-        return path
+        return resource_identifier
