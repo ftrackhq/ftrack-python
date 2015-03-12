@@ -125,6 +125,19 @@ class Entity(collections.MutableMapping):
             '18' if sys.maxsize > 2**32 else '10'
         )
 
+    def __str__(self):
+        '''Return string representation of instance.'''
+        with self.session.auto_populating(False):
+            primary_key = ['Unknown']
+            try:
+                primary_key = ftrack.inspection.primary_key(self).values()
+            except KeyError:
+                pass
+
+        return '<{0}({1})>'.format(
+            self.__class__.__name__, ', '.join(primary_key)
+        )
+
     def __hash__(self):
         '''Return hash representing instance.'''
         return hash(ftrack.inspection.identity(self))
