@@ -6,6 +6,7 @@ import uuid
 
 import ftrack.attribute
 import ftrack.entity.base
+import ftrack.entity.location
 import ftrack.symbol
 
 
@@ -108,5 +109,21 @@ class Factory(object):
             tuple(class_bases),
             class_namespace
         )
+
+        return cls
+
+
+class StandardFactory(Factory):
+    '''Standard entity class factory.'''
+
+    def create(self, schema, bases=None):
+        '''Create and return entity class from *schema*.'''
+        if schema['id'] == 'Location':
+            cls = super(StandardFactory, self).create(
+                schema, bases=[ftrack.entity.location.Location]
+            )
+
+        else:
+            cls = super(StandardFactory, self).create(schema, bases=bases)
 
         return cls
