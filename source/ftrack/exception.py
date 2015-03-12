@@ -4,16 +4,21 @@
 import sys
 import traceback
 
+import ftrack.entity.base
+
 
 class Error(Exception):
     '''ftrack specific error.'''
 
     default_message = 'Unspecified error occurred.'
 
-    def __init__(self, message=None, details=None, **kw):
+    def __init__(self, message=None, details=None):
         '''Initialise exception with *message*.
 
         If *message* is None, the class 'default_message' will be used.
+
+        *details* should be a mapping of extra information that can be used in
+        the message and also to provide more context.
 
         '''
         if message is None:
@@ -26,7 +31,7 @@ class Error(Exception):
     def __str__(self):
         '''Return string representation.'''
         keys = {}
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.details.iteritems():
             if isinstance(value, unicode):
                 value = value.encode(sys.getfilesystemencoding())
             keys[key] = value
@@ -71,7 +76,9 @@ class UnrecognisedEntityTypeError(EntityTypeError):
 
     def __init__(self, entity_type, **kw):
         '''Initialise with *entity_type* that is unrecognised.'''
-        self.entity_type = entity_type
+        kw.setdefault('details', {}).update(dict(
+            entity_type=entity_type
+        ))
         super(UnrecognisedEntityTypeError, self).__init__(**kw)
 
 
@@ -91,9 +98,11 @@ class InvalidStateTransitionError(InvalidStateError):
 
     def __init__(self, current_state, target_state, entity, **kw):
         '''Initialise error.'''
-        self.current_state = current_state
-        self.target_state = target_state
-        self.entity = entity
+        kw.setdefault('details', {}).update(dict(
+            current_state=current_state,
+            target_state=target_state,
+            entity=entity
+        ))
         super(InvalidStateTransitionError, self).__init__(**kw)
 
 
@@ -112,7 +121,9 @@ class ImmutableAttributeError(AttributeError):
 
     def __init__(self, attribute, **kw):
         '''Initialise error.'''
-        self.attribute = attribute
+        kw.setdefault('details', {}).update(dict(
+            attribute=attribute
+        ))
         super(ImmutableAttributeError, self).__init__(**kw)
 
 
@@ -123,7 +134,9 @@ class CollectionError(Error):
 
     def __init__(self, collection, **kw):
         '''Initialise error.'''
-        self.collection = collection
+        kw.setdefault('details', {}).update(dict(
+            collection=collection
+        ))
         super(CollectionError, self).__init__(**kw)
 
 
@@ -144,7 +157,9 @@ class DuplicateItemInCollectionError(CollectionError):
 
     def __init__(self, item, collection, **kw):
         '''Initialise error.'''
-        self.item = item
+        kw.setdefault('details', {}).update(dict(
+            item=item
+        ))
         super(DuplicateItemInCollectionError, self).__init__(collection, **kw)
 
 
@@ -194,13 +209,18 @@ class ComponentNotInLocationError(LocationError):
     '''Raise when component(s) not in location.'''
 
     default_message = (
-        'Component(s) {component_ids} not found in location "{location_id}".'
+        'Component(s) {components} not found in location {location}.'
     )
 
-    def __init__(self, component_ids, location_id, **kw):
-        '''Initialise with *component_ids* and *location_id*.'''
-        self.component_ids = '"{0}"'.format('", "'.join(component_ids))
-        self.location_id = location_id
+    def __init__(self, components, location, **kw):
+        '''Initialise with *components* and *location*.'''
+        if isinstance(components, ftrack.entity.base.Entity):
+            components = [components]
+
+        kw.setdefault('details', {}).update(dict(
+            components=', '.join([str(component) for component in components]),
+            location=location
+        ))
         super(ComponentNotInLocationError, self).__init__(**kw)
 
 
@@ -208,13 +228,15 @@ class ComponentInLocationError(LocationError):
     '''Raise when component already exists in location.'''
 
     default_message = (
-        'Component "{component_id}" already exists in location "{location_id}".'
+        'Component {component} already exists in location {location}.'
     )
 
-    def __init__(self, component_id, location_id, **kw):
-        '''Initialise with *component_id* and *location_id*.'''
-        self.component_id = component_id
-        self.location_id = location_id
+    def __init__(self, component, location, **kw):
+        '''Initialise with *component* and *location*.'''
+        kw.setdefault('details', {}).update(dict(
+            component=component,
+            location=location
+        ))
         super(ComponentInLocationError, self).__init__(**kw)
 
 
@@ -230,8 +252,10 @@ class AccessorOperationFailedError(AccessorError):
     default_message = 'Operation {operation} failed: {details}'
 
     def __init__(self, operation='', resource_identifier=None, **kw):
-        self.operation = operation
-        self.resource_identifier = resource_identifier
+        kw.setdefault('details', {}).update(dict(
+            operation=operation,
+            resource_identifier=resource_identifier
+        ))
         super(AccessorOperationFailedError, self).__init__(**kw)
 
 
@@ -255,7 +279,9 @@ class AccessorResourceIdentifierError(AccessorError):
     default_message = 'Resource identifier is invalid: {resource_identifier}.'
 
     def __init__(self, resource_identifier, **kw):
-        self.resource_identifier = resource_identifier
+        kw.setdefault('details', {}).update(dict(
+            resource_identifier=resource_identifier
+        ))
         super(AccessorResourceIdentifierError, self).__init__(**kw)
 
 
@@ -274,7 +300,9 @@ class AccessorResourceError(AccessorError):
     default_message = 'Unspecified resource error: {resource_identifier}'
 
     def __init__(self, resource_identifier, **kw):
-        self.resource_identifier = resource_identifier
+        kw.setdefault('details', {}).update(dict(
+            resource_identifier=resource_identifier
+        ))
         super(AccessorResourceError, self).__init__(**kw)
 
 
