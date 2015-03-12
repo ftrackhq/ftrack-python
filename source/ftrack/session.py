@@ -14,8 +14,10 @@ import requests
 import requests.auth
 import arrow
 
+import ftrack
 import ftrack.exception
 import ftrack.entity.base
+import ftrack.entity.location
 import ftrack.cache
 import ftrack.symbol
 import ftrack.query
@@ -25,6 +27,8 @@ import ftrack.event.hub
 import ftrack.event.base
 import ftrack.plugin
 import ftrack.inspection
+import ftrack.accessor.disk
+import ftrack.structure.origin
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -167,6 +171,8 @@ class Session(object):
         # rebuilding types)?
         self.schemas = self._fetch_schemas()
         self.types = self._build_entity_type_classes(self.schemas)
+
+        self._configure_locations()
 
     @property
     def server_url(self):
@@ -663,6 +669,91 @@ class Session(object):
             classes[entity_type_class.entity_type] = entity_type_class
 
         return classes
+
+    def _configure_locations(self):
+        '''Configure locations.'''
+        # First configure builtin locations, by injecting them into local cache.
+
+        # Origin.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.origin',
+                id=ftrack.symbol.ORIGIN_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        ftrack.mixin(
+            location, ftrack.entity.location.OriginLocationMixin,
+            name='OriginLocation'
+        )
+        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack.structure.origin.OriginStructure()
+        location.priority = 100
+
+        # Unmanaged.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.unmanaged',
+                id=ftrack.symbol.UNMANAGED_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        ftrack.mixin(
+            location, ftrack.entity.location.UnmanagedLocationMixin,
+            name='UnmanagedLocation'
+        )
+        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack.structure.origin.OriginStructure()
+        # location.resource_identifier_transformer = (
+        #     ftrack.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
+        # )
+        location.priority = 90
+
+        # Review.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.review',
+                id=ftrack.symbol.REVIEW_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        ftrack.mixin(
+            location, ftrack.entity.location.UnmanagedLocationMixin,
+            name='UnmanagedLocation'
+        )
+        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack.structure.origin.OriginStructure()
+        location.priority = 110
+
+        # Connect.
+        # location = self.create(
+        #     'Location',
+        #     data=dict(
+        #         name='ftrack.connect',
+        #         id=ftrack.symbol.CONNECT_LOCATION_ID
+        #     ),
+        #     reconstructing=True
+        # )
+        # location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        # location.structure = ftrack.structure.connect.ConnectStructure()
+        # location.resource_identifier_transformer = (
+        #     ftrack.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
+        # )
+        # location.priority = 95
+
+        # Next, allow further configuration of locations via events.
+        self.event_hub.publish(
+            ftrack.event.base.Event(
+                topic='ftrack.session.configure-location',
+                data=dict(
+                    session=self
+                )
+            ),
+            synchronous=True
+        )
 
     def _call(self, data):
         '''Make request to server with *data*.'''
