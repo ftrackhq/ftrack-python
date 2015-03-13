@@ -942,6 +942,77 @@ class Session(object):
 
         return item
 
+    def _get_locations(self, filter_inaccessible=True):
+        '''Helper to returns locations ordered by priority.
+
+        If *filter_inaccessible* is True then only accessible locations will be
+        included in result.
+
+        '''
+        # Optimise this call.
+        locations = self.query('Location')
+
+        # Filter.
+        if filter_inaccessible:
+            locations = filter(
+                lambda location: location.accessor,
+                locations
+            )
+
+        # Sort by priority.
+        locations = sorted(
+            locations, key=lambda location: location.priority
+        )
+
+        return locations
+
+    def pick_location(self, component=None):
+        '''Return suitable location to use.
+
+        If no *component* specified then return highest priority accessible
+        location. Otherwise, return highest priority accessible location that
+        *component* is available in.
+
+        Return None if no suitable location could be picked.
+
+        '''
+        if component:
+            return self.pick_locations([component])[0]
+
+        else:
+            locations = self._get_locations()
+            if locations:
+                return locations[0]
+            else:
+                return None
+
+    def pick_locations(self, components):
+        '''Return suitable locations for *components*.
+
+        Return list of locations corresponding to *components* where each
+        picked location is the highest priority accessible location for that
+        component. If a component has no location available then its
+        corresponding entry will be None.
+
+        '''
+        candidate_locations = self._get_locations()
+        availabilities = self.get_component_availabilities(
+            components, locations=candidate_locations
+        )
+
+        locations = []
+        for component, availability in zip(components, availabilities):
+            location = None
+
+            for candidate_location in candidate_locations:
+                if availability.get(candidate_location['id']) > 0.0:
+                    location = candidate_location
+                    break
+
+            locations.append(location)
+
+        return locations
+
     def create_component(
         self, path, data=None, location=None
     ):
