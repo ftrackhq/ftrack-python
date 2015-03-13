@@ -1077,6 +1077,92 @@ class Session(object):
 
         return size
 
+    def get_component_availability(self, component, locations=None):
+        '''Return availability of *component*.
+
+        If *locations* is set then limit result to availability of *component*
+        in those *locations*.
+
+        Return a dictionary of {location:percentage_availability}
+
+        '''
+        return self.get_component_availabilities(
+            [component], locations=locations
+        )[0]
+
+    def get_component_availabilities(self, components, locations=None):
+        '''Return availabilities of *components*.
+
+        If *locations* is set then limit result to availabilities of
+        *components* in those *locations*.
+
+        Return a list of dictionaries of {location:percentage_availability}.
+        The list indexes correspond to those of *components*.
+
+        '''
+        availabilities = []
+
+        if locations is None:
+            locations = self.query('Location')
+
+        # Separate components into two lists, those that are containers and
+        # those that are not, so that queries can be optimised.
+        standard_components = []
+        container_components = []
+
+        for component in components:
+            if 'members' in component.keys():
+                container_components.append(component)
+            else:
+                standard_components.append(component)
+
+        # Perform queries.
+        if standard_components:
+            self.populate(
+                standard_components, 'component_locations.location_id'
+            )
+
+        if container_components:
+            self.populate(
+                container_components,
+                'members, component_locations.location_id'
+            )
+
+        base_availability = {}
+        for location in locations:
+            base_availability[location['id']] = 0.0
+
+        for component in components:
+            availability = base_availability.copy()
+            availabilities.append(availability)
+
+            is_container = 'members' in component.keys()
+            if is_container and len(component['members']):
+                member_availabilities = self.get_component_availabilities(
+                    component['members'], locations=locations
+                )
+                multiplier = 1.0 / len(component['members'])
+                for member, member_availability in zip(
+                    component['members'], member_availabilities
+                ):
+                    for location_id, ratio in member_availability.items():
+                        availability[location_id] += (
+                            ratio * multiplier
+                        )
+            else:
+                for component_location in component['component_locations']:
+                    location_id = component_location['location_id']
+                    availability[location_id] = 100.0
+
+            for location_id, percentage in availability.items():
+                # Avoid quantization error by rounding percentage and clamping
+                # to range 0-100.
+                adjusted_percentage = round(percentage, 9)
+                adjusted_percentage = max(0.0, min(adjusted_percentage, 100.0))
+                availability[location_id] = adjusted_percentage
+
+        return availabilities
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''
