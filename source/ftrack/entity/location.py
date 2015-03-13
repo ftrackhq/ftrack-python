@@ -255,10 +255,10 @@ class Location(ftrack.entity.base.Entity):
             source_data = source.accessor.open(
                 source.get_resource_identifier(component), 'rb'
             )
-            target = self.accessor.open(resource_identifier, 'wb')
-            target.write(source_data.read())
-            target.close()
-            source.close()
+            target_data = self.accessor.open(resource_identifier, 'wb')
+            target_data.write(source_data.read())
+            target_data.close()
+            source_data.close()
 
     def _register_component_in_location(self, component, resource_identifier):
         '''Register *component* in location with *resource_identifier*.'''
