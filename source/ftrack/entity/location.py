@@ -281,7 +281,7 @@ class Location(ftrack.entity.base.Entity):
         '''Remove *components* from location.'''
         for component in components:
             # Check component is in this location
-            component = self.get_resource_identifier(component)
+            self.get_resource_identifier(component)
 
             # Remove members first for container components.
             is_container = 'members' in component.keys()
