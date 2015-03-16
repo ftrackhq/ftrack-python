@@ -13,9 +13,12 @@ import pkg_resources
 import requests
 import requests.auth
 import arrow
+import clique
 
+import ftrack
 import ftrack.exception
 import ftrack.entity.base
+import ftrack.entity.location
 import ftrack.cache
 import ftrack.symbol
 import ftrack.query
@@ -25,6 +28,8 @@ import ftrack.event.hub
 import ftrack.event.base
 import ftrack.plugin
 import ftrack.inspection
+import ftrack.accessor.disk
+import ftrack.structure.origin
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -140,6 +145,8 @@ class Session(object):
             self._api_key, self._api_user
         )
 
+        self.auto_populate = auto_populate
+
         # Construct event hub and load plugins.
         self._event_hub = ftrack.event.hub.EventHub(self._server_url)
         self._event_hub.connect()
@@ -166,7 +173,7 @@ class Session(object):
         self.schemas = self._fetch_schemas()
         self.types = self._build_entity_type_classes(self.schemas)
 
-        self.auto_populate = auto_populate
+        self._configure_locations()
 
     @property
     def server_url(self):
@@ -287,14 +294,21 @@ class Session(object):
 
         return None
 
-    def create(self, entity_type, data=None):
+    def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
 
         If specified, *data* should be a dictionary of key, value pairs that
         should be used to populate attributes on the entity.
 
+        If *reconstructing* is False then create a new entity setting
+        appropriate defaults for missing data. If True then reconstruct an
+        existing entity.
+
+        Constructed entity will be automatically :meth:`merged <Session.merge>`
+        into the session.
+
         '''
-        entity = self._create(entity_type, data, reconstructing=False)
+        entity = self._create(entity_type, data, reconstructing=reconstructing)
         entity = self.merge(entity)
         return entity
 
@@ -413,15 +427,7 @@ class Session(object):
             else:
                 if entity is not existing_entity:
                     # Merge set attributes from entity to cache.
-                    for attribute in entity.attributes:
-                        value = attribute.get_remote_value(entity)
-                        if value is not ftrack.symbol.NOT_SET:
-                            existing_attribute = existing_entity.attributes.get(
-                                attribute.name
-                            )
-                            existing_attribute.set_remote_value(
-                                existing_entity, value
-                            )
+                    existing_entity.merge(entity)
 
                     # Set returned entity to be existing cached instance.
                     merged_entity = existing_entity
@@ -665,6 +671,75 @@ class Session(object):
 
         return classes
 
+    def _configure_locations(self):
+        '''Configure locations.'''
+        # First configure builtin locations, by injecting them into local cache.
+
+        # Origin.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.origin',
+                id=ftrack.symbol.ORIGIN_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        ftrack.mixin(
+            location, ftrack.entity.location.OriginLocationMixin,
+            name='OriginLocation'
+        )
+        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack.structure.origin.OriginStructure()
+        location.priority = 100
+
+        # Unmanaged.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.unmanaged',
+                id=ftrack.symbol.UNMANAGED_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        ftrack.mixin(
+            location, ftrack.entity.location.UnmanagedLocationMixin,
+            name='UnmanagedLocation'
+        )
+        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack.structure.origin.OriginStructure()
+        # location.resource_identifier_transformer = (
+        #     ftrack.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
+        # )
+        location.priority = 90
+
+        # Review.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.review',
+                id=ftrack.symbol.REVIEW_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        ftrack.mixin(
+            location, ftrack.entity.location.UnmanagedLocationMixin,
+            name='UnmanagedLocation'
+        )
+        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack.structure.origin.OriginStructure()
+        location.priority = 110
+
+        # Next, allow further configuration of locations via events.
+        self.event_hub.publish(
+            ftrack.event.base.Event(
+                topic='ftrack.session.configure-location',
+                data=dict(
+                    session=self
+                )
+            ),
+            synchronous=True
+        )
+
     def _call(self, data):
         '''Make request to server with *data*.'''
         url = self._server_url + '/api'
@@ -718,7 +793,12 @@ class Session(object):
 
             if 'exception' in result:
                 # Handle exceptions.
-                raise ftrack.exception.ServerError(result['content'])
+                raise ftrack.exception.ServerError(
+                    'Server reported error {0}({1})'.format(
+                        result['exception'],
+                        result['content']
+                    )
+                )
 
         return result
 
@@ -845,6 +925,298 @@ class Session(object):
                 )
 
         return item
+
+    def _get_locations(self, filter_inaccessible=True):
+        '''Helper to returns locations ordered by priority.
+
+        If *filter_inaccessible* is True then only accessible locations will be
+        included in result.
+
+        '''
+        # Optimise this call.
+        locations = self.query('Location')
+
+        # Filter.
+        if filter_inaccessible:
+            locations = filter(
+                lambda location: location.accessor,
+                locations
+            )
+
+        # Sort by priority.
+        locations = sorted(
+            locations, key=lambda location: location.priority
+        )
+
+        return locations
+
+    def pick_location(self, component=None):
+        '''Return suitable location to use.
+
+        If no *component* specified then return highest priority accessible
+        location. Otherwise, return highest priority accessible location that
+        *component* is available in.
+
+        Return None if no suitable location could be picked.
+
+        '''
+        if component:
+            return self.pick_locations([component])[0]
+
+        else:
+            locations = self._get_locations()
+            if locations:
+                return locations[0]
+            else:
+                return None
+
+    def pick_locations(self, components):
+        '''Return suitable locations for *components*.
+
+        Return list of locations corresponding to *components* where each
+        picked location is the highest priority accessible location for that
+        component. If a component has no location available then its
+        corresponding entry will be None.
+
+        '''
+        candidate_locations = self._get_locations()
+        availabilities = self.get_component_availabilities(
+            components, locations=candidate_locations
+        )
+
+        locations = []
+        for component, availability in zip(components, availabilities):
+            location = None
+
+            for candidate_location in candidate_locations:
+                if availability.get(candidate_location['id']) > 0.0:
+                    location = candidate_location
+                    break
+
+            locations.append(location)
+
+        return locations
+
+    def create_component(
+        self, path, data=None, location='auto'
+    ):
+        '''Create a new component from *path* with additional *data*
+
+        .. note::
+
+            This is a helper method. To create components manually use the
+            standard :meth:`Session.create` method.
+
+        *path* can be a string representing a filesystem path to the data to
+        use for the component. The *path* can also be specified as a sequence
+        string, in which case a sequence component with child components for
+        each item in the sequence will be created automatically. The accepted
+        format for a sequence is '{head}{padding}{tail} [{ranges}]'. For
+        example::
+
+            '/path/to/file.%04d.ext [1-5, 7, 8, 10-20]'
+
+        .. seealso::
+
+            `Clique documentation <http://clique.readthedocs.org>`_
+
+        *data* should be a dictionary of any additional data to construct the
+        component with (as passed to :meth:`Session.create`).
+
+        If *location* is specified then automatically add component to that
+        location. The default of 'auto' will automatically pick a suitable
+        location to add the component to if one is available. To not add to any
+        location specifiy locations as None.
+
+        '''
+        if data is None:
+            data = {}
+
+        if location == 'auto':
+            # Check if the component name matches one of the ftrackreview
+            # specific names. Add the component to the ftrack.review location if
+            # so. This is used to not break backwards compatibility.
+            if data.get('name') in (
+                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
+            ):
+                location = self.get(
+                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
+                )
+
+            else:
+                location = self.pick_location()
+
+        try:
+            collection = clique.parse(path)
+
+        except ValueError:
+            # Assume is a single file.
+            if 'size' not in data:
+                data['size'] = self._get_filesystem_size(path)
+
+            data.setdefault('file_type', os.path.splitext(path)[-1])
+
+            return self._create_component(
+                'FileComponent', path, data, location
+            )
+
+        else:
+            # Calculate size of container and members.
+            member_sizes = {}
+            container_size = data.get('size')
+
+            if container_size is not None:
+                if len(collection.indexes) > 0:
+                    member_size = int(
+                        round(container_size / len(collection.indexes))
+                    )
+                    for item in collection:
+                        member_sizes[item] = member_size
+
+            else:
+                container_size = 0
+                for item in collection:
+                    member_sizes[item] = self._get_filesystem_size(item)
+                    container_size += member_sizes[item]
+
+            # Create sequence component
+            container_path = collection.format('{head}{padding}{tail}')
+            data.setdefault('padding', collection.padding)
+            data.setdefault('file_type', os.path.splitext(path)[-1])
+
+            container = self._create_component(
+                'SequenceComponent', container_path, data, location
+            )
+
+            # Create member components for sequence.
+            for member_path in collection:
+                member_data = {
+                    'name': collection.match(item).group('index'),
+                    'container': container,
+                    'size': member_sizes[item],
+                    'file_type': os.path.splitext(member_path)[-1]
+                }
+
+                self._create_component(
+                    'FileComponent', member_path, member_data, location
+                )
+
+            return container
+
+    def _create_component(self, entity_type, path, data, location):
+        '''Create and return component.
+
+        See public function :py:func:`createComponent` for argument details.
+
+        '''
+        component = self.create(entity_type, data)
+
+        # Add to special origin location so that it is possible to add to other
+        # locations.
+        origin_location = self.get(
+            'Location', ftrack.symbol.ORIGIN_LOCATION_ID
+        )
+        origin_location.add_component(component, path, recursive=False)
+
+        if location:
+            location.add_component(component, origin_location, recursive=False)
+
+        return component
+
+    def _get_filesystem_size(self, path):
+        '''Return size from *path*'''
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            size = 0
+
+        return size
+
+    def get_component_availability(self, component, locations=None):
+        '''Return availability of *component*.
+
+        If *locations* is set then limit result to availability of *component*
+        in those *locations*.
+
+        Return a dictionary of {location_id:percentage_availability}
+
+        '''
+        return self.get_component_availabilities(
+            [component], locations=locations
+        )[0]
+
+    def get_component_availabilities(self, components, locations=None):
+        '''Return availabilities of *components*.
+
+        If *locations* is set then limit result to availabilities of
+        *components* in those *locations*.
+
+        Return a list of dictionaries of {location_id:percentage_availability}.
+        The list indexes correspond to those of *components*.
+
+        '''
+        availabilities = []
+
+        if locations is None:
+            locations = self.query('Location')
+
+        # Separate components into two lists, those that are containers and
+        # those that are not, so that queries can be optimised.
+        standard_components = []
+        container_components = []
+
+        for component in components:
+            if 'members' in component.keys():
+                container_components.append(component)
+            else:
+                standard_components.append(component)
+
+        # Perform queries.
+        if standard_components:
+            self.populate(
+                standard_components, 'component_locations.location_id'
+            )
+
+        if container_components:
+            self.populate(
+                container_components,
+                'members, component_locations.location_id'
+            )
+
+        base_availability = {}
+        for location in locations:
+            base_availability[location['id']] = 0.0
+
+        for component in components:
+            availability = base_availability.copy()
+            availabilities.append(availability)
+
+            is_container = 'members' in component.keys()
+            if is_container and len(component['members']):
+                member_availabilities = self.get_component_availabilities(
+                    component['members'], locations=locations
+                )
+                multiplier = 1.0 / len(component['members'])
+                for member, member_availability in zip(
+                    component['members'], member_availabilities
+                ):
+                    for location_id, ratio in member_availability.items():
+                        availability[location_id] += (
+                            ratio * multiplier
+                        )
+            else:
+                for component_location in component['component_locations']:
+                    location_id = component_location['location_id']
+                    availability[location_id] = 100.0
+
+            for location_id, percentage in availability.items():
+                # Avoid quantization error by rounding percentage and clamping
+                # to range 0-100.
+                adjusted_percentage = round(percentage, 9)
+                adjusted_percentage = max(0.0, min(adjusted_percentage, 100.0))
+                availability[location_id] = adjusted_percentage
+
+        return availabilities
 
 
 class AutoPopulatingContext(object):

@@ -11,6 +11,12 @@ Release Notes
     :date: 2015-xx-xx
 
     .. change:: new
+        :tags: locations
+
+        Support for managing components in locations has been added. Check out
+        the :ref:`dedicated tutorial <locations/tutorial>`.
+
+    .. change:: new
 
         A new inspection API (:mod:`ftrack.inspection`) has been added for
         extracting useful information from objects in the system, such as the

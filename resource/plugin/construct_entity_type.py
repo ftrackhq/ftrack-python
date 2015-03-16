@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import ftrack.entity.factory
+import ftrack.entity.base
 
 
 def default_task_status(entity):
@@ -76,7 +77,7 @@ class ProjectSchema(ftrack.entity.base.Entity):
         raise ValueError('Schema {0} does not have types.'.format(schema))
 
 
-class Factory(ftrack.entity.factory.Factory):
+class Factory(ftrack.entity.factory.StandardFactory):
     '''Entity class factory.'''
 
     def create(self, schema, bases=None):
