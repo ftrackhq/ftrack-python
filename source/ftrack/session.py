@@ -30,6 +30,8 @@ import ftrack.plugin
 import ftrack.inspection
 import ftrack.accessor.disk
 import ftrack.structure.origin
+import ftrack.structure.entity_id
+import ftrack.accessor.server
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -728,6 +730,21 @@ class Session(object):
         location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
         location.structure = ftrack.structure.origin.OriginStructure()
         location.priority = 110
+
+        # Server.
+        location = self.create(
+            'Location',
+            data=dict(
+                name='ftrack.server',
+                id=ftrack.symbol.SERVER_LOCATION_ID
+            ),
+            reconstructing=True
+        )
+        location.accessor = ftrack.accessor.server._ServerAccessor(
+            session=self
+        )
+        location.structure = ftrack.structure.entity_id.EntityIdStructure()
+        location.priority = 150
 
         # Connect.
         # location = self.create(
