@@ -1154,7 +1154,7 @@ class Session(object):
         If *locations* is set then limit result to availability of *component*
         in those *locations*.
 
-        Return a dictionary of {location:percentage_availability}
+        Return a dictionary of {location_id:percentage_availability}
 
         '''
         return self.get_component_availabilities(
@@ -1167,7 +1167,7 @@ class Session(object):
         If *locations* is set then limit result to availabilities of
         *components* in those *locations*.
 
-        Return a list of dictionaries of {location:percentage_availability}.
+        Return a list of dictionaries of {location_id:percentage_availability}.
         The list indexes correspond to those of *components*.
 
         '''
