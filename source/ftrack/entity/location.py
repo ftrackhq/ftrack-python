@@ -345,6 +345,25 @@ class Location(ftrack.entity.base.Entity):
         # TODO: Should auto-commit here be optional?
         self.session.commit()
 
+    def get_component_availability(self, component):
+        '''Return availability of *component* in this location as a float.'''
+        return self.session.get_component_availability(
+            component, locations=[self]
+        )[self['id']]
+
+    def get_component_availabilities(self, components):
+        '''Return availabilities of *components* in this location.
+
+        Return list of float values corresponding to each component.
+
+        '''
+        return [
+            availability[self['id']] for availability in
+            self.session.get_component_availabilities(
+                components, locations=[self]
+            )
+        ]
+
     def get_resource_identifier(self, component):
         '''Return resource identifier for *component*.
 
