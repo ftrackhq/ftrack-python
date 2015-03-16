@@ -1014,7 +1014,7 @@ class Session(object):
         return locations
 
     def create_component(
-        self, path, data=None, location=None
+        self, path, data=None, location='auto'
     ):
         '''Create a new component from *path* with additional *data*
 
@@ -1040,7 +1040,9 @@ class Session(object):
         component with (as passed to :meth:`Session.create`).
 
         If *location* is specified then automatically add component to that
-        location.
+        location. The default of 'auto' will automatically pick a suitable
+        location to add the component to if one is available. To not add to any
+        location specifiy locations as None.
 
         '''
         if data is None:
@@ -1130,9 +1132,7 @@ class Session(object):
                 )
 
             else:
-                location = None
-                # TODO: pick location.
-                #location = self.pick_location()
+                location = self.pick_location()
 
         if location:
             location.add_component(component, origin_location, recursive=False)
