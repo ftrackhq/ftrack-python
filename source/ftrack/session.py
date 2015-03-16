@@ -942,8 +942,79 @@ class Session(object):
 
         return item
 
+    def _get_locations(self, filter_inaccessible=True):
+        '''Helper to returns locations ordered by priority.
+
+        If *filter_inaccessible* is True then only accessible locations will be
+        included in result.
+
+        '''
+        # Optimise this call.
+        locations = self.query('Location')
+
+        # Filter.
+        if filter_inaccessible:
+            locations = filter(
+                lambda location: location.accessor,
+                locations
+            )
+
+        # Sort by priority.
+        locations = sorted(
+            locations, key=lambda location: location.priority
+        )
+
+        return locations
+
+    def pick_location(self, component=None):
+        '''Return suitable location to use.
+
+        If no *component* specified then return highest priority accessible
+        location. Otherwise, return highest priority accessible location that
+        *component* is available in.
+
+        Return None if no suitable location could be picked.
+
+        '''
+        if component:
+            return self.pick_locations([component])[0]
+
+        else:
+            locations = self._get_locations()
+            if locations:
+                return locations[0]
+            else:
+                return None
+
+    def pick_locations(self, components):
+        '''Return suitable locations for *components*.
+
+        Return list of locations corresponding to *components* where each
+        picked location is the highest priority accessible location for that
+        component. If a component has no location available then its
+        corresponding entry will be None.
+
+        '''
+        candidate_locations = self._get_locations()
+        availabilities = self.get_component_availabilities(
+            components, locations=candidate_locations
+        )
+
+        locations = []
+        for component, availability in zip(components, availabilities):
+            location = None
+
+            for candidate_location in candidate_locations:
+                if availability.get(candidate_location['id']) > 0.0:
+                    location = candidate_location
+                    break
+
+            locations.append(location)
+
+        return locations
+
     def create_component(
-        self, path, data=None, location=None
+        self, path, data=None, location='auto'
     ):
         '''Create a new component from *path* with additional *data*
 
@@ -969,11 +1040,27 @@ class Session(object):
         component with (as passed to :meth:`Session.create`).
 
         If *location* is specified then automatically add component to that
-        location.
+        location. The default of 'auto' will automatically pick a suitable
+        location to add the component to if one is available. To not add to any
+        location specifiy locations as None.
 
         '''
         if data is None:
             data = {}
+
+        if location == 'auto':
+            # Check if the component name matches one of the ftrackreview
+            # specific names. Add the component to the ftrack.review location if
+            # so. This is used to not break backwards compatibility.
+            if data.get('name') in (
+                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
+            ):
+                location = self.get(
+                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
+                )
+
+            else:
+                location = self.pick_location()
 
         try:
             collection = clique.parse(path)
@@ -1047,22 +1134,6 @@ class Session(object):
         )
         origin_location.add_component(component, path, recursive=False)
 
-        if location == 'auto':
-            # Check if the component name matches one of the ftrackreview
-            # specific names. Add the component to the ftrack.review location if
-            # so. This is used to not break backwards compatibility.
-            if data.get('name') in (
-                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
-            ):
-                location = self.get(
-                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
-                )
-
-            else:
-                location = None
-                # TODO: pick location.
-                #location = self.pick_location()
-
         if location:
             location.add_component(component, origin_location, recursive=False)
 
@@ -1076,6 +1147,92 @@ class Session(object):
             size = 0
 
         return size
+
+    def get_component_availability(self, component, locations=None):
+        '''Return availability of *component*.
+
+        If *locations* is set then limit result to availability of *component*
+        in those *locations*.
+
+        Return a dictionary of {location_id:percentage_availability}
+
+        '''
+        return self.get_component_availabilities(
+            [component], locations=locations
+        )[0]
+
+    def get_component_availabilities(self, components, locations=None):
+        '''Return availabilities of *components*.
+
+        If *locations* is set then limit result to availabilities of
+        *components* in those *locations*.
+
+        Return a list of dictionaries of {location_id:percentage_availability}.
+        The list indexes correspond to those of *components*.
+
+        '''
+        availabilities = []
+
+        if locations is None:
+            locations = self.query('Location')
+
+        # Separate components into two lists, those that are containers and
+        # those that are not, so that queries can be optimised.
+        standard_components = []
+        container_components = []
+
+        for component in components:
+            if 'members' in component.keys():
+                container_components.append(component)
+            else:
+                standard_components.append(component)
+
+        # Perform queries.
+        if standard_components:
+            self.populate(
+                standard_components, 'component_locations.location_id'
+            )
+
+        if container_components:
+            self.populate(
+                container_components,
+                'members, component_locations.location_id'
+            )
+
+        base_availability = {}
+        for location in locations:
+            base_availability[location['id']] = 0.0
+
+        for component in components:
+            availability = base_availability.copy()
+            availabilities.append(availability)
+
+            is_container = 'members' in component.keys()
+            if is_container and len(component['members']):
+                member_availabilities = self.get_component_availabilities(
+                    component['members'], locations=locations
+                )
+                multiplier = 1.0 / len(component['members'])
+                for member, member_availability in zip(
+                    component['members'], member_availabilities
+                ):
+                    for location_id, ratio in member_availability.items():
+                        availability[location_id] += (
+                            ratio * multiplier
+                        )
+            else:
+                for component_location in component['component_locations']:
+                    location_id = component_location['location_id']
+                    availability[location_id] = 100.0
+
+            for location_id, percentage in availability.items():
+                # Avoid quantization error by rounding percentage and clamping
+                # to range 0-100.
+                adjusted_percentage = round(percentage, 9)
+                adjusted_percentage = max(0.0, min(adjusted_percentage, 100.0))
+                availability[location_id] = adjusted_percentage
+
+        return availabilities
 
 
 class AutoPopulatingContext(object):
