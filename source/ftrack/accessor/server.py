@@ -97,7 +97,6 @@ class HTTPFile(String):
                             'Failed to write file.'
                         )
         else:
-            raise
             raise AccessorOperationFailedError(
                 'Failed to write file.'
             )
