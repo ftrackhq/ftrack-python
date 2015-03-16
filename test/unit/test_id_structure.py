@@ -2,7 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import ftrack
-import ftrack.structure
+import ftrack.structure.id
 
 
 class TestIdStructure(object):
@@ -22,11 +22,11 @@ class TestIdStructure(object):
             'file_type': '.png'
         })
 
-        structure = ftrack.structure.IdStructure(prefix='/path')
+        structure = ftrack.structure.id.IdStructure(prefix='/path')
 
         resource_identifier = structure.get_resource_identifier(file_component)
 
-        assert resource_identifier.startswith('/path/')
+        assert resource_identifier.startswith('path/')
         assert resource_identifier.endswith(file_component['id'][4:] + '.png')
 
         sequence_component = session.create('SequenceComponent', {
@@ -43,7 +43,7 @@ class TestIdStructure(object):
             file_component
         )
 
-        assert resource_identifier.startswith('/path/')
+        assert resource_identifier.startswith('path/')
         assert resource_identifier.endswith(
             sequence_component['id'][4:] + '/file.file_component_name.jpg'
         )
