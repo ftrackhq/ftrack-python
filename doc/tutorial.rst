@@ -186,26 +186,18 @@ project schema:
 Components
 ==========
 
-Components can currently only be created and added to a location manually.
+Components can be created manually or using the provide helper methods on a
+:meth:`session <ftrack.session.Session.create_component>` or existing
+:meth:`asset version
+<ftrack.entity.asset_version.AssetVersion.create_component>`::
 
-    >>> sequence_component = session.create('SequenceComponent', {
-    ...     'name': 'my sequence component',
-    ...     'version': version
-    ... })
-    ...
-    ... for i in range(1, 100):
-    ...     component = session.create('FileComponent', {
-    ...         'name': 'file_{0}'.format(i),
-    ...         'container': sequence_component
-    ...     })
-    ...
-    ... session.create('ComponentLocation', {
-    ...     'component': component,
-    ...     'location': location,
-    ...     'resource_identifier': 'path_to_file'
-    ... })
-    ...
-    ... session.commit()
+    >>> component = version.create_component('/path/to/file_or_sequence.jpg')
+    >>> session.commit()
+
+When a component is created using the helpers it is automatically added to a
+location.
+
+.. seealso:: :ref:`Locations tutorial <locations/tutorial>`
 
 Metadata
 ========
