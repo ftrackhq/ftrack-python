@@ -47,3 +47,6 @@ REVIEW_LOCATION_ID = 'cd41be70-8809-11e3-b98a-20c9d081909b'
 
 #: Identifier of builtin connect location.
 CONNECT_LOCATION_ID = '07b82a97-8cf9-11e3-9383-20c9d081909b'
+
+#: Identifier of builtin server location.
+SERVER_LOCATION_ID = '3a372bde-05bc-11e4-8908-20c9d081909b'

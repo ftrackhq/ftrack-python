@@ -132,12 +132,12 @@ class HTTPFile(String):
         return base64_digest
 
 
-class HTTPAccessor(Accessor):
-    '''Provide HTTP location access.'''
+class _ServerAccessor(Accessor):
+    '''Provide server location access.'''
 
     def __init__(self, session, **kw):
         '''Initialise location accessor.'''
-        super(HTTPAccessor, self).__init__(**kw)
+        super(_ServerAccessor, self).__init__(**kw)
 
         self._session = session
 
