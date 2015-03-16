@@ -30,7 +30,7 @@ class Location(ftrack.entity.base.Entity):
         self.accessor = ftrack.symbol.NOT_SET
         self.structure = ftrack.symbol.NOT_SET
         self.resource_identifier_transformer = ftrack.symbol.NOT_SET
-        self.priority = 50
+        self.priority = 95
         super(Location, self).__init__(
             session, data=data, reconstructing=reconstructing
         )
