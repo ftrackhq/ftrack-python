@@ -746,22 +746,6 @@ class Session(object):
         location.structure = ftrack.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
-        # Connect.
-        # location = self.create(
-        #     'Location',
-        #     data=dict(
-        #         name='ftrack.connect',
-        #         id=ftrack.symbol.CONNECT_LOCATION_ID
-        #     ),
-        #     reconstructing=True
-        # )
-        # location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
-        # location.structure = ftrack.structure.connect.ConnectStructure()
-        # location.resource_identifier_transformer = (
-        #     ftrack.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
-        # )
-        # location.priority = 95
-
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack.event.base.Event(

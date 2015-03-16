@@ -9,10 +9,6 @@ import ftrack.event.base
 import ftrack.symbol
 import ftrack.inspection
 
-#: Topics published by locations
-COMPONENT_ADDED_TO_LOCATION_TOPIC = 'ftrack.location.component-added'
-COMPONENT_REMOVED_FROM_LOCATION_TOPIC = 'ftrack.location.component-removed'
-
 
 class Location(ftrack.entity.base.Entity):
     '''Represent storage for components.'''
@@ -34,7 +30,7 @@ class Location(ftrack.entity.base.Entity):
         self.accessor = ftrack.symbol.NOT_SET
         self.structure = ftrack.symbol.NOT_SET
         self.resource_identifier_transformer = ftrack.symbol.NOT_SET
-        self.priority = 50
+        self.priority = 95
         super(Location, self).__init__(
             session, data=data, reconstructing=reconstructing
         )
@@ -166,7 +162,7 @@ class Location(ftrack.entity.base.Entity):
 
             self.session.event_hub.publish(
                 ftrack.event.base.Event(
-                    topic=COMPONENT_ADDED_TO_LOCATION_TOPIC,
+                    topic=ftrack.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC,
                     data=dict(
                         component_id=component_id,
                         location_id=location_id
@@ -301,7 +297,7 @@ class Location(ftrack.entity.base.Entity):
             location_id = ftrack.inspection.primary_key(self).values()[0]
             self.session.event_hub.publish(
                 ftrack.event.base.Event(
-                    topic=COMPONENT_REMOVED_FROM_LOCATION_TOPIC,
+                    topic=ftrack.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC,
                     data=dict(
                         component_id=component_id,
                         location_id=location_id
