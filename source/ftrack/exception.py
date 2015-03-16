@@ -252,7 +252,7 @@ class AccessorError(Error):
 class AccessorOperationFailedError(AccessorError):
     '''Base for failed operations on accessors.'''
 
-    default_message = 'Operation {operation} failed: {details}'
+    default_message = 'Operation {operation} failed: {error}'
 
     def __init__(self, operation='', resource_identifier=None, **kw):
         kw.setdefault('details', {}).update(dict(
@@ -302,8 +302,10 @@ class AccessorResourceError(AccessorError):
 
     default_message = 'Unspecified resource error: {resource_identifier}'
 
-    def __init__(self, resource_identifier, **kw):
+    def __init__(self, operation='', resource_identifier=None, error=None,
+                 **kw):
         kw.setdefault('details', {}).update(dict(
+            operation=operation,
             resource_identifier=resource_identifier
         ))
         super(AccessorResourceError, self).__init__(**kw)

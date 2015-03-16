@@ -223,7 +223,7 @@ def error_handler(**kw):
 
     except (OSError, IOError) as error:
         (exception_type, exception_value, traceback) = sys.exc_info()
-        kw.setdefault('details', error)
+        kw.setdefault('error', error)
 
         error_code = getattr(error, 'errno')
         if not error_code:
