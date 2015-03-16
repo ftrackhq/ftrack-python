@@ -30,6 +30,12 @@ class Symbol(object):
 #: Symbol representing that no value has been set or loaded.
 NOT_SET = Symbol('NOT_SET', False)
 
+#: Topic published when component added to a location.
+COMPONENT_ADDED_TO_LOCATION_TOPIC = 'ftrack.location.component-added'
+
+#: Topic published when component removed from a location.
+COMPONENT_REMOVED_FROM_LOCATION_TOPIC = 'ftrack.location.component-removed'
+
 #: Identifier of builtin origin location.
 ORIGIN_LOCATION_ID = 'ce9b348f-8809-11e3-821c-20c9d081909b'
 
