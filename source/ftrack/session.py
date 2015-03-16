@@ -1048,6 +1048,20 @@ class Session(object):
         if data is None:
             data = {}
 
+        if location == 'auto':
+            # Check if the component name matches one of the ftrackreview
+            # specific names. Add the component to the ftrack.review location if
+            # so. This is used to not break backwards compatibility.
+            if data.get('name') in (
+                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
+            ):
+                location = self.get(
+                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
+                )
+
+            else:
+                location = self.pick_location()
+
         try:
             collection = clique.parse(path)
 
@@ -1119,20 +1133,6 @@ class Session(object):
             'Location', ftrack.symbol.ORIGIN_LOCATION_ID
         )
         origin_location.add_component(component, path, recursive=False)
-
-        if location == 'auto':
-            # Check if the component name matches one of the ftrackreview
-            # specific names. Add the component to the ftrack.review location if
-            # so. This is used to not break backwards compatibility.
-            if data.get('name') in (
-                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
-            ):
-                location = self.get(
-                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
-                )
-
-            else:
-                location = self.pick_location()
 
         if location:
             location.add_component(component, origin_location, recursive=False)
