@@ -13,6 +13,12 @@ Release Notes
     .. change:: new
         :tags: locations
 
+        Support for ftrack.server location. The corresponding server build is
+        required for it to function properly.
+
+    .. change:: new
+        :tags: locations
+
         Support for managing components in locations has been added. Check out
         the :ref:`dedicated tutorial <locations/tutorial>`.
 
