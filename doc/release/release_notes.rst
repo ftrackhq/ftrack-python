@@ -7,8 +7,8 @@
 Release Notes
 *************
 
-.. release:: next
-    :date: 2015-xx-xx
+.. release:: 0.1.0-beta.2
+    :date: 2015-03-17
 
     .. change:: new
         :tags: locations
