@@ -14,19 +14,19 @@ from ..data import String
 from ftrack.exception import AccessorOperationFailedError
 
 
-class HTTPFile(String):
+class ServerFile(String):
     '''HTTP Buffered File.'''
     def __init__(self, resource_identifier, session, mode='rb', **kwargs):
-        '''Initialise Dropbox file with a *client*, a *resource_identifier*.'''
+        '''Initialise file.'''
         self.resource_identifier = resource_identifier
         self.mode = mode
         self._hasRead = False
         self._session = session
-        super(HTTPFile, self).__init__(**kwargs)
+        super(ServerFile, self).__init__(**kwargs)
 
     def flush(self):
         '''Flush all changes.'''
-        super(HTTPFile, self).flush()
+        super(ServerFile, self).flush()
 
         # TODO: Handle other modes.
         if self.mode == 'wb':
@@ -142,7 +142,7 @@ class _ServerAccessor(Accessor):
 
     def open(self, resource_identifier, mode='rb'):
         '''Return :py:class:`~ftrack.Data` for *resource_identifier*.'''
-        return HTTPFile(resource_identifier, session=self._session, mode=mode)
+        return ServerFile(resource_identifier, session=self._session, mode=mode)
 
     def remove(self, resourceIdentifier):
         '''Remove *resourceIdentifier*.'''
