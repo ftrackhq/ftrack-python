@@ -9,6 +9,7 @@ import ftrack.entity.base
 import ftrack.entity.location
 import ftrack.entity.component
 import ftrack.entity.asset_version
+import ftrack.entity.project_schema
 import ftrack.symbol
 
 
@@ -115,12 +116,33 @@ class Factory(object):
         return cls
 
 
+def default_task_status(entity):
+    '''Return default task status entity for *entity*.'''
+    return entity.session.query('TaskStatus')[0]
+
+
+def default_task_type(entity):
+    '''Return default task type entity for *entity*.'''
+    return entity.session.query('TaskType')[0]
+
+
+def default_task_priority(entity):
+    '''Return default task priority entity for *entity*.'''
+    return entity.session.query('PriorityType')[0]
+
+
 class StandardFactory(Factory):
     '''Standard entity class factory.'''
 
     def create(self, schema, bases=None):
         '''Create and return entity class from *schema*.'''
-        if schema['id'] == 'Location':
+        # Customise classes.
+        if schema['id'] == 'ProjectSchema':
+            cls = super(StandardFactory, self).create(
+                schema, bases=[ftrack.entity.project_schema.ProjectSchema]
+            )
+
+        elif schema['id'] == 'Location':
             cls = super(StandardFactory, self).create(
                 schema, bases=[ftrack.entity.location.Location]
             )
@@ -137,5 +159,18 @@ class StandardFactory(Factory):
 
         else:
             cls = super(StandardFactory, self).create(schema, bases=bases)
+
+        # Add dynamic default values to appropriate attributes so that end
+        # users don't need to specify them each time.
+        if schema['id'] in ('Episode', 'Sequence'):
+            cls.attributes.get('status').default_value = default_task_status
+
+        if schema['id'] in (
+            'Episode', 'Sequence', 'Shot', 'AssetBuild', 'Task'
+        ):
+            cls.attributes.get('priority').default_value = default_task_priority
+
+        if schema['id'] in ('Episode', 'Sequence', 'Shot'):
+            cls.attributes.get('type').default_value = default_task_type
 
         return cls
