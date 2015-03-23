@@ -34,8 +34,8 @@ class ProjectSchema(ftrack.entity.base.Entity):
             for _schema in self['_schemas']:
                 if _schema['type_id'] == '4be63b64-5010-42fb-bf1f-428af9d638f0':
                     result = self.session.query(
-                        'select task_status from SchemaStatus'
-                        ' where schema_id is {0}'.format(_schema['id'])
+                        'select task_status from SchemaStatus '
+                        'where schema_id is {0}'.format(_schema['id'])
                     )
                     return [
                         schema_type['task_status'] for schema_type in result
@@ -53,8 +53,8 @@ class ProjectSchema(ftrack.entity.base.Entity):
             for _schema in self['_schemas']:
                 if _schema['type_id'] == '4be63b64-5010-42fb-bf1f-428af9d638f0':
                     result = self.session.query(
-                        'select task_type from SchemaType'
-                        ' where schema_id is {0}'.format(_schema['id'])
+                        'select task_type from SchemaType '
+                        'where schema_id is {0}'.format(_schema['id'])
                     )
                     return [schema_type['task_type'] for schema_type in result]
 
