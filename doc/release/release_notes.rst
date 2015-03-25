@@ -7,6 +7,14 @@
 Release Notes
 *************
 
+.. release:: next
+
+    .. change:: changed
+
+        Moved standardised construct entity type logic to core package (as part
+        of the :class:`~ftrack.entity.factory.StandardFactory`) for easier reuse
+        and extension.
+
 .. release:: 0.1.0-beta.2
     :date: 2015-03-17
 
