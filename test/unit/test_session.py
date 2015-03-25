@@ -3,25 +3,27 @@
 
 import pytest
 
+import ftrack.inspection
 
-def test_get_entity_bypassing_cache(session, unique_entity):
+
+def test_get_entity_bypassing_cache(session, user):
     '''Retrieve an entity by type and id bypassing cache.'''
     session.cache.remove(
-        session.cache_key_maker.key(unique_entity.identity)
+        session.cache_key_maker.key(ftrack.inspection.identity(user))
     )
-    matching = session.get(*unique_entity.identity)
+    matching = session.get(*ftrack.inspection.identity(user))
 
     # Check a different instance returned.
-    assert matching is not unique_entity
+    assert matching is not user
 
     # Check instances have the same identity.
-    assert matching == unique_entity
+    assert matching == user
 
 
-def test_get_entity_from_cache(session, unique_entity):
+def test_get_entity_from_cache(session, user):
     '''Retrieve an entity by type and id from cache.'''
-    matching = session.get(*unique_entity.identity)
-    assert matching is unique_entity
+    matching = session.get(*ftrack.inspection.identity(user))
+    assert matching is user
 
 
 def test_get_non_existant_entity(session):

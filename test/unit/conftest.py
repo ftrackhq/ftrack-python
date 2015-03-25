@@ -36,7 +36,7 @@ def new_user(request, session, unique_name):
     return entity
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def user(session):
     '''Return the same user entity for entire session.'''
     # Jenkins user
