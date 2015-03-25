@@ -7,7 +7,8 @@
 Release Notes
 *************
 
-.. release:: next
+.. release:: 0.1.0
+    :date: 2015-03-25
 
     .. change:: changed
 
