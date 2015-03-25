@@ -67,7 +67,8 @@ setup(
         'websocket-client == 0.12'
     ],
     tests_require=[
-        'pytest >= 2.3.5, < 3'
+        'pytest >= 2.3.5, < 3',
+        'pytest-mock >= 0.4, < 1'
     ],
     cmdclass={
         'test': PyTest

@@ -20,10 +20,15 @@ def test_get_entity_bypassing_cache(session, user):
     assert matching == user
 
 
-def test_get_entity_from_cache(session, user):
+def test_get_entity_from_cache(session, user, mocker):
     '''Retrieve an entity by type and id from cache.'''
+    mocker.patch.object(session, '_call')
+
     matching = session.get(*ftrack.inspection.identity(user))
     assert matching is user
+
+    # Check that no call was made to server.
+    assert not session._call.called
 
 
 def test_get_non_existant_entity(session):
