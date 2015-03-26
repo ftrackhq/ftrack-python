@@ -151,13 +151,13 @@ class Entity(collections.MutableMapping):
             Values of attributes are not considered.
 
         '''
-        if not isinstance(other, self.__class__):
+        try:
+            return (
+                ftrack.inspection.identity(other)
+                == ftrack.inspection.identity(self)
+            )
+        except (AttributeError, KeyError):
             return False
-
-        return (
-            ftrack.inspection.identity(other)
-            == ftrack.inspection.identity(self)
-        )
 
     def __getitem__(self, key):
         '''Return attribute value for *key*.'''
