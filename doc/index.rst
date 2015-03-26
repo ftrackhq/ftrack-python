@@ -23,6 +23,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     querying
     working_with_entities
     environment_variables
+    locations/index
     api_reference/index
     release/index
     glossary

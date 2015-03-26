@@ -7,8 +7,29 @@
 Release Notes
 *************
 
-.. release:: next
-    :date: 2015-xx-xx
+.. release:: 0.1.0
+    :date: 2015-03-25
+
+    .. change:: changed
+
+        Moved standardised construct entity type logic to core package (as part
+        of the :class:`~ftrack.entity.factory.StandardFactory`) for easier reuse
+        and extension.
+
+.. release:: 0.1.0-beta.2
+    :date: 2015-03-17
+
+    .. change:: new
+        :tags: locations
+
+        Support for ftrack.server location. The corresponding server build is
+        required for it to function properly.
+
+    .. change:: new
+        :tags: locations
+
+        Support for managing components in locations has been added. Check out
+        the :ref:`dedicated tutorial <locations/tutorial>`.
 
     .. change:: new
 

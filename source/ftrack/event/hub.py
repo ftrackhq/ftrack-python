@@ -494,7 +494,9 @@ class EventHub(object):
         if source is not None:
             event['source'] = source
 
-    def publish(self, event, synchronous=False, on_reply=None):
+    def publish(
+        self, event, synchronous=False, on_reply=None, on_error='raise'
+    ):
         '''Publish *event*.
 
         If *synchronous* is specified as True then this method will wait and
@@ -513,8 +515,19 @@ class EventHub(object):
 
             Will not be called when *synchronous* is True.
 
+        If *on_error* is set to 'ignore' then errors raised during publish of
+        event will be caught by this method and ignored.
+
         '''
-        return self._publish(event, synchronous=synchronous, on_reply=on_reply)
+        try:
+            return self._publish(
+                event, synchronous=synchronous, on_reply=on_reply
+            )
+        except Exception:
+            if on_error == 'ignore':
+                pass
+            else:
+                raise
 
     def publish_reply(self, source_event, data, source=None):
         '''Publish a reply event to *source_event* with supplied *data*.
