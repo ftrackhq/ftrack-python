@@ -8,7 +8,7 @@ class Event(dict):
     '''Represent a single event.'''
 
     def __init__(self, topic, id=None, data=None, sent=None,
-                 source=None, target='', in_reply_to_event=None):
+                 source=None, target='', inReplyToEvent=None):
         '''Initialise event.
 
         *topic* is the required topic for the event. It can use a dotted
@@ -33,7 +33,7 @@ class Event(dict):
         a reply event would target the event to the sender of the source event.
         The expression will be tested against subscriber information only.
 
-        *in_reply_to_event* is used when replying to an event and should contain
+        *inReplyToEvent* is used when replying to an event and should contain
         the unique id of the event being replied to.
 
         '''
@@ -44,7 +44,7 @@ class Event(dict):
             sent=sent,
             source=source or {},
             target=target,
-            in_reply_to_event=in_reply_to_event
+            inReplyToEvent=inReplyToEvent
         )
 
         self._stopped = False
