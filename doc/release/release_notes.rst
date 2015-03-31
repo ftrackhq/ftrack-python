@@ -7,6 +7,12 @@
 Release Notes
 *************
 
+.. release:: next
+
+    .. change:: fixed
+
+        Event hub raises TypeError when listening to ftrack.update events.
+
 .. release:: 0.1.0
     :date: 2015-03-25
 
