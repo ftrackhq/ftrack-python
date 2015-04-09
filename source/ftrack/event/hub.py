@@ -775,7 +775,7 @@ class EventHub(object):
 
     def _emit_event_packet(self, event, args, callback):
         '''Send event packet.'''
-        data = self.encode(
+        data = self._encode(
             dict(name=event, args=[args])
         )
         self._send_packet(
@@ -787,7 +787,7 @@ class EventHub(object):
         packet_identifier = packet_identifier.rstrip('+')
         data = str(packet_identifier)
         if args:
-            data += '+{1}'.format(self.encode(args))
+            data += '+{1}'.format(self._encode(args))
 
         self._send_packet(self._code_name_mapping['acknowledge'], data=data)
 
@@ -878,7 +878,7 @@ class EventHub(object):
             self.logger.debug('Message received: {0}'.format(data))
 
         elif code_name == 'event':
-            payload = self.decode(data)
+            payload = self._decode(data)
             args = payload.get('args', [])
 
             if len(args) == 1:
@@ -900,7 +900,7 @@ class EventHub(object):
             acknowledged_packet_identifier = int(parts[0])
             args = []
             if len(parts) == 2:
-                args = self.decode(parts[1])
+                args = self._decode(parts[1])
 
             try:
                 callback = self._pop_packet_callback(
@@ -917,15 +917,15 @@ class EventHub(object):
         else:
             self.logger.debug('{0}: {1}'.format(code_name, data))
 
-    def encode(self, data):
+    def _encode(self, data):
         '''Return *data* encoded as JSON formatted string.'''
         return json.dumps(
             data,
-            default=self._encode,
+            default=self._encode_default,
             ensure_ascii=False
         )
 
-    def _encode(self, item):
+    def _encode_default(self, item):
         '''Return JSON encodable version of *item*.'''
         if isinstance(item, collections.Mapping):
             if 'in_reply_to_event' in item:
@@ -933,11 +933,11 @@ class EventHub(object):
 
         return item
 
-    def decode(self, string):
+    def _decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
-        return json.loads(string, object_hook=self._decode)
+        return json.loads(string, object_hook=self._decode_object_hook)
 
-    def _decode(self, item):
+    def _decode_object_hook(self, item):
         '''Return *item* transformed.'''
         if isinstance(item, collections.Mapping):
             if 'inReplyToEvent' in item:
