@@ -490,7 +490,7 @@ class EventHub(object):
 
         '''
         event['target'] = 'id={0}'.format(source_event['source']['id'])
-        event['inReplyToEvent'] = source_event['id']
+        event['in_reply_to_event'] = source_event['id']
         if source is not None:
             event['source'] = source
 
@@ -700,7 +700,7 @@ class EventHub(object):
 
     def _handle_reply(self, event):
         '''Handle reply *event*, passing it to any registered callback.'''
-        callback = self._reply_callbacks.pop(event['inReplyToEvent'], None)
+        callback = self._reply_callbacks.pop(event['in_reply_to_event'], None)
         if callback is not None:
             callback(event)
 
@@ -775,9 +775,8 @@ class EventHub(object):
 
     def _emit_event_packet(self, event, args, callback):
         '''Send event packet.'''
-        data = json.dumps(
-            dict(name=event, args=[args]),
-            ensure_ascii=False
+        data = self.encode(
+            dict(name=event, args=[args])
         )
         self._send_packet(
             self._code_name_mapping['event'], data=data, callback=callback
@@ -788,7 +787,7 @@ class EventHub(object):
         packet_identifier = packet_identifier.rstrip('+')
         data = str(packet_identifier)
         if args:
-            data += '+{1}'.format(json.dumps(args, ensure_ascii=False))
+            data += '+{1}'.format(self.encode(args))
 
         self._send_packet(self._code_name_mapping['acknowledge'], data=data)
 
@@ -879,7 +878,7 @@ class EventHub(object):
             self.logger.debug('Message received: {0}'.format(data))
 
         elif code_name == 'event':
-            payload = json.loads(data)
+            payload = self.decode(data)
             args = payload.get('args', [])
 
             if len(args) == 1:
@@ -901,7 +900,7 @@ class EventHub(object):
             acknowledged_packet_identifier = int(parts[0])
             args = []
             if len(parts) == 2:
-                args = json.loads(parts[1])
+                args = self.decode(parts[1])
 
             try:
                 callback = self._pop_packet_callback(
@@ -917,6 +916,34 @@ class EventHub(object):
 
         else:
             self.logger.debug('{0}: {1}'.format(code_name, data))
+
+    def encode(self, data):
+        '''Return *data* encoded as JSON formatted string.'''
+        return json.dumps(
+            data,
+            default=self._encode,
+            ensure_ascii=False
+        )
+
+    def _encode(self, item):
+        '''Return JSON encodable version of *item*.'''
+        if isinstance(item, collections.Mapping):
+            if 'in_reply_to_event' in item:
+                item['inReplyToEvent'] = item.pop('in_reply_to_event')
+
+        return item
+
+    def decode(self, string):
+        '''Return decoded JSON *string* as Python object.'''
+        return json.loads(string, object_hook=self._decode)
+
+    def _decode(self, item):
+        '''Return *item* transformed.'''
+        if isinstance(item, collections.Mapping):
+            if 'inReplyToEvent' in item:
+                item['in_reply_to_event'] = item.pop('inReplyToEvent')
+
+        return item
 
 
 class _SubscriptionContext(object):
