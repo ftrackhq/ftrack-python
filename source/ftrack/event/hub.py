@@ -39,6 +39,18 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
+class _EventHubEncoder(json.JSONEncoder):
+    '''Custom JSON encoder.'''
+
+    def encode(self, data):
+        '''Encode *data*.'''
+        if isinstance(data, collections.Mapping):
+            if 'in_reply_to_event' in data:
+                data['inReplyToEvent'] = data.pop('in_reply_to_event')
+
+        return super(_EventHubEncoder, self).encode(data)
+
+
 class EventHub(object):
     '''Manage routing of events.'''
 
@@ -921,17 +933,9 @@ class EventHub(object):
         '''Return *data* encoded as JSON formatted string.'''
         return json.dumps(
             data,
-            default=self._encode_default,
+            cls=_EventHubEncoder,
             ensure_ascii=False
         )
-
-    def _encode_default(self, item):
-        '''Return JSON encodable version of *item*.'''
-        if isinstance(item, collections.Mapping):
-            if 'in_reply_to_event' in item:
-                item['inReplyToEvent'] = item.pop('in_reply_to_event')
-
-        return item
 
     def _decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
