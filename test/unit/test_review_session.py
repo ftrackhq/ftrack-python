@@ -102,3 +102,52 @@ def test_add_remove_review_session_invitee(session, new_review_session):
     review_session_invitee = session.get('ReviewSessionInvitee', invitee_id)
 
     assert not review_session_invitee
+
+
+def test_add_remove_review_session_object_statuses(
+    session, new_review_session, unique_name
+):
+    '''Test add, remove and updating review session object statuses.'''
+
+    # Get a reviewable AssetVersion from the 'client review' project.
+    asset_version = session.get(
+        'AssetVersion', 'a7519019-5910-11e4-804a-3c0754282242'
+    )
+
+    review_session_object = session.create('ReviewSessionObject', {
+        'name': unique_name,
+        'description': unique_name,
+        'version': 'Version {0}'.format(asset_version['version']),
+        'asset_version': asset_version,
+        'review_session': new_review_session
+    })
+
+    invitee = session.create('ReviewSessionInvitee', {
+        'email': 'john.doe@example.com',
+        'name': 'John Doe',
+        'review_session': new_review_session
+    })
+
+    # Create a new status and set status to approved.
+    review_session_object_status = session.create('ReviewSessionObjectStatus', {
+        'status': 'approved',
+        'invitee': invitee,
+        'review_session_object': review_session_object
+    })
+
+    session.commit()
+
+    assert review_session_object_status, 'Status created successfully.'
+
+    review_session_object_status_id = review_session_object_status['id']
+
+    session.reset()
+
+    object_status = session.get(
+        'ReviewSessionObjectStatus', review_session_object_status_id
+    )
+
+    assert object_status['status'] == 'approved'
+    assert (
+        object_status['invitee']['id'] == invitee['id']
+    )
