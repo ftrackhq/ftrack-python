@@ -68,3 +68,37 @@ def test_add_remove_review_session_objects(
         len(review_session_objects) == 1,
         'Correct number of objects on review session.'
     )
+
+
+def test_add_remove_review_session_invitee(session, new_review_session):
+    '''Test add and remove invitees from review session.'''
+    review_session_invitees = new_review_session['review_session_invitees']
+
+    assert len(review_session_invitees) == 0
+
+    review_session_invitee = session.create('ReviewSessionInvitee', {
+        'email': 'john.doe@example.com',
+        'name': 'John Doe',
+        'review_session': new_review_session
+    })
+
+    session.commit()
+
+    invitee_id = review_session_invitee['id']
+
+    review_session_invitee = session.get(
+        'ReviewSessionInvitee', invitee_id
+    )
+
+    assert review_session_invitee, 'Invitee created successfully.'
+
+    assert (
+        review_session_invitee['review_session_id'] == new_review_session['id']
+    )
+
+    session.delete(review_session_invitee)
+    session.commit()
+
+    review_session_invitee = session.get('ReviewSessionInvitee', invitee_id)
+
+    assert not review_session_invitee
