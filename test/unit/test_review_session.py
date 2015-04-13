@@ -45,6 +45,7 @@ def test_add_remove_review_session_objects(
     '''Test add and remove objects from review session.'''
     assert new_review_session, 'New review session available.'
 
+    # Get a reviewable AssetVersion from the 'client review' project.
     asset_version = session.get(
         'AssetVersion', 'a7519019-5910-11e4-804a-3c0754282242'
     )
