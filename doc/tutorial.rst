@@ -254,3 +254,41 @@ Scopes can be read and modified for entities::
     ...     task['scopes'].remove(scope)
     ... else:
     ...     task['scopes'].append(scope)
+
+.. _tutorial/review_sessions:
+
+Review sessions
+===============
+
+Client review sessions can either be queried manually or by using the a project
+instance::
+    
+    >>> review_sessions = session.query(
+    ...     'ReviewSession where name is "Weekly review"'
+    ... )
+    ... 
+    ... project_review_sessions = project['review_sessions']
+
+To create a new review session on a specific project use the
+:meth:`Session.create`::
+
+    review_session = session.create('ReviewSession', {
+    ...     'name': 'Weekly review',
+    ...     'description': 'See updates from last week.',
+    ...     'project': project
+    ... })
+
+To add objects to a review session create them using
+:meth:`Session.create` and reference a review session and an asset version.::
+
+    review_session = session.create('ReviewSessionObject', {
+    ...     'name': 'Compositing',
+    ...     'description': 'Fixed shadows.',
+    ...     'version': 'Version 3',
+    ...     'review_session': review_session,
+    ...     'asset_version': asset_version
+    ... })
+
+To list all objects in a review session::
+
+    >>> review_session_objects = review_session['review_session_objects']
