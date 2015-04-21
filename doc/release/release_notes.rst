@@ -9,6 +9,15 @@ Release Notes
 
 .. release:: next
 
+    .. change:: fixed
+        :tags: events
+
+        :meth:`ftrack.session.event_hub.subscribe` fails when `subscription`
+        argument contains special characters such as `@` or `+`.
+
+.. release:: 0.1.0
+    :date: 2015-03-25
+
     .. change:: changed
 
         Moved standardised construct entity type logic to core package (as part
