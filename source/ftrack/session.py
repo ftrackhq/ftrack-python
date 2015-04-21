@@ -372,7 +372,7 @@ class Session(object):
         # Check cache for existing entity emulating ftrack.inspection.identity
         # result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
-            (entity_type, [entity_key])
+            (str(entity_type), [str(entity_key)])
         )
         try:
             entity = self.cache.get(cache_key)

@@ -9,7 +9,7 @@ import ftrack.symbol
 def identity(entity):
     '''Return unique identity of *entity*.'''
     return (
-        entity.entity_type,
+        str(entity.entity_type),
         primary_key(entity).values()
     )
 
