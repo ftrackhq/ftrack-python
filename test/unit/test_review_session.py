@@ -1,52 +1,65 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import uuid
+
 
 def test_add_remove_review_session(session, unique_name):
     '''Test add and remove new review session to project.'''
-    project = session.query(
-        'Project where id is 5671dcb0-66de-11e1-8e6e-f23c91df25eb'
-    )[0]
+    project = session.get(
+        'Project', '5671dcb0-66de-11e1-8e6e-f23c91df25eb'
+    )
 
     review_session_count = len(project['review_sessions'])
 
+    review_session_id = str(uuid.uuid1())
     review_session = session.create('ReviewSession', {
+        'id': review_session_id,
         'name': unique_name,
         'description': unique_name,
         'project': project
     })
 
     session.commit()
+    session.reset()
 
-    assert review_session, 'Review session created successfully.'
-
-    assert (
-        (review_session_count + 1) == len(project['review_sessions']),
-        'Correct number of review sessions on project.'
+    review_session = session.get('ReviewSession', review_session_id)
+    assert review_session, 'ReviewSession with id "{0}" does not exist.'.format(
+        review_session_id
     )
 
-    review_session_id = review_session['id']
+    project_new = session.get(
+        'Project', '5671dcb0-66de-11e1-8e6e-f23c91df25eb'
+    )
+
+    new_review_session_count = len(project_new['review_sessions'])
+    assert(review_session_count + 1) == new_review_session_count
 
     session.delete(review_session)
     session.commit()
+    session.reset()
 
     review_session = session.get('ReviewSession', review_session_id)
 
-    assert not review_session, 'Review session removed successfully.'
+    assert not review_session, 'ReviewSession with id "{0}" exist.'.format(
+        review_session_id
+    )
 
 
 def test_add_remove_review_session_objects(
     session, new_review_session, unique_name
 ):
     '''Test add and remove objects from review session.'''
-    assert new_review_session, 'New review session available.'
+    new_review_session_id = new_review_session['id']
 
     # Get a reviewable AssetVersion from the 'client review' project.
     asset_version = session.get(
         'AssetVersion', 'a7519019-5910-11e4-804a-3c0754282242'
     )
 
+    review_session_object_id = str(uuid.uuid1())
     review_session_object = session.create('ReviewSessionObject', {
+        'id': review_session_object_id,
         'name': unique_name,
         'description': unique_name,
         'version': 'Version {0}'.format(asset_version['version']),
@@ -60,10 +73,15 @@ def test_add_remove_review_session_objects(
 
     review_session_objects = new_review_session['review_session_objects']
 
-    assert (
-        len(review_session_objects) == 1,
-        'Correct number of objects on review session.'
-    )
+    assert len(review_session_objects) == 1
+
+    session.delete(review_session_object)
+    session.commit()
+    session.reset()
+
+    review_session = session.get('ReviewSession', new_review_session_id)
+
+    assert len(review_session['review_session_objects']) == 1
 
 
 def test_add_remove_review_session_invitee(session, new_review_session):
