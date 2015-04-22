@@ -113,13 +113,11 @@ def new_review_session(request, session, unique_name):
 
     session.commit()
 
-    # TODO: Add delete to the test. Not possible at the moment due to API
-    # permissions not having the same options as PROJECT permissions.
-    # New API does not seem to support the use of personal API keys either.
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(review_session)
+        session.commit()
 
-    # def cleanup():
-    #     '''Remove created entity.'''
-    #     session.delete(review_session)
-    #     session.commit()
+    request.addfinalizer(cleanup)
 
     return review_session

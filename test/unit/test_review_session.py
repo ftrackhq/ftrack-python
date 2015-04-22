@@ -25,18 +25,14 @@ def test_add_remove_review_session(session, unique_name):
         'Correct number of review sessions on project.'
     )
 
-    # TODO: Add delete to the test. Not possible at the moment due to API
-    # permissions not having the same options as PROJECT permissions.
-    # New API does not seem to support the use of personal API keys either.
+    review_session_id = review_session['id']
 
-    # review_session_id = review_session['id']
+    session.delete(review_session)
+    session.commit()
 
-    # session.delete(review_session)
-    # session.commit()
+    review_session = session.get('ReviewSession', review_session_id)
 
-    # review_session = session.get('ReviewSession', review_session_id)
-
-    # assert not review_session, 'Review session removed successfully.'
+    assert not review_session, 'Review session removed successfully.'
 
 
 def test_add_remove_review_session_objects(
