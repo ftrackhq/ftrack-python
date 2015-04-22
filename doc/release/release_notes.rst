@@ -10,8 +10,15 @@ Release Notes
 .. release:: next
 
     .. change:: fixed
+        :tags: events
 
         Event hub raises TypeError when listening to ftrack.update events.
+
+    .. change:: fixed
+        :tags: events
+
+        :meth:`ftrack.session.event_hub.subscribe` fails when `subscription`
+        argument contains special characters such as `@` or `+`.
 
 .. release:: 0.1.0
     :date: 2015-03-25
