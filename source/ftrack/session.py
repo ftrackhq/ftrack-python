@@ -444,30 +444,13 @@ class Session(object):
         merged and *entity* may be modified in place.
 
         '''
-        merged_entity = entity
-
         if _seen is None:
             _seen = {}
 
         with self.auto_populating(False):
-            # Check for existing instance of entity in cache.
             entity_key = self.cache_key_maker.key(
                 ftrack.inspection.identity(entity)
             )
-            try:
-                existing_entity = self.cache.get(entity_key)
-
-            except KeyError:
-                # Record new instance in cache.
-                self.cache.set(entity_key, entity)
-
-            else:
-                if entity is not existing_entity:
-                    # Merge set attributes from entity to cache.
-                    existing_entity.merge(entity)
-
-                    # Set returned entity to be existing cached instance.
-                    merged_entity = existing_entity
 
             # Recursively merge entity references that were present in source
             # entity if not already done.
@@ -475,13 +458,13 @@ class Session(object):
                 _seen[entity_key] = True
 
                 for attribute in entity.attributes:
-                    source_value = attribute.get_remote_value(entity)
-                    if source_value is not ftrack.symbol.NOT_SET:
-                        value = attribute.get_remote_value(merged_entity)
+                    value = attribute.get_remote_value(entity)
+
+                    if value is not ftrack.symbol.NOT_SET:
 
                         if isinstance(value, ftrack.entity.base.Entity):
                             attribute.set_remote_value(
-                                merged_entity, self.merge(value, _seen=_seen)
+                                entity, self.merge(value, _seen=_seen)
                             )
 
                         elif isinstance(value, ftrack.collection.Collection):
@@ -498,6 +481,27 @@ class Session(object):
                                 value.mutable = mutable
 
                         # TODO: Handle DictionaryAttributeCollection.
+
+            # Check for existing instance of entity in cache.
+            try:
+                existing_entity = self.cache.get(entity_key)
+
+            except KeyError:
+                # Record new instance in cache.
+                self.cache.set(entity_key, entity)
+                merged_entity = entity
+
+            else:
+                # Merge differing attributes from entity to existing entity and
+                # update cached copy if required.
+                if entity is not existing_entity:
+                    changes = existing_entity.merge(entity)
+                    if changes:
+                        # Ensure changes stored to cache.
+                        self.cache.set(entity_key, existing_entity)
+
+                # Set returned entity to be existing cached instance.
+                merged_entity = existing_entity
 
         return merged_entity
 
