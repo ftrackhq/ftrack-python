@@ -21,10 +21,14 @@ import abc
 import copy
 import inspect
 import re
+import anydbm
+import contextlib
 try:
     import cPickle as pickle
 except ImportError:  # pragma: no cover
     import pickle
+
+import ftrack.symbol
 
 
 class Cache(object):
@@ -128,15 +132,72 @@ class ProxyCache(Cache):
         '''
         return self.proxied.keys()
 
-    def clear(self, pattern=None):
-        '''Remove all keys matching *pattern*.
 
-        *pattern* should be a regular expression string.
+class LayeredCache(Cache):
+    '''Layered cache.'''
 
-        If *pattern* is None then all keys will be removed.
+    def __init__(self, caches):
+        '''Initialise cache with *caches*.'''
+        self._caches = caches
+
+    def get(self, key):
+        '''Return value for *key*.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        Attempt to retrieve from cache layers in turn, starting with shallowest.
+        If value retrieved, then also set the value in each higher level cache
+        up from where retrieved.
 
         '''
-        return self.proxied.clear(pattern=pattern)
+        target_caches = []
+        value = ftrack.symbol.NOT_SET
+
+        for cache in self._caches:
+            try:
+                value = cache.get(key)
+            except KeyError:
+                target_caches.append(cache)
+                continue
+            else:
+                break
+
+        if value is ftrack.symbol.NOT_SET:
+            raise KeyError(key)
+
+        # Set value on all higher level caches.
+        for cache in target_caches:
+            cache.set(key, value)
+
+        return value
+
+    def set(self, key, value):
+        '''Set *value* for *key*.'''
+        for cache in self._caches:
+            cache.set(key, value)
+
+    def remove(self, key):
+        '''Remove *key*.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        '''
+        for cache in self._caches:
+            cache.remove(key)
+
+    def keys(self):
+        '''Return list of keys at this current time.
+
+        .. warning::
+
+            Actual keys may differ from those returned due to timing of access.
+
+        '''
+        keys = []
+        for cache in self._caches:
+            keys.extend(cache.keys())
+
+        return list(set(keys))
 
 
 class MemoryCache(Cache):
@@ -176,6 +237,102 @@ class MemoryCache(Cache):
 
         '''
         return self._cache.keys()
+
+
+class FileCache(Cache):
+    '''File based cache that uses :mod:`anydbm` module.
+
+    .. note::
+
+        No locking of the underlying file is performed.
+
+    '''
+
+    def __init__(self, path):
+        '''Initialise cache at *path*.'''
+        self.path = path
+
+        # Initialise cache.
+        cache = anydbm.open(self.path, 'c')
+        cache.close()
+
+        super(FileCache, self).__init__()
+
+    @contextlib.contextmanager
+    def _database(self):
+        '''Yield opened database file.'''
+        cache = anydbm.open(self.path, 'w')
+        try:
+            yield cache
+        finally:
+            cache.close()
+
+    def get(self, key):
+        '''Return value for *key*.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        '''
+        with self._database() as cache:
+            return cache[key]
+
+    def set(self, key, value):
+        '''Set *value* for *key*.'''
+        with self._database() as cache:
+            cache[key] = value
+
+    def remove(self, key):
+        '''Remove *key*.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        '''
+        with self._database() as cache:
+            del cache[key]
+
+    def keys(self):
+        '''Return list of keys at this current time.
+
+        .. warning::
+
+            Actual keys may differ from those returned due to timing of access.
+
+        '''
+        with self._database() as cache:
+            return cache.keys()
+
+
+class SerialisedCache(ProxyCache):
+    '''Proxied cache that stores values as serialised data.'''
+
+    def __init__(self, proxied, encode=None, decode=None):
+        '''Initialise cache with *encode* and *decode* callables.
+
+        *proxied* is the underlying cache to use for storage.
+
+        '''
+        self.encode = encode
+        self.decode = decode
+        super(SerialisedCache, self).__init__(proxied)
+
+    def get(self, key):
+        '''Return value for *key*.
+
+        Raise :exc:`KeyError` if *key* not found.
+
+        '''
+        value = super(SerialisedCache, self).get(key)
+        if self.decode:
+            value = self.decode(value)
+
+        return value
+
+    def set(self, key, value):
+        '''Set *value* for *key*.'''
+        if self.encode:
+            value = self.encode(value)
+
+        super(SerialisedCache, self).set(key, value)
 
 
 class KeyMaker(object):
