@@ -33,7 +33,7 @@ class Parser(object):
         '''Construct and return parser.'''
         field = Word(alphanums + '_.')
         operator = oneOf(self._operators.keys())
-        value = Word(alphanums + '-_,./*')
+        value = Word(alphanums + '-_,./*@+')
         quoted_value = quotedString('quoted_value').setParseAction(removeQuotes)
 
         condition = Group(
