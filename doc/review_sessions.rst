@@ -7,7 +7,7 @@
 Review sessions
 ***************
 
-Client review sessions can either be queried manually or by using the a project
+Client review sessions can either be queried manually or by using a project
 instance.
 
 .. code-block:: python
@@ -18,8 +18,7 @@ instance.
     
     project_review_sessions = project['review_sessions']
 
-To create a new review session on a specific project use the
-:meth:`Session.create`.
+To create a new review session on a specific project use :meth:`Session.create`.
 
 .. code-block:: python
 
