@@ -223,12 +223,52 @@ class Entity(collections.MutableMapping):
             del self[attribute]
 
     def merge(self, entity):
-        '''Merge *entity* attribute values and other data into this entity.'''
+        '''Merge *entity* attribute values and other data into this entity.
+
+        Only merge values from *entity* that are not
+        :attr:`ftrack.symbol.NOT_SET`.
+
+        Return a list of changes made with each change being a mapping with
+        the keys:
+
+            * attribute_type - Either 'remote' or 'local'.
+            * attribute_name - The name of the attribute modified.
+            * old_value - The previous value of the attribute.
+            * new_value - The new merged value of the attribute.
+
+        '''
+        changes = []
+
         for other_attribute in entity.attributes:
-            value = other_attribute.get_remote_value(entity)
-            if value is not ftrack.symbol.NOT_SET:
-                attribute = self.attributes.get(other_attribute.name)
-                attribute.set_remote_value(self, value)
+            attribute = self.attributes.get(other_attribute.name)
+
+            # Local attributes.
+            other_local_value = other_attribute.get_local_value(entity)
+            if other_local_value is not ftrack.symbol.NOT_SET:
+                local_value = attribute.get_local_value(self)
+                if local_value != other_local_value:
+                    attribute.set_local_value(self, other_local_value)
+                    changes.append({
+                        'attribute_type': 'local',
+                        'attribute_name': attribute.name,
+                        'old_value': local_value,
+                        'new_value': other_local_value
+                    })
+
+            # Remote attributes.
+            other_remote_value = other_attribute.get_remote_value(entity)
+            if other_remote_value is not ftrack.symbol.NOT_SET:
+                remote_value = attribute.get_remote_value(self)
+                if remote_value != other_remote_value:
+                    attribute.set_remote_value(self, other_remote_value)
+                    changes.append({
+                        'attribute_type': 'remote',
+                        'attribute_name': attribute.name,
+                        'old_value': remote_value,
+                        'new_value': other_remote_value
+                    })
+
+        return changes
 
     def _populate_unset_scalar_attributes(self):
         '''Populate all unset scalar attributes in one query.'''
