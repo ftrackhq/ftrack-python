@@ -62,7 +62,6 @@ class Cache(object):
 
         '''
 
-    @abc.abstractmethod
     def keys(self):
         '''Return list of keys at this current time.
 
@@ -71,6 +70,7 @@ class Cache(object):
             Actual keys may differ from those returned due to timing of access.
 
         '''
+        raise NotImplementedError()
 
     def clear(self, pattern=None):
         '''Remove all keys matching *pattern*.
