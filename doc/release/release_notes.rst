@@ -13,7 +13,7 @@ Release Notes
         :tags: Client review
         
         Added support for handling review sessions. Check out
-        the :ref:`the tutorial <tutorial/review_sessions>`.
+        the :ref:`the tutorial <review_sessions>`.
 
 .. release:: 0.1.0
     :date: 2015-03-25
