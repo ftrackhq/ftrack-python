@@ -82,7 +82,8 @@ class Session(object):
         *cache* should be an instance of a cache that fulfils the
         :class:`ftrack.cache.Cache` interface and will be used as the cache for
         the session. If not specified, a :class:`~ftrack.cache.MemoryCache` will
-        be used.
+        be used. It can also be a callable that will be called with the session
+        instance as sole argument.
 
         *cache_key_maker* should be an instance of a key maker that fulfils the
         :class:`ftrack.cache.KeyMaker` interface and will be used to generate
@@ -149,6 +150,9 @@ class Session(object):
         self.cache = cache
         if self.cache is None:
             self.cache = ftrack.cache.MemoryCache()
+
+        if callable(self.cache):
+            self.cache = self.cache(self)
 
         self._states = dict(
             created=collections.OrderedDict(),
