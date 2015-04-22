@@ -3,6 +3,8 @@
 
 import uuid
 
+import ftrack
+
 
 def test_add_remove_review_session(session, unique_name):
     '''Test add and remove new review session to project.'''
@@ -21,7 +23,8 @@ def test_add_remove_review_session(session, unique_name):
     })
 
     session.commit()
-    session.reset()
+
+    session = ftrack.Session()
 
     review_session = session.get('ReviewSession', review_session_id)
     assert review_session, 'ReviewSession with id "{0}" does not exist.'.format(
@@ -37,13 +40,12 @@ def test_add_remove_review_session(session, unique_name):
 
     session.delete(review_session)
     session.commit()
-    session.reset()
+
+    session = ftrack.Session()
 
     review_session = session.get('ReviewSession', review_session_id)
 
-    assert not review_session, 'ReviewSession with id "{0}" exist.'.format(
-        review_session_id
-    )
+    assert not review_session
 
 
 def test_add_remove_review_session_objects(
@@ -77,11 +79,12 @@ def test_add_remove_review_session_objects(
 
     session.delete(review_session_object)
     session.commit()
-    session.reset()
+
+    session = ftrack.Session()
 
     review_session = session.get('ReviewSession', new_review_session_id)
 
-    assert len(review_session['review_session_objects']) == 1
+    assert len(review_session['review_session_objects']) == 0
 
 
 def test_add_remove_review_session_invitee(session, new_review_session):
@@ -155,7 +158,7 @@ def test_add_remove_review_session_object_statuses(
 
     review_session_object_status_id = review_session_object_status['id']
 
-    session.reset()
+    session = ftrack.Session()
 
     object_status = session.get(
         'ReviewSessionObjectStatus', review_session_object_status_id
