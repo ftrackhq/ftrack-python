@@ -1,10 +1,10 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-import ftrack.entity.factory
+import ftrack_api.entity.factory
 
 
-class Factory(ftrack.entity.factory.StandardFactory):
+class Factory(ftrack_api.entity.factory.StandardFactory):
     '''Entity class factory.'''
 
     def create(self, schema, bases=None):

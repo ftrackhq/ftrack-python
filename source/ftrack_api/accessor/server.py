@@ -11,7 +11,7 @@ import requests
 
 from .base import Accessor
 from ..data import String
-from ftrack.exception import AccessorOperationFailedError
+from ftrack_api.exception import AccessorOperationFailedError
 
 
 class ServerFile(String):
@@ -141,7 +141,7 @@ class _ServerAccessor(Accessor):
         self._session = session
 
     def open(self, resource_identifier, mode='rb'):
-        '''Return :py:class:`~ftrack.Data` for *resource_identifier*.'''
+        '''Return :py:class:`~ftrack_api.Data` for *resource_identifier*.'''
         return ServerFile(resource_identifier, session=self._session, mode=mode)
 
     def remove(self, resourceIdentifier):

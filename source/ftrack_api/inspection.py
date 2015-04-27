@@ -3,7 +3,7 @@
 
 import collections
 
-import ftrack.symbol
+import ftrack_api.symbol
 
 
 def identity(entity):
@@ -25,7 +25,7 @@ def primary_key(entity):
     primary_key = collections.OrderedDict()
     for name in entity.primary_key_attributes:
         value = entity[name]
-        if value is ftrack.symbol.NOT_SET:
+        if value is ftrack_api.symbol.NOT_SET:
             raise KeyError(
                 'Missing required value for primary key attribute "{0}" on '
                 'entity {1}.'.format(name, entity)

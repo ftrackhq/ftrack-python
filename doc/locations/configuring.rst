@@ -26,7 +26,7 @@ Locations can be configured manually when using a session by retrieving the
 location and setting the appropriate attributes::
 
     location = session.query('Location where name is "my.location"')[0]
-    location.structure = ftrack.structure.id.IdStructure()
+    location.structure = ftrack_api.structure.id.IdStructure()
     location.priority = 50
 
 Configuring automatically
@@ -40,13 +40,13 @@ then be managed centrally if desired.
 The configuration is handled through the standard events system via a topic
 *ftrack.session.configure-location*. Set up an :ref:`event listener plugin
 <events>` as normal with a register function that accepts a
-:class:`~ftrack.session.Session` instance. Then register a callback against the
+:class:`~ftrack_api.session.Session` instance. Then register a callback against the
 relevant topic to configure locations at the appropriate time::
 
-    import ftrack
-    import ftrack.entity.location
-    import ftrack.accessor.disk
-    import ftrack.structure.id
+    import ftrack_api
+    import ftrack_api.entity.location
+    import ftrack_api.accessor.disk
+    import ftrack_api.structure.id
 
 
     def configure_locations(event):
@@ -55,9 +55,9 @@ relevant topic to configure locations at the appropriate time::
 
         # Find location(s) and customise instances.
         location = session.query('Location where name is "my.location"')[0]
-        ftrack.mixin(location, ftrack.entity.location.UnmanagedLocationMixin)
-        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack.structure.id.IdStructure()
+        ftrack_api.mixin(location, ftrack_api.entity.location.UnmanagedLocationMixin)
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack_api.structure.id.IdStructure()
         location.priority = 50
 
 

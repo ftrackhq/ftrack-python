@@ -1,7 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-import ftrack.event.subscription
+import ftrack_api.event.subscription
 
 
 class Subscriber(object):
@@ -9,7 +9,9 @@ class Subscriber(object):
 
     def __init__(self, subscription, callback, metadata, priority):
         '''Initialise subscriber.'''
-        self.subscription = ftrack.event.subscription.Subscription(subscription)
+        self.subscription = ftrack_api.event.subscription.Subscription(
+            subscription
+        )
         self.callback = callback
         self.metadata = metadata
         self.priority = priority

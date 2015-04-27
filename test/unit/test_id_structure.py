@@ -1,8 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import ftrack
-import ftrack.structure.id
+import ftrack_api
+import ftrack_api.structure.id
 
 
 class TestIdStructure(object):
@@ -16,13 +16,13 @@ class TestIdStructure(object):
 
     def test_get_resource_identifier(self):
         '''Get resource identifier from structure.'''
-        session = ftrack.Session()
+        session = ftrack_api.Session()
         file_component = session.create('FileComponent', {
             'name': 'my_component_name',
             'file_type': '.png'
         })
 
-        structure = ftrack.structure.id.IdStructure(prefix='/path')
+        structure = ftrack_api.structure.id.IdStructure(prefix='/path')
 
         resource_identifier = structure.get_resource_identifier(file_component)
 
