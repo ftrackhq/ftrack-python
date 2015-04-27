@@ -121,3 +121,42 @@ def new_review_session(request, session, unique_name):
     request.addfinalizer(cleanup)
 
     return review_session
+
+
+@pytest.fixture()
+def new_review_session_object(request, session, unique_name):
+    '''Return a new review session.'''
+
+    # Create new review session on 'client review' test project.
+    project = session.query(
+        'Project where id is 81b98c47-5910-11e4-901f-3c0754282242'
+    )[0]
+
+    review_session = session.create('ReviewSession', {
+        'name': unique_name,
+        'description': unique_name,
+        'project': project
+    })
+
+    # Get a reviewable AssetVersion from the 'client review' project.
+    asset_version = session.get(
+        'AssetVersion', 'a7519019-5910-11e4-804a-3c0754282242'
+    )
+    review_session_object = session.create('ReviewSessionObject', {
+        'name': unique_name,
+        'description': unique_name,
+        'version': 'Version {0}'.format(asset_version['version']),
+        'asset_version': asset_version,
+        'review_session': review_session
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(review_session)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return review_session_object
