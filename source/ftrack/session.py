@@ -324,12 +324,8 @@ class Session(object):
         appropriate defaults for missing data. If True then reconstruct an
         existing entity.
 
-        Constructed entity will be automatically :meth:`merged <Session.merge>`
-        into the session.
-
         '''
         entity = self._create(entity_type, data, reconstructing=reconstructing)
-        entity = self.merge(entity)
         return entity
 
     def _create(self, entity_type, data, reconstructing):
@@ -760,13 +756,15 @@ class Session(object):
         # First configure builtin locations, by injecting them into local cache.
 
         # Origin.
-        location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.origin',
-                id=ftrack.symbol.ORIGIN_LOCATION_ID
-            ),
-            reconstructing=True
+        location = self.merge(
+            self.create(
+                'Location',
+                data=dict(
+                    name='ftrack.origin',
+                    id=ftrack.symbol.ORIGIN_LOCATION_ID
+                ),
+                reconstructing=True
+            )
         )
         ftrack.mixin(
             location, ftrack.entity.location.OriginLocationMixin,
@@ -777,13 +775,15 @@ class Session(object):
         location.priority = 100
 
         # Unmanaged.
-        location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.unmanaged',
-                id=ftrack.symbol.UNMANAGED_LOCATION_ID
-            ),
-            reconstructing=True
+        location = self.merge(
+            self.create(
+                'Location',
+                data=dict(
+                    name='ftrack.unmanaged',
+                    id=ftrack.symbol.UNMANAGED_LOCATION_ID
+                ),
+                reconstructing=True
+            )
         )
         ftrack.mixin(
             location, ftrack.entity.location.UnmanagedLocationMixin,
@@ -797,13 +797,15 @@ class Session(object):
         location.priority = 90
 
         # Review.
-        location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.review',
-                id=ftrack.symbol.REVIEW_LOCATION_ID
-            ),
-            reconstructing=True
+        location = self.merge(
+            self.create(
+                'Location',
+                data=dict(
+                    name='ftrack.review',
+                    id=ftrack.symbol.REVIEW_LOCATION_ID
+                ),
+                reconstructing=True
+            )
         )
         ftrack.mixin(
             location, ftrack.entity.location.UnmanagedLocationMixin,
@@ -814,13 +816,15 @@ class Session(object):
         location.priority = 110
 
         # Server.
-        location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.server',
-                id=ftrack.symbol.SERVER_LOCATION_ID
-            ),
-            reconstructing=True
+        location = self.merge(
+            self.create(
+                'Location',
+                data=dict(
+                    name='ftrack.server',
+                    id=ftrack.symbol.SERVER_LOCATION_ID
+                ),
+                reconstructing=True
+            )
         )
         location.accessor = ftrack.accessor.server._ServerAccessor(
             session=self
