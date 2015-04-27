@@ -517,7 +517,13 @@ class Session(object):
 
                 # Merge differing attributes from entity to existing entity and
                 # update cached copy if required.
-                if entity is not existing_entity:
+                if entity is existing_entity:
+                    self.logger.debug(
+                        '{0}Entity and existing entity are same instance.'
+                        .format(indent)
+                    )
+
+                else:
                     self.logger.debug(
                         '{0}Merging new data into existing entity.'
                         .format(indent)
