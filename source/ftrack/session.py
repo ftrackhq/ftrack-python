@@ -911,9 +911,12 @@ class Session(object):
           loading any from the remote.
         * *modified_only* - Encode only attributes that have been modified
           locally.
+        * *persisted_only* - Encode only remote (persisted) attribute values.
 
         '''
-        entity_attribute_strategies = ('all', 'set_only', 'modified_only')
+        entity_attribute_strategies = (
+            'all', 'set_only', 'modified_only', 'persisted_only'
+        )
         if entity_attribute_strategy not in entity_attribute_strategies:
             raise ValueError(
                 'Unsupported entity_attribute_strategy "{0}". Must be one of '
@@ -965,6 +968,9 @@ class Session(object):
                     elif entity_attribute_strategy == 'modified_only':
                         if attribute.is_modified(item):
                             value = attribute.get_local_value(item)
+
+                    elif entity_attribute_strategy == 'persisted_only':
+                        value = attribute.get_remote_value(item)
 
                     if value is not ftrack.symbol.NOT_SET:
                         if isinstance(
