@@ -437,13 +437,20 @@ class Session(object):
 
         return data
 
-    def merge(self, entity, _seen=None):
+    def merge(self, entity, _seen=None, _depth=0):
         '''Merge *entity* into session returning merged entity.
 
         Merge is recursive so any references to other entities will also be
         merged and *entity* may be modified in place.
 
         '''
+        indent = '{0}|-'.format('  ' * _depth)
+
+        self.logger.debug(
+            '{0}Merging into session: {1} at {2}'
+            .format(indent, entity, id(entity))
+        )
+
         if _seen is None:
             _seen = {}
 
@@ -464,7 +471,10 @@ class Session(object):
 
                         if isinstance(value, ftrack.entity.base.Entity):
                             attribute.set_remote_value(
-                                entity, self.merge(value, _seen=_seen)
+                                entity,
+                                self.merge(
+                                    value, _seen=_seen, _depth=_depth + 1
+                                )
                             )
 
                         elif isinstance(value, ftrack.collection.Collection):
@@ -475,7 +485,7 @@ class Session(object):
                             try:
                                 for index, entry in enumerate(value):
                                     value[index] = self.merge(
-                                        entry, _seen=_seen
+                                        entry, _seen=_seen, _depth=_depth + 1
                                     )
                             finally:
                                 value.mutable = mutable
@@ -484,21 +494,48 @@ class Session(object):
 
             # Check for existing instance of entity in cache.
             try:
+                self.logger.debug(
+                    '{0}Checking for entity in cache with key {1}'
+                    .format(indent, entity_key)
+                )
                 existing_entity = self.cache.get(entity_key)
 
             except KeyError:
                 # Record new instance in cache.
                 self.cache.set(entity_key, entity)
                 merged_entity = entity
+                self.logger.debug(
+                    '{0}Entity not already in cache. Storing to cache {1} at '
+                    '{2}'.format(indent, entity, id(entity))
+                )
 
             else:
+                self.logger.debug(
+                    '{0}Retrieved existing entity from cache: {1} at {2}'
+                    .format(indent, existing_entity, id(existing_entity))
+                )
+
                 # Merge differing attributes from entity to existing entity and
                 # update cached copy if required.
                 if entity is not existing_entity:
+                    self.logger.debug(
+                        '{0}Merging new data into existing entity.'
+                        .format(indent)
+                    )
                     changes = existing_entity.merge(entity)
                     if changes:
                         # Ensure changes stored to cache.
                         self.cache.set(entity_key, existing_entity)
+                        self.logger.debug(
+                            '{0}Cache updated with merged entity.'
+                            .format(indent)
+                        )
+                    else:
+                        self.logger.debug(
+                            '{0}Cache not updated with merged entity as no '
+                            'differences detected.'
+                            .format(indent)
+                        )
 
                 # Set returned entity to be existing cached instance.
                 merged_entity = existing_entity
