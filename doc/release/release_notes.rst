@@ -9,6 +9,12 @@ Release Notes
 
 .. release:: next
 
+    .. change:: changed
+
+        Made Session.merge method private (:meth:`Session._merge
+        <ftrack.session.Session._merge>`) as is no longer suitable for general
+        usage (more specialised).
+
     .. change:: fixed
         :tags: events
 

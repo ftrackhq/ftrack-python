@@ -420,11 +420,11 @@ class Session(object):
         # Merge entities into local cache and return merged entities.
         data = []
         for entity in results[0]['data']:
-            data.append(self.merge(entity))
+            data.append(self._merge(entity))
 
         return data
 
-    def merge(self, entity, _seen=None, _depth=0):
+    def _merge(self, entity, _seen=None, _depth=0):
         '''Merge *entity* into session returning merged entity.
 
         Merge is recursive so any references to other entities will also be
@@ -459,7 +459,7 @@ class Session(object):
                         if isinstance(value, ftrack.entity.base.Entity):
                             attribute.set_remote_value(
                                 entity,
-                                self.merge(
+                                self._merge(
                                     value, _seen=_seen, _depth=_depth + 1
                                 )
                             )
@@ -471,7 +471,7 @@ class Session(object):
                             value.mutable = True
                             try:
                                 for index, entry in enumerate(value):
-                                    value[index] = self.merge(
+                                    value[index] = self._merge(
                                         entry, _seen=_seen, _depth=_depth + 1
                                     )
                             finally:
@@ -662,7 +662,7 @@ class Session(object):
 
                 if entry['action'] in ('create', 'update'):
                     # Merge returned entities into local cache.
-                    self.merge(entry['data'])
+                    self._merge(entry['data'])
 
                 elif entry['action'] == 'delete':
                     # TODO: Expunge entity from cache.
@@ -747,7 +747,7 @@ class Session(object):
         # First configure builtin locations, by injecting them into local cache.
 
         # Origin.
-        location = self.merge(
+        location = self._merge(
             self.create(
                 'Location',
                 data=dict(
@@ -766,7 +766,7 @@ class Session(object):
         location.priority = 100
 
         # Unmanaged.
-        location = self.merge(
+        location = self._merge(
             self.create(
                 'Location',
                 data=dict(
@@ -788,7 +788,7 @@ class Session(object):
         location.priority = 90
 
         # Review.
-        location = self.merge(
+        location = self._merge(
             self.create(
                 'Location',
                 data=dict(
@@ -807,7 +807,7 @@ class Session(object):
         location.priority = 110
 
         # Server.
-        location = self.merge(
+        location = self._merge(
             self.create(
                 'Location',
                 data=dict(
