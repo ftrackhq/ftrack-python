@@ -127,9 +127,8 @@ class Entity(collections.MutableMapping):
 
     def __repr__(self):
         '''Return representation of instance.'''
-        return '<dynamic ftrack {0} object at {1:#0{2}x}>'.format(
-            self.__class__.__name__, id(self),
-            '18' if sys.maxsize > 2**32 else '10'
+        return '<dynamic ftrack {0} object {1}>'.format(
+            self.__class__.__name__, id(self)
         )
 
     def __str__(self):
