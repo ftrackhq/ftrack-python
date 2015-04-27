@@ -842,7 +842,7 @@ class Session(object):
         data = self.encode(data, entity_attribute_strategy='modified_only')
 
         self.logger.debug(
-            'Calling server {0} with {1}'.format(url, data)
+            'Calling server {0} with {1!r}'.format(url, data)
         )
 
         response = self._request.post(
@@ -882,6 +882,10 @@ class Session(object):
             raise ftrack.exception.ServerError(message)
 
         else:
+            self.logger.debug(
+                'Response: {0!r}'.format(response.text)
+            )
+
             result = self.decode(response.text)
 
             if 'exception' in result:
