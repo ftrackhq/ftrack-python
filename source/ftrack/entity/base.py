@@ -65,6 +65,7 @@ class Entity(collections.MutableMapping):
             )
         )
 
+        self._ignore_data_keys = ['__entity_type__']
         if not reconstructing:
             self._construct(data)
         else:
@@ -85,6 +86,9 @@ class Entity(collections.MutableMapping):
 
         # Data represents locally set values.
         for key, value in data.items():
+            if key in self._ignore_data_keys:
+                continue
+
             attribute = self.__class__.attributes.get(key)
             if attribute is None:
                 self.logger.debug(
@@ -108,6 +112,9 @@ class Entity(collections.MutableMapping):
         '''Reconstruct from *data*.'''
         # Data represents remote values.
         for key, value in data.items():
+            if key in self._ignore_data_keys:
+                continue
+
             attribute = self.__class__.attributes.get(key)
             if attribute is None:
                 self.logger.debug(
