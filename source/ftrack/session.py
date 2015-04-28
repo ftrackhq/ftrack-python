@@ -431,15 +431,15 @@ class Session(object):
         merged and *entity* may be modified in place.
 
         '''
+        if _seen is None:
+            _seen = {}
+
         indent = '{0}|-'.format('  ' * _depth)
 
         self.logger.debug(
             '{0}Merging into session: {1} at {2}'
             .format(indent, entity, id(entity))
         )
-
-        if _seen is None:
-            _seen = {}
 
         with self.auto_populating(False):
             entity_key = self.cache_key_maker.key(
@@ -448,36 +448,7 @@ class Session(object):
 
             # Recursively merge entity references that were present in source
             # entity if not already done.
-            if entity_key not in _seen:
-                _seen[entity_key] = True
-
-                for attribute in entity.attributes:
-                    value = attribute.get_remote_value(entity)
-
-                    if value is not ftrack.symbol.NOT_SET:
-
-                        if isinstance(value, ftrack.entity.base.Entity):
-                            attribute.set_remote_value(
-                                entity,
-                                self._merge(
-                                    value, _seen=_seen, _depth=_depth + 1
-                                )
-                            )
-
-                        elif isinstance(value, ftrack.collection.Collection):
-                            # Temporarily make collection mutable so that
-                            # entities within it can be merged.
-                            mutable = value.mutable
-                            value.mutable = True
-                            try:
-                                for index, entry in enumerate(value):
-                                    value[index] = self._merge(
-                                        entry, _seen=_seen, _depth=_depth + 1
-                                    )
-                            finally:
-                                value.mutable = mutable
-
-                        # TODO: Handle DictionaryAttributeCollection.
+            self._merge_references(entity, _seen=_seen, _depth=_depth)
 
             # Check for existing instance of entity in cache.
             try:
@@ -511,6 +482,12 @@ class Session(object):
                     )
 
                 else:
+                    # Expand entity references recursively so that all cached
+                    # objects in tree retrieved and set on returned entity.
+                    self._merge_references(
+                        existing_entity, _seen=_seen, _depth=_depth
+                    )
+
                     self.logger.debug(
                         '{0}Merging new data into existing entity.'
                         .format(indent)
@@ -534,6 +511,61 @@ class Session(object):
                 merged_entity = existing_entity
 
         return merged_entity
+
+    def _merge_references(self, entity, _seen=None, _depth=0):
+        '''Recursively merge entity references in *entity*.'''
+        if _seen is None:
+            _seen = {}
+
+        indent = '{0}|-'.format('  ' * _depth)
+
+        entity_address = id(entity)
+        if entity_address in _seen:
+            return
+
+        else:
+            _seen[entity_address] = True
+
+        for attribute in entity.attributes:
+            value = attribute.get_remote_value(entity)
+
+            if value is not ftrack.symbol.NOT_SET:
+
+                if isinstance(value, ftrack.entity.base.Entity):
+                    self.logger.debug(
+                        '{0}Merging entity reference for attribute {1}.'
+                        .format(indent, attribute)
+                    )
+                    attribute.set_remote_value(
+                        entity,
+                        self._merge(
+                            value, _seen=_seen, _depth=_depth + 1
+                        )
+                    )
+
+                elif isinstance(value, ftrack.collection.Collection):
+                    self.logger.debug(
+                        '{0}Merging collection for attribute {1}.'
+                        .format(indent, attribute)
+                    )
+                    # Temporarily make collection mutable so that
+                    # entities within it can be merged.
+                    mutable = value.mutable
+                    value.mutable = True
+                    try:
+                        for index, entry in enumerate(value):
+                            if isinstance(entry, ftrack.entity.base.Entity):
+                                self.logger.debug(
+                                    '{0}Merging entity reference in collection '
+                                    'at index {1}.'.format(indent, index)
+                                )
+                                value[index] = self._merge(
+                                    entry, _seen=_seen, _depth=_depth + 1
+                                )
+                    finally:
+                        value.mutable = mutable
+
+                # TODO: Handle DictionaryAttributeCollection.
 
     def populate(self, entities, projections, background=False):
         '''Populate *entities* with attributes specified by *projections*.
