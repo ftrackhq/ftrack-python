@@ -138,6 +138,7 @@ class LayeredCache(Cache):
 
     def __init__(self, caches):
         '''Initialise cache with *caches*.'''
+        super(LayeredCache, self).__init__()
         self._caches = caches
 
     def get(self, key):
