@@ -28,7 +28,7 @@ def primary_key(entity):
         if value is ftrack.symbol.NOT_SET:
             raise KeyError(
                 'Missing required value for primary key attribute "{0}" on '
-                'entity {1}.'.format(name, entity)
+                'entity {1!r}.'.format(name, entity)
             )
 
         primary_key[str(name)] = str(value)
