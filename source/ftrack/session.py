@@ -348,6 +348,10 @@ class Session(object):
         If no matching entity found, return None.
 
         '''
+        self.logger.debug(
+            'Get {0} with key {1}'.format(entity_type, entity_key)
+        )
+
         primary_key_definition = self.types[entity_type].primary_key_attributes
         if len(primary_key_definition) > 1:
             # TODO: Handle composite primary key using a syntax of
@@ -365,8 +369,15 @@ class Session(object):
         cache_key = self.cache_key_maker.key(
             (str(entity_type), [str(entity_key)])
         )
+        self.logger.debug(
+            'Checking cache for entity with key {0}'.format(cache_key)
+        )
         try:
             entity = self.cache.get(cache_key)
+            self.logger.debug(
+                'Retrieved existing entity from cache: {0} at {1}'
+                .format(entity, id(entity))
+            )
 
             # Ensure any references in the retrieved cache object are expanded.
             self._merge_references(entity)
@@ -391,6 +402,10 @@ class Session(object):
         call on access.
 
         '''
+        self.logger.debug(
+            'Query {0!r}'.format(expression)
+        )
+
         # Add in sensible projections if none specified. Note that this is
         # done here rather than on the server to allow local modification of the
         # schema setting to include commonly used custom attributes for example.
