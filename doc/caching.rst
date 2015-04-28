@@ -94,3 +94,83 @@ the system by writing a cache interface that matches the one defined by
 :class:`ftrack.cache.Cache`. This typically involves a subclass and overriding
 the :meth:`~ftrack.cache.Cache.get`, :meth:`~ftrack.cache.Cache.set` and
 :meth:`~ftrack.cache.Cache.remove` methods.
+
+
+Managing what gets cached
+=========================
+
+The cache system is quite flexible when it comes to controlling what should be
+cached.
+
+Consider you have a layered cache where the bottom layer cache should be
+persisted between sessions. In this setup you probably don't want the persisted
+cache to hold non-persisted values, such as modified entity values or newly
+created entities not yet committed to the server. However, you might want the
+top level memory cache to hold onto these values.
+
+Here is one way to set this up. First define a new proxy cache that is selective
+about what it sets::
+
+    class SelectiveCache(ftrack.cache.ProxyCache):
+        '''Proxy cache that won't cache newly created entities.'''
+
+        def __init__(self, session, *args, **kwargs):
+            self._session = session
+            super(SelectiveCache, self).__init__(*args, **kwargs)
+
+        def set(self, key, value):
+            '''Set *value* for *key*.'''
+            if isinstance(value, ftrack.entity.base.Entity):
+                if self._session.get_state(value) == 'created':
+                    return
+
+            super(SelectiveCache, self).set(key, value)
+
+Now use this custom cache to wrap the serialised cache in the setup above:
+
+.. code-block:: python
+    :emphasize-lines: 5, 6, 12
+
+    def cache_maker(session):
+        '''Return cache to use for *session*.'''
+        return ftrack.cache.LayeredCache([
+            ftrack.cache.MemoryCache(),
+            SelectiveCache(
+                session,
+                ftrack.cache.SerialisedCache(
+                    ftrack.cache.FileCache(cache_path),
+                    encode=session.encode,
+                    decode=session.decode
+                )
+            )
+        ])
+
+Now to prevent modified attributes also being persisted, tweak the encode
+settings for the file cache:
+
+.. code-block:: python
+    :emphasize-lines: 12-15
+
+    import functools
+
+
+    def cache_maker(session):
+        '''Return cache to use for *session*.'''
+        return ftrack.cache.LayeredCache([
+            ftrack.cache.MemoryCache(),
+            SelectiveCache(
+                session,
+                ftrack.cache.SerialisedCache(
+                    ftrack.cache.FileCache(cache_path),
+                    encode=functools.partial(
+                        session.encode,
+                        entity_attribute_strategy='persisted_only'
+                    ),
+                    decode=session.decode
+                )
+            )
+        ])
+
+And use the updated cache maker for your session::
+
+    session = ftrack.Session(cache=cache_maker)
