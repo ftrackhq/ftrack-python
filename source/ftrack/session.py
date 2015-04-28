@@ -368,6 +368,9 @@ class Session(object):
         try:
             entity = self.cache.get(cache_key)
 
+            # Ensure any references in the retrieved cache object are expanded.
+            self._merge_references(entity)
+
         except KeyError:
             # Query for matching entity.
             expression = '{0} where {1} is {2}'.format(
