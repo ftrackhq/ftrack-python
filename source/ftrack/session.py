@@ -447,7 +447,10 @@ class Session(object):
             )
 
             # Recursively merge entity references that were present in source
-            # entity if not already done.
+            # entity if not already done. This is required because this entity
+            # may be stored directly in a memory cache and therefore it needs
+            # to have its references pointing to entity instances also in the
+            # cache.
             self._merge_references(entity, _seen=_seen, _depth=_depth)
 
             # Check for existing instance of entity in cache.
@@ -484,6 +487,9 @@ class Session(object):
                 else:
                     # Expand entity references recursively so that all cached
                     # objects in tree retrieved and set on returned entity.
+                    # This is required because a cache may just store a plain
+                    # reference to another entity in the cache (e.g. just id)
+                    # and so need to load the full entity reference separately.
                     self._merge_references(
                         existing_entity, _seen=_seen, _depth=_depth
                     )
