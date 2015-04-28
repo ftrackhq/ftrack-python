@@ -726,17 +726,6 @@ class Session(object):
                 # Always clear write batches.
                 del self._batches['write'][:]
 
-            # Process result.
-            for entry in result:
-
-                if entry['action'] in ('create', 'update'):
-                    # Merge returned entities into local cache.
-                    self._merge(entry['data'])
-
-                elif entry['action'] == 'delete':
-                    # TODO: Expunge entity from cache.
-                    pass
-
             # If successful commit then update states.
             for entity in self.created:
                 for attribute in entity.attributes:
@@ -749,6 +738,17 @@ class Session(object):
             self._states['created'].clear()
             self._states['modified'].clear()
             self._states['deleted'].clear()
+
+            # Process results merging into cache relevant data.
+            for entry in result:
+
+                if entry['action'] in ('create', 'update'):
+                    # Merge returned entities into local cache.
+                    self._merge(entry['data'])
+
+                elif entry['action'] == 'delete':
+                    # TODO: Expunge entity from cache.
+                    pass
 
     def _discover_plugins(self):
         '''Find and load plugins in search paths.
