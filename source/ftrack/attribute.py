@@ -87,12 +87,11 @@ class Attribute(object):
 
     def __repr__(self):
         '''Return representation of entity.'''
-        return '<{0}.{1}({2}) object at {3:#0{4}x}>'.format(
+        return '<{0}.{1}({2}) object at {3}>'.format(
             self.__module__,
             self.__class__.__name__,
             self.name,
-            id(self),
-            '18' if sys.maxsize > 2**32 else '10'
+            id(self)
         )
 
     def get_entity_storage(self, entity):
