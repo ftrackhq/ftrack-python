@@ -676,7 +676,6 @@ class Session(object):
                     query, primary_key, str(entity_keys[0])
                 )
 
-            self.logger.debug('Query: {0!r}'.format(query))
             result = self.query(query)
 
             # Fetch all results now. Doing so will cause them to populate the
