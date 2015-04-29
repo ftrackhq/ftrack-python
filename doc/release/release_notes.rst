@@ -9,7 +9,7 @@ Release Notes
 
 .. release:: next
         
-    .. change:: new
+    .. change:: changed
 
         Changed name of API from `ftrack` to `ftrack_api`.
         :ref:`Read more <release/migration/next/new_api_name>`
