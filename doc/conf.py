@@ -33,7 +33,7 @@ copyright = u'2014, ftrack'
 with open(
     os.path.join(
         os.path.dirname(__file__), '..', 'source',
-        'ftrack', '_version.py'
+        'ftrack_api', '_version.py'
     )
 ) as _version_file:
     _version = re.match(
@@ -49,7 +49,7 @@ exclude_patterns = ['_template']
 
 # A list of prefixes to ignore for module listings.
 modindex_common_prefix = [
-    'ftrack.'
+    'ftrack_api.'
 ]
 
 # -- HTML output --------------------------------------------------------------

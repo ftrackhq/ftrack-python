@@ -1,7 +1,7 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-.. currentmodule:: ftrack.session
+.. currentmodule:: ftrack_api.session
 
 .. _tutorial:
 
@@ -13,24 +13,24 @@ First make sure the ftrack Python API is :ref:`installed <installing>`.
 
 Then start a Python session and import the ftrack API::
 
-    >>> import ftrack
+    >>> import ftrack_api
 
 Before continuing, execute the following code to create a helper function for
 printing entities in a more human readable format.::
 
-    >>> import ftrack.formatter
+    >>> import ftrack_api.formatter
     >>>
     >>> def print_entity(entity):
     ...     '''Pretty print *entity* without fetching unset attribute values.'''
     ...     with session.auto_populating(False):
-    ...         print ftrack.formatter.format(entity)
+    ...         print ftrack_api.formatter.format(entity)
 
 
 The API uses :ref:`sessions <using_sessions>` to manage communication with an
 ftrack server. Create a session that connects to your ftrack server (changing
 the passed values as appropriate)::
 
-    >>> session = ftrack.Session(
+    >>> session = ftrack_api.Session(
     ...     server_url='http://mycompany.ftrackapp.com',
     ...     api_key='7545384e-a653-11e1-a82c-f22c11dd25eq',
     ...     api_user='martin'
@@ -55,7 +55,7 @@ entities of a particular type by using the :meth:`Session.query` method::
 
 Each project retrieved will be an :ref:`entity <working_with_entities>` instance
 that behaves much like a standard Python dictionary. For example, to find out
-the available keys for an entity, call the :meth:`~ftrack.entity.Entity.keys`
+the available keys for an entity, call the :meth:`~ftrack_api.entity.Entity.keys`
 method::
 
     >>> print projects[0].keys()
@@ -99,7 +99,7 @@ entities that have the project as their parent::
 
     >>> project = session.query('Project')[0]
     >>> print project['children']
-    <ftrack.collection.Collection object at 0x00000000045B1438>
+    <ftrack_api.collection.Collection object at 0x00000000045B1438>
 
 And on each *Context* there is a corresponding *parent* attribute which is a
 link back to the parent::
@@ -187,9 +187,9 @@ Components
 ==========
 
 Components can be created manually or using the provide helper methods on a
-:meth:`session <ftrack.session.Session.create_component>` or existing
+:meth:`session <ftrack_api.session.Session.create_component>` or existing
 :meth:`asset version
-<ftrack.entity.asset_version.AssetVersion.create_component>`::
+<ftrack_api.entity.asset_version.AssetVersion.create_component>`::
 
     >>> component = version.create_component('/path/to/file_or_sequence.jpg')
     >>> session.commit()

@@ -1,13 +1,13 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-import ftrack.event.expression
+import ftrack_api.event.expression
 
 
 class Subscription(object):
     '''Represent a subscription.'''
 
-    parser = ftrack.event.expression.Parser()
+    parser = ftrack_api.event.expression.Parser()
 
     def __init__(self, subscription):
         '''Initialise with *subscription*.'''

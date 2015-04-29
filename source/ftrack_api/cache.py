@@ -26,7 +26,7 @@ try:
 except ImportError:  # pragma: no cover
     import pickle
 
-import ftrack.inspection
+import ftrack_api.inspection
 
 
 class Cache(object):
@@ -159,7 +159,7 @@ class EntityKeyMaker(KeyMaker):
 
     def _key(self, entity):
         '''Return key for *entity*.'''
-        return str(ftrack.inspection.identity(entity))
+        return str(ftrack_api.inspection.identity(entity))
 
 
 class ObjectKeyMaker(KeyMaker):

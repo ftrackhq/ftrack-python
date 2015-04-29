@@ -1,11 +1,11 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-************
-ftrack.event
-************
+****************
+ftrack_api.event
+****************
 
-.. automodule:: ftrack.event
+.. automodule:: ftrack_api.event
 
 .. toctree::
     :maxdepth: 1

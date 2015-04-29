@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2015 ftrack
 
-*****************
-ftrack.inspection
-*****************
+*********************
+ftrack_api.inspection
+*********************
 
-.. automodule:: ftrack.inspection
+.. automodule:: ftrack_api.inspection

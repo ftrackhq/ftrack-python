@@ -3,16 +3,16 @@
 
 from termcolor import colored
 
-import ftrack.entity.base
-import ftrack.collection
-import ftrack.symbol
-import ftrack.inspection
+import ftrack_api.entity.base
+import ftrack_api.collection
+import ftrack_api.symbol
+import ftrack_api.inspection
 
 
 #: Useful filters to pass to :func:`format`.`
 FILTER = {
     'ignore_unset': (
-        lambda entity, name, value: value is not ftrack.symbol.NOT_SET
+        lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET
     )
 }
 
@@ -35,7 +35,7 @@ def format(
     returns True if the attribute should be included in the output. For example,
     to filter out all unset values::
 
-        attribute_filter=ftrack.formatter.FILTER['ignore_unset']
+        attribute_filter=ftrack_api.formatter.FILTER['ignore_unset']
 
     If *recursive* is True then recurse into Collections and format each entity
     present.
@@ -72,7 +72,7 @@ def format(
     if _seen is None:
         _seen = set()
 
-    identifier = ftrack.inspection.identity(entity)
+    identifier = ftrack_api.inspection.identity(entity)
     if identifier in _seen:
         return (
             first_line_spacer +
@@ -92,7 +92,7 @@ def format(
 
         child_indent = indent + len(key) + 3
 
-        if isinstance(value, ftrack.entity.base.Entity):
+        if isinstance(value, ftrack_api.entity.base.Entity):
             value = format(
                 value,
                 formatters=formatters,
@@ -103,7 +103,7 @@ def format(
                 _seen=_seen.copy()
             )
 
-        if isinstance(value, ftrack.collection.Collection):
+        if isinstance(value, ftrack_api.collection.Collection):
             if recursive:
                 child_values = []
                 for index, child in enumerate(value):

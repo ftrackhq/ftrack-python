@@ -1,5 +1,5 @@
 # :coding: utf-8
-# :copyright: Copyright (c) 2014 FTrack
+# :copyright: Copyright (c) 2014 ftrack
 
 
 class ResourceIdentifierTransformer(object):
@@ -16,7 +16,7 @@ class ResourceIdentifierTransformer(object):
     .. note::
 
         This is separate from any transformations an
-        :class:`ftrack.accessor.base.Accessor` may perform and is targeted
+        :class:`ftrack_api.accessor.base.Accessor` may perform and is targeted
         towards common transformations.
 
     '''
@@ -24,8 +24,8 @@ class ResourceIdentifierTransformer(object):
     def __init__(self, session):
         '''Initialise resource identifier transformer.
 
-        *session* should be the :class:`ftrack.session.Session` instance to use
-        for communication with the server.
+        *session* should be the :class:`ftrack_api.session.Session` instance
+        to use for communication with the server.
 
         '''
         self.session = session

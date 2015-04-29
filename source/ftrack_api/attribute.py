@@ -4,10 +4,10 @@
 import sys
 import collections
 
-import ftrack.symbol
-import ftrack.exception
-import ftrack.collection
-import ftrack.inspection
+import ftrack_api.symbol
+import ftrack_api.exception
+import ftrack_api.collection
+import ftrack_api.inspection
 
 
 class Attributes(object):
@@ -24,7 +24,7 @@ class Attributes(object):
         '''Add *attribute*.'''
         existing = self._data.get(attribute.name, None)
         if existing:
-            raise ftrack.exception.NotUniqueError(
+            raise ftrack_api.exception.NotUniqueError(
                 'Attribute with name {0} already added as {1}'
                 .format(attribute.name, existing)
             )
@@ -63,7 +63,7 @@ class Attribute(object):
     '''A name and value pair persisted remotely.'''
 
     def __init__(
-        self, name, default_value=ftrack.symbol.NOT_SET, mutable=True
+        self, name, default_value=ftrack_api.symbol.NOT_SET, mutable=True
     ):
         '''Initialise attribute with *name*.
 
@@ -73,8 +73,8 @@ class Attribute(object):
 
         If *mutable* is set to False then the local value of the attribute on an
         entity can only be set when both the existing local and remote values
-        are :attr:`ftrack.symbol.NOT_SET`. The exception to this is when the
-        target value is also :attr:`ftrack.symbol.NOT_SET`.
+        are :attr:`ftrack_api.symbol.NOT_SET`. The exception to this is when the
+        target value is also :attr:`ftrack_api.symbol.NOT_SET`.
 
         '''
         super(Attribute, self).__init__()
@@ -103,8 +103,8 @@ class Attribute(object):
             storage = collections.defaultdict(
                 lambda:
                 {
-                    self._local_key: ftrack.symbol.NOT_SET,
-                    self._remote_key: ftrack.symbol.NOT_SET
+                    self._local_key: ftrack_api.symbol.NOT_SET,
+                    self._remote_key: ftrack_api.symbol.NOT_SET
                 }
             )
             setattr(entity, storage_key, storage)
@@ -130,11 +130,11 @@ class Attribute(object):
 
         '''
         value = self.get_local_value(entity)
-        if value is not ftrack.symbol.NOT_SET:
+        if value is not ftrack_api.symbol.NOT_SET:
             return value
 
         value = self.get_remote_value(entity)
-        if value is not ftrack.symbol.NOT_SET:
+        if value is not ftrack_api.symbol.NOT_SET:
             return value
 
         if not entity.session.auto_populate:
@@ -164,9 +164,9 @@ class Attribute(object):
         if (
             not self.mutable
             and self.is_set(entity)
-            and value is not ftrack.symbol.NOT_SET
+            and value is not ftrack_api.symbol.NOT_SET
         ):
-            raise ftrack.exception.ImmutableAttributeError(self)
+            raise ftrack_api.exception.ImmutableAttributeError(self)
 
         storage = self.get_entity_storage(entity)
         storage[self.name][self._local_key] = value
@@ -202,15 +202,15 @@ class Attribute(object):
         local_value = self.get_local_value(entity)
         remote_value = self.get_remote_value(entity)
         return (
-            local_value is not ftrack.symbol.NOT_SET
+            local_value is not ftrack_api.symbol.NOT_SET
             and local_value != remote_value
         )
 
     def is_set(self, entity):
         '''Return whether a value is set for *entity*.'''
         return any([
-            self.get_local_value(entity) is not ftrack.symbol.NOT_SET,
-            self.get_remote_value(entity) is not ftrack.symbol.NOT_SET
+            self.get_local_value(entity) is not ftrack_api.symbol.NOT_SET,
+            self.get_remote_value(entity) is not ftrack_api.symbol.NOT_SET
         ])
 
 
@@ -262,15 +262,15 @@ class ReferenceAttribute(Attribute):
         local_value = self.get_local_value(entity)
         remote_value = self.get_remote_value(entity)
 
-        if local_value is ftrack.symbol.NOT_SET:
+        if local_value is ftrack_api.symbol.NOT_SET:
             return False
 
-        if remote_value is ftrack.symbol.NOT_SET:
+        if remote_value is ftrack_api.symbol.NOT_SET:
             return True
 
         if (
-            ftrack.inspection.identity(local_value)
-            != ftrack.inspection.identity(remote_value)
+            ftrack_api.inspection.identity(local_value)
+            != ftrack_api.inspection.identity(remote_value)
         ):
             return True
 
@@ -301,19 +301,19 @@ class CollectionAttribute(Attribute):
         local_value = self.get_local_value(entity)
         remote_value = self.get_remote_value(entity)
         if (
-            local_value is ftrack.symbol.NOT_SET
-            and isinstance(remote_value, ftrack.collection.Collection)
+            local_value is ftrack_api.symbol.NOT_SET
+            and isinstance(remote_value, ftrack_api.collection.Collection)
         ):
             try:
                 self.set_local_value(entity, remote_value[:])
-            except ftrack.exception.ImmutableAttributeError:
+            except ftrack_api.exception.ImmutableAttributeError:
                 pass
 
         return self.get_local_value(entity)
 
     def set_local_value(self, entity, value):
         '''Set local *value* for *entity*.'''
-        if value is not ftrack.symbol.NOT_SET:
+        if value is not ftrack_api.symbol.NOT_SET:
             value = self._adapt_to_collection(entity, value)
             value.mutable = self.mutable
 
@@ -327,7 +327,7 @@ class CollectionAttribute(Attribute):
             Only set locally stored remote value, do not persist to remote.
 
         '''
-        if value is not ftrack.symbol.NOT_SET:
+        if value is not ftrack_api.symbol.NOT_SET:
             value = self._adapt_to_collection(entity, value)
             value.mutable = False
 
@@ -335,11 +335,11 @@ class CollectionAttribute(Attribute):
 
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to a Collection instance on *entity*.'''
-        if not isinstance(value, ftrack.collection.Collection):
-            value = ftrack.collection.Collection(entity, self, data=value)
+        if not isinstance(value, ftrack_api.collection.Collection):
+            value = ftrack_api.collection.Collection(entity, self, data=value)
         else:
             if not value.attribute is self:
-                raise ftrack.exception.AttributeError(
+                raise ftrack_api.exception.AttributeError(
                     'Collection already bound to a different attribute'
                 )
 
@@ -461,7 +461,7 @@ class DictionaryAttribute(Attribute):
 
     def _getCollection(self, entity):
         '''Return collection for *entity*.'''
-        primary_key = tuple(ftrack.inspection.primary_key(entity).values())
+        primary_key = tuple(ftrack_api.inspection.primary_key(entity).values())
         if primary_key not in self._collections:
             key_value_collection = DictionaryAttributeCollection(
                 entity=entity,
@@ -478,7 +478,7 @@ class DictionaryAttribute(Attribute):
 
     def set_local_value(self, entity, value):
         '''Update collection for *entity* with *value*.'''
-        if value == ftrack.symbol.NOT_SET:
+        if value == ftrack_api.symbol.NOT_SET:
             return
 
         self._getCollection(entity).replace(value)

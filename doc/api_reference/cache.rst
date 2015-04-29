@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-************
-ftrack.cache
-************
+****************
+ftrack_api.cache
+****************
 
-.. automodule:: ftrack.cache
+.. automodule:: ftrack_api.cache

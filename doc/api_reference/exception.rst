@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-****************
-ftrack.exception
-****************
+********************
+ftrack_api.exception
+********************
 
-.. automodule:: ftrack.exception
+.. automodule:: ftrack_api.exception

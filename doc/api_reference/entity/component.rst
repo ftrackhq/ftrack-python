@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2015 ftrack
 
-***********************
-ftrack.entity.component
-***********************
+***************************
+ftrack_api.entity.component
+***************************
 
-.. automodule:: ftrack.entity.component
+.. automodule:: ftrack_api.entity.component

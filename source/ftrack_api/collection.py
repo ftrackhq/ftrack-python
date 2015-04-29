@@ -3,8 +3,8 @@
 
 import collections
 
-import ftrack.exception
-import ftrack.inspection
+import ftrack_api.exception
+import ftrack_api.inspection
 
 
 class Collection(collections.MutableSequence):
@@ -29,10 +29,12 @@ class Collection(collections.MutableSequence):
     def insert(self, index, item):
         '''Insert *item* at *index*.'''
         if not self.mutable:
-            raise ftrack.exception.ImmutableCollectionError(self)
+            raise ftrack_api.exception.ImmutableCollectionError(self)
 
         if item in self:
-            raise ftrack.exception.DuplicateItemInCollectionError(item, self)
+            raise ftrack_api.exception.DuplicateItemInCollectionError(
+                item, self
+            )
 
         self._data.insert(index, item)
         self._notify()
@@ -44,7 +46,7 @@ class Collection(collections.MutableSequence):
     def __setitem__(self, index, item):
         '''Set *item* against *index*.'''
         if not self.mutable:
-            raise ftrack.exception.ImmutableCollectionError(self)
+            raise ftrack_api.exception.ImmutableCollectionError(self)
 
         try:
             existing_index = self.index(item)
@@ -52,7 +54,7 @@ class Collection(collections.MutableSequence):
             pass
         else:
             if index != existing_index:
-                raise ftrack.exception.DuplicateItemInCollectionError(
+                raise ftrack_api.exception.DuplicateItemInCollectionError(
                     item, self
                 )
 
@@ -62,7 +64,7 @@ class Collection(collections.MutableSequence):
     def __delitem__(self, index):
         '''Remove item at *index*.'''
         if not self.mutable:
-            raise ftrack.exception.ImmutableCollectionError(self)
+            raise ftrack_api.exception.ImmutableCollectionError(self)
 
         del self._data[index]
         self._notify()
@@ -77,11 +79,11 @@ class Collection(collections.MutableSequence):
             return False
 
         identities = [
-            ftrack.inspection.identity(entity)
+            ftrack_api.inspection.identity(entity)
             for entity in self
         ]
         other_identities = [
-            ftrack.inspection.identity(entity)
+            ftrack_api.inspection.identity(entity)
             for entity in other
         ]
 
