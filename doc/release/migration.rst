@@ -15,8 +15,21 @@ Migrate to next
 New API name
 ------------
 
-In this release the API has changed name from `ftrack` to `ftrack_api` to
-solve issues when using the old API in the same environment.
+In this release the API has been renamed from `ftrack` to `ftrack_api`. This is
+to allow both the old and new API to co-exist in the same environment without
+confusion.
 
-Any scripts using this API need to be updated to import `ftrack_api` instead
-of `ftrack`.
+As such, any scripts using this new API need to be updated to import
+`ftrack_api` instead of `ftrack`. For example:
+
+**Previously**::
+
+    import ftrack
+    import ftrack.formatter
+    ...
+
+**Now**::
+
+    import ftrack_api
+    import ftrack_api.formatter
+    ...
