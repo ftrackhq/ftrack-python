@@ -16,7 +16,9 @@ README_PATH = os.path.join(ROOT_PATH, 'README.rst')
 
 
 # Read version from source.
-with open(os.path.join(SOURCE_PATH, 'ftrack', '_version.py')) as _version_file:
+with open(
+    os.path.join(SOURCE_PATH, 'ftrack_api', '_version.py')
+) as _version_file:
     VERSION = re.match(
         r'.*__version__ = \'(.*?)\'', _version_file.read(), re.DOTALL
     ).group(1)

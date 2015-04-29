@@ -3,11 +3,11 @@
 
 import os
 
-import ftrack.symbol
-import ftrack.structure.base
+import ftrack_api.symbol
+import ftrack_api.structure.base
 
 
-class IdStructure(ftrack.structure.base.Structure):
+class IdStructure(ftrack_api.structure.base.Structure):
     '''Id based structure supporting Components only.
 
     A components unique id will be used to form a path to store the data at.
@@ -50,7 +50,7 @@ class IdStructure(ftrack.structure.base.Structure):
             # When in a container, place the file inside a directory named
             # after the container.
             container = entity['container']
-            if container and container is not ftrack.symbol.NOT_SET:
+            if container and container is not ftrack_api.symbol.NOT_SET:
                 path = self.get_resource_identifier(container)
 
                 if container.entity_type in ('SequenceComponent',):
@@ -78,7 +78,7 @@ class IdStructure(ftrack.structure.base.Structure):
 
             if (
                 entity['file_type'] and
-                entity['file_type'] is not ftrack.symbol.NOT_SET
+                entity['file_type'] is not ftrack_api.symbol.NOT_SET
             ):
                 name += entity['file_type']
 

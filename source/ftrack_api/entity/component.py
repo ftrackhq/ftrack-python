@@ -1,10 +1,10 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import ftrack.entity.base
+import ftrack_api.entity.base
 
 
-class Component(ftrack.entity.base.Entity):
+class Component(ftrack_api.entity.base.Entity):
     '''Represent a component.'''
 
     def get_availability(self, locations=None):

@@ -1,10 +1,10 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-import ftrack.entity.factory
+import ftrack_api.entity.factory
 
 
-class Factory(ftrack.entity.factory.StandardFactory):
+class Factory(ftrack_api.entity.factory.StandardFactory):
     '''Entity class factory.'''
 
     def create(self, schema, bases=None):
@@ -27,6 +27,6 @@ def register(session):
         return factory.create(schema)
 
     session.event_hub.subscribe(
-        'topic=ftrack.session.construct-entity-type',
+        'topic=ftrack.api.session.construct-entity-type',
         construct_entity_type
     )

@@ -3,11 +3,11 @@
 
 .. _api_reference/resource_identifier_transformer:
 
-**************************************
-ftrack.resource_identifier_transformer
-**************************************
+******************************************
+ftrack_api.resource_identifier_transformer
+******************************************
 
-.. automodule:: ftrack.resource_identifier_transformer
+.. automodule:: ftrack_api.resource_identifier_transformer
 
 .. toctree::
     :maxdepth: 1

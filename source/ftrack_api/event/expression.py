@@ -7,7 +7,7 @@ from pyparsing import (ParserElement, Group, Word, CaselessKeyword, Forward,
                        FollowedBy, Suppress, oneOf, OneOrMore, Optional,
                        alphanums, quotedString, removeQuotes)
 
-import ftrack.exception
+import ftrack_api.exception
 
 # Optimise parsing using packrat memoisation feature.
 ParserElement.enablePackrat()
@@ -77,8 +77,8 @@ class Parser(object):
     def parse(self, expression):
         '''Parse string *expression* into :class:`Expression`.
 
-        Raise :exc:`ftrack.exception.ParseError` if *expression* could not be
-        parsed.
+        Raise :exc:`ftrack_api.exception.ParseError` if *expression* could
+        not be parsed.
 
         '''
         result = None
@@ -89,7 +89,7 @@ class Parser(object):
                     expression, parseAll=True
                 )
             except Exception as error:
-                raise ftrack.exception.ParseError(
+                raise ftrack_api.exception.ParseError(
                     'Failed to parse: {0}. {1}'.format(expression, error)
                 )
 
