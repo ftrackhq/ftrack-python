@@ -20,6 +20,6 @@ def configure_locations(event):
 def register(session):
     '''Register plugin with *session*.'''
     session.event_hub.subscribe(
-        'topic=ftrack.session.configure-location',
+        'topic=ftrack.api.session.configure-location',
         configure_locations
     )

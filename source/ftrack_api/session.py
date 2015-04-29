@@ -634,7 +634,7 @@ class Session(object):
 
             def register(session):
                 session.event_hub.subscribe(
-                    'topic=ftrack.session.construct_entity_type',
+                    'topic=ftrack.api.session.construct-entity-type',
                     construct_entity_type
                 )
 
@@ -653,7 +653,7 @@ class Session(object):
         for schema in schemas:
             results = self.event_hub.publish(
                 ftrack_api.event.base.Event(
-                    topic='ftrack.session.construct-entity-type',
+                    topic='ftrack.api.session.construct-entity-type',
                     data=dict(
                         schema=schema,
                         schemas=schemas
@@ -762,7 +762,7 @@ class Session(object):
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.session.configure-location',
+                topic='ftrack.api.session.configure-location',
                 data=dict(
                     session=self
                 )
