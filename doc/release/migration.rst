@@ -18,5 +18,5 @@ New API name
 In this release the API has changed name from `ftrack` to `ftrack_api` to
 solve issues when using the old API in the same environment.
 
-Any scripts using this API needs to be updated to import `ftrack_api` instead
+Any scripts using this API need to be updated to import `ftrack_api` instead
 of ftrack.
