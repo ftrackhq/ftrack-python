@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+import logging
+
 import ftrack_api
 import ftrack_api.entity.location
 import ftrack_api.accessor.disk
@@ -19,11 +21,16 @@ def configure_locations(event):
 
 def register(session):
     '''Register plugin with *session*.'''
+    logger = logging.getLogger('ftrack_plugin:configure_locations.register')
 
     # Validate that session is instance of ftrack_api.Session, if not
     # therefore return early since the register probably is called
     # from old API.
     if not isinstance(session, ftrack_api.Session):
+        logger.debug(
+            'Not subscribing plugin as passed argument {0} is not an '
+            'ftrack_api.Session instance.'.format(session)
+        )
         return
 
     session.event_hub.subscribe(
