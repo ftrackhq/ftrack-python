@@ -19,6 +19,13 @@ class Factory(ftrack_api.entity.factory.StandardFactory):
 
 def register(session):
     '''Register plugin with *session*.'''
+
+    # Validate that session is instance of ftrack_api.Session, if not
+    # therefore return early since the register probably is called
+    # from old API.
+    if not isinstance(session, ftrack_api.Session):
+        return
+
     factory = Factory()
 
     def construct_entity_type(event):
