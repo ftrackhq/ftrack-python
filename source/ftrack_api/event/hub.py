@@ -54,8 +54,13 @@ class _EventHubEncoder(json.JSONEncoder):
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server=None):
-        '''Initialise hub, connecting to ftrack *server*.'''
+    def __init__(self, server_url, api_user, api_key):
+        '''Initialise hub, connecting to ftrack *server*.
+
+        *api_user* is the user to authenticate as and *api_key* is the API key
+        to authenticate with.
+
+        '''
         super(EventHub, self).__init__()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
@@ -97,17 +102,12 @@ class EventHub(object):
             dict((name, code) for code, name in self._code_name_mapping.items())
         )
 
+        self._server_url = server_url
+        self._api_user = api_user
+        self._api_key = api_key
+
         # Parse server URL and store server details.
-        if server is None:
-            server = os.environ.get('FTRACK_SERVER')
-
-        if not server:
-            raise TypeError(
-                'Required "server" not specified. Pass as argument or set '
-                'in environment variable FTRACK_SERVER.'
-            )
-
-        url_parse_result = urlparse.urlparse(server)
+        url_parse_result = urlparse.urlparse(self._server_url)
         self.server = ServerDetails(
             url_parse_result.scheme,
             url_parse_result.hostname,
@@ -179,6 +179,15 @@ class EventHub(object):
                 subscriber=dict(
                     id=self.id
                 )
+            )
+        except ftrack_api.exception.NotUniqueError:
+            pass
+
+        # Subscribe to connected event to handle authentication.
+        try:
+            self._add_subscriber(
+                'topic=ftrack.meta.connected',
+                self._on_connected
             )
         except ftrack_api.exception.NotUniqueError:
             pass
@@ -377,6 +386,38 @@ class EventHub(object):
             )
 
         return subscriber.metadata['id']
+
+    def _on_connected(self, event):
+        '''Handle on connect.'''
+        self._authenticate()
+
+    def _authenticate(self):
+        '''Authenticate connection.'''
+        try:
+            self._add_subscriber(
+                'topic=ftrack.meta.authentication',
+                self._on_authentication
+            )
+        except ftrack_api.exception.NotUniqueError:
+            pass
+
+        authentication_event = ftrack_api.event.base.Event(
+            topic='ftrack.meta.authentication',
+            data=dict(
+                api_user=self._api_user,
+                api_key=self._api_key
+            )
+        )
+
+        self.publish(authentication_event)
+
+    def _on_authentication(self, event):
+        '''Handle authentication response.'''
+        if event['data'].get('success') is False:
+            self._intentional_disconnect = True
+            raise ftrack_api.exception.EventHubConnectionError(
+                'Unable to authenticate against event server.'
+            )
 
     def _add_subscriber(
         self, subscription, callback, subscriber=None, priority=100
