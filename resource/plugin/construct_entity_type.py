@@ -23,9 +23,9 @@ def register(session):
     '''Register plugin with *session*.'''
     logger = logging.getLogger('ftrack_plugin:construct_entity_type.register')
 
-    # Validate that session is instance of ftrack_api.Session, if not
-    # therefore return early since the register probably is called
-    # from old API.
+    # Validate that session is an instance of ftrack_api.Session. If not, assume
+    # that register is being called from an old or incompatible API and return
+    # without doing anything.
     if not isinstance(session, ftrack_api.Session):
         logger.debug(
             'Not subscribing plugin as passed argument {0!r} is not an '
