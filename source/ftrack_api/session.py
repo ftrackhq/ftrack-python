@@ -57,7 +57,7 @@ class Session(object):
 
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
-        plugin_paths=None
+        plugin_paths=None, auto_connect_event_hub=True
     ):
         '''Initialise session.
 
@@ -78,6 +78,10 @@ class Session(object):
 
         *plugin_paths* should be a list of paths to search for plugins. If not
         specified, default to looking up :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
+
+        If *auto_connect_event_hub* is True the event hub will be automatically
+        connected to the event server and allow for publishing and subscribing
+        to non local events.
 
         '''
         super(Session, self).__init__()
@@ -151,7 +155,8 @@ class Session(object):
 
         # Construct event hub and load plugins.
         self._event_hub = ftrack_api.event.hub.EventHub(self._server_url)
-        self._event_hub.connect()
+        if auto_connect_event_hub:
+            self._event_hub.connect()
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:

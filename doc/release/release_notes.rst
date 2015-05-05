@@ -8,7 +8,14 @@ Release Notes
 *************
 
 .. release:: next
-        
+
+    .. change:: new
+        :tags: events
+
+        :class:`ftrack_api.Session` now supports the *auto_connect_event_hub*
+        argument. This makes it possible to prevent it from automatically
+        connecting to the event server and only allowing local events.
+
     .. change:: changed
 
         Changed name of API from `ftrack` to `ftrack_api`.
