@@ -170,9 +170,9 @@ class Attribute(object):
         storage = self.get_entity_storage(entity)
         storage[self.name][self._local_key] = value
 
-        # Add to modified session list.
+        # Transition state.
         if self.is_modified(entity):
-            entity.session.set_state(entity, 'modified')
+            entity.state = ftrack.symbol.MODIFIED
 
     def set_remote_value(self, entity, value):
         '''Set remote *value*.

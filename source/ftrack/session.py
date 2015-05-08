@@ -154,11 +154,7 @@ class Session(object):
         if callable(self.cache):
             self.cache = self.cache(self)
 
-        self._states = dict(
-            created=collections.OrderedDict(),
-            modified=collections.OrderedDict(),
-            deleted=collections.OrderedDict()
-        )
+        self._attached = collections.OrderedDict()
 
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
@@ -217,24 +213,22 @@ class Session(object):
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
-        if self._states['created']:
+        if self.created:
             self.logger.warning(
                 'Resetting session with pending creations not persisted.'
             )
 
-        if self._states['modified']:
+        if self.modified:
             self.logger.warning(
                 'Resetting session with pending modifications not persisted.'
             )
 
-        if self._states['deleted']:
+        if self.deleted:
             self.logger.warning(
                 'Resetting session with pending deletions not persisted.'
             )
 
-        self._states['created'].clear()
-        self._states['modified'].clear()
-        self._states['deleted'].clear()
+        self._attached.clear()
         self._request.close()
 
     def auto_populating(self, auto_populate):
@@ -253,66 +247,26 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
-        return self._states['created'].values()
+        return [
+            entity for entity in self._attached.values()
+            if entity.state is ftrack.symbol.CREATED
+        ]
 
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
-        return self._states['modified'].values()
+        return [
+            entity for entity in self._attached.values()
+            if entity.state is ftrack.symbol.MODIFIED
+        ]
 
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
-        return self._states['deleted'].values()
-
-    def set_state(self, entity, state):
-        '''Set *entity* *state*.
-
-        Transition from current state to new state.
-
-        Raise :exc:`ftrack.exception.InvalidStateError` if new state is invalid.
-
-        .. note::
-
-            Transitioning from 'created' or 'deleted' to 'modified' is not an
-            error, but will not change state.
-
-        '''
-        identity = id(entity)
-        current_state = self.get_state(entity)
-
-        if current_state == state:
-            return
-
-        if current_state in ('created', 'deleted'):
-            if state == 'modified':
-                # Not an error, but no point marking as modified.
-                return
-
-        if current_state == 'deleted':
-            raise ftrack.exception.InvalidStateTransitionError(
-                current_state, state, entity
-            )
-
-        if current_state == 'modified' and state != 'deleted':
-            raise ftrack.exception.InvalidStateTransitionError(
-                current_state, state, entity
-            )
-
-        if current_state:
-            del self._states[current_state][identity]
-
-        if state:
-            self._states[state][identity] = entity
-
-    def get_state(self, entity):
-        '''Return entity *state*.'''
-        identity = id(entity)
-        for state, entities in self._states.iteritems():
-            if identity in entities:
-                return state
-
-        return None
+        return [
+            entity for entity in self._attached.values()
+            if entity.state is ftrack.symbol.DELETED
+        ]
 
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
@@ -350,7 +304,7 @@ class Session(object):
 
     def delete(self, entity):
         '''Mark *entity* for deletion.'''
-        self.set_state(entity, 'deleted')
+        entity.state = ftrack.symbol.DELETED
 
     def get(self, entity_type, entity_key):
         '''Return entity of *entity_type* with unique *entity_key*.
@@ -454,6 +408,24 @@ class Session(object):
             data.append(self._merge(entity))
 
         return data
+
+    def _attach(self, entity):
+        '''Attach *entity* to session if not already.'''
+        key = str(ftrack.inspection.identity(entity))
+        current = self._attached.get(key)
+
+        if current is not entity:
+            self.logger.debug(
+                'Updating attach {0!r}. A different instance {1!r} of that '
+                'entity is already attached.'.format(entity, current)
+            )
+
+        self._attached[key] = entity
+
+    def _detach(self, entity):
+        '''Detach *entity* from session.'''
+        key = str(ftrack.inspection.identity(entity))
+        del self._attached[key]
 
     def _merge(self, entity, _seen=None, _depth=0):
         '''Merge *entity* into session returning merged entity.
@@ -639,7 +611,7 @@ class Session(object):
         entities_to_process = []
 
         for entity in entities:
-            if self.get_state(entity) == 'created':
+            if entity.state is ftrack.symbol.CREATED:
                 # Created entities that are not yet persisted have no remote
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
@@ -727,16 +699,18 @@ class Session(object):
 
             # If successful commit then update states.
             for entity in self.created:
+                entity.state = ftrack.symbol.NOT_SET
                 for attribute in entity.attributes:
                     attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
 
             for entity in self.modified:
+                entity.state = ftrack.symbol.NOT_SET
                 for attribute in entity.attributes:
                     attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
 
-            self._states['created'].clear()
-            self._states['modified'].clear()
-            self._states['deleted'].clear()
+            for entity in self.deleted:
+                entity.state = ftrack.symbol.NOT_SET
+                self._detach(entity)
 
             # Process results merging into cache relevant data.
             for entry in result:

@@ -8,6 +8,7 @@ import logging
 import ftrack.symbol
 import ftrack.attribute
 import ftrack.inspection
+import ftrack.exception
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -51,6 +52,7 @@ class Entity(collections.MutableMapping):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
+        self._state = ftrack.symbol.NOT_SET
         self.session = session
 
         if data is None:
@@ -75,13 +77,76 @@ class Entity(collections.MutableMapping):
         with self.session.auto_populating(False):
             ftrack.inspection.primary_key(self)
 
+    @property
+    def state(self):
+        '''Return current state.'''
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        '''Transition from current state to new state *value*.
+
+        Raise :exc:`ftrack.exception.InvalidStateError` if new state is invalid.
+
+        .. note::
+
+            Transitioning from 'created' or 'deleted' to 'modified' is not an
+            error, but will not change state.
+
+        Valid state values are:
+
+            * :attr:`ftrack.symbol.NOT_SET`
+            * :attr:`ftrack.symbol.CREATED`
+            * :attr:`ftrack.symbol.MODIFIED`
+            * :attr:`ftrack.symbol.DELETED`
+
+        '''
+        valid_states = (
+            ftrack.symbol.NOT_SET,
+            ftrack.symbol.CREATED,
+            ftrack.symbol.MODIFIED,
+            ftrack.symbol.DELETED
+        )
+        if value not in valid_states:
+            raise ValueError(
+                'Target state {0!r} was not a valid state. Must be one of {1}'
+                .format(value, ', '.join(valid_states))
+            )
+
+        current_state = self.state
+        if current_state is value:
+            return
+
+        if current_state in (ftrack.symbol.CREATED, ftrack.symbol.DELETED):
+            if value == ftrack.symbol.MODIFIED:
+                # Not an error, but no point marking as modified.
+                return
+
+        if (
+            current_state is ftrack.symbol.DELETED
+            and value is not ftrack.symbol.NOT_SET
+        ):
+            raise ftrack.exception.InvalidStateTransitionError(
+                current_state, value, self
+            )
+
+        if (
+            current_state is ftrack.symbol.MODIFIED
+            and value is not ftrack.symbol.DELETED
+        ):
+            raise ftrack.exception.InvalidStateTransitionError(
+                current_state, value, self
+            )
+
+        self._state = value
+
     def _construct(self, data):
         '''Construct from *data*.'''
         # Mark as newly created for later commit.
         # Done here so that entity has correct state, otherwise would
         # receive a state of "modified" following setting of attribute
         # values from *data*.
-        self.session.set_state(self, 'created')
+        self.state = ftrack.symbol.CREATED
 
         # Data represents locally set values.
         for key, value in data.items():
