@@ -165,7 +165,7 @@ class Entity(collections.MutableMapping):
 
         # Set defaults for any unset local attributes.
         for attribute in self.__class__.attributes:
-            if not attribute.name in data:
+            if attribute.name not in data:
                 default_value = attribute.default_value
                 if callable(default_value):
                     default_value = default_value(self)
