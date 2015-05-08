@@ -139,7 +139,7 @@ class LayeredCache(Cache):
     def __init__(self, caches):
         '''Initialise cache with *caches*.'''
         super(LayeredCache, self).__init__()
-        self._caches = caches
+        self.caches = caches
 
     def get(self, key):
         '''Return value for *key*.
@@ -154,7 +154,7 @@ class LayeredCache(Cache):
         target_caches = []
         value = ftrack.symbol.NOT_SET
 
-        for cache in self._caches:
+        for cache in self.caches:
             try:
                 value = cache.get(key)
             except KeyError:
@@ -174,7 +174,7 @@ class LayeredCache(Cache):
 
     def set(self, key, value):
         '''Set *value* for *key*.'''
-        for cache in self._caches:
+        for cache in self.caches:
             cache.set(key, value)
 
     def remove(self, key):
@@ -183,7 +183,7 @@ class LayeredCache(Cache):
         Raise :exc:`KeyError` if *key* not found.
 
         '''
-        for cache in self._caches:
+        for cache in self.caches:
             cache.remove(key)
 
     def keys(self):
@@ -195,7 +195,7 @@ class LayeredCache(Cache):
 
         '''
         keys = []
-        for cache in self._caches:
+        for cache in self.caches:
             keys.extend(cache.keys())
 
         return list(set(keys))
