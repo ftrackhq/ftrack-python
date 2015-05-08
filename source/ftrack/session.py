@@ -287,11 +287,7 @@ class Session(object):
         return entity
 
     def _create(self, entity_type, data, reconstructing):
-        '''Create and return an entity of *entity_type* with initial *data*.
-
-        If *reconstructing* is True then will merge into any existing entity.
-
-        '''
+        '''Create and return an entity of *entity_type* with initial *data*.'''
         try:
             EntityTypeClass = self.types[entity_type]
         except KeyError:
