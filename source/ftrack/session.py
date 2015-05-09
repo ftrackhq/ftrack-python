@@ -81,9 +81,17 @@ class Session(object):
 
         *cache* should be an instance of a cache that fulfils the
         :class:`ftrack.cache.Cache` interface and will be used as the cache for
-        the session. If not specified, a :class:`~ftrack.cache.MemoryCache` will
-        be used. It can also be a callable that will be called with the session
-        instance as sole argument.
+        the session. It can also be a callable that will be called with the
+        session instance as sole argument.
+
+        .. note::
+
+            The session will add the specified cache to a pre-configured layered
+            cache that specifies the top level cache as a
+            :class:`ftrack.cache.MemoryCache`. Therefore, it is unnecessary to
+            construct a separate memory cache for typical behaviour. Working
+            around this behaviour or removing the memory cache can lead to
+            unexpected behaviour.
 
         *cache_key_maker* should be an instance of a key maker that fulfils the
         :class:`ftrack.cache.KeyMaker` interface and will be used to generate
@@ -147,12 +155,17 @@ class Session(object):
         if self.cache_key_maker is None:
             self.cache_key_maker = ftrack.cache.StringKeyMaker()
 
-        self.cache = cache
-        if self.cache is None:
-            self.cache = ftrack.cache.MemoryCache()
+        # Enforce always having a memory cache at top level so that the same
+        # in-memory instance is returned from session.
+        self.cache = ftrack.cache.LayeredCache([
+            ftrack.cache.MemoryCache()
+        ])
 
-        if callable(self.cache):
-            self.cache = self.cache(self)
+        if cache is not None:
+            if callable(cache):
+                cache = cache(self)
+
+            self.cache.caches.append(cache)
 
         self._attached = collections.OrderedDict()
 
