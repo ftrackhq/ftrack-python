@@ -302,6 +302,7 @@ class Entity(collections.MutableMapping):
             * new_value - The new merged value.
 
         '''
+        log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
         changes = []
 
         # State.
@@ -315,6 +316,7 @@ class Entity(collections.MutableMapping):
                 'old_value': state,
                 'new_value': other_state
             })
+            self.logger.debug(log_message.format(**changes[-1]))
         for other_attribute in entity.attributes:
             attribute = self.attributes.get(other_attribute.name)
 
@@ -330,6 +332,7 @@ class Entity(collections.MutableMapping):
                         'old_value': local_value,
                         'new_value': merged_local_value
                     })
+                    self.logger.debug(log_message.format(**changes[-1]))
 
             # Remote attributes.
             other_remote_value = other_attribute.get_remote_value(entity)
@@ -343,6 +346,7 @@ class Entity(collections.MutableMapping):
                         'old_value': remote_value,
                         'new_value': merged_remote_value
                     })
+                    self.logger.debug(log_message.format(**changes[-1]))
 
         return changes
 
