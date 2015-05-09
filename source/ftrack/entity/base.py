@@ -72,11 +72,6 @@ class Entity(collections.MutableMapping):
         else:
             self._reconstruct(data)
 
-        # Assert that primary key is set. Suspend auto populate temporarily to
-        # avoid infinite recursion if primary key values are not present.
-        with self.session.auto_populating(False):
-            ftrack.inspection.primary_key(self)
-
     @property
     def state(self):
         '''Return current state.'''
