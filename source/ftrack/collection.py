@@ -25,7 +25,7 @@ class Collection(collections.MutableSequence):
 
     def _notify(self):
         '''Notify about modification.'''
-        self.entity.state = ftrack.symbol.CREATED
+        self.entity.state = ftrack.symbol.MODIFIED
 
     def insert(self, index, item):
         '''Insert *item* at *index*.'''
