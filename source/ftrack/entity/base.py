@@ -296,14 +296,25 @@ class Entity(collections.MutableMapping):
         Return a list of changes made with each change being a mapping with
         the keys:
 
-            * attribute_type - Either 'remote' or 'local'.
-            * attribute_name - The name of the attribute modified.
-            * old_value - The previous value of the attribute.
-            * new_value - The new merged value of the attribute.
+            * type - Either 'remote_attribute', 'local_attribute' or 'property'.
+            * name - The name of the attribute / property modified.
+            * old_value - The previous value.
+            * new_value - The new merged value.
 
         '''
         changes = []
 
+        # State.
+        state = self.state
+        other_state = entity.state
+        if state is not other_state:
+            self.state = other_state
+            changes.append({
+                'type': 'property',
+                'name': 'state',
+                'old_value': state,
+                'new_value': other_state
+            })
         for other_attribute in entity.attributes:
             attribute = self.attributes.get(other_attribute.name)
 
@@ -314,10 +325,10 @@ class Entity(collections.MutableMapping):
                 if local_value != other_local_value:
                     attribute.set_local_value(self, other_local_value)
                     changes.append({
-                        'attribute_type': 'local',
-                        'attribute_name': attribute.name,
+                        'type': 'local_attribute',
+                        'name': attribute.name,
                         'old_value': local_value,
-                        'new_value': other_local_value
+                        'new_value': merged_local_value
                     })
 
             # Remote attributes.
@@ -327,10 +338,10 @@ class Entity(collections.MutableMapping):
                 if remote_value != other_remote_value:
                     attribute.set_remote_value(self, other_remote_value)
                     changes.append({
-                        'attribute_type': 'remote',
-                        'attribute_name': attribute.name,
+                        'type': 'remote_attribute',
+                        'name': attribute.name,
                         'old_value': remote_value,
-                        'new_value': other_remote_value
+                        'new_value': merged_remote_value
                     })
 
         return changes
