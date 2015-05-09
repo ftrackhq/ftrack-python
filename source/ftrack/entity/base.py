@@ -127,7 +127,7 @@ class Entity(collections.MutableMapping):
 
         if (
             current_state is ftrack.symbol.MODIFIED
-            and value is not ftrack.symbol.DELETED
+            and value not in (ftrack.symbol.DELETED, ftrack.symbol.NOT_SET)
         ):
             raise ftrack.exception.InvalidStateTransitionError(
                 current_state, value, self
