@@ -437,154 +437,150 @@ class Session(object):
         key = str(ftrack.inspection.identity(entity))
         del self._attached[key]
 
-    def _merge(self, entity, _seen=None, _depth=0):
+    def _merge(self, value, merged=None):
+        '''Return merged *value*.'''
+        if merged is None:
+            merged = {}
+
+        if isinstance(value, ftrack.entity.base.Entity):
+            self.logger.debug(
+                'Merging entity into session: {0} at {1}'
+                .format(value, id(value))
+            )
+            return self._merge_entity(value, merged=merged)
+
+        elif isinstance(value, ftrack.collection.Collection):
+            self.logger.debug(
+                'Merging collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
+
+            merged_collection = []
+            for entry in value:
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
+                )
+
+            return merged_collection
+
+        # TODO: Handle DictionaryAttributeCollection.
+
+        else:
+            return value
+
+    def _merge_entity(self, entity, merged=None):
         '''Merge *entity* into session returning merged entity.
 
         Merge is recursive so any references to other entities will also be
-        merged and *entity* may be modified in place.
+        merged.
+
+        *entity* will never be modified in place. Ensure that the returned
+        merged entity instance is used.
 
         '''
-        if _seen is None:
-            _seen = {}
-
-        indent = '{0}|-'.format('  ' * _depth)
-
-        self.logger.debug(
-            '{0}Merging into session: {1} at {2}'
-            .format(indent, entity, id(entity))
-        )
+        if merged is None:
+            merged = {}
 
         with self.auto_populating(False):
             entity_key = self.cache_key_maker.key(
                 ftrack.inspection.identity(entity)
             )
 
-            # Recursively merge entity references that were present in source
-            # entity if not already done. This is required because this entity
-            # may be stored directly in a memory cache and therefore it needs
-            # to have its references pointing to entity instances also in the
-            # cache.
-            self._merge_references(entity, _seen=_seen, _depth=_depth)
+            # Check whether this entity has already been processed.
+            attached_entity = merged.get(entity_key)
+            if attached_entity is not None:
+                self.logger.debug(
+                    'Entity already processed for key {0} as {1} at {2}'
+                    .format(entity_key, attached_entity, id(attached_entity))
+                )
+                return attached_entity
 
             # Check for existing instance of entity in cache.
+            self.logger.debug(
+                'Checking for entity in cache with key {0}'.format(entity_key)
+            )
+
             try:
+                attached_entity = self.cache.get(entity_key)
                 self.logger.debug(
-                    '{0}Checking for entity in cache with key {1}'
-                    .format(indent, entity_key)
+                    'Retrieved existing entity from cache: {0} at {1}'
+                    .format(attached_entity, id(attached_entity))
                 )
-                existing_entity = self.cache.get(entity_key)
 
             except KeyError:
-                # Record new instance in cache.
-                self.cache.set(entity_key, entity)
-                merged_entity = entity
+                # Construct new minimal instance to store in cache.
+                attached_entity = self._create(
+                    entity.entity_type, {}, reconstructing=True
+                )
                 self.logger.debug(
-                    '{0}Entity not already in cache. Storing to cache {1} at '
-                    '{2}'.format(indent, entity, id(entity))
+                    'Entity not present in cache. Constructed new instance: '
+                    '{0} at {1}'.format(attached_entity, id(attached_entity))
                 )
 
+            # Mark entity as seen to avoid infinite loops.
+            merged[entity_key] = attached_entity
+
+            # Expand references. This is required as a serialised cache might
+            # have returned just a plain entity object with the rest of the data
+            # stored separately. The reason this is done here rather in the
+            # specific cache is so that any higher level cache can be taken
+            # advantage of when fetching data.
+            self._merge_references(attached_entity, merged=merged)
+
+            # Merge new entity data into cache entity. If this causes the cache
+            # entity to change then persist those changes back to the cache.
+            self.logger.debug('Merging new data into attached entity.')
+            changes = attached_entity.merge(entity, merged=merged)
+            if changes:
+                self.cache.set(entity_key, attached_entity)
+                self.logger.debug('Cache updated with merged entity.')
             else:
                 self.logger.debug(
-                    '{0}Retrieved existing entity from cache: {1} at {2}'
-                    .format(indent, existing_entity, id(existing_entity))
+                    'Cache not updated with merged entity as no differences '
+                    'detected.'
                 )
 
-                # Merge differing attributes from entity to existing entity and
-                # update cached copy if required.
-                if entity is existing_entity:
-                    self.logger.debug(
-                        '{0}Entity and existing entity are same instance.'
-                        .format(indent)
-                    )
+            # Ensure this instance is now attached to the session.
+            self._attach(attached_entity)
 
-                else:
-                    # Expand entity references recursively so that all cached
-                    # objects in tree retrieved and set on returned entity.
-                    # This is required because a cache may just store a plain
-                    # reference to another entity in the cache (e.g. just id)
-                    # and so need to load the full entity reference separately.
-                    self._merge_references(
-                        existing_entity, _seen=_seen, _depth=_depth
-                    )
+        return attached_entity
 
-                    self.logger.debug(
-                        '{0}Merging new data into existing entity.'
-                        .format(indent)
-                    )
-                    changes = existing_entity.merge(entity)
-                    if changes:
-                        # Ensure changes stored to cache.
-                        self.cache.set(entity_key, existing_entity)
-                        self.logger.debug(
-                            '{0}Cache updated with merged entity.'
-                            .format(indent)
-                        )
-                    else:
-                        self.logger.debug(
-                            '{0}Cache not updated with merged entity as no '
-                            'differences detected.'
-                            .format(indent)
-                        )
-
-                # Set returned entity to be existing cached instance.
-                merged_entity = existing_entity
-
-        return merged_entity
-
-    def _merge_references(self, entity, _seen=None, _depth=0):
+    def _merge_references(self, entity, merged=None):
         '''Recursively merge entity references in *entity*.'''
-        if _seen is None:
-            _seen = {}
+        self.logger.debug('Merging references.')
 
-        indent = '{0}|-'.format('  ' * _depth)
-
-        entity_address = id(entity)
-        if entity_address in _seen:
-            return
-
-        else:
-            _seen[entity_address] = True
+        if merged is None:
+            merged = {}
 
         for attribute in entity.attributes:
-            value = attribute.get_remote_value(entity)
 
-            if value is not ftrack.symbol.NOT_SET:
+            # Local attributes.
+            local_value = attribute.get_local_value(entity)
+            if isinstance(
+                local_value,
+                (ftrack.entity.base.Entity, ftrack.collection.Collection)
+            ):
+                self.logger.debug(
+                    'Merging local value for attribute {0}.'.format(attribute)
+                )
 
-                if isinstance(value, ftrack.entity.base.Entity):
-                    self.logger.debug(
-                        '{0}Merging entity reference for attribute {1}.'
-                        .format(indent, attribute)
-                    )
-                    attribute.set_remote_value(
-                        entity,
-                        self._merge(
-                            value, _seen=_seen, _depth=_depth + 1
-                        )
-                    )
+                merged_local_value = self._merge(local_value, merged=merged)
+                if merged_local_value is not local_value:
+                    attribute.set_local_value(entity, merged_local_value)
 
-                elif isinstance(value, ftrack.collection.Collection):
-                    self.logger.debug(
-                        '{0}Merging collection for attribute {1}.'
-                        .format(indent, attribute)
-                    )
-                    # Temporarily make collection mutable so that
-                    # entities within it can be merged.
-                    mutable = value.mutable
-                    value.mutable = True
-                    try:
-                        for index, entry in enumerate(value):
-                            if isinstance(entry, ftrack.entity.base.Entity):
-                                self.logger.debug(
-                                    '{0}Merging entity reference in collection '
-                                    'at index {1}.'.format(indent, index)
-                                )
-                                value[index] = self._merge(
-                                    entry, _seen=_seen, _depth=_depth + 1
-                                )
-                    finally:
-                        value.mutable = mutable
+            # Remote attributes.
+            remote_value = attribute.get_remote_value(entity)
+            if isinstance(
+                remote_value,
+                (ftrack.entity.base.Entity, ftrack.collection.Collection)
+            ):
+                self.logger.debug(
+                    'Merging remote value for attribute {0}.'.format(attribute)
+                )
 
-                # TODO: Handle DictionaryAttributeCollection.
+                merged_remote_value = self._merge(remote_value, merged=merged)
+                if merged_remote_value is not remote_value:
+                    attribute.set_remote_value(entity, merged_remote_value)
 
     def populate(self, entities, projections, background=False):
         '''Populate *entities* with attributes specified by *projections*.

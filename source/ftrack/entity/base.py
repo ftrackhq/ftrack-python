@@ -287,7 +287,7 @@ class Entity(collections.MutableMapping):
         for attribute in self:
             del self[attribute]
 
-    def merge(self, entity):
+    def merge(self, entity, merged=None):
         '''Merge *entity* attribute values and other data into this entity.
 
         Only merge values from *entity* that are not
@@ -302,6 +302,9 @@ class Entity(collections.MutableMapping):
             * new_value - The new merged value.
 
         '''
+        if merged is None:
+            merged = {}
+
         log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
         changes = []
 
@@ -317,6 +320,8 @@ class Entity(collections.MutableMapping):
                 'new_value': other_state
             })
             self.logger.debug(log_message.format(**changes[-1]))
+
+        # Attributes.
         for other_attribute in entity.attributes:
             attribute = self.attributes.get(other_attribute.name)
 
@@ -325,7 +330,11 @@ class Entity(collections.MutableMapping):
             if other_local_value is not ftrack.symbol.NOT_SET:
                 local_value = attribute.get_local_value(self)
                 if local_value != other_local_value:
-                    attribute.set_local_value(self, other_local_value)
+                    merged_local_value = self.session._merge(
+                        other_local_value, merged=merged
+                    )
+
+                    attribute.set_local_value(self, merged_local_value)
                     changes.append({
                         'type': 'local_attribute',
                         'name': attribute.name,
@@ -339,7 +348,11 @@ class Entity(collections.MutableMapping):
             if other_remote_value is not ftrack.symbol.NOT_SET:
                 remote_value = attribute.get_remote_value(self)
                 if remote_value != other_remote_value:
-                    attribute.set_remote_value(self, other_remote_value)
+                    merged_remote_value = self.session._merge(
+                        other_remote_value, merged=merged
+                    )
+
+                    attribute.set_remote_value(self, merged_remote_value)
                     changes.append({
                         'type': 'remote_attribute',
                         'name': attribute.name,
