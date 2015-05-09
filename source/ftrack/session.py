@@ -423,13 +423,14 @@ class Session(object):
         key = str(ftrack.inspection.identity(entity))
         current = self._attached.get(key)
 
-        if current is not entity:
-            self.logger.debug(
-                'Updating attach {0!r}. A different instance {1!r} of that '
+        if current is None:
+            self._attached[key] = entity
+
+        elif current is not entity:
+            raise ValueError(
+                'Cannot attach {0!r}. A different instance {1!r} of that '
                 'entity is already attached.'.format(entity, current)
             )
-
-        self._attached[key] = entity
 
     def _detach(self, entity):
         '''Detach *entity* from session.'''
