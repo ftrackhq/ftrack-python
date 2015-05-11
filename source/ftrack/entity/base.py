@@ -311,7 +311,10 @@ class Entity(collections.MutableMapping):
         # State.
         state = self.state
         other_state = entity.state
-        if state is not other_state:
+        if (
+            other_state is not ftrack.symbol.NOT_SET
+            and state is not other_state
+        ):
             self.state = other_state
             changes.append({
                 'type': 'property',
