@@ -34,7 +34,12 @@ def cache(request):
 
         def cleanup():
             '''Cleanup.'''
-            os.remove(cache_path)
+            try:
+                os.remove(cache_path)
+            except OSError:
+                # BSD DB (Mac OSX) implementation of the interface will append 
+                # a .db extension.
+                os.remove(cache_path + '.db')
 
         request.addfinalizer(cleanup)
 
