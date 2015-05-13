@@ -10,6 +10,8 @@ API Reference
 ftrack_api
 ==========
 
+.. automodule:: ftrack_api
+
 .. toctree::
     :maxdepth: 1
     :glob:
