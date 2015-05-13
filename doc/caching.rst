@@ -33,9 +33,9 @@ retrieved::
     >>>     print timelog['comment']
     'Some comment'
 
-By default, each :class:`~ftrack.session.Session` is configured with a simple
-:class:`~ftrack.cache.MemoryCache()` and the cache is lost as soon as the
-session expires.
+By default, each :class:`~ftrack_api.session.Session` is configured with a
+simple :class:`~ftrack_api.cache.MemoryCache()` and the cache is lost as soon as
+the session expires.
 
 Configuring a session cache
 ===========================
@@ -44,7 +44,7 @@ It is possible to configure the cache that a session uses. An example would be a
 persistent auto-populated cache that survives between sessions::
 
     import os
-    import ftrack.cache
+    import ftrack_api.cache
 
     # Specify where the file based cache should be stored.
     cache_path = os.path.join(tempfile.gettempdir(), 'ftrack_session_cache.dbm')
@@ -56,14 +56,14 @@ persistent auto-populated cache that survives between sessions::
     # can be written to disk (JSON).
     def cache_maker(session):
         '''Return cache to use for *session*.'''
-        return ftrack.cache.SerialisedCache(
-            ftrack.cache.FileCache(cache_path),
+        return ftrack_api.cache.SerialisedCache(
+            ftrack_api.cache.FileCache(cache_path),
             encode=session.encode,
             decode=session.decode
         )
 
     # Create the session using the cache maker.
-    session = ftrack.Session(cache=cache_maker)
+    session = ftrack_api.Session(cache=cache_maker)
 
 .. note::
 
@@ -72,25 +72,27 @@ persistent auto-populated cache that survives between sessions::
     relatively slow operations.
 
 Regardless of the cache specified, the session will always construct a
-:class:`~ftrack.cache.LayeredCache` with a :class:`~ftrack.cache.MemoryCache`
-at the top level and then your cache at the second level. This is to ensure
-consistency of instances returned by the session.
+:class:`~ftrack_api.cache.LayeredCache` with a
+:class:`~ftrack_api.cache.MemoryCache` at the top level and then your cache at
+the second level. This is to ensure consistency of instances returned by the
+session.
 
-You can check (or even modify) at any time what cache configuration a session
-is using by accessing the `cache` attribute on a
-:class:`~ftrack.session.Session`::
+You can check (or even modify) at any time what cache configuration a session is
+using by accessing the `cache` attribute on a
+:class:`~ftrack_api.session.Session`::
 
     >>> print session.cache
-    <ftrack.cache.LayeredCache object at 0x0000000002F64400>
+    <ftrack_api.cache.LayeredCache object at 0x0000000002F64400>
 
 Writing a new cache interface
 =============================
 
-If you have a custom cache backend you should be able to integrate it into
-the system by writing a cache interface that matches the one defined by
-:class:`ftrack.cache.Cache`. This typically involves a subclass and overriding
-the :meth:`~ftrack.cache.Cache.get`, :meth:`~ftrack.cache.Cache.set` and
-:meth:`~ftrack.cache.Cache.remove` methods.
+If you have a custom cache backend you should be able to integrate it into the
+system by writing a cache interface that matches the one defined by
+:class:`ftrack_api.cache.Cache`. This typically involves a subclass and
+overriding the :meth:`~ftrack_api.cache.Cache.get`,
+:meth:`~ftrack_api.cache.Cache.set` and :meth:`~ftrack_api.cache.Cache.remove`
+methods.
 
 
 Managing what gets cached
@@ -108,13 +110,13 @@ top level memory cache to hold onto these values.
 Here is one way to set this up. First define a new proxy cache that is selective
 about what it sets::
 
-    class SelectiveCache(ftrack.cache.ProxyCache):
+    class SelectiveCache(ftrack_api.cache.ProxyCache):
         '''Proxy cache that won't cache newly created entities.'''
 
         def set(self, key, value):
             '''Set *value* for *key*.'''
-            if isinstance(value, ftrack.entity.base.Entity):
-                if value.state is ftrack.symbol.CREATED:
+            if isinstance(value, ftrack_api.entity.base.Entity):
+                if value.state is ftrack_api.symbol.CREATED:
                     return
 
             super(SelectiveCache, self).set(key, value)
@@ -127,8 +129,8 @@ Now use this custom cache to wrap the serialised cache in the setup above:
     def cache_maker(session):
         '''Return cache to use for *session*.'''
         return SelectiveCache(
-            ftrack.cache.SerialisedCache(
-                ftrack.cache.FileCache(cache_path),
+            ftrack_api.cache.SerialisedCache(
+                ftrack_api.cache.FileCache(cache_path),
                 encode=session.encode,
                 decode=session.decode
             )
@@ -146,8 +148,8 @@ settings for the file cache:
     def cache_maker(session):
         '''Return cache to use for *session*.'''
         return SelectiveCache(
-            ftrack.cache.SerialisedCache(
-                ftrack.cache.FileCache(cache_path),
+            ftrack_api.cache.SerialisedCache(
+                ftrack_api.cache.FileCache(cache_path),
                 encode=functools.partial(
                     session.encode,
                     entity_attribute_strategy='persisted_only'
@@ -158,4 +160,4 @@ settings for the file cache:
 
 And use the updated cache maker for your session::
 
-    session = ftrack.Session(cache=cache_maker)
+    session = ftrack_api.Session(cache=cache_maker)
