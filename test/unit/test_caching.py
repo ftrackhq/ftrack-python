@@ -1,7 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import ftrack.inspection
+import ftrack_api.inspection
 
 
 def test_get_entity_bypassing_cache(session, user, mocker):
@@ -9,9 +9,9 @@ def test_get_entity_bypassing_cache(session, user, mocker):
     mocker.patch.object(session, '_call', wraps=session._call)
 
     session.cache.remove(
-        session.cache_key_maker.key(ftrack.inspection.identity(user))
+        session.cache_key_maker.key(ftrack_api.inspection.identity(user))
     )
-    matching = session.get(*ftrack.inspection.identity(user))
+    matching = session.get(*ftrack_api.inspection.identity(user))
 
     # Check a different instance returned.
     assert matching is not user
@@ -27,7 +27,7 @@ def test_get_entity_from_cache(session, user, mocker):
     '''Retrieve an entity by type and id from cache.'''
     mocker.patch.object(session, '_call')
 
-    matching = session.get(*ftrack.inspection.identity(user))
+    matching = session.get(*ftrack_api.inspection.identity(user))
     assert matching is user
 
     # Check that no call was made to server.

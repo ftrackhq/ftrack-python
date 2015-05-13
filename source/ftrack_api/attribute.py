@@ -172,7 +172,7 @@ class Attribute(object):
 
         # Transition state.
         if self.is_modified(entity):
-            entity.state = ftrack.symbol.MODIFIED
+            entity.state = ftrack_api.symbol.MODIFIED
 
     def set_remote_value(self, entity, value):
         '''Set remote *value*.

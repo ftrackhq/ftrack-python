@@ -3,12 +3,12 @@
 
 import pytest
 
-import ftrack.inspection
+import ftrack_api.inspection
 
 
 def test_get_entity(session, user):
     '''Retrieve an entity by type and id.'''
-    matching = session.get(*ftrack.inspection.identity(user))
+    matching = session.get(*ftrack_api.inspection.identity(user))
     assert matching == user
 
 
