@@ -3,7 +3,7 @@
 
 import uuid
 
-import ftrack
+import ftrack_api
 
 
 class TestMetadata(object):
@@ -11,7 +11,7 @@ class TestMetadata(object):
 
     def setup_method(self, method):
         '''Setup the test.'''
-        self.session = ftrack.Session()
+        self.session = ftrack_api.Session()
         name = 'projectname_{0}'.format(uuid.uuid1().hex)
         project_schemas = self.session.query('ProjectSchema')
         project = self.session.create('Project', {
@@ -62,7 +62,7 @@ class TestMetadata(object):
         self.sequence['metadata'][metadata_key] = metadata_value
         self.session.commit()
 
-        new_session = ftrack.Session()
+        new_session = ftrack_api.Session()
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
@@ -74,7 +74,7 @@ class TestMetadata(object):
 
         new_session.commit()
 
-        new_session = ftrack.Session()
+        new_session = ftrack_api.Session()
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
@@ -92,7 +92,7 @@ class TestMetadata(object):
 
         assert set(self.sequence['metadata'].keys()) == set(['key1', 'key2'])
 
-        new_session = ftrack.Session()
+        new_session = ftrack_api.Session()
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])

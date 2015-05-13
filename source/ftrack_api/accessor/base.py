@@ -3,7 +3,7 @@
 
 import abc
 
-import ftrack.exception
+import ftrack_api.exception
 
 
 class Accessor(object):
@@ -38,9 +38,9 @@ class Accessor(object):
 
         Each entry in the returned list should be a valid resource identifier.
 
-        Raise :exc:`~ftrack.exception.AccessorResourceNotFoundError` if
+        Raise :exc:`~ftrack_api.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist or
-        :exc:`~ftrack.exception.AccessorResourceInvalidError` if
+        :exc:`~ftrack_api.exception.AccessorResourceInvalidError` if
         *resource_identifier* is not a container.
 
         '''
@@ -63,13 +63,13 @@ class Accessor(object):
 
     @abc.abstractmethod
     def open(self, resource_identifier, mode='rb'):
-        '''Return :class:`~ftrack.data.Data` for *resource_identifier*.'''
+        '''Return :class:`~ftrack_api.data.Data` for *resource_identifier*.'''
 
     @abc.abstractmethod
     def remove(self, resource_identifier):
         '''Remove *resource_identifier*.
 
-        Raise :exc:`~ftrack.exception.AccessorResourceNotFoundError` if
+        Raise :exc:`~ftrack_api.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist.
 
         '''
@@ -88,8 +88,8 @@ class Accessor(object):
     def get_container(self, resource_identifier):
         '''Return resource_identifier of container for *resource_identifier*.
 
-        Raise :exc:`~ftrack.exception.AccessorParentResourceNotFoundError` if
-        container of *resource_identifier* could not be determined.
+        Raise :exc:`~ftrack_api.exception.AccessorParentResourceNotFoundError`
+        if container of *resource_identifier* could not be determined.
 
         '''
 
@@ -100,12 +100,12 @@ class Accessor(object):
     def get_filesystem_path(self, resource_identifier):
         '''Return filesystem path for *resource_identifier*.
 
-        Raise :exc:`~ftrack.exception.AccessorFilesystemPathError` if filesystem
-        path could not be determined from *resource_identifier* or
-        :exc:`~ftrack.exception.AccessorUnsupportedOperationError` if retrieving
-        filesystem paths is not supported by this accessor.
+        Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if
+        filesystem path could not be determined from *resource_identifier* or
+        :exc:`~ftrack_api.exception.AccessorUnsupportedOperationError` if
+        retrieving filesystem paths is not supported by this accessor.
 
         '''
-        raise ftrack.exception.AccessorUnsupportedOperationError(
+        raise ftrack_api.exception.AccessorUnsupportedOperationError(
             'get_filesystem_path', resource_identifier=resource_identifier
         )

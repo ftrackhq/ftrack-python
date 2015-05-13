@@ -3,7 +3,7 @@
 
 import uuid
 
-import ftrack
+import ftrack_api
 
 
 class TestCreateProject(object):
@@ -11,7 +11,7 @@ class TestCreateProject(object):
 
     def setup_method(self, method):
         '''Setup the test.'''
-        self.session = ftrack.Session()
+        self.session = ftrack_api.Session()
 
     def test_create_empty_project(self):
         '''Create an empty project.'''

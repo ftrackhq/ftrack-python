@@ -1,10 +1,10 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import ftrack.entity.base
+import ftrack_api.entity.base
 
 
-class AssetVersion(ftrack.entity.base.Entity):
+class AssetVersion(ftrack_api.entity.base.Entity):
     '''Represent asset version.'''
 
     def create_component(

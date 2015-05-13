@@ -6,9 +6,9 @@ import abc
 import collections
 import logging
 
-import ftrack.symbol
-import ftrack.attribute
-import ftrack.inspection
+import ftrack_api.symbol
+import ftrack_api.attribute
+import ftrack_api.inspection
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -37,8 +37,8 @@ class Entity(collections.MutableMapping):
     def __init__(self, session, data=None, reconstructing=False):
         '''Initialise entity.
 
-        *session* is an instance of :class:`ftrack.session.Session` that this
-        entity instance is bound to.
+        *session* is an instance of :class:`ftrack_api.session.Session` that
+        this entity instance is bound to.
 
         *data* is a mapping of key, value pairs to apply as initial attribute
         values.
@@ -73,7 +73,7 @@ class Entity(collections.MutableMapping):
         # Assert that primary key is set. Suspend auto populate temporarily to
         # avoid infinite recursion if primary key values are not present.
         with self.session.auto_populating(False):
-            ftrack.inspection.primary_key(self)
+            ftrack_api.inspection.primary_key(self)
 
     def _construct(self, data):
         '''Construct from *data*.'''
@@ -130,7 +130,7 @@ class Entity(collections.MutableMapping):
         with self.session.auto_populating(False):
             primary_key = ['Unknown']
             try:
-                primary_key = ftrack.inspection.primary_key(self).values()
+                primary_key = ftrack_api.inspection.primary_key(self).values()
             except KeyError:
                 pass
 
@@ -140,7 +140,7 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(ftrack.inspection.identity(self))
+        return hash(ftrack_api.inspection.identity(self))
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.
@@ -155,8 +155,8 @@ class Entity(collections.MutableMapping):
             return False
 
         return (
-            ftrack.inspection.identity(other)
-            == ftrack.inspection.identity(self)
+            ftrack_api.inspection.identity(other)
+            == ftrack_api.inspection.identity(self)
         )
 
     def __getitem__(self, key):
@@ -185,7 +185,7 @@ class Entity(collections.MutableMapping):
 
         '''
         attribute = self.__class__.attributes.get(key)
-        attribute.set_local_value(self, ftrack.symbol.NOT_SET)
+        attribute.set_local_value(self, ftrack_api.symbol.NOT_SET)
 
     def __iter__(self):
         '''Iterate over all attributes keys.'''
@@ -226,7 +226,7 @@ class Entity(collections.MutableMapping):
         '''Merge *entity* attribute values and other data into this entity.'''
         for other_attribute in entity.attributes:
             value = other_attribute.get_remote_value(entity)
-            if value is not ftrack.symbol.NOT_SET:
+            if value is not ftrack_api.symbol.NOT_SET:
                 attribute = self.attributes.get(other_attribute.name)
                 attribute.set_remote_value(self, value)
 
@@ -234,8 +234,8 @@ class Entity(collections.MutableMapping):
         '''Populate all unset scalar attributes in one query.'''
         projections = []
         for attribute in self.attributes:
-            if isinstance(attribute, ftrack.attribute.ScalarAttribute):
-                if attribute.get_remote_value(self) is ftrack.symbol.NOT_SET:
+            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+                if attribute.get_remote_value(self) is ftrack_api.symbol.NOT_SET:
                     projections.append(attribute.name)
 
         if projections:
