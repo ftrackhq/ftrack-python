@@ -28,7 +28,8 @@ try:
 except ImportError:  # pragma: no cover
     import pickle
 
-import ftrack.symbol
+import ftrack_api.inspection
+import ftrack_api.symbol
 
 
 class Cache(object):
@@ -152,7 +153,7 @@ class LayeredCache(Cache):
 
         '''
         target_caches = []
-        value = ftrack.symbol.NOT_SET
+        value = ftrack_api.symbol.NOT_SET
 
         for cache in self.caches:
             try:
@@ -163,7 +164,7 @@ class LayeredCache(Cache):
             else:
                 break
 
-        if value is ftrack.symbol.NOT_SET:
+        if value is ftrack_api.symbol.NOT_SET:
             raise KeyError(key)
 
         # Set value on all higher level caches.

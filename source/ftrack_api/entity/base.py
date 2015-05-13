@@ -5,10 +5,10 @@ import abc
 import collections
 import logging
 
-import ftrack.symbol
-import ftrack.attribute
-import ftrack.inspection
-import ftrack.exception
+import ftrack_api.symbol
+import ftrack_api.attribute
+import ftrack_api.inspection
+import ftrack_api.exception
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -37,8 +37,8 @@ class Entity(collections.MutableMapping):
     def __init__(self, session, data=None, reconstructing=False):
         '''Initialise entity.
 
-        *session* is an instance of :class:`ftrack.session.Session` that this
-        entity instance is bound to.
+        *session* is an instance of :class:`ftrack_api.session.Session` that
+        this entity instance is bound to.
 
         *data* is a mapping of key, value pairs to apply as initial attribute
         values.
@@ -52,7 +52,7 @@ class Entity(collections.MutableMapping):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._state = ftrack.symbol.NOT_SET
+        self._state = ftrack_api.symbol.NOT_SET
         self.session = session
 
         if data is None:
@@ -81,7 +81,8 @@ class Entity(collections.MutableMapping):
     def state(self, value):
         '''Transition from current state to new state *value*.
 
-        Raise :exc:`ftrack.exception.InvalidStateError` if new state is invalid.
+        Raise :exc:`ftrack_api.exception.InvalidStateError` if new state is 
+        invalid.
 
         .. note::
 
@@ -90,17 +91,17 @@ class Entity(collections.MutableMapping):
 
         Valid state values are:
 
-            * :attr:`ftrack.symbol.NOT_SET`
-            * :attr:`ftrack.symbol.CREATED`
-            * :attr:`ftrack.symbol.MODIFIED`
-            * :attr:`ftrack.symbol.DELETED`
+            * :attr:`ftrack_api.symbol.NOT_SET`
+            * :attr:`ftrack_api.symbol.CREATED`
+            * :attr:`ftrack_api.symbol.MODIFIED`
+            * :attr:`ftrack_api.symbol.DELETED`
 
         '''
         valid_states = (
-            ftrack.symbol.NOT_SET,
-            ftrack.symbol.CREATED,
-            ftrack.symbol.MODIFIED,
-            ftrack.symbol.DELETED
+            ftrack_api.symbol.NOT_SET,
+            ftrack_api.symbol.CREATED,
+            ftrack_api.symbol.MODIFIED,
+            ftrack_api.symbol.DELETED
         )
         if value not in valid_states:
             raise ValueError(
@@ -112,24 +113,28 @@ class Entity(collections.MutableMapping):
         if current_state is value:
             return
 
-        if current_state in (ftrack.symbol.CREATED, ftrack.symbol.DELETED):
-            if value == ftrack.symbol.MODIFIED:
+        if current_state in (
+            ftrack_api.symbol.CREATED, ftrack_api.symbol.DELETED
+        ):
+            if value == ftrack_api.symbol.MODIFIED:
                 # Not an error, but no point marking as modified.
                 return
 
         if (
-            current_state is ftrack.symbol.DELETED
-            and value is not ftrack.symbol.NOT_SET
+            current_state is ftrack_api.symbol.DELETED
+            and value is not ftrack_api.symbol.NOT_SET
         ):
-            raise ftrack.exception.InvalidStateTransitionError(
+            raise ftrack_api.exception.InvalidStateTransitionError(
                 current_state, value, self
             )
 
         if (
-            current_state is ftrack.symbol.MODIFIED
-            and value not in (ftrack.symbol.DELETED, ftrack.symbol.NOT_SET)
+            current_state is ftrack_api.symbol.MODIFIED
+            and value not in (
+                ftrack_api.symbol.DELETED, ftrack_api.symbol.NOT_SET
+            )
         ):
-            raise ftrack.exception.InvalidStateTransitionError(
+            raise ftrack_api.exception.InvalidStateTransitionError(
                 current_state, value, self
             )
 
@@ -141,7 +146,7 @@ class Entity(collections.MutableMapping):
         # Done here so that entity has correct state, otherwise would
         # receive a state of "modified" following setting of attribute
         # values from *data*.
-        self.state = ftrack.symbol.CREATED
+        self.state = ftrack_api.symbol.CREATED
 
         # Data represents locally set values.
         for key, value in data.items():
@@ -195,7 +200,7 @@ class Entity(collections.MutableMapping):
         with self.session.auto_populating(False):
             primary_key = ['Unknown']
             try:
-                primary_key = ftrack.inspection.primary_key(self).values()
+                primary_key = ftrack_api.inspection.primary_key(self).values()
             except KeyError:
                 pass
 
@@ -205,7 +210,7 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(ftrack.inspection.identity(self))
+        return hash(ftrack_api.inspection.identity(self))
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.
@@ -218,8 +223,8 @@ class Entity(collections.MutableMapping):
         '''
         try:
             return (
-                ftrack.inspection.identity(other)
-                == ftrack.inspection.identity(self)
+                ftrack_api.inspection.identity(other)
+                == ftrack_api.inspection.identity(self)
             )
         except (AttributeError, KeyError):
             return False
@@ -250,7 +255,7 @@ class Entity(collections.MutableMapping):
 
         '''
         attribute = self.__class__.attributes.get(key)
-        attribute.set_local_value(self, ftrack.symbol.NOT_SET)
+        attribute.set_local_value(self, ftrack_api.symbol.NOT_SET)
 
     def __iter__(self):
         '''Iterate over all attributes keys.'''
@@ -291,7 +296,7 @@ class Entity(collections.MutableMapping):
         '''Merge *entity* attribute values and other data into this entity.
 
         Only merge values from *entity* that are not
-        :attr:`ftrack.symbol.NOT_SET`.
+        :attr:`ftrack_api.symbol.NOT_SET`.
 
         Return a list of changes made with each change being a mapping with
         the keys:
@@ -312,7 +317,7 @@ class Entity(collections.MutableMapping):
         state = self.state
         other_state = entity.state
         if (
-            other_state is not ftrack.symbol.NOT_SET
+            other_state is not ftrack_api.symbol.NOT_SET
             and state is not other_state
         ):
             self.state = other_state
@@ -330,7 +335,7 @@ class Entity(collections.MutableMapping):
 
             # Local attributes.
             other_local_value = other_attribute.get_local_value(entity)
-            if other_local_value is not ftrack.symbol.NOT_SET:
+            if other_local_value is not ftrack_api.symbol.NOT_SET:
                 local_value = attribute.get_local_value(self)
                 if local_value != other_local_value:
                     merged_local_value = self.session._merge(
@@ -348,7 +353,7 @@ class Entity(collections.MutableMapping):
 
             # Remote attributes.
             other_remote_value = other_attribute.get_remote_value(entity)
-            if other_remote_value is not ftrack.symbol.NOT_SET:
+            if other_remote_value is not ftrack_api.symbol.NOT_SET:
                 remote_value = attribute.get_remote_value(self)
                 if remote_value != other_remote_value:
                     merged_remote_value = self.session._merge(
@@ -370,8 +375,8 @@ class Entity(collections.MutableMapping):
         '''Populate all unset scalar attributes in one query.'''
         projections = []
         for attribute in self.attributes:
-            if isinstance(attribute, ftrack.attribute.ScalarAttribute):
-                if attribute.get_remote_value(self) is ftrack.symbol.NOT_SET:
+            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+                if attribute.get_remote_value(self) is ftrack_api.symbol.NOT_SET:
                     projections.append(attribute.name)
 
         if projections:

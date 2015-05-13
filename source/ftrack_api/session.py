@@ -15,23 +15,23 @@ import requests.auth
 import arrow
 import clique
 
-import ftrack
-import ftrack.exception
-import ftrack.entity.base
-import ftrack.entity.location
-import ftrack.cache
-import ftrack.symbol
-import ftrack.query
-import ftrack.attribute
-import ftrack.collection
-import ftrack.event.hub
-import ftrack.event.base
-import ftrack.plugin
-import ftrack.inspection
-import ftrack.accessor.disk
-import ftrack.structure.origin
-import ftrack.structure.entity_id
-import ftrack.accessor.server
+import ftrack_api
+import ftrack_api.exception
+import ftrack_api.entity.base
+import ftrack_api.entity.location
+import ftrack_api.cache
+import ftrack_api.symbol
+import ftrack_api.query
+import ftrack_api.attribute
+import ftrack_api.collection
+import ftrack_api.event.hub
+import ftrack_api.event.base
+import ftrack_api.plugin
+import ftrack_api.inspection
+import ftrack_api.accessor.disk
+import ftrack_api.structure.origin
+import ftrack_api.structure.entity_id
+import ftrack_api.accessor.server
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -80,23 +80,23 @@ class Session(object):
         specified, default to looking up :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
 
         *cache* should be an instance of a cache that fulfils the
-        :class:`ftrack.cache.Cache` interface and will be used as the cache for
-        the session. It can also be a callable that will be called with the
+        :class:`ftrack_api.cache.Cache` interface and will be used as the cache
+        for the session. It can also be a callable that will be called with the
         session instance as sole argument.
 
         .. note::
 
             The session will add the specified cache to a pre-configured layered
             cache that specifies the top level cache as a
-            :class:`ftrack.cache.MemoryCache`. Therefore, it is unnecessary to
-            construct a separate memory cache for typical behaviour. Working
+            :class:`ftrack_api.cache.MemoryCache`. Therefore, it is unnecessary 
+            to construct a separate memory cache for typical behaviour. Working
             around this behaviour or removing the memory cache can lead to
             unexpected behaviour.
 
         *cache_key_maker* should be an instance of a key maker that fulfils the
-        :class:`ftrack.cache.KeyMaker` interface and will be used to generate
-        keys for objects being stored in the *cache*. If not specified, a
-        :class:`~ftrack.cache.StringKeyMaker` will be used.
+        :class:`ftrack_api.cache.KeyMaker` interface and will be used to 
+        generate keys for objects being stored in the *cache*. If not specified, 
+        a :class:`~ftrack_api.cache.StringKeyMaker` will be used.
 
         '''
         super(Session, self).__init__()
@@ -153,12 +153,12 @@ class Session(object):
 
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
-            self.cache_key_maker = ftrack.cache.StringKeyMaker()
+            self.cache_key_maker = ftrack_api.cache.StringKeyMaker()
 
         # Enforce always having a memory cache at top level so that the same
         # in-memory instance is returned from session.
-        self.cache = ftrack.cache.LayeredCache([
-            ftrack.cache.MemoryCache()
+        self.cache = ftrack_api.cache.LayeredCache([
+            ftrack_api.cache.MemoryCache()
         ])
 
         if cache is not None:
@@ -177,7 +177,7 @@ class Session(object):
         self.auto_populate = auto_populate
 
         # Construct event hub and load plugins.
-        self._event_hub = ftrack.event.hub.EventHub(self._server_url)
+        self._event_hub = ftrack_api.event.hub.EventHub(self._server_url)
         self._event_hub.connect()
 
         self._plugin_paths = plugin_paths
@@ -262,7 +262,7 @@ class Session(object):
         '''Return list of newly created entities.'''
         return [
             entity for entity in self._attached.values()
-            if entity.state is ftrack.symbol.CREATED
+            if entity.state is ftrack_api.symbol.CREATED
         ]
 
     @property
@@ -270,7 +270,7 @@ class Session(object):
         '''Return list of locally modified entities.'''
         return [
             entity for entity in self._attached.values()
-            if entity.state is ftrack.symbol.MODIFIED
+            if entity.state is ftrack_api.symbol.MODIFIED
         ]
 
     @property
@@ -278,7 +278,7 @@ class Session(object):
         '''Return list of deleted entities.'''
         return [
             entity for entity in self._attached.values()
-            if entity.state is ftrack.symbol.DELETED
+            if entity.state is ftrack_api.symbol.DELETED
         ]
 
     def create(self, entity_type, data=None, reconstructing=False):
@@ -304,7 +304,7 @@ class Session(object):
         try:
             EntityTypeClass = self.types[entity_type]
         except KeyError:
-            raise ftrack.exception.UnrecognisedEntityTypeError(entity_type)
+            raise ftrack_api.exception.UnrecognisedEntityTypeError(entity_type)
 
         return EntityTypeClass(self, data=data, reconstructing=reconstructing)
 
@@ -313,7 +313,7 @@ class Session(object):
 
     def delete(self, entity):
         '''Mark *entity* for deletion.'''
-        entity.state = ftrack.symbol.DELETED
+        entity.state = ftrack_api.symbol.DELETED
 
     def get(self, entity_type, entity_key):
         '''Return entity of *entity_type* with unique *entity_key*.
@@ -340,8 +340,8 @@ class Session(object):
 
         entity = None
 
-        # Check cache for existing entity emulating ftrack.inspection.identity
-        # result object to pass to key maker.
+        # Check cache for existing entity emulating 
+        # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
             (str(entity_type), [str(entity_key)])
         )
@@ -374,7 +374,7 @@ class Session(object):
         '''Query against remote data according to *expression*.
 
         *expression* is not executed directly. Instead return an
-        :class:`ftrack.query.QueryResult` instance that will execute remote
+        :class:`ftrack_api.query.QueryResult` instance that will execute remote
         call on access.
 
         '''
@@ -396,7 +396,7 @@ class Session(object):
                 expression
             )
 
-        query_result = ftrack.query.QueryResult(self, expression)
+        query_result = ftrack_api.query.QueryResult(self, expression)
         return query_result
 
     def _query(self, expression):
@@ -420,7 +420,7 @@ class Session(object):
 
     def _attach(self, entity):
         '''Attach *entity* to session if not already.'''
-        key = str(ftrack.inspection.identity(entity))
+        key = str(ftrack_api.inspection.identity(entity))
         current = self._attached.get(key)
 
         if current is None:
@@ -434,7 +434,7 @@ class Session(object):
 
     def _detach(self, entity):
         '''Detach *entity* from session.'''
-        key = str(ftrack.inspection.identity(entity))
+        key = str(ftrack_api.inspection.identity(entity))
         del self._attached[key]
 
     def _merge(self, value, merged=None):
@@ -442,14 +442,14 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        if isinstance(value, ftrack.entity.base.Entity):
+        if isinstance(value, ftrack_api.entity.base.Entity):
             self.logger.debug(
                 'Merging entity into session: {0} at {1}'
                 .format(value, id(value))
             )
             return self._merge_entity(value, merged=merged)
 
-        elif isinstance(value, ftrack.collection.Collection):
+        elif isinstance(value, ftrack_api.collection.Collection):
             self.logger.debug(
                 'Merging collection into session: {0!r} at {1}'
                 .format(value, id(value))
@@ -483,7 +483,7 @@ class Session(object):
 
         with self.auto_populating(False):
             entity_key = self.cache_key_maker.key(
-                ftrack.inspection.identity(entity)
+                ftrack_api.inspection.identity(entity)
             )
 
             # Check whether this entity has already been processed.
@@ -558,7 +558,10 @@ class Session(object):
             local_value = attribute.get_local_value(entity)
             if isinstance(
                 local_value,
-                (ftrack.entity.base.Entity, ftrack.collection.Collection)
+                (
+                    ftrack_api.entity.base.Entity, 
+                    ftrack_api.collection.Collection
+                )
             ):
                 self.logger.debug(
                     'Merging local value for attribute {0}.'.format(attribute)
@@ -572,7 +575,10 @@ class Session(object):
             remote_value = attribute.get_remote_value(entity)
             if isinstance(
                 remote_value,
-                (ftrack.entity.base.Entity, ftrack.collection.Collection)
+                (
+                    ftrack_api.entity.base.Entity, 
+                    ftrack_api.collection.Collection
+                )
             ):
                 self.logger.debug(
                     'Merging remote value for attribute {0}.'.format(attribute)
@@ -591,7 +597,7 @@ class Session(object):
         Any locally set values included in the *projections* will not be
         overwritten with the retrieved remote value. If this 'synchronise'
         behaviour is required, first clear the relevant values on the entity by
-        setting them to :attr:`ftrack.symbol.NOT_SET`. Deleting the key will
+        setting them to :attr:`ftrack_api.symbol.NOT_SET`. Deleting the key will
         have the same effect::
 
             >>> print(user['username'])
@@ -606,7 +612,9 @@ class Session(object):
             skipped as they have no remote values to fetch.
 
         '''
-        if not isinstance(entities, (list, tuple, ftrack.query.QueryResult)):
+        if not isinstance(
+            entities, (list, tuple, ftrack_api.query.QueryResult)
+        ):
             entities = [entities]
 
         # TODO: How to handle a mixed collection of different entity types
@@ -617,7 +625,7 @@ class Session(object):
         entities_to_process = []
 
         for entity in entities:
-            if entity.state is ftrack.symbol.CREATED:
+            if entity.state is ftrack_api.symbol.CREATED:
                 # Created entities that are not yet persisted have no remote
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
@@ -641,7 +649,7 @@ class Session(object):
             primary_key = primary_key_definition[0]
 
             entity_keys = [
-                ftrack.inspection.primary_key(entity).values()[0]
+                ftrack_api.inspection.primary_key(entity).values()[0]
                 for entity in entities_to_process
             ]
 
@@ -674,7 +682,9 @@ class Session(object):
                 self._batches['write'].append({
                     'action': 'delete',
                     'entity_type': entity.entity_type,
-                    'entity_key': ftrack.inspection.primary_key(entity).values()
+                    'entity_key': ftrack_api.inspection.primary_key(
+                        entity
+                    ).values()
                 })
 
             # Add all creations in order.
@@ -690,7 +700,9 @@ class Session(object):
                 self._batches['write'].append({
                     'action': 'update',
                     'entity_type': entity.entity_type,
-                    'entity_key': ftrack.inspection.primary_key(entity).values(),
+                    'entity_key': ftrack_api.inspection.primary_key(
+                        entity
+                    ).values(),
                     'entity_data': entity
                 })
 
@@ -705,17 +717,21 @@ class Session(object):
 
             # If successful commit then update states.
             for entity in self.created:
-                entity.state = ftrack.symbol.NOT_SET
+                entity.state = ftrack_api.symbol.NOT_SET
                 for attribute in entity.attributes:
-                    attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
+                    attribute.set_local_value(
+                        entity, ftrack_api.symbol.NOT_SET
+                    )
 
             for entity in self.modified:
-                entity.state = ftrack.symbol.NOT_SET
+                entity.state = ftrack_api.symbol.NOT_SET
                 for attribute in entity.attributes:
-                    attribute.set_local_value(entity, ftrack.symbol.NOT_SET)
+                    attribute.set_local_value(
+                        entity, ftrack_api.symbol.NOT_SET
+                    )
 
             for entity in self.deleted:
-                entity.state = ftrack.symbol.NOT_SET
+                entity.state = ftrack_api.symbol.NOT_SET
                 self._detach(entity)
 
             # Process results merging into cache relevant data.
@@ -738,12 +754,12 @@ class Session(object):
 
             def register(session):
                 session.event_hub.subscribe(
-                    'topic=ftrack.session.construct_entity_type',
+                    'topic=ftrack.api.session.construct-entity-type',
                     construct_entity_type
                 )
 
         '''
-        ftrack.plugin.discover(self._plugin_paths, [self])
+        ftrack_api.plugin.discover(self._plugin_paths, [self])
 
     def _fetch_schemas(self):
         '''Return schemas fetched from server.'''
@@ -756,8 +772,8 @@ class Session(object):
 
         for schema in schemas:
             results = self.event_hub.publish(
-                ftrack.event.base.Event(
-                    topic='ftrack.session.construct-entity-type',
+                ftrack_api.event.base.Event(
+                    topic='ftrack.api.session.construct-entity-type',
                     data=dict(
                         schema=schema,
                         schemas=schemas
@@ -799,16 +815,16 @@ class Session(object):
             'Location',
             data=dict(
                 name='ftrack.origin',
-                id=ftrack.symbol.ORIGIN_LOCATION_ID
+                id=ftrack_api.symbol.ORIGIN_LOCATION_ID
             ),
             reconstructing=True
         )
-        ftrack.mixin(
-            location, ftrack.entity.location.OriginLocationMixin,
+        ftrack_api.mixin(
+            location, ftrack_api.entity.location.OriginLocationMixin,
             name='OriginLocation'
         )
-        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack.structure.origin.OriginStructure()
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack_api.structure.origin.OriginStructure()
         location.priority = 100
 
         # Unmanaged.
@@ -816,18 +832,18 @@ class Session(object):
             'Location',
             data=dict(
                 name='ftrack.unmanaged',
-                id=ftrack.symbol.UNMANAGED_LOCATION_ID
+                id=ftrack_api.symbol.UNMANAGED_LOCATION_ID
             ),
             reconstructing=True
         )
-        ftrack.mixin(
-            location, ftrack.entity.location.UnmanagedLocationMixin,
+        ftrack_api.mixin(
+            location, ftrack_api.entity.location.UnmanagedLocationMixin,
             name='UnmanagedLocation'
         )
-        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack.structure.origin.OriginStructure()
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack_api.structure.origin.OriginStructure()
         # location.resource_identifier_transformer = (
-        #     ftrack.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
+        #     ftrack_api.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
         # )
         location.priority = 90
 
@@ -836,16 +852,16 @@ class Session(object):
             'Location',
             data=dict(
                 name='ftrack.review',
-                id=ftrack.symbol.REVIEW_LOCATION_ID
+                id=ftrack_api.symbol.REVIEW_LOCATION_ID
             ),
             reconstructing=True
         )
-        ftrack.mixin(
-            location, ftrack.entity.location.UnmanagedLocationMixin,
+        ftrack_api.mixin(
+            location, ftrack_api.entity.location.UnmanagedLocationMixin,
             name='UnmanagedLocation'
         )
-        location.accessor = ftrack.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack.structure.origin.OriginStructure()
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.structure = ftrack_api.structure.origin.OriginStructure()
         location.priority = 110
 
         # Server.
@@ -853,20 +869,20 @@ class Session(object):
             'Location',
             data=dict(
                 name='ftrack.server',
-                id=ftrack.symbol.SERVER_LOCATION_ID
+                id=ftrack_api.symbol.SERVER_LOCATION_ID
             ),
             reconstructing=True
         )
-        location.accessor = ftrack.accessor.server._ServerAccessor(
+        location.accessor = ftrack_api.accessor.server._ServerAccessor(
             session=self
         )
-        location.structure = ftrack.structure.entity_id.EntityIdStructure()
+        location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
-            ftrack.event.base.Event(
-                topic='ftrack.session.configure-location',
+            ftrack_api.event.base.Event(
+                topic='ftrack.api.session.configure-location',
                 data=dict(
                     session=self
                 )
@@ -920,7 +936,7 @@ class Session(object):
             elif response.status_code == 500:
                 message = response.text
 
-            raise ftrack.exception.ServerError(message)
+            raise ftrack_api.exception.ServerError(message)
 
         else:
             self.logger.debug(
@@ -931,7 +947,7 @@ class Session(object):
 
             if 'exception' in result:
                 # Handle exceptions.
-                raise ftrack.exception.ServerError(
+                raise ftrack_api.exception.ServerError(
                     'Server reported error {0}({1})'.format(
                         result['exception'],
                         result['content']
@@ -988,7 +1004,7 @@ class Session(object):
                 'value': item.isoformat()
             }
 
-        if isinstance(item, ftrack.entity.base.Entity):
+        if isinstance(item, ftrack_api.entity.base.Entity):
             data = self._entity_reference(item)
 
             auto_populate = False
@@ -998,7 +1014,7 @@ class Session(object):
             with self.auto_populating(auto_populate):
 
                 for attribute in item.attributes:
-                    value = ftrack.symbol.NOT_SET
+                    value = ftrack_api.symbol.NOT_SET
 
                     if entity_attribute_strategy in ('all', 'set_only'):
                         # Note: Auto-populate setting ensures correct behaviour
@@ -1012,25 +1028,27 @@ class Session(object):
                     elif entity_attribute_strategy == 'persisted_only':
                         value = attribute.get_remote_value(item)
 
-                    if value is not ftrack.symbol.NOT_SET:
+                    if value is not ftrack_api.symbol.NOT_SET:
                         if isinstance(
-                            attribute, ftrack.attribute.ReferenceAttribute
+                            attribute, ftrack_api.attribute.ReferenceAttribute
                         ):
-                            if isinstance(value, ftrack.entity.base.Entity):
+                            if isinstance(value, ftrack_api.entity.base.Entity):
                                 value = self._entity_reference(value)
 
                         data[attribute.name] = value
 
             return data
 
-        if isinstance(item, ftrack.collection.Collection):
+        if isinstance(item, ftrack_api.collection.Collection):
             data = []
             for entity in item:
                 data.append(self._entity_reference(entity))
 
             return data
 
-        if isinstance(item, ftrack.attribute.DictionaryAttributeCollection):
+        if isinstance(
+            item, ftrack_api.attribute.DictionaryAttributeCollection
+        ):
             # TODO: Correctly encode dictionary collection so that it can be
             # decoded properly.
             return {}
@@ -1048,7 +1066,7 @@ class Session(object):
             '__entity_type__': entity.entity_type
         }
         with self.auto_populating(False):
-            reference.update(ftrack.inspection.primary_key(entity))
+            reference.update(ftrack_api.inspection.primary_key(entity))
 
         return reference
 
@@ -1184,7 +1202,7 @@ class Session(object):
                 'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
             ):
                 location = self.get(
-                    'Location', ftrack.symbol.REVIEW_LOCATION_ID
+                    'Location', ftrack_api.symbol.REVIEW_LOCATION_ID
                 )
 
             else:
@@ -1258,7 +1276,7 @@ class Session(object):
         # Add to special origin location so that it is possible to add to other
         # locations.
         origin_location = self.get(
-            'Location', ftrack.symbol.ORIGIN_LOCATION_ID
+            'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
         )
         origin_location.add_component(component, path, recursive=False)
 

@@ -8,6 +8,16 @@ Release Notes
 *************
 
 .. release:: next
+        
+    .. change:: changed
+
+        Changed name of API from `ftrack` to `ftrack_api`.
+        :ref:`Read more <release/migration/next/new_api_name>`
+
+    .. change:: fixed
+        :tags: events
+
+        Event hub raises TypeError when listening to ftrack.update events.
 
     .. change:: changed
 
@@ -18,7 +28,7 @@ Release Notes
     .. change:: fixed
         :tags: events
 
-        :meth:`ftrack.session.event_hub.subscribe` fails when `subscription`
+        :meth:`ftrack_api.session.event_hub.subscribe` fails when `subscription`
         argument contains special characters such as `@` or `+`.
 
 .. release:: 0.1.0
@@ -27,7 +37,7 @@ Release Notes
     .. change:: changed
 
         Moved standardised construct entity type logic to core package (as part
-        of the :class:`~ftrack.entity.factory.StandardFactory`) for easier reuse
+        of the :class:`~ftrack_api.entity.factory.StandardFactory`) for easier reuse
         and extension.
 
 .. release:: 0.1.0-beta.2
@@ -47,31 +57,31 @@ Release Notes
 
     .. change:: new
 
-        A new inspection API (:mod:`ftrack.inspection`) has been added for
+        A new inspection API (:mod:`ftrack_api.inspection`) has been added for
         extracting useful information from objects in the system, such as the
         identity of an entity.
 
     .. change:: changed
 
         ``Entity.primary_key`` and ``Entity.identity`` have been removed.
-        Instead, use the new :func:`ftrack.inspection.primary_key` and
-        :func:`ftrack.inspection.identity` functions. This was done to make it
+        Instead, use the new :func:`ftrack_api.inspection.primary_key` and
+        :func:`ftrack_api.inspection.identity` functions. This was done to make it
         clearer the the extracted information is determined from the current
         entity state and modifying the returned object will have no effect on
         the entity instance itself.
 
     .. change:: changed
 
-        :func:`ftrack.inspection.primary_key` now returns a mapping of the
+        :func:`ftrack_api.inspection.primary_key` now returns a mapping of the
         attribute names and values that make up the primary key, rather than
         the previous behaviour of returning a tuple of just the values. To
         emulate previous behaviour do::
 
-            ftrack.inspection.primary_key(entity).values()
+            ftrack_api.inspection.primary_key(entity).values()
 
     .. change:: changed
 
-        :meth:`Session.encode <ftrack.session.Session.encode>` now supports
+        :meth:`Session.encode <ftrack_api.session.Session.encode>` now supports
         different strategies for encoding entities via the
         *entity_attribute_strategy* keyword argument. This makes it possible to
         use this method for general serialisation of entity instances.
@@ -89,18 +99,18 @@ Release Notes
 
     .. change:: changed
 
-        :meth:`Session.decode <ftrack.session.Session.decode>` no longer
+        :meth:`Session.decode <ftrack_api.session.Session.decode>` no longer
         automatically adds decoded entities to the
-        :class:`~ftrack.session.Session` cache making it possible to use decode
+        :class:`~ftrack_api.session.Session` cache making it possible to use decode
         independently.
 
     .. change:: new
 
-        Added :meth:`Session.merge <ftrack.session.Session.merge>` for merging
+        Added :meth:`Session.merge <ftrack_api.session.Session.merge>` for merging
         entities recursively into the session cache.
 
     .. change:: fixed
 
-        Replacing an entity in a :class:`ftrack.collection.Collection` with an
+        Replacing an entity in a :class:`ftrack_api.collection.Collection` with an
         identical entity no longer raises
-        :exc:`ftrack.exception.DuplicateItemInCollectionError`.
+        :exc:`ftrack_api.exception.DuplicateItemInCollectionError`.

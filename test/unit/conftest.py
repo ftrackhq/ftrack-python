@@ -5,13 +5,13 @@ import uuid
 
 import pytest
 
-import ftrack
+import ftrack_api
 
 
 @pytest.fixture(scope='session')
 def session():
     '''Return session instance.'''
-    return ftrack.Session()
+    return ftrack_api.Session()
 
 
 @pytest.fixture()

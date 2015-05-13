@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2015 ftrack
 
-***********************
-ftrack.structure.origin
-***********************
+***************************
+ftrack_api.structure.origin
+***************************
 
-.. automodule:: ftrack.structure.origin
+.. automodule:: ftrack_api.structure.origin

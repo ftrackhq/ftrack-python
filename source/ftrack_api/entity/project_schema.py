@@ -1,10 +1,10 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import ftrack.entity.base
+import ftrack_api.entity.base
 
 
-class ProjectSchema(ftrack.entity.base.Entity):
+class ProjectSchema(ftrack_api.entity.base.Entity):
     '''Class representing ProjectSchema.'''
 
     def get_statuses(self, schema, type_id=None):

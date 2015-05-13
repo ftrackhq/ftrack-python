@@ -4,7 +4,7 @@
 import sys
 import traceback
 
-import ftrack.entity.base
+import ftrack_api.entity.base
 
 
 class Error(Exception):
@@ -217,7 +217,7 @@ class ComponentNotInLocationError(LocationError):
 
     def __init__(self, components, location, **kw):
         '''Initialise with *components* and *location*.'''
-        if isinstance(components, ftrack.entity.base.Entity):
+        if isinstance(components, ftrack_api.entity.base.Entity):
             components = [components]
 
         kw.setdefault('details', {}).update(dict(

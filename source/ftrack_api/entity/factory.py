@@ -4,13 +4,13 @@
 import logging
 import uuid
 
-import ftrack.attribute
-import ftrack.entity.base
-import ftrack.entity.location
-import ftrack.entity.component
-import ftrack.entity.asset_version
-import ftrack.entity.project_schema
-import ftrack.symbol
+import ftrack_api.attribute
+import ftrack_api.entity.base
+import ftrack_api.entity.location
+import ftrack_api.entity.component
+import ftrack_api.entity.asset_version
+import ftrack_api.entity.project_schema
+import ftrack_api.symbol
 
 
 class Factory(object):
@@ -27,7 +27,7 @@ class Factory(object):
         '''Create and return entity class from *schema*.
 
         *bases* should be a list of bases to give the constructed class. If not
-        specified, default to :class:`ftrack.entity.base.Entity`.
+        specified, default to :class:`ftrack_api.entity.base.Entity`.
 
         '''
         entity_type = schema['id']
@@ -35,23 +35,23 @@ class Factory(object):
 
         class_bases = bases
         if class_bases is None:
-            class_bases = [ftrack.entity.base.Entity]
+            class_bases = [ftrack_api.entity.base.Entity]
 
         class_namespace = dict()
 
         # Build attributes for class.
-        attributes = ftrack.attribute.Attributes()
+        attributes = ftrack_api.attribute.Attributes()
         immutable = schema.get('immutable', [])
         for name, fragment in schema.get('properties', {}).items():
             mutable = name not in immutable
 
-            default = fragment.get('default', ftrack.symbol.NOT_SET)
+            default = fragment.get('default', ftrack_api.symbol.NOT_SET)
             if default == '{uid}':
                 default = lambda instance: str(uuid.uuid4())
 
-            data_type = fragment.get('type', ftrack.symbol.NOT_SET)
+            data_type = fragment.get('type', ftrack_api.symbol.NOT_SET)
 
-            if data_type is not ftrack.symbol.NOT_SET:
+            if data_type is not ftrack_api.symbol.NOT_SET:
 
                 if data_type in (
                     'string', 'boolean', 'integer', 'number'
@@ -65,7 +65,7 @@ class Factory(object):
                         if data_format == 'date-time':
                             data_type = 'datetime'
 
-                    attribute = ftrack.attribute.ScalarAttribute(
+                    attribute = ftrack_api.attribute.ScalarAttribute(
                         name, data_type=data_type, default_value=default,
                         mutable=mutable
                     )
@@ -73,14 +73,16 @@ class Factory(object):
 
                 elif data_type == 'array':
                     # Collection attribute.
-                    # reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
-                    attribute = ftrack.attribute.CollectionAttribute(
+                    # reference = fragment.get(
+                    #    '$ref', ftrack_api.symbol.NOT_SET
+                    # )
+                    attribute = ftrack_api.attribute.CollectionAttribute(
                         name, mutable=mutable
                     )
                     attributes.add(attribute)
 
                 elif data_type == 'dict':
-                    attribute = ftrack.attribute.DictionaryAttribute(
+                    attribute = ftrack_api.attribute.DictionaryAttribute(
                         name, schema=fragment, mutable=mutable
                     )
                     attributes.add(attribute)
@@ -92,9 +94,9 @@ class Factory(object):
                     )
             else:
                 # Reference attribute.
-                reference = fragment.get('$ref', ftrack.symbol.NOT_SET)
-                if reference is not ftrack.symbol.NOT_SET:
-                    attribute = ftrack.attribute.ReferenceAttribute(
+                reference = fragment.get('$ref', ftrack_api.symbol.NOT_SET)
+                if reference is not ftrack_api.symbol.NOT_SET:
+                    attribute = ftrack_api.attribute.ReferenceAttribute(
                         name, reference
                     )
                     attributes.add(attribute)
@@ -139,22 +141,22 @@ class StandardFactory(Factory):
         # Customise classes.
         if schema['id'] == 'ProjectSchema':
             cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack.entity.project_schema.ProjectSchema]
+                schema, bases=[ftrack_api.entity.project_schema.ProjectSchema]
             )
 
         elif schema['id'] == 'Location':
             cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack.entity.location.Location]
+                schema, bases=[ftrack_api.entity.location.Location]
             )
 
         elif schema['id'] == 'AssetVersion':
             cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack.entity.asset_version.AssetVersion]
+                schema, bases=[ftrack_api.entity.asset_version.AssetVersion]
             )
 
         elif schema['id'].endswith('Component'):
             cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack.entity.component.Component]
+                schema, bases=[ftrack_api.entity.component.Component]
             )
 
         else:

@@ -3,21 +3,21 @@
 
 import collections
 
-import ftrack.entity.base
-import ftrack.exception
-import ftrack.event.base
-import ftrack.symbol
-import ftrack.inspection
+import ftrack_api.entity.base
+import ftrack_api.exception
+import ftrack_api.event.base
+import ftrack_api.symbol
+import ftrack_api.inspection
 
 
-class Location(ftrack.entity.base.Entity):
+class Location(ftrack_api.entity.base.Entity):
     '''Represent storage for components.'''
 
     def __init__(self, session, data=None, reconstructing=False):
         '''Initialise entity.
 
-        *session* is an instance of :class:`ftrack.session.Session` that this
-        entity instance is bound to.
+        *session* is an instance of :class:`ftrack_api.session.Session` that
+        this entity instance is bound to.
 
         *data* is a mapping of key, value pairs to apply as initial attribute
         values.
@@ -27,9 +27,9 @@ class Location(ftrack.entity.base.Entity):
         logic applied, such as initialising defaults for missing data.
 
         '''
-        self.accessor = ftrack.symbol.NOT_SET
-        self.structure = ftrack.symbol.NOT_SET
-        self.resource_identifier_transformer = ftrack.symbol.NOT_SET
+        self.accessor = ftrack_api.symbol.NOT_SET
+        self.structure = ftrack_api.symbol.NOT_SET
+        self.resource_identifier_transformer = ftrack_api.symbol.NOT_SET
         self.priority = 95
         super(Location, self).__init__(
             session, data=data, reconstructing=reconstructing
@@ -41,7 +41,7 @@ class Location(ftrack.entity.base.Entity):
 
         with self.session.auto_populating(False):
             name = self['name']
-            if name is not ftrack.symbol.NOT_SET:
+            if name is not ftrack_api.symbol.NOT_SET:
                 representation = representation.replace(
                     '(', '("{0}", '.format(name)
                 )
@@ -56,10 +56,10 @@ class Location(ftrack.entity.base.Entity):
         *source* should be an instance of another location that acts as the
         source.
 
-        Raise :exc:`ftrack.ComponentInLocationError` if the *component*
+        Raise :exc:`ftrack_api.ComponentInLocationError` if the *component*
         already exists in this location.
 
-        Raise :exc:`ftrack.LocationError` if managing data and the generated
+        Raise :exc:`ftrack_api.LocationError` if managing data and the generated
         target structure for the component already exists according to the
         accessor. This helps prevent potential data loss by avoiding overwriting
         existing data. Note that there is a race condition between the check and
@@ -80,10 +80,10 @@ class Location(ftrack.entity.base.Entity):
         *then each corresponding index in *sources* will be used for each
         *component*. A source should be an instance of another location.
 
-        Raise :exc:`ftrack.ComponentInLocationError` if the *component*
+        Raise :exc:`ftrack_api.ComponentInLocationError` if the *component*
         already exists in this location.
 
-        Raise :exc:`ftrack.LocationError` if managing data and the generated
+        Raise :exc:`ftrack_api.LocationError` if managing data and the generated
         target structure for the component already exists according to the
         accessor. This helps prevent potential data loss by avoiding overwriting
         existing data. Note that there is a race condition between the check and
@@ -105,7 +105,7 @@ class Location(ftrack.entity.base.Entity):
             )
 
         if not self.structure:
-            raise ftrack.exception.LocationError(
+            raise ftrack_api.exception.LocationError(
                 'No structure defined for location {location}.',
                 details=dict(location=self)
             )
@@ -115,12 +115,14 @@ class Location(ftrack.entity.base.Entity):
             # Preemptively check that component has not already been added.
             try:
                 self.get_resource_identifier(component)
-            except ftrack.exception.ComponentNotInLocationError:
+            except ftrack_api.exception.ComponentNotInLocationError:
                 # Component does not already exist in location so it is fine to
                 # continue to add it.
                 pass
             else:
-                raise ftrack.exception.ComponentInLocationError(component, self)
+                raise ftrack_api.exception.ComponentInLocationError(
+                    component, self
+                )
 
             # Determine appropriate source.
             if sources_count == 1:
@@ -157,12 +159,14 @@ class Location(ftrack.entity.base.Entity):
             self._register_component_in_location(component, resource_identifier)
 
             # Publish event.
-            component_id = ftrack.inspection.primary_key(component).values()[0]
-            location_id = ftrack.inspection.primary_key(self).values()[0]
+            component_id = ftrack_api.inspection.primary_key(
+                component
+            ).values()[0]
+            location_id = ftrack_api.inspection.primary_key(self).values()[0]
 
             self.session.event_hub.publish(
-                ftrack.event.base.Event(
-                    topic=ftrack.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC,
+                ftrack_api.event.base.Event(
+                    topic=ftrack_api.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC,
                     data=dict(
                         component_id=component_id,
                         location_id=location_id
@@ -179,7 +183,7 @@ class Location(ftrack.entity.base.Entity):
                 source_resource_identifier = source.get_resource_identifier(
                     component
                 )
-            except ftrack.exception.ComponentNotInLocationError:
+            except ftrack_api.exception.ComponentNotInLocationError:
                 pass
             else:
                 context.update(dict(
@@ -197,13 +201,13 @@ class Location(ftrack.entity.base.Entity):
         '''
         # Read data from source and write to this location.
         if not source.accessor:
-            raise ftrack.exception.LocationError(
+            raise ftrack_api.exception.LocationError(
                 'No accessor defined for source location {location}.',
                 details=dict(location=source)
             )
 
         if not self.accessor:
-            raise ftrack.exception.LocationError(
+            raise ftrack_api.exception.LocationError(
                 'No accessor defined for target location {location}.',
                 details=dict(location=self)
             )
@@ -211,7 +215,7 @@ class Location(ftrack.entity.base.Entity):
         is_container = 'members' in component.keys()
         if is_container:
             # TODO: Improve this check. Possibly introduce an inspection
-            # such as ftrack.inspection.is_sequence_component.
+            # such as ftrack_api.inspection.is_sequence_component.
             if component.entity_type != 'SequenceComponent':
                 self.accessor.make_container(resource_identifier)
 
@@ -222,7 +226,7 @@ class Location(ftrack.entity.base.Entity):
                     resource_identifier
                 )
 
-            except ftrack.exception.AccessorParentResourceNotFoundError:
+            except ftrack_api.exception.AccessorParentResourceNotFoundError:
                 # Container could not be retrieved from
                 # resource_identifier. Assume that there is no need to
                 # make the container.
@@ -240,7 +244,7 @@ class Location(ftrack.entity.base.Entity):
                 # result in potential data loss. However, there is no
                 # good cross platform, cross accessor solution for this
                 # at present.
-                raise ftrack.exception.LocationError(
+                raise ftrack_api.exception.LocationError(
                     'Cannot add component as data already exists and '
                     'overwriting could result in data loss. Computed '
                     'target resource identifier was: {0}'
@@ -293,11 +297,13 @@ class Location(ftrack.entity.base.Entity):
             self._deregister_component_in_location(component)
 
             # Emit event.
-            component_id = ftrack.inspection.primary_key(component).values()[0]
-            location_id = ftrack.inspection.primary_key(self).values()[0]
+            component_id = ftrack_api.inspection.primary_key(
+                component
+            ).values()[0]
+            location_id = ftrack_api.inspection.primary_key(self).values()[0]
             self.session.event_hub.publish(
-                ftrack.event.base.Event(
-                    topic=ftrack.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC,
+                ftrack_api.event.base.Event(
+                    topic=ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC,
                     data=dict(
                         component_id=component_id,
                         location_id=location_id
@@ -309,7 +315,7 @@ class Location(ftrack.entity.base.Entity):
     def _remove_data(self, component):
         '''Remove data associated with *component*.'''
         if not self.accessor:
-            raise ftrack.exception.LocationError(
+            raise ftrack_api.exception.LocationError(
                 'No accessor defined for location {location}.',
                 details=dict(location=self)
             )
@@ -318,7 +324,7 @@ class Location(ftrack.entity.base.Entity):
             self.accessor.remove(
                 self.get_resource_identifier(component)
             )
-        except ftrack.exception.AccessorResourceNotFoundError:
+        except ftrack_api.exception.AccessorResourceNotFoundError:
             # If accessor does not support detecting sequence paths then an
             # AccessorResourceNotFoundError is raised. For now, if the
             # component type is 'SequenceComponent' assume success.
@@ -327,8 +333,8 @@ class Location(ftrack.entity.base.Entity):
 
     def _deregister_component_in_location(self, component):
         '''Deregister *component* from location.'''
-        component_id = ftrack.inspection.primary_key(component).values()[0]
-        location_id = ftrack.inspection.primary_key(self).values()[0]
+        component_id = ftrack_api.inspection.primary_key(component).values()[0]
+        location_id = ftrack_api.inspection.primary_key(self).values()[0]
 
         # TODO: Use session.get for optimisation.
         component_location = self.session.query(
@@ -363,7 +369,7 @@ class Location(ftrack.entity.base.Entity):
     def get_resource_identifier(self, component):
         '''Return resource identifier for *component*.
 
-        Raise :exc:`ftrack.exception.ComponentNotInLocationError` if the
+        Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if the
         component is not present in this location.
 
         '''
@@ -372,8 +378,8 @@ class Location(ftrack.entity.base.Entity):
     def get_resource_identifiers(self, components):
         '''Return resource identifiers for *components*.
 
-        Raise :exc:`ftrack.exception.ComponentNotInLocationError` if any of the
-        components are not present in this location.
+        Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if any
+        of the components are not present in this location.
 
         '''
         resource_identifiers = self._get_resource_identifiers(components)
@@ -392,20 +398,22 @@ class Location(ftrack.entity.base.Entity):
     def _get_resource_identifiers(self, components):
         '''Return resource identifiers for *components*.
 
-        Raise :exc:`ftrack.exception.ComponentNotInLocationError` if any of the
-        components are not present in this location.
+        Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if any
+        of the components are not present in this location.
 
         '''
         component_ids_mapping = collections.OrderedDict()
         for component in components:
-            component_id = ftrack.inspection.primary_key(component).values()[0]
+            component_id = ftrack_api.inspection.primary_key(
+                component
+            ).values()[0]
             component_ids_mapping[component_id] = component
 
         component_locations = self.session.query(
             'select component_id, resource_identifier from ComponentLocation '
             'where location_id is {0} and component_id in ({1})'
             .format(
-                ftrack.inspection.primary_key(self).values()[0],
+                ftrack_api.inspection.primary_key(self).values()[0],
                 ', '.join(component_ids_mapping.keys())
             )
         )
@@ -427,7 +435,9 @@ class Location(ftrack.entity.base.Entity):
                 )
 
         if missing:
-            raise ftrack.exception.ComponentNotInLocationError(missing, self)
+            raise ftrack_api.exception.ComponentNotInLocationError(
+                missing, self
+            )
 
         return resource_identifiers
 
@@ -468,25 +478,27 @@ class MemoryLocationMixin(object):
 
     def _register_component_in_location(self, component, resource_identifier):
         '''Register *component* in location with *resource_identifier*.'''
-        component_id = ftrack.inspection.primary_key(component).values()[0]
+        component_id = ftrack_api.inspection.primary_key(component).values()[0]
         self._cache[component_id] = resource_identifier
 
     def _deregister_component_in_location(self, component):
         '''Deregister *component* in location.'''
-        component_id = ftrack.inspection.primary_key(component).values()[0]
+        component_id = ftrack_api.inspection.primary_key(component).values()[0]
         self._cache.pop(component_id)
 
     def _get_resource_identifiers(self, components):
         '''Return resource identifiers for *components*.
 
-        Raise :exc:`ftrack.exception.ComponentNotInLocationError` if any of the
-        referenced components are not present in this location.
+        Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if any
+        of the referenced components are not present in this location.
 
         '''
         resource_identifiers = []
         missing = []
         for component in components:
-            component_id = ftrack.inspection.primary_key(component).values()[0]
+            component_id = ftrack_api.inspection.primary_key(
+                component
+            ).values()[0]
             resource_identifier = self._cache.get(component_id)
             if resource_identifier is None:
                 missing.append(component)
@@ -494,7 +506,9 @@ class MemoryLocationMixin(object):
                 resource_identifiers.append(resource_identifier)
 
         if missing:
-            raise ftrack.exception.ComponentNotInLocationError(missing, self)
+            raise ftrack_api.exception.ComponentNotInLocationError(
+                missing, self
+            )
 
         return resource_identifiers
 

@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-*************************
-ftrack.event.subscription
-*************************
+*****************************
+ftrack_api.event.subscription
+*****************************
 
-.. automodule:: ftrack.event.subscription
+.. automodule:: ftrack_api.event.subscription
