@@ -17,6 +17,11 @@ def mixin(instance, mixin_class, name=None):
             instance.__class__.__name__, mixin_class.__name__
         )
 
+    # Check mixin class not already present in mro in order to avoid consistent
+    # method resolution failure.
+    if mixin_class in instance.__class__.mro():
+        return
+
     instance.__class__ = type(
         name,
         (
