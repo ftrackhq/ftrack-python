@@ -5,6 +5,7 @@ import collections
 
 import ftrack_api.exception
 import ftrack_api.inspection
+import ftrack_api.symbol
 
 
 class Collection(collections.MutableSequence):
@@ -23,8 +24,8 @@ class Collection(collections.MutableSequence):
         self.extend(data)
 
     def _notify(self):
-        '''Notify about modication.'''
-        self.entity.session.set_state(self.entity, 'modified')
+        '''Notify about modification.'''
+        self.entity.state = ftrack_api.symbol.MODIFIED
 
     def insert(self, index, item):
         '''Insert *item* at *index*.'''

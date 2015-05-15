@@ -9,7 +9,7 @@ import ftrack_api.symbol
 def identity(entity):
     '''Return unique identity of *entity*.'''
     return (
-        entity.entity_type,
+        str(entity.entity_type),
         primary_key(entity).values()
     )
 
@@ -28,7 +28,7 @@ def primary_key(entity):
         if value is ftrack_api.symbol.NOT_SET:
             raise KeyError(
                 'Missing required value for primary key attribute "{0}" on '
-                'entity {1}.'.format(name, entity)
+                'entity {1!r}.'.format(name, entity)
             )
 
         primary_key[str(name)] = str(value)

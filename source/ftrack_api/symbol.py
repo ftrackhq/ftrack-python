@@ -30,6 +30,15 @@ class Symbol(object):
 #: Symbol representing that no value has been set or loaded.
 NOT_SET = Symbol('NOT_SET', False)
 
+#: Symbol representing created state.
+CREATED = Symbol('CREATED')
+
+#: Symbol representing modified state.
+MODIFIED = Symbol('MODIFIED')
+
+#: Symbol representing deleted state.
+DELETED = Symbol('DELETED')
+
 #: Topic published when component added to a location.
 COMPONENT_ADDED_TO_LOCATION_TOPIC = 'ftrack.location.component-added'
 
