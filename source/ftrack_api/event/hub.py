@@ -183,15 +183,6 @@ class EventHub(object):
         except ftrack_api.exception.NotUniqueError:
             pass
 
-        # Subscribe to connected event to handle authentication.
-        try:
-            self._add_subscriber(
-                'topic=ftrack.meta.connected',
-                self._on_connected
-            )
-        except ftrack_api.exception.NotUniqueError:
-            pass
-
         # Now resubscribe any existing stored subscribers. This can happen when
         # reconnecting automatically for example.
         for subscriber in self._subscribers[:]:
@@ -386,38 +377,6 @@ class EventHub(object):
             )
 
         return subscriber.metadata['id']
-
-    def _on_connected(self, event):
-        '''Handle on connect.'''
-        self._authenticate()
-
-    def _authenticate(self):
-        '''Authenticate connection.'''
-        try:
-            self._add_subscriber(
-                'topic=ftrack.meta.authentication',
-                self._on_authentication
-            )
-        except ftrack_api.exception.NotUniqueError:
-            pass
-
-        authentication_event = ftrack_api.event.base.Event(
-            topic='ftrack.meta.authentication',
-            data=dict(
-                api_user=self._api_user,
-                api_key=self._api_key
-            )
-        )
-
-        self.publish(authentication_event)
-
-    def _on_authentication(self, event):
-        '''Handle authentication response.'''
-        if event['data'].get('success') is False:
-            self._intentional_disconnect = True
-            raise ftrack_api.exception.EventHubConnectionError(
-                'Unable to authenticate against event server.'
-            )
 
     def _add_subscriber(
         self, subscription, callback, subscriber=None, priority=100
@@ -775,7 +734,15 @@ class EventHub(object):
 
     def _get_socket_io_session(self):
         '''Connect to server and retrieve session information.'''
-        socket_io_url = '{0}://{1}:{2}/socket.io/1/'.format(*self.server)
+        socket_io_url = (
+            '{0}://{1}:{2}/socket.io/1/?api_user={3}&api_key={4}'
+        ).format(
+            self.server.scheme,
+            self.server.hostname,
+            self.server.port,
+            self._api_user,
+            self._api_key
+        )
         try:
             response = requests.get(
                 socket_io_url,
