@@ -55,7 +55,7 @@ class EventHub(object):
     '''Manage routing of events.'''
 
     def __init__(self, server_url, api_user, api_key):
-        '''Initialise hub, connecting to ftrack *server*.
+        '''Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
         to authenticate with.
