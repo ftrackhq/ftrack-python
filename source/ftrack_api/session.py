@@ -154,7 +154,12 @@ class Session(object):
         self.auto_populate = auto_populate
 
         # Construct event hub and load plugins.
-        self._event_hub = ftrack_api.event.hub.EventHub(self._server_url)
+        self._event_hub = ftrack_api.event.hub.EventHub(
+            self._server_url,
+            self._api_user,
+            self._api_key
+        )
+
         if auto_connect_event_hub:
             self._event_hub.connect()
 

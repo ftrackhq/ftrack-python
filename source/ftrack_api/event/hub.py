@@ -54,8 +54,13 @@ class _EventHubEncoder(json.JSONEncoder):
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server=None):
-        '''Initialise hub, connecting to ftrack *server*.'''
+    def __init__(self, server_url, api_user, api_key):
+        '''Initialise hub, connecting to ftrack *server_url*.
+
+        *api_user* is the user to authenticate as and *api_key* is the API key
+        to authenticate with.
+
+        '''
         super(EventHub, self).__init__()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
@@ -97,17 +102,12 @@ class EventHub(object):
             dict((name, code) for code, name in self._code_name_mapping.items())
         )
 
+        self._server_url = server_url
+        self._api_user = api_user
+        self._api_key = api_key
+
         # Parse server URL and store server details.
-        if server is None:
-            server = os.environ.get('FTRACK_SERVER')
-
-        if not server:
-            raise TypeError(
-                'Required "server" not specified. Pass as argument or set '
-                'in environment variable FTRACK_SERVER.'
-            )
-
-        url_parse_result = urlparse.urlparse(server)
+        url_parse_result = urlparse.urlparse(self._server_url)
         self.server = ServerDetails(
             url_parse_result.scheme,
             url_parse_result.hostname,
@@ -734,7 +734,15 @@ class EventHub(object):
 
     def _get_socket_io_session(self):
         '''Connect to server and retrieve session information.'''
-        socket_io_url = '{0}://{1}:{2}/socket.io/1/'.format(*self.server)
+        socket_io_url = (
+            '{0}://{1}:{2}/socket.io/1/?api_user={3}&api_key={4}'
+        ).format(
+            self.server.scheme,
+            self.server.hostname,
+            self.server.port,
+            self._api_user,
+            self._api_key
+        )
         try:
             response = requests.get(
                 socket_io_url,
