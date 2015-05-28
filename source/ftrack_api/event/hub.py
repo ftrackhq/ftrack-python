@@ -111,12 +111,21 @@ class EventHub(object):
         self.server = ServerDetails(
             url_parse_result.scheme,
             url_parse_result.hostname,
-            8002
+            url_parse_result.port
         )
 
     def get_server_url(self):
         '''Return URL to server.'''
-        return '{0}://{1}:{2}'.format(*self.server)
+        return '{0}://{1}'.format(
+            self.server.scheme, self.get_hostname()
+        )
+
+    def get_hostname(self):
+        '''Return hostname with port.'''
+        if self.server.port:
+            return '{0}:{1}'.format(self.server.hostname, self.server.port)
+        else:
+            return self.server.hostname
 
     @property
     def secure(self):
@@ -148,8 +157,8 @@ class EventHub(object):
                 )
 
             scheme = 'wss' if self.secure else 'ws'
-            url = '{0}://{1}:{2}/socket.io/1/websocket/{3}'.format(
-                scheme, self.server.hostname, self.server.port, session.id
+            url = '{0}://{1}/socket.io/1/websocket/{2}'.format(
+                scheme, self.get_hostname(), session.id
             )
             self._connection = websocket.create_connection(url)
 
@@ -735,17 +744,17 @@ class EventHub(object):
     def _get_socket_io_session(self):
         '''Connect to server and retrieve session information.'''
         socket_io_url = (
-            '{0}://{1}:{2}/socket.io/1/?api_user={3}&api_key={4}'
+            '{0}://{1}/socket.io/1/?api_user={2}&api_key={3}'
         ).format(
             self.server.scheme,
-            self.server.hostname,
-            self.server.port,
+            self.get_hostname(),
             self._api_user,
             self._api_key
         )
         try:
             response = requests.get(
                 socket_io_url,
+                timeout=10,
                 verify=False  # Allow self-signed SSL.
             )
         except requests.exceptions.Timeout as error:
