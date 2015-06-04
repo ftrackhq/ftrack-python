@@ -17,14 +17,25 @@ class Collection(collections.MutableSequence):
         self.attribute = attribute
         self.mutable = mutable
         self._data = []
+        self._suspend_notifications = False
 
+        # Set initial dataset.
+        # Suspend notifications whilst setting initial data to avoid incorrect
+        # state changes on entity.
         if data is None:
             data = []
 
-        self.extend(data)
+        self._suspend_notifications = True
+        try:
+            self.extend(data)
+        finally:
+            self._suspend_notifications = False
 
     def _notify(self):
         '''Notify about modification.'''
+        if self._suspend_notifications:
+            return
+
         self.entity.state = ftrack_api.symbol.MODIFIED
 
     def insert(self, index, item):
