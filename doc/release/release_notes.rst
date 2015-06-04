@@ -133,6 +133,12 @@ Release Notes
         :meth:`ftrack_api.event.hub.EventHub.subscribe` fails when subscription
         argument contains special characters such as `@` or `+`.
 
+    .. change:: fixed
+        :tags: collection
+
+        :meth:`ftrack_api.collection.Collection` incorrectly modifies entity
+        state on initialisation.
+
 .. release:: 0.1.0
     :date: 2015-03-25
 
