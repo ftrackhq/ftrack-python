@@ -170,3 +170,26 @@ def new_scope(request, session, unique_name):
     request.addfinalizer(cleanup)
 
     return scope
+
+
+@pytest.fixture()
+def new_note(request, session, unique_name, new_task, user):
+    '''Return a new note.'''
+
+    note = session.create('Note', {
+        'text': unique_name,
+        'user': user,
+        'parent_id': new_task['id'],
+        'parent_type': new_task['context_type']
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(note)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return note
