@@ -28,3 +28,24 @@ class Note(ftrack_api.entity.base.Entity):
                 'note_parent': self
             }
         )
+
+
+class CreateNoteMixin(object):
+    '''Mixin to add create_note method on entity class.'''
+
+    def create_note(self, text, user, category=None):
+        '''Create note with *text*, *user* and optional *category*.'''
+
+        category_id = None
+        if category:
+            category_id = category['id']
+
+        data = {
+            'text': text,
+            'user': user,
+            'category_id': category_id,
+            'parent_id': self['id'],
+            'parent_type': self.entity_type
+        }
+
+        return self.session.create('Note', data)

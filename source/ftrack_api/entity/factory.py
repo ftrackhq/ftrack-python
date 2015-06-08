@@ -152,7 +152,10 @@ class StandardFactory(Factory):
 
         elif schema['id'] == 'AssetVersion':
             cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.asset_version.AssetVersion]
+                schema, bases=[
+                    ftrack_api.entity.asset_version.AssetVersion,
+                    ftrack_api.entity.note.CreateNoteMixin
+                ]
             )
 
         elif schema['id'].endswith('Component'):
