@@ -10,9 +10,6 @@ Managing jobs
 Jobs can be used to display feedback to users in the ftrack web interface
 when performing long running tasks in the API.
 
-When a job is created it will appear in the :guilabel:`jobs` menu in the
-top bar.
-
 To create a job use the :meth:`Session.create`.
 
 .. code-block:: python

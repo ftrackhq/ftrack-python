@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import pytest
+
 import ftrack_api
 
 
@@ -19,12 +21,9 @@ def test_update_status(session, new_job):
 
 def test_create_job_using_faulty_type(session, user):
     '''Test creating job with faulty type.'''
-    job = session.create('Job', {
-        'type': 'api_job',
-        'user': user,
-        'type': 'not-allowed-type'
-    })
 
-    session.commit()
-
-    assert job['type'] == 'api_job'
+    with pytest.raises(ValueError):
+        session.create('Job', {
+            'user': user,
+            'type': 'not-allowed-type'
+        })

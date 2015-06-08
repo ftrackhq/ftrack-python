@@ -26,16 +26,22 @@ class Job(ftrack_api.entity.base.Entity):
                 ...
             }
 
+        Will raise an :py:exc:`ValueError` if *data* contains `type` and `type`
+        is set to something not equal to "api_job".
+
         *reconstructing* indicates whether this entity is being reconstructed,
         such as from a query, and therefore should not have any special creation
         logic applied, such as initialising defaults for missing data.
 
         '''
 
-        # If creating a new Job force the `type` to be `api_job`. Other values
-        # than this will cause issues in the web interface.
         if not reconstructing:
-            data['type'] = 'api_job'
+            if data.get('type') not in ('api_job', None):
+                raise ValueError(
+                    'Invalid job type "{0}". Must be "api_job"'.format(
+                        data.get('type')
+                    )
+                )
 
         super(Job, self).__init__(
             session, data=data, reconstructing=reconstructing
