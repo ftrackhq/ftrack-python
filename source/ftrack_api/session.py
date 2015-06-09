@@ -322,8 +322,6 @@ class Session(object):
 
     def delete(self, entity):
         '''Mark *entity* for deletion.'''
-        entity.state = ftrack_api.symbol.DELETED
-
         if self.record_operations:
             self.recorded_operations.push(
                 ftrack_api.operation.DeleteEntityOperation(

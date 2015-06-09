@@ -53,7 +53,6 @@ class Entity(collections.MutableMapping):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._state = ftrack_api.symbol.NOT_SET
         self.session = session
 
         if data is None:
@@ -75,80 +74,54 @@ class Entity(collections.MutableMapping):
 
     @property
     def state(self):
-        '''Return current state.'''
-        return self._state
+        '''Return current state computed from recorded operations in session.'''
+        state = ftrack_api.symbol.NOT_SET
 
-    @state.setter
-    def state(self, value):
-        '''Transition from current state to new state *value*.
+        # TODO: Optimise this.
+        for operation in self.session.recorded_operations:
 
-        Raise :exc:`ftrack_api.exception.InvalidStateError` if new state is 
-        invalid.
+            # Determine if operation refers to an entity and whether that entity
+            # is this entity.
+            if (
+                isinstance(
+                    operation,
+                    (
+                        ftrack_api.operation.CreateEntityOperation,
+                        ftrack_api.operation.UpdateEntityOperation,
+                        ftrack_api.operation.DeleteEntityOperation
+                    )
+                )
+                and operation.entity_type == self.entity_type
+                and operation.entity_key == ftrack_api.inspection.primary_key(
+                    self
+                )
+            ):
 
-        .. note::
+                if (
+                    isinstance(
+                        operation, ftrack_api.operation.CreateEntityOperation
+                    )
+                    and state is ftrack_api.symbol.NOT_SET
+                ):
+                    state = ftrack_api.symbol.CREATED
 
-            Transitioning from 'created' or 'deleted' to 'modified' is not an
-            error, but will not change state.
+                elif (
+                    isinstance(
+                        operation, ftrack_api.operation.UpdateEntityOperation
+                    )
+                    and state is ftrack_api.symbol.NOT_SET
+                ):
+                    state = ftrack_api.symbol.MODIFIED
 
-        Valid state values are:
+                elif isinstance(
+                    operation, ftrack_api.operation.DeleteEntityOperation
+                ):
+                    state = ftrack_api.symbol.DELETED
 
-            * :attr:`ftrack_api.symbol.NOT_SET`
-            * :attr:`ftrack_api.symbol.CREATED`
-            * :attr:`ftrack_api.symbol.MODIFIED`
-            * :attr:`ftrack_api.symbol.DELETED`
-
-        '''
-        valid_states = (
-            ftrack_api.symbol.NOT_SET,
-            ftrack_api.symbol.CREATED,
-            ftrack_api.symbol.MODIFIED,
-            ftrack_api.symbol.DELETED
-        )
-        if value not in valid_states:
-            raise ValueError(
-                'Target state {0!r} was not a valid state. Must be one of {1}'
-                .format(value, ', '.join(valid_states))
-            )
-
-        current_state = self.state
-        if current_state is value:
-            return
-
-        if current_state in (
-            ftrack_api.symbol.CREATED, ftrack_api.symbol.DELETED
-        ):
-            if value == ftrack_api.symbol.MODIFIED:
-                # Not an error, but no point marking as modified.
-                return
-
-        if (
-            current_state is ftrack_api.symbol.DELETED
-            and value is not ftrack_api.symbol.NOT_SET
-        ):
-            raise ftrack_api.exception.InvalidStateTransitionError(
-                current_state, value, self
-            )
-
-        if (
-            current_state is ftrack_api.symbol.MODIFIED
-            and value not in (
-                ftrack_api.symbol.DELETED, ftrack_api.symbol.NOT_SET
-            )
-        ):
-            raise ftrack_api.exception.InvalidStateTransitionError(
-                current_state, value, self
-            )
-
-        self._state = value
+        return state
 
     def _construct(self, data):
         '''Construct from *data*.'''
-        # Mark as newly created for later commit.
-        # Done here so that entity has correct state, otherwise would
-        # receive a state of "modified" following setting of attribute
-        # values from *data*.
-        self.state = ftrack_api.symbol.CREATED
-
         # Suspend operation recording so that all modifications can be applied
         # in single create operation. In addition, recording a modification
         # operation requires a primary key which may not be available yet.
@@ -334,22 +307,6 @@ class Entity(collections.MutableMapping):
 
         log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
         changes = []
-
-        # State.
-        state = self.state
-        other_state = entity.state
-        if (
-            other_state is not ftrack_api.symbol.NOT_SET
-            and state is not other_state
-        ):
-            self.state = other_state
-            changes.append({
-                'type': 'property',
-                'name': 'state',
-                'old_value': state,
-                'new_value': other_state
-            })
-            self.logger.debug(log_message.format(**changes[-1]))
 
         # Attributes.
         for other_attribute in entity.attributes:

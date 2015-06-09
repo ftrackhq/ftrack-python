@@ -6,6 +6,7 @@ import collections
 import ftrack_api.exception
 import ftrack_api.inspection
 import ftrack_api.symbol
+import ftrack_api.operation
 
 
 class Collection(collections.MutableSequence):
@@ -31,12 +32,22 @@ class Collection(collections.MutableSequence):
         finally:
             self._suspend_notifications = False
 
-    def _notify(self):
+    def _notify(self, old_value):
         '''Notify about modification.'''
         if self._suspend_notifications:
             return
 
-        self.entity.state = ftrack_api.symbol.MODIFIED
+        # Record operation.
+        if self.entity.session.record_operations:
+            self.entity.session.recorded_operations.push(
+                ftrack_api.operation.UpdateEntityOperation(
+                    self.entity.entity_type,
+                    ftrack_api.inspection.primary_key(self.entity),
+                    self.attribute.name,
+                    old_value,
+                    self._data
+                )
+            )
 
     def insert(self, index, item):
         '''Insert *item* at *index*.'''
@@ -48,8 +59,9 @@ class Collection(collections.MutableSequence):
                 item, self
             )
 
+        old_value = self._data[:]
         self._data.insert(index, item)
-        self._notify()
+        self._notify(old_value)
 
     def __getitem__(self, index):
         '''Return item at *index*.'''
@@ -70,16 +82,18 @@ class Collection(collections.MutableSequence):
                     item, self
                 )
 
+        old_value = self._data[:]
         self._data[index] = item
-        self._notify()
+        self._notify(old_value)
 
     def __delitem__(self, index):
         '''Remove item at *index*.'''
         if not self.mutable:
             raise ftrack_api.exception.ImmutableCollectionError(self)
 
+        old_value = self._data[:]
         del self._data[index]
-        self._notify()
+        self._notify(old_value)
 
     def __len__(self):
         '''Return count of items.'''
