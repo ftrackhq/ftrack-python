@@ -454,16 +454,22 @@ class Session(object):
         key = str(ftrack_api.inspection.identity(entity))
         del self._attached[key]
 
-    def merge(self, value):
-        '''Merge *value* into session and return merged value.'''
-        with self.operation_recording(False):
-            return self._merge(value)
+    def merge(self, value, merged=None):
+        '''Merge *value* into session and return merged value.
 
-    def _merge(self, value, merged=None):
-        '''Return merged *value*.'''
+        *merged* should be a mapping to record merges during run and should be
+        used to avoid infinite recursion. If not set will default to a
+        dictionary.
+
+        '''
         if merged is None:
             merged = {}
 
+        with self.operation_recording(False):
+            return self._merge(value, merged)
+
+    def _merge(self, value, merged):
+        '''Return merged *value*.'''
         if isinstance(value, ftrack_api.entity.base.Entity):
             self.logger.debug(
                 'Merging entity into session: {0} at {1}'
