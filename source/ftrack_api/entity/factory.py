@@ -139,37 +139,40 @@ class StandardFactory(Factory):
 
     def create(self, schema, bases=None):
         '''Create and return entity class from *schema*.'''
+
+        if not bases:
+            bases = []
+
         # Customise classes.
         if schema['id'] == 'ProjectSchema':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.project_schema.ProjectSchema]
-            )
+            bases = [ftrack_api.entity.project_schema.ProjectSchema]
 
         elif schema['id'] == 'Location':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.location.Location]
-            )
+            bases = [ftrack_api.entity.location.Location]
 
         elif schema['id'] == 'AssetVersion':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[
-                    ftrack_api.entity.asset_version.AssetVersion,
-                    ftrack_api.entity.note.CreateNoteMixin
-                ]
-            )
+            bases = [ftrack_api.entity.asset_version.AssetVersion]
 
         elif schema['id'].endswith('Component'):
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.component.Component]
-            )
+            bases = [ftrack_api.entity.component.Component]
 
         elif schema['id'].endswith('Note'):
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.note.Note]
+            bases = [ftrack_api.entity.note.Note]
+
+        # If bases does not contain any items, add the base entity class.
+        if not len(bases):
+            bases = [ftrack_api.entity.base.Entity]
+
+        # Add mixins.
+        if schema['id'] in (
+            'AssetVersion', 'Episode', 'Sequence',
+            'Shot', 'AssetBuild', 'Task', 'Project'
+        ):
+            bases.append(
+                ftrack_api.entity.note.CreateNoteMixin
             )
 
-        else:
-            cls = super(StandardFactory, self).create(schema, bases=bases)
+        cls = super(StandardFactory, self).create(schema, bases=bases)
 
         # Add dynamic default values to appropriate attributes so that end
         # users don't need to specify them each time.
