@@ -28,6 +28,7 @@ import ftrack_api.event.hub
 import ftrack_api.event.base
 import ftrack_api.plugin
 import ftrack_api.inspection
+import ftrack_api.operation
 import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
@@ -147,6 +148,10 @@ class Session(object):
 
         self._api_user = api_user
 
+        # Currently pending operations.
+        self.recorded_operations = ftrack_api.operation.Operations()
+        self.record_operations = True
+
         self._batches = {
             'write': []
         }
@@ -256,6 +261,19 @@ class Session(object):
 
         '''
         return AutoPopulatingContext(self, auto_populate)
+
+    def operation_recording(self, record_operations):
+        '''Temporarily set operation recording to *record_operations*.
+
+        The current setting will be restored automatically when done.
+
+        Example::
+
+            with session.operation_recording(False):
+                entity['name'] = 'change_not_recorded'
+
+        '''
+        return OperationRecordingContext(self, record_operations)
 
     @property
     def created(self):
@@ -1399,3 +1417,23 @@ class AutoPopulatingContext(object):
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context resetting auto populate to original setting.'''
         self._session.auto_populate = self._current_auto_populate
+
+
+class OperationRecordingContext(object):
+    '''Context manager for temporary change of session record_operations.'''
+
+    def __init__(self, session, record_operations):
+        '''Initialise context.'''
+        super(OperationRecordingContext, self).__init__()
+        self._session = session
+        self._record_operations = record_operations
+        self._current_record_operations = None
+
+    def __enter__(self):
+        '''Enter context.'''
+        self._current_record_operations = self._session.record_operations
+        self._session.record_operations = self._record_operations
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        '''Exit context.'''
+        self._session.record_operations = self._current_record_operations
