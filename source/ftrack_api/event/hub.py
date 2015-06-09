@@ -117,11 +117,11 @@ class EventHub(object):
     def get_server_url(self):
         '''Return URL to server.'''
         return '{0}://{1}'.format(
-            self.server.scheme, self.get_hostname()
+            self.server.scheme, self.get_network_location()
         )
 
-    def get_hostname(self):
-        '''Return hostname with port.'''
+    def get_network_location(self):
+        '''Return network location part of url (hostname with optional port).'''
         if self.server.port:
             return '{0}:{1}'.format(self.server.hostname, self.server.port)
         else:
@@ -158,7 +158,7 @@ class EventHub(object):
 
             scheme = 'wss' if self.secure else 'ws'
             url = '{0}://{1}/socket.io/1/websocket/{2}'.format(
-                scheme, self.get_hostname(), session.id
+                scheme, self.get_network_location(), session.id
             )
             self._connection = websocket.create_connection(url)
 
@@ -747,7 +747,7 @@ class EventHub(object):
             '{0}://{1}/socket.io/1/?api_user={2}&api_key={3}'
         ).format(
             self.server.scheme,
-            self.get_hostname(),
+            self.get_network_location(),
             self._api_user,
             self._api_key
         )
