@@ -24,9 +24,9 @@ def test_get_entity_of_invalid_type(session):
         session.get('InvalidType', 'id')
 
 
-def test_operation_ordering(session, unique_name):
-    '''Perform operations in predictable order on commit.'''
-    # Delete ordering.
+def test_delete_operation_ordering(session, unique_name):
+    '''Delete entities in valid order.'''
+    # Construct entities.
     project_schema = session.query('ProjectSchema')[0]
     project = session.create('Project', {
         'name': unique_name,
@@ -41,10 +41,17 @@ def test_operation_ordering(session, unique_name):
 
     session.commit()
 
+    # Delete in order that should succeed.
     session.delete(sequence)
     session.delete(project)
 
-    # Should not fail.
+    session.commit()
+
+
+def test_create_then_delete_operation_ordering(session, unique_name):
+    '''Create and delete entity in one transaction.'''
+    entity = session.create('User', {'username': unique_name})
+    session.delete(entity)
     session.commit()
 
 
