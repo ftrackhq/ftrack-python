@@ -8,6 +8,7 @@ import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.collection
 import ftrack_api.inspection
+import ftrack_api.operation
 
 
 class Attributes(object):
@@ -167,8 +168,22 @@ class Attribute(object):
         ):
             raise ftrack_api.exception.ImmutableAttributeError(self)
 
+        old_value = self.get_local_value(entity)
+
         storage = self.get_entity_storage(entity)
         storage[self.name][self._local_key] = value
+
+        # Record operation.
+        if entity.session.record_operations:
+            entity.session.recorded_operations.push(
+                ftrack_api.operation.UpdateEntityOperation(
+                    entity.entity_type,
+                    ftrack_api.inspection.primary_key(entity),
+                    self.name,
+                    old_value,
+                    value
+                )
+            )
 
         # Transition state.
         if self.is_modified(entity):

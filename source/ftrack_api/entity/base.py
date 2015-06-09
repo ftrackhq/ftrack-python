@@ -9,6 +9,7 @@ import ftrack_api.symbol
 import ftrack_api.attribute
 import ftrack_api.inspection
 import ftrack_api.exception
+import ftrack_api.operation
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -148,29 +149,50 @@ class Entity(collections.MutableMapping):
         # values from *data*.
         self.state = ftrack_api.symbol.CREATED
 
-        # Data represents locally set values.
-        for key, value in data.items():
-            if key in self._ignore_data_keys:
-                continue
+        # Suspend operation recording so that all modifications can be applied
+        # in single create operation. In addition, recording a modification
+        # operation requires a primary key which may not be available yet.
+        with self.session.operation_recording(False):
 
-            attribute = self.__class__.attributes.get(key)
-            if attribute is None:
-                self.logger.debug(
-                    'Cannot populate {0!r} attribute as no such attribute '
-                    'found on entity {1!r}.'.format(key, self)
+            # Data represents locally set values.
+            for key, value in data.items():
+                if key in self._ignore_data_keys:
+                    continue
+
+                attribute = self.__class__.attributes.get(key)
+                if attribute is None:
+                    self.logger.debug(
+                        'Cannot populate {0!r} attribute as no such attribute '
+                        'found on entity {1!r}.'.format(key, self)
+                    )
+                    continue
+
+                attribute.set_local_value(self, value)
+
+            # Set defaults for any unset local attributes.
+            for attribute in self.__class__.attributes:
+                if attribute.name not in data:
+                    default_value = attribute.default_value
+                    if callable(default_value):
+                        default_value = default_value(self)
+
+                    attribute.set_local_value(self, default_value)
+
+        # Record create operation.
+        if self.session.record_operations:
+            entity_data = {}
+            with self.session.auto_populating(False):
+                for key, value in self.items():
+                    if value is not ftrack_api.symbol.NOT_SET:
+                        entity_data[key] = value
+
+            self.session.recorded_operations.push(
+                ftrack_api.operation.CreateEntityOperation(
+                    self.entity_type,
+                    ftrack_api.inspection.primary_key(self),
+                    entity_data
                 )
-                continue
-
-            attribute.set_local_value(self, value)
-
-        # Set defaults for any unset local attributes.
-        for attribute in self.__class__.attributes:
-            if attribute.name not in data:
-                default_value = attribute.default_value
-                if callable(default_value):
-                    default_value = default_value(self)
-
-                attribute.set_local_value(self, default_value)
+            )
 
     def _reconstruct(self, data):
         '''Reconstruct from *data*.'''

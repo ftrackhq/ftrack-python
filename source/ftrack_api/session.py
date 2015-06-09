@@ -333,6 +333,14 @@ class Session(object):
         '''Mark *entity* for deletion.'''
         entity.state = ftrack_api.symbol.DELETED
 
+        if self.record_operations:
+            self.recorded_operations.push(
+                ftrack_api.operation.DeleteEntityOperation(
+                    entity.entity_type,
+                    ftrack_api.inspection.primary_key(entity)
+                )
+            )
+
     def get(self, entity_type, entity_key):
         '''Return entity of *entity_type* with unique *entity_key*.
 
