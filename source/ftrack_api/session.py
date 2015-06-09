@@ -1103,7 +1103,8 @@ class Session(object):
 
     def decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
-        return json.loads(string, object_hook=self._decode)
+        with self.operation_recording(False):
+            return json.loads(string, object_hook=self._decode)
 
     def _decode(self, item):
         '''Return *item* transformed into appropriate representation.'''
