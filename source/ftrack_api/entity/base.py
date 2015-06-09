@@ -360,7 +360,7 @@ class Entity(collections.MutableMapping):
             if other_local_value is not ftrack_api.symbol.NOT_SET:
                 local_value = attribute.get_local_value(self)
                 if local_value != other_local_value:
-                    merged_local_value = self.session._merge(
+                    merged_local_value = self.session.merge(
                         other_local_value, merged=merged
                     )
 
@@ -378,7 +378,7 @@ class Entity(collections.MutableMapping):
             if other_remote_value is not ftrack_api.symbol.NOT_SET:
                 remote_value = attribute.get_remote_value(self)
                 if remote_value != other_remote_value:
-                    merged_remote_value = self.session._merge(
+                    merged_remote_value = self.session.merge(
                         other_remote_value, merged=merged
                     )
 

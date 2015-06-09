@@ -314,7 +314,7 @@ class Session(object):
 
         '''
         entity = self._create(entity_type, data, reconstructing=reconstructing)
-        entity = self._merge(entity)
+        entity = self.merge(entity)
         return entity
 
     def _create(self, entity_type, data, reconstructing):
@@ -440,7 +440,7 @@ class Session(object):
         # Merge entities into local cache and return merged entities.
         data = []
         for entity in results[0]['data']:
-            data.append(self._merge(entity))
+            data.append(self.merge(entity))
 
         return data
 
@@ -462,6 +462,11 @@ class Session(object):
         '''Detach *entity* from session.'''
         key = str(ftrack_api.inspection.identity(entity))
         del self._attached[key]
+
+    def merge(self, value):
+        '''Merge *value* into session and return merged value.'''
+        with self.operation_recording(False):
+            return self._merge(value)
 
     def _merge(self, value, merged=None):
         '''Return merged *value*.'''
@@ -765,7 +770,7 @@ class Session(object):
 
                 if entry['action'] in ('create', 'update'):
                     # Merge returned entities into local cache.
-                    self._merge(entry['data'])
+                    self.merge(entry['data'])
 
                 elif entry['action'] == 'delete':
                     # TODO: Expunge entity from cache.
