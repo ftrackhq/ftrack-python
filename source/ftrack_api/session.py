@@ -152,10 +152,6 @@ class Session(object):
         self.recorded_operations = ftrack_api.operation.Operations()
         self.record_operations = True
 
-        self._batches = {
-            'write': []
-        }
-
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
             self.cache_key_maker = ftrack_api.cache.StringKeyMaker()
