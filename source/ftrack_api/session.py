@@ -306,6 +306,27 @@ class Session(object):
         '''
         entity = self._create(entity_type, data, reconstructing=reconstructing)
         entity = self.merge(entity)
+
+        if not reconstructing:
+
+            # Record create operation.
+            # This is done here rather than in the Entity constructor in order
+            # to ensure that all recorded values are fully merged into session.
+            if self.record_operations:
+                entity_data = {}
+                with self.auto_populating(False):
+                    for key, value in entity.items():
+                        if value is not ftrack_api.symbol.NOT_SET:
+                            entity_data[key] = value
+
+                self.recorded_operations.push(
+                    ftrack_api.operation.CreateEntityOperation(
+                        entity.entity_type,
+                        ftrack_api.inspection.primary_key(entity),
+                        entity_data
+                    )
+                )
+
         return entity
 
     def _create(self, entity_type, data, reconstructing):

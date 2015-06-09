@@ -151,22 +151,6 @@ class Entity(collections.MutableMapping):
 
                     attribute.set_local_value(self, default_value)
 
-        # Record create operation.
-        if self.session.record_operations:
-            entity_data = {}
-            with self.session.auto_populating(False):
-                for key, value in self.items():
-                    if value is not ftrack_api.symbol.NOT_SET:
-                        entity_data[key] = value
-
-            self.session.recorded_operations.push(
-                ftrack_api.operation.CreateEntityOperation(
-                    self.entity_type,
-                    ftrack_api.inspection.primary_key(self),
-                    entity_data
-                )
-            )
-
     def _reconstruct(self, data):
         '''Reconstruct from *data*.'''
         # Data represents remote values.
