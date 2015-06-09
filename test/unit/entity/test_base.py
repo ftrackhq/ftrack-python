@@ -29,3 +29,13 @@ def test_deleted_entity_state(session, user):
     '''Deleted entity has DELETED state.'''
     session.delete(user)
     assert user.state is ftrack_api.symbol.DELETED
+
+
+def test_post_commit_entity_state(session, unique_name):
+    '''Entity has NOT_SET state post commit.'''
+    new_user = session.create('User', {'username': unique_name})
+    assert new_user.state is ftrack_api.symbol.CREATED
+
+    session.commit()
+
+    assert new_user.state is ftrack_api.symbol.NOT_SET
