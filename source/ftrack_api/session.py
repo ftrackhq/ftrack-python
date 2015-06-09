@@ -57,7 +57,8 @@ class Session(object):
 
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
-        plugin_paths=None, auto_connect_event_hub=True
+        plugin_paths=None, cache=None, cache_key_maker=None,
+        auto_connect_event_hub=True
     ):
         '''Initialise session.
 
@@ -78,6 +79,25 @@ class Session(object):
 
         *plugin_paths* should be a list of paths to search for plugins. If not
         specified, default to looking up :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
+
+        *cache* should be an instance of a cache that fulfils the
+        :class:`ftrack_api.cache.Cache` interface and will be used as the cache
+        for the session. It can also be a callable that will be called with the
+        session instance as sole argument.
+
+        .. note::
+
+            The session will add the specified cache to a pre-configured layered
+            cache that specifies the top level cache as a
+            :class:`ftrack_api.cache.MemoryCache`. Therefore, it is unnecessary 
+            to construct a separate memory cache for typical behaviour. Working
+            around this behaviour or removing the memory cache can lead to
+            unexpected behaviour.
+
+        *cache_key_maker* should be an instance of a key maker that fulfils the
+        :class:`ftrack_api.cache.KeyMaker` interface and will be used to 
+        generate keys for objects being stored in the *cache*. If not specified, 
+        a :class:`~ftrack_api.cache.StringKeyMaker` will be used.
 
         If *auto_connect_event_hub* is True the event hub will be automatically
         connected to the event server and allow for publishing and subscribing
@@ -136,15 +156,23 @@ class Session(object):
             'write': []
         }
 
-        # TODO: Make cache configurable.
-        self._key_maker = ftrack_api.cache.EntityKeyMaker()
-        self._cache = ftrack_api.cache.MemoryCache()
+        self.cache_key_maker = cache_key_maker
+        if self.cache_key_maker is None:
+            self.cache_key_maker = ftrack_api.cache.StringKeyMaker()
 
-        self._states = dict(
-            created=collections.OrderedDict(),
-            modified=collections.OrderedDict(),
-            deleted=collections.OrderedDict()
-        )
+        # Enforce always having a memory cache at top level so that the same
+        # in-memory instance is returned from session.
+        self.cache = ftrack_api.cache.LayeredCache([
+            ftrack_api.cache.MemoryCache()
+        ])
+
+        if cache is not None:
+            if callable(cache):
+                cache = cache(self)
+
+            self.cache.caches.append(cache)
+
+        self._attached = collections.OrderedDict()
 
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
@@ -209,24 +237,22 @@ class Session(object):
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
-        if self._states['created']:
+        if self.created:
             self.logger.warning(
                 'Resetting session with pending creations not persisted.'
             )
 
-        if self._states['modified']:
+        if self.modified:
             self.logger.warning(
                 'Resetting session with pending modifications not persisted.'
             )
 
-        if self._states['deleted']:
+        if self.deleted:
             self.logger.warning(
                 'Resetting session with pending deletions not persisted.'
             )
 
-        self._states['created'].clear()
-        self._states['modified'].clear()
-        self._states['deleted'].clear()
+        self._attached.clear()
         self._request.close()
 
     def auto_populating(self, auto_populate):
@@ -245,67 +271,26 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
-        return self._states['created'].values()
+        return [
+            entity for entity in self._attached.values()
+            if entity.state is ftrack_api.symbol.CREATED
+        ]
 
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
-        return self._states['modified'].values()
+        return [
+            entity for entity in self._attached.values()
+            if entity.state is ftrack_api.symbol.MODIFIED
+        ]
 
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
-        return self._states['deleted'].values()
-
-    def set_state(self, entity, state):
-        '''Set *entity* *state*.
-
-        Transition from current state to new state.
-
-        Raise :exc:`ftrack_api.exception.InvalidStateError` if new state is
-        invalid.
-
-        .. note::
-
-            Transitioning from 'created' or 'deleted' to 'modified' is not an
-            error, but will not change state.
-
-        '''
-        identity = id(entity)
-        current_state = self.get_state(entity)
-
-        if current_state == state:
-            return
-
-        if current_state in ('created', 'deleted'):
-            if state == 'modified':
-                # Not an error, but no point marking as modified.
-                return
-
-        if current_state == 'deleted':
-            raise ftrack_api.exception.InvalidStateTransitionError(
-                current_state, state, entity
-            )
-
-        if current_state == 'modified' and state != 'deleted':
-            raise ftrack_api.exception.InvalidStateTransitionError(
-                current_state, state, entity
-            )
-
-        if current_state:
-            del self._states[current_state][identity]
-
-        if state:
-            self._states[state][identity] = entity
-
-    def get_state(self, entity):
-        '''Return entity *state*.'''
-        identity = id(entity)
-        for state, entities in self._states.iteritems():
-            if identity in entities:
-                return state
-
-        return None
+        return [
+            entity for entity in self._attached.values()
+            if entity.state is ftrack_api.symbol.DELETED
+        ]
 
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
@@ -322,15 +307,11 @@ class Session(object):
 
         '''
         entity = self._create(entity_type, data, reconstructing=reconstructing)
-        entity = self.merge(entity)
+        entity = self._merge(entity)
         return entity
 
     def _create(self, entity_type, data, reconstructing):
-        '''Create and return an entity of *entity_type* with initial *data*.
-
-        If *reconstructing* is True then will merge into any existing entity.
-
-        '''
+        '''Create and return an entity of *entity_type* with initial *data*.'''
         try:
             EntityTypeClass = self.types[entity_type]
         except KeyError:
@@ -343,14 +324,21 @@ class Session(object):
 
     def delete(self, entity):
         '''Mark *entity* for deletion.'''
-        self.set_state(entity, 'deleted')
+        entity.state = ftrack_api.symbol.DELETED
 
     def get(self, entity_type, entity_key):
         '''Return entity of *entity_type* with unique *entity_key*.
 
+        First check for an existing entry in the configured cache, otherwise
+        issue a query to the server.
+
         If no matching entity found, return None.
 
         '''
+        self.logger.debug(
+            'Get {0} with key {1}'.format(entity_type, entity_key)
+        )
+
         primary_key_definition = self.types[entity_type].primary_key_attributes
         if len(primary_key_definition) > 1:
             # TODO: Handle composite primary key using a syntax of
@@ -361,15 +349,37 @@ class Session(object):
         if not isinstance(entity_key, basestring):
             entity_key = entity_key[0]
 
-        expression = '{0} where {1} is {2}'.format(
-            entity_type, primary_key_definition, entity_key
-        )
+        entity = None
 
-        results = self.query(expression).all()
-        if results:
-            return results[0]
-        else:
-            return None
+        # Check cache for existing entity emulating 
+        # ftrack_api.inspection.identity result object to pass to key maker.
+        cache_key = self.cache_key_maker.key(
+            (str(entity_type), [str(entity_key)])
+        )
+        self.logger.debug(
+            'Checking cache for entity with key {0}'.format(cache_key)
+        )
+        try:
+            entity = self.cache.get(cache_key)
+            self.logger.debug(
+                'Retrieved existing entity from cache: {0} at {1}'
+                .format(entity, id(entity))
+            )
+
+            # Ensure any references in the retrieved cache object are expanded.
+            self._merge_references(entity)
+
+        except KeyError:
+            # Query for matching entity.
+            expression = '{0} where {1} is {2}'.format(
+                entity_type, primary_key_definition, entity_key
+            )
+
+            results = self.query(expression).all()
+            if results:
+                entity = results[0]
+
+        return entity
 
     def query(self, expression):
         '''Query against remote data according to *expression*.
@@ -379,6 +389,10 @@ class Session(object):
         call on access.
 
         '''
+        self.logger.debug(
+            'Query {0!r}'.format(expression)
+        )
+
         # Add in sensible projections if none specified. Note that this is
         # done here rather than on the server to allow local modification of the
         # schema setting to include commonly used custom attributes for example.
@@ -411,73 +425,179 @@ class Session(object):
         # Merge entities into local cache and return merged entities.
         data = []
         for entity in results[0]['data']:
-            data.append(self.merge(entity))
+            data.append(self._merge(entity))
 
         return data
 
-    def merge(self, entity, _seen=None):
+    def _attach(self, entity):
+        '''Attach *entity* to session if not already.'''
+        key = str(ftrack_api.inspection.identity(entity))
+        current = self._attached.get(key)
+
+        if current is None:
+            self._attached[key] = entity
+
+        elif current is not entity:
+            raise ValueError(
+                'Cannot attach {0!r}. A different instance {1!r} of that '
+                'entity is already attached.'.format(entity, current)
+            )
+
+    def _detach(self, entity):
+        '''Detach *entity* from session.'''
+        key = str(ftrack_api.inspection.identity(entity))
+        del self._attached[key]
+
+    def _merge(self, value, merged=None):
+        '''Return merged *value*.'''
+        if merged is None:
+            merged = {}
+
+        if isinstance(value, ftrack_api.entity.base.Entity):
+            self.logger.debug(
+                'Merging entity into session: {0} at {1}'
+                .format(value, id(value))
+            )
+            return self._merge_entity(value, merged=merged)
+
+        elif isinstance(value, ftrack_api.collection.Collection):
+            self.logger.debug(
+                'Merging collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
+
+            merged_collection = []
+            for entry in value:
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
+                )
+
+            return merged_collection
+
+        # TODO: Handle DictionaryAttributeCollection.
+
+        else:
+            return value
+
+    def _merge_entity(self, entity, merged=None):
         '''Merge *entity* into session returning merged entity.
 
         Merge is recursive so any references to other entities will also be
-        merged and *entity* may be modified in place.
+        merged.
+
+        *entity* will never be modified in place. Ensure that the returned
+        merged entity instance is used.
 
         '''
-        merged_entity = entity
-
-        if _seen is None:
-            _seen = {}
+        if merged is None:
+            merged = {}
 
         with self.auto_populating(False):
+            entity_key = self.cache_key_maker.key(
+                ftrack_api.inspection.identity(entity)
+            )
+
+            # Check whether this entity has already been processed.
+            attached_entity = merged.get(entity_key)
+            if attached_entity is not None:
+                self.logger.debug(
+                    'Entity already processed for key {0} as {1} at {2}'
+                    .format(entity_key, attached_entity, id(attached_entity))
+                )
+                return attached_entity
+
             # Check for existing instance of entity in cache.
-            entity_key = self._key_maker.key(entity)
+            self.logger.debug(
+                'Checking for entity in cache with key {0}'.format(entity_key)
+            )
+
             try:
-                existing_entity = self._cache.get(entity_key)
+                attached_entity = self.cache.get(entity_key)
+                self.logger.debug(
+                    'Retrieved existing entity from cache: {0} at {1}'
+                    .format(attached_entity, id(attached_entity))
+                )
 
             except KeyError:
-                # Record new instance in cache.
-                self._cache.set(entity_key, entity)
+                # Construct new minimal instance to store in cache.
+                attached_entity = self._create(
+                    entity.entity_type, {}, reconstructing=True
+                )
+                self.logger.debug(
+                    'Entity not present in cache. Constructed new instance: '
+                    '{0} at {1}'.format(attached_entity, id(attached_entity))
+                )
 
+            # Mark entity as seen to avoid infinite loops.
+            merged[entity_key] = attached_entity
+
+            # Expand references. This is required as a serialised cache might
+            # have returned just a plain entity object with the rest of the data
+            # stored separately. The reason this is done here rather in the
+            # specific cache is so that any higher level cache can be taken
+            # advantage of when fetching data.
+            self._merge_references(attached_entity, merged=merged)
+
+            # Merge new entity data into cache entity. If this causes the cache
+            # entity to change then persist those changes back to the cache.
+            self.logger.debug('Merging new data into attached entity.')
+            changes = attached_entity.merge(entity, merged=merged)
+            if changes:
+                self.cache.set(entity_key, attached_entity)
+                self.logger.debug('Cache updated with merged entity.')
             else:
-                if entity is not existing_entity:
-                    # Merge set attributes from entity to cache.
-                    existing_entity.merge(entity)
+                self.logger.debug(
+                    'Cache not updated with merged entity as no differences '
+                    'detected.'
+                )
 
-                    # Set returned entity to be existing cached instance.
-                    merged_entity = existing_entity
+            # Ensure this instance is now attached to the session.
+            self._attach(attached_entity)
 
-            # Recursively merge entity references that were present in source
-            # entity if not already done.
-            if entity_key not in _seen:
-                _seen[entity_key] = True
+        return attached_entity
 
-                for attribute in entity.attributes:
-                    source_value = attribute.get_remote_value(entity)
-                    if source_value is not ftrack_api.symbol.NOT_SET:
-                        value = attribute.get_remote_value(merged_entity)
+    def _merge_references(self, entity, merged=None):
+        '''Recursively merge entity references in *entity*.'''
+        self.logger.debug('Merging references.')
 
-                        if isinstance(value, ftrack_api.entity.base.Entity):
-                            attribute.set_remote_value(
-                                merged_entity, self.merge(value, _seen=_seen)
-                            )
+        if merged is None:
+            merged = {}
 
-                        elif isinstance(
-                            value, ftrack_api.collection.Collection
-                        ):
-                            # Temporarily make collection mutable so that
-                            # entities within it can be merged.
-                            mutable = value.mutable
-                            value.mutable = True
-                            try:
-                                for index, entry in enumerate(value):
-                                    value[index] = self.merge(
-                                        entry, _seen=_seen
-                                    )
-                            finally:
-                                value.mutable = mutable
+        for attribute in entity.attributes:
 
-                        # TODO: Handle DictionaryAttributeCollection.
+            # Local attributes.
+            local_value = attribute.get_local_value(entity)
+            if isinstance(
+                local_value,
+                (
+                    ftrack_api.entity.base.Entity, 
+                    ftrack_api.collection.Collection
+                )
+            ):
+                self.logger.debug(
+                    'Merging local value for attribute {0}.'.format(attribute)
+                )
 
-        return merged_entity
+                merged_local_value = self._merge(local_value, merged=merged)
+                if merged_local_value is not local_value:
+                    attribute.set_local_value(entity, merged_local_value)
+
+            # Remote attributes.
+            remote_value = attribute.get_remote_value(entity)
+            if isinstance(
+                remote_value,
+                (
+                    ftrack_api.entity.base.Entity, 
+                    ftrack_api.collection.Collection
+                )
+            ):
+                self.logger.debug(
+                    'Merging remote value for attribute {0}.'.format(attribute)
+                )
+
+                merged_remote_value = self._merge(remote_value, merged=merged)
+                if merged_remote_value is not remote_value:
+                    attribute.set_remote_value(entity, merged_remote_value)
 
     def populate(self, entities, projections, background=False):
         '''Populate *entities* with attributes specified by *projections*.
@@ -516,7 +636,7 @@ class Session(object):
         entities_to_process = []
 
         for entity in entities:
-            if self.get_state(entity) == 'created':
+            if entity.state is ftrack_api.symbol.CREATED:
                 # Created entities that are not yet persisted have no remote
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
@@ -553,7 +673,6 @@ class Session(object):
                     query, primary_key, str(entity_keys[0])
                 )
 
-            self.logger.debug('Query: {0!r}'.format(query))
             result = self.query(query)
 
             # Fetch all results now. Doing so will cause them to populate the
@@ -607,33 +726,35 @@ class Session(object):
                 # Always clear write batches.
                 del self._batches['write'][:]
 
-            # Process result.
-            for entry in result:
-
-                if entry['action'] in ('create', 'update'):
-                    # Merge returned entities into local cache.
-                    self.merge(entry['data'])
-
-                elif entry['action'] == 'delete':
-                    # TODO: Expunge entity from cache.
-                    pass
-
             # If successful commit then update states.
             for entity in self.created:
+                entity.state = ftrack_api.symbol.NOT_SET
                 for attribute in entity.attributes:
                     attribute.set_local_value(
                         entity, ftrack_api.symbol.NOT_SET
                     )
 
             for entity in self.modified:
+                entity.state = ftrack_api.symbol.NOT_SET
                 for attribute in entity.attributes:
                     attribute.set_local_value(
                         entity, ftrack_api.symbol.NOT_SET
                     )
 
-            self._states['created'].clear()
-            self._states['modified'].clear()
-            self._states['deleted'].clear()
+            for entity in self.deleted:
+                entity.state = ftrack_api.symbol.NOT_SET
+                self._detach(entity)
+
+            # Process results merging into cache relevant data.
+            for entry in result:
+
+                if entry['action'] in ('create', 'update'):
+                    # Merge returned entities into local cache.
+                    self._merge(entry['data'])
+
+                elif entry['action'] == 'delete':
+                    # TODO: Expunge entity from cache.
+                    pass
 
     def _discover_plugins(self):
         '''Find and load plugins in search paths.
@@ -789,7 +910,7 @@ class Session(object):
         data = self.encode(data, entity_attribute_strategy='modified_only')
 
         self.logger.debug(
-            'Calling server {0} with {1}'.format(url, data)
+            'Calling server {0} with {1!r}'.format(url, data)
         )
 
         response = self._request.post(
@@ -829,6 +950,10 @@ class Session(object):
             raise ftrack_api.exception.ServerError(message)
 
         else:
+            self.logger.debug(
+                'Response: {0!r}'.format(response.text)
+            )
+
             result = self.decode(response.text)
 
             if 'exception' in result:
@@ -853,9 +978,12 @@ class Session(object):
           loading any from the remote.
         * *modified_only* - Encode only attributes that have been modified
           locally.
+        * *persisted_only* - Encode only remote (persisted) attribute values.
 
         '''
-        entity_attribute_strategies = ('all', 'set_only', 'modified_only')
+        entity_attribute_strategies = (
+            'all', 'set_only', 'modified_only', 'persisted_only'
+        )
         if entity_attribute_strategy not in entity_attribute_strategies:
             raise ValueError(
                 'Unsupported entity_attribute_strategy "{0}". Must be one of '
@@ -907,6 +1035,9 @@ class Session(object):
                     elif entity_attribute_strategy == 'modified_only':
                         if attribute.is_modified(item):
                             value = attribute.get_local_value(item)
+
+                    elif entity_attribute_strategy == 'persisted_only':
+                        value = attribute.get_remote_value(item)
 
                     if value is not ftrack_api.symbol.NOT_SET:
                         if isinstance(
