@@ -319,7 +319,8 @@ class CollectionAttribute(Attribute):
             and isinstance(remote_value, ftrack_api.collection.Collection)
         ):
             try:
-                self.set_local_value(entity, remote_value[:])
+                with entity.session.operation_recording(False):
+                    self.set_local_value(entity, remote_value[:])
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
 
