@@ -18,25 +18,16 @@ class Collection(collections.MutableSequence):
         self.attribute = attribute
         self.mutable = mutable
         self._data = []
-        self._suspend_notifications = False
 
         # Set initial dataset.
-        # Suspend notifications whilst setting initial data to avoid incorrect
-        # state changes on entity.
         if data is None:
             data = []
 
-        self._suspend_notifications = True
-        try:
+        with self.entity.session.operation_recording(False):
             self.extend(data)
-        finally:
-            self._suspend_notifications = False
 
     def _notify(self, old_value):
         '''Notify about modification.'''
-        if self._suspend_notifications:
-            return
-
         # Record operation.
         if self.entity.session.record_operations:
             self.entity.session.recorded_operations.push(
