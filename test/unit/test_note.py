@@ -22,7 +22,7 @@ def test_create_note_on_asset_version(session, user, unique_name):
 
     notes_count = len(asset_version['notes'])
 
-    asset_version.create_note(unique_name, user)
+    note = asset_version.create_note(unique_name, user)
 
     session.commit()
 
@@ -31,3 +31,6 @@ def test_create_note_on_asset_version(session, user, unique_name):
     assert len(
         new_session.get('AssetVersion', asset_version['id'])['notes']
     ) == (notes_count + 1)
+
+    session.delete(note)
+    session.commit()
