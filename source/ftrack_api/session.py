@@ -99,9 +99,12 @@ class Session(object):
         generate keys for objects being stored in the *cache*. If not specified, 
         a :class:`~ftrack_api.cache.StringKeyMaker` will be used.
 
-        If *auto_connect_event_hub* is True the event hub will be automatically
-        connected to the event server and allow for publishing and subscribing
-        to non local events.
+        If *auto_connect_event_hub* is True then embedded event hub will be
+        automatically connected to the event server and allow for publishing and
+        subscribing to **non-local** events. If False, then only publishing and
+        subscribing to **local** events will be possible until the hub is
+        manually connected using :meth:`EventHub.connect
+        <ftrack_api.event.hub.EventHub.connect>`.
 
         '''
         super(Session, self).__init__()
