@@ -742,6 +742,7 @@ class Session(object):
                     payload = {
                         'action': 'create',
                         'entity_type': operation.entity_type,
+                        'entity_key': operation.entity_key.values(),
                         'entity_data': entity_data
                     }
 
@@ -777,8 +778,56 @@ class Session(object):
                         'detected.'.format(type(operation))
                     )
 
-                batch.append(payload)
+                # Optimise by merging into previous payload if possible.
+                merged = False
 
+                if batch and payload['action'] == 'update':
+                    # Merge into previous create / update for same entity.
+                    previous = batch[-1]
+                    if (
+                        previous['action'] in ('create', 'update')
+                        and previous['entity_type'] == payload['entity_type']
+                        and previous['entity_key'] == payload['entity_key']
+                    ):
+                        previous['entity_data'].update(payload['entity_data'])
+                        merged = True
+
+                if not merged:
+                    batch.append(payload)
+
+        # Optimise batch.
+
+        # If entity was created and deleted in one batch then remove all
+        # payloads for that entity.
+        created = set()
+        deleted = set()
+
+        for payload in batch:
+            if payload['action'] == 'create':
+                created.add(
+                    (payload['entity_type'], str(payload['entity_key']))
+                )
+
+            elif payload['action'] == 'delete':
+                deleted.add(
+                    (payload['entity_type'], str(payload['entity_key']))
+                )
+
+        created_then_deleted = deleted.intersection(created)
+        if created_then_deleted:
+            optimised_batch = []
+            for payload in batch:
+                entity_type = payload.get('entity_type')
+                entity_key = str(payload.get('entity_key'))
+
+                if (entity_type, entity_key) in created_then_deleted:
+                    continue
+
+                optimised_batch.append(payload)
+
+            batch = optimised_batch
+
+        # Process batch.
         if batch:
             result = self._call(batch)
 
