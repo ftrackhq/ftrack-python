@@ -22,6 +22,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     using_sessions
     querying
     working_with_entities
+    using_notes
     environment_variables
     locations/index
     caching

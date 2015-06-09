@@ -12,6 +12,12 @@ Release Notes
 
 .. release:: next
 
+    .. change:: new
+        :tags: Notes
+
+        Added support for handling notes. Check out
+        the :ref:`usage guide <using_notes>`.
+
     .. change:: changed
 
         Changed name of API from `ftrack` to `ftrack_api`.
