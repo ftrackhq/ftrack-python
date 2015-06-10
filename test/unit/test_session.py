@@ -90,13 +90,14 @@ def test_operation_optimisation_on_commit(session, mocker):
     mocked = mocker.patch.object(session, '_call')
 
     user_a = session.create('User', {'username': 'bob'})
-    user_a['username'] = 'bob'
+    user_a['username'] = 'foo'
     user_a['email'] = 'bob@example.com'
 
     user_b = session.create('User', {'username': 'martin'})
     user_b['email'] = 'martin@ftrack.com'
 
     user_a['email'] = 'bob@example.com'
+    user_a['first_name'] = 'Bob'
 
     user_c = session.create('User', {'username': 'neverexist'})
     user_c['email'] = 'ignore@example.com'

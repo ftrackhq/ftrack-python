@@ -785,24 +785,11 @@ class Session(object):
                         'detected.'.format(type(operation))
                     )
 
-                # Optimise by merging into previous payload if possible.
-                merged = False
-
-                if batch and payload['action'] == 'update':
-                    # Merge into previous create / update for same entity.
-                    previous = batch[-1]
-                    if (
-                        previous['action'] in ('create', 'update')
-                        and previous['entity_type'] == payload['entity_type']
-                        and previous['entity_key'] == payload['entity_key']
-                    ):
-                        previous['entity_data'].update(payload['entity_data'])
-                        merged = True
-
-                if not merged:
-                    batch.append(payload)
+                batch.append(payload)
 
         # Optimise batch.
+        # TODO: Might be better to perform these on the operations list instead
+        # so all operation contextual information available.
 
         # If entity was created and deleted in one batch then remove all
         # payloads for that entity.
@@ -834,6 +821,23 @@ class Session(object):
 
             batch = optimised_batch
 
+        # Remove early update operations so that only last operation on
+        # attribute is applied server side.
+        updates_map = set()
+        for payload in reversed(batch):
+            if payload['action'] == 'update':
+                for key, value in payload['entity_data'].items():
+                    if key == '__entity_type__':
+                        continue
+
+                    identity = (
+                        payload['entity_type'], str(payload['entity_key']), key
+                    )
+                    if identity in updates_map:
+                        del payload['entity_data'][key]
+                    else:
+                        updates_map.add(identity)
+
         # Remove NOT_SET values from entity_data.
         for payload in batch:
             entity_data = payload.get('entity_data', {})
@@ -851,6 +855,28 @@ class Session(object):
                     continue
 
             optimised_batch.append(payload)
+
+        batch = optimised_batch
+
+        # Collapse updates that are consecutive into one payload. Also, collapse
+        # updates that occur immediately after creation into the create payload.
+        optimised_batch = []
+        previous_payload = None
+
+        for payload in batch:
+            if (
+                previous_payload is not None
+                and payload['action'] == 'update'
+                and previous_payload['action'] in ('create', 'update')
+                and previous_payload['entity_type'] == payload['entity_type']
+                and previous_payload['entity_key'] == payload['entity_key']
+            ):
+                previous_payload['entity_data'].update(payload['entity_data'])
+                continue
+
+            else:
+                optimised_batch.append(payload)
+                previous_payload = payload
 
         batch = optimised_batch
 
