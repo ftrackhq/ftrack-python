@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-*****************
-ftrack.collection
-*****************
+*********************
+ftrack_api.collection
+*********************
 
-.. automodule:: ftrack.collection
+.. automodule:: ftrack_api.collection

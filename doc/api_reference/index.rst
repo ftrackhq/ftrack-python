@@ -7,8 +7,10 @@
 API Reference
 *************
 
-ftrack
-======
+ftrack_api
+==========
+
+.. automodule:: ftrack_api
 
 .. toctree::
     :maxdepth: 1

@@ -1,8 +1,8 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-**************
-ftrack.session
-**************
+******************
+ftrack_api.session
+******************
 
-.. automodule:: ftrack.session
+.. automodule:: ftrack_api.session

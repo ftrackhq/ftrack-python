@@ -11,13 +11,13 @@ This tutorial is a walkthrough on how you interact with Locations using the
 ftrack :term:`API`. Before you read this tutorial, make sure you familiarize
 yourself with the location concepts by reading the :ref:`locations/overview`.
 
-All examples assume you are using Python 2.x, have the :mod:`ftrack`
-module imported and a :class:`session <ftrack.session.Session>` created.
+All examples assume you are using Python 2.x, have the :mod:`ftrack_api`
+module imported and a :class:`session <ftrack_api.session.Session>` created.
 
 .. code-block:: python
 
-    import ftrack
-    session = ftrack.Session()
+    import ftrack_api
+    session = ftrack_api.Session()
 
 .. _locations/creating-locations:
 
@@ -25,7 +25,7 @@ Creating locations
 ==================
 
 Locations can be created just like any other entity using
-:meth:`Session.create <ftrack.session.Session.create>`::
+:meth:`Session.create <ftrack_api.session.Session.create>`::
 
     location = session.create('Location', dict(name='my.location'))
     session.commit()
@@ -35,15 +35,15 @@ Locations can be created just like any other entity using
     not use this prefix for your location names.
 
 To create a location only if it doesn't already exist use the convenience 
-method :meth:`Session.ensure <ftrack.session.Session.ensure>`. This will return
+method :meth:`Session.ensure <ftrack_api.session.Session.ensure>`. This will return
 either an existing matching location or a newly created one.
 
 Retrieving locations
 ====================
 
 You can retrieve existing locations using the standard session
-:meth:`~ftrack.session.Session.get` and :meth:`~ftrack.session.Session.query`
-methods::
+:meth:`~ftrack_api.session.Session.get` and
+:meth:`~ftrack_api.session.Session.query` methods::
 
     # Retrieve location by unique id.
     location_by_id = session.get('Location', 'unique-id')
@@ -67,16 +67,16 @@ location for the session, set the appropriate attributes for accessor and
 structure::
 
     import tempfile
-    import ftrack.accessor.disk
-    import ftrack.structure.id
+    import ftrack_api.accessor.disk
+    import ftrack_api.structure.id
 
     # Assign a disk accessor with *temporary* storage
-    location.accessor = ftrack.accessor.disk.DiskAccessor(
+    location.accessor = ftrack_api.accessor.disk.DiskAccessor(
         prefix=tempfile.mkdtemp()
     )
 
     # Assign using ID structure.
-    location.structure = ftrack.structure.id.IdStructure()
+    location.structure = ftrack_api.structure.id.IdStructure()
 
     # Set a priority which will be used when automatically picking locations.
     # Lower number is higher priority.
@@ -95,7 +95,7 @@ Using components with locations
 
 The Locations :term:`API` tries to use sane defaults to stay out of your way.
 When creating :term:`components <component>`, a location is automatically picked
-using :meth:`Session.pick_location <ftrack.session.Session.pick_location>`::
+using :meth:`Session.pick_location <ftrack_api.session.Session.pick_location>`::
 
     (_, component_path) = tempfile.mkstemp(suffix='.txt')
     component_a = session.create_component(path=component_path)
@@ -115,14 +115,14 @@ special origin location for the duration of the session::
 
 After creating a :term:`component` in a location, it can be added to another
 location by calling :meth:`Location.add_component
-<ftrack.entity.location.Location.add_component>` and passing the location to
+<ftrack_api.entity.location.Location.add_component>` and passing the location to
 use as the *source* location::
 
     origin_location = session.query('Location where name is "ftrack.origin"')[0]
     location.add_component(component_c, origin_location)
 
 To remove a component from a location use :meth:`Location.remove_component
-<ftrack.entity.location.Location.remove_component>`::
+<ftrack_api.entity.location.Location.remove_component>`::
 
     location.remove_component(component_b)
 
@@ -130,10 +130,10 @@ Each location specifies whether to automatically manage data when adding or
 removing components. To ensure that a location does not manage data, mixin the
 relevant location mixin class before use::
 
-    import ftrack
-    import ftrack.entity.location
+    import ftrack_api
+    import ftrack_api.entity.location
 
-    ftrack.mixin(location, ftrack.entity.location.UnmanagedLocationMixin)
+    ftrack_api.mixin(location, ftrack_api.entity.location.UnmanagedLocationMixin)
 
 Accessing paths
 ===============
@@ -144,12 +144,12 @@ of locations won't provide any direct filesystem access (such as cloud storage).
 
 However, it is useful to still be able to get a filesystem path from locations
 that support them (typically those configured with a
-:class:`~ftrack.accessor.disk.DiskAccessor`). For example, you might need to
+:class:`~ftrack_api.accessor.disk.DiskAccessor`). For example, you might need to
 pass a filesystem path to another application or perform a copy using a faster
 protocol.
 
 To retrieve the path if available, use :meth:`Location.get_filesystem_path
-<ftrack.entity.location.Location.get_filesystem_path>`::
+<ftrack_api.entity.location.Location.get_filesystem_path>`::
 
     print location.get_filesystem_path(component_c)
 
@@ -167,13 +167,13 @@ For example, an image sequence might currently be in a state of being
 transferred to :data:`test.location`. If half of the images are transferred,  it
 might be possible to start working with the sequence. To check availability use
 the helper :meth:`Session.get_component_availability
-<ftrack.session.Session.get_component_availability>` method::
+<ftrack_api.session.Session.get_component_availability>` method::
 
     print session.get_component_availability(component_c)
 
 There are also convenience methods on both :meth:`components
-<ftrack.entity.component.Component.get_availability>` and :meth:`locations
-<ftrack.entity.location.Location.get_component_availability>` for
+<ftrack_api.entity.component.Component.get_availability>` and :meth:`locations
+<ftrack_api.entity.location.Location.get_component_availability>` for
 retrieving availability as well::
 
     print component_c.get_availability()
@@ -184,6 +184,6 @@ Location events
 
 If you want to receive event notifications when components are added to or 
 removed from locations, you can subscribe to the topics published,
-:data:`ftrack.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC` or
-:data:`ftrack.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback you
+:data:`ftrack_api.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC` or
+:data:`ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback you
 want to be run.
