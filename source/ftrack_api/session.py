@@ -622,7 +622,8 @@ class Session(object):
 
                 merged_local_value = self._merge(local_value, merged=merged)
                 if merged_local_value is not local_value:
-                    attribute.set_local_value(entity, merged_local_value)
+                    with self.operation_recording(False):
+                        attribute.set_local_value(entity, merged_local_value)
 
             # Remote attributes.
             remote_value = attribute.get_remote_value(entity)
