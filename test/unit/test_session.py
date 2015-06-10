@@ -56,10 +56,33 @@ def test_create_then_delete_operation_ordering(session, unique_name):
     session.commit()
 
 
-def test_ignore_operation_that_modifies_attribute_to_not_set(session, new_user):
-    '''Ignore in commit, operation that sets attribute value to NOT_SET'''
+def test_ignore_in_create_entity_payload_values_set_to_not_set(
+    mocker, unique_name, session
+):
+    '''Ignore in commit, created entity data set to NOT_SET'''
+    mocked = mocker.patch.object(session, '_call')
+
+    # Should ignore 'email' attribute in payload.
+    new_user = session.create(
+        'User', {'username': unique_name, 'email': 'test'}
+    )
     new_user['email'] = ftrack_api.symbol.NOT_SET
     session.commit()
+    payloads = mocked.call_args[0][0]
+    assert len(payloads) == 1
+
+
+def test_ignore_operation_that_modifies_attribute_to_not_set(
+    mocker, session, user
+):
+    '''Ignore in commit, operation that sets attribute value to NOT_SET'''
+    mocked = mocker.patch.object(session, '_call')
+
+    # Should result in no call to server.
+    user['email'] = ftrack_api.symbol.NOT_SET
+    session.commit()
+
+    assert not mocked.called
 
 
 def test_operation_optimisation_on_commit(session, mocker):
