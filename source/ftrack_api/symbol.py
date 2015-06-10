@@ -26,6 +26,14 @@ class Symbol(object):
         '''Return whether symbol represents non-zero value.'''
         return bool(self.value)
 
+    def __copy__(self):
+        '''Return shallow copy.
+
+        Overridden to always return same instance.
+
+        '''
+        return self
+
 
 #: Symbol representing that no value has been set or loaded.
 NOT_SET = Symbol('NOT_SET', False)
