@@ -2,7 +2,6 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import os
-import uuid
 import hashlib
 import base64
 import json
