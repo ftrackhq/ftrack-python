@@ -123,12 +123,21 @@ def test_operation_optimisation_on_commit(session, mocker):
 
     assert payloads[0]['action'] == 'create'
     assert payloads[0]['entity_key'] == user_a_entity_key
+    assert set(payloads[0]['entity_data'].keys()) == set([
+        '__entity_type__', 'id', 'resource_type', 'username'
+    ])
 
     assert payloads[1]['action'] == 'create'
     assert payloads[1]['entity_key'] == user_b_entity_key
+    assert set(payloads[1]['entity_data'].keys()) == set([
+        '__entity_type__', 'id', 'resource_type', 'username', 'email'
+    ])
 
     assert payloads[2]['action'] == 'update'
     assert payloads[2]['entity_key'] == user_a_entity_key
+    assert set(payloads[2]['entity_data'].keys()) == set([
+        '__entity_type__', 'email', 'first_name'
+    ])
 
 
 def test_state_collection(session, unique_name, user):
