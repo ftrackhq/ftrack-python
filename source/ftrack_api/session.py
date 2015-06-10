@@ -834,6 +834,26 @@ class Session(object):
 
             batch = optimised_batch
 
+        # Remove NOT_SET values from entity_data.
+        for payload in batch:
+            entity_data = payload.get('entity_data', {})
+            for key, value in entity_data.items():
+                if value is ftrack_api.symbol.NOT_SET:
+                    del entity_data[key]
+
+        # Remove payloads with redundant entity_data.
+        optimised_batch = []
+        for payload in batch:
+            entity_data = payload.get('entity_data')
+            if entity_data is not None:
+                keys = entity_data.keys()
+                if not keys or keys == ['__entity_type__']:
+                    continue
+
+            optimised_batch.append(payload)
+
+        batch = optimised_batch
+
         # Process batch.
         if batch:
             result = self._call(batch)
