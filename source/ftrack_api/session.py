@@ -8,6 +8,7 @@ import datetime
 import os
 import getpass
 import functools
+import itertools
 
 import pkg_resources
 import requests
@@ -265,25 +266,34 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
+        entities = self._attached.values()
+        states = ftrack_api.inspection.states(entities)
+
         return [
-            entity for entity in self._attached.values()
-            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.CREATED
+            entity for (entity, state) in itertools.izip(entities, states)
+            if state is ftrack_api.symbol.CREATED
         ]
 
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
+        entities = self._attached.values()
+        states = ftrack_api.inspection.states(entities)
+
         return [
-            entity for entity in self._attached.values()
-            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.MODIFIED
+            entity for (entity, state) in itertools.izip(entities, states)
+            if state is ftrack_api.symbol.MODIFIED
         ]
 
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
+        entities = self._attached.values()
+        states = ftrack_api.inspection.states(entities)
+
         return [
-            entity for entity in self._attached.values()
-            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.DELETED
+            entity for (entity, state) in itertools.izip(entities, states)
+            if state is ftrack_api.symbol.DELETED
         ]
 
     def create(self, entity_type, data=None, reconstructing=False):

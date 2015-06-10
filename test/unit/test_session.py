@@ -92,5 +92,24 @@ def test_operation_optimisation_on_commit(session, mocker):
     assert payloads[2]['entity_key'] == user_a_entity_key
 
 
-def test_state_collection(session):
-    '''Session helper collection properties return correct entities.'''
+def test_state_collection(session, unique_name, user):
+    '''Session state collection holds correct entities.'''
+    # NOT_SET
+    user_a = session.create('User', {'username': unique_name})
+    session.commit()
+
+    # CREATED
+    user_b = session.create('User', {'username': unique_name})
+    user_b['username'] = 'changed'
+
+    # MODIFIED
+    user_c = user
+    user_c['username'] = 'changed'
+
+    # DELETED
+    user_d = session.create('User', {'username': unique_name})
+    session.delete(user_d)
+
+    assert session.created == [user_b]
+    assert session.modified == [user_c]
+    assert session.deleted == [user_d]
