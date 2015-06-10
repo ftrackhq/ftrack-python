@@ -55,3 +55,32 @@ def test_post_commit_entity_state(session, unique_name):
     session.commit()
 
     assert ftrack_api.inspection.state(new_user) is ftrack_api.symbol.NOT_SET
+
+
+def test_states(session, unique_name, user):
+    '''Determine correct states for multiple entities.'''
+    # NOT_SET
+    user_a = session.create('User', {'username': unique_name})
+    session.commit()
+
+    # CREATED
+    user_b = session.create('User', {'username': unique_name})
+    user_b['username'] = 'changed'
+
+    # MODIFIED
+    user_c = user
+    user_c['username'] = 'changed'
+
+    # DELETED
+    user_d = session.create('User', {'username': unique_name})
+    session.delete(user_d)
+
+    # Assert states.
+    states = ftrack_api.inspection.states([user_a, user_b, user_c, user_d])
+
+    assert states == [
+        ftrack_api.symbol.NOT_SET,
+        ftrack_api.symbol.CREATED,
+        ftrack_api.symbol.MODIFIED,
+        ftrack_api.symbol.DELETED
+    ]
