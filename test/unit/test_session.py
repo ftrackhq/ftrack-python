@@ -4,6 +4,7 @@
 import pytest
 
 import ftrack_api.inspection
+import ftrack_api.symbol
 
 
 def test_get_entity(session, user):
@@ -52,6 +53,12 @@ def test_create_then_delete_operation_ordering(session, unique_name):
     '''Create and delete entity in one transaction.'''
     entity = session.create('User', {'username': unique_name})
     session.delete(entity)
+    session.commit()
+
+
+def test_ignore_operation_that_modifies_attribute_to_not_set(session, new_user):
+    '''Ignore in commit, operation that sets attribute value to NOT_SET'''
+    new_user['email'] = ftrack_api.symbol.NOT_SET
     session.commit()
 
 
