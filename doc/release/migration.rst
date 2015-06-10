@@ -7,10 +7,10 @@
 Migration notes
 ***************
 
-Migrate to next
-===============
+Migrate to 0.2.0
+================
 
-.. _release/migration/next/new_api_name:
+.. _release/migration/0.2.0/new_api_name:
 
 New API name
 ------------
