@@ -3,6 +3,7 @@
 
 import ftrack_api.collection
 import ftrack_api.symbol
+import ftrack_api.inspection
 
 
 def test_initialisation_does_not_modify_entity_state(new_user):
@@ -11,4 +12,4 @@ def test_initialisation_does_not_modify_entity_state(new_user):
         new_user, None, data=[1, 2]
     )
 
-    assert new_user.state is ftrack_api.symbol.NOT_SET
+    assert ftrack_api.inspection.state(new_user) is ftrack_api.symbol.NOT_SET

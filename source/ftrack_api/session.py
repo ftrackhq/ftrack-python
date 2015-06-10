@@ -267,7 +267,7 @@ class Session(object):
         '''Return list of newly created entities.'''
         return [
             entity for entity in self._attached.values()
-            if entity.state is ftrack_api.symbol.CREATED
+            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.CREATED
         ]
 
     @property
@@ -275,7 +275,7 @@ class Session(object):
         '''Return list of locally modified entities.'''
         return [
             entity for entity in self._attached.values()
-            if entity.state is ftrack_api.symbol.MODIFIED
+            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.MODIFIED
         ]
 
     @property
@@ -283,7 +283,7 @@ class Session(object):
         '''Return list of deleted entities.'''
         return [
             entity for entity in self._attached.values()
-            if entity.state is ftrack_api.symbol.DELETED
+            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.DELETED
         ]
 
     def create(self, entity_type, data=None, reconstructing=False):
@@ -668,7 +668,7 @@ class Session(object):
         entities_to_process = []
 
         for entity in entities:
-            if entity.state is ftrack_api.symbol.CREATED:
+            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.CREATED:
                 # Created entities that are not yet persisted have no remote
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them

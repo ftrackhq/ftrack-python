@@ -110,13 +110,19 @@ top level memory cache to hold onto these values.
 Here is one way to set this up. First define a new proxy cache that is selective
 about what it sets::
 
+    import ftrack_api.inspection
+
+
     class SelectiveCache(ftrack_api.cache.ProxyCache):
         '''Proxy cache that won't cache newly created entities.'''
 
         def set(self, key, value):
             '''Set *value* for *key*.'''
             if isinstance(value, ftrack_api.entity.base.Entity):
-                if value.state is ftrack_api.symbol.CREATED:
+                if (
+                    ftrack_api.inspection.state(value)
+                    is ftrack_api.symbol.CREATED
+                ):
                     return
 
             super(SelectiveCache, self).set(key, value)

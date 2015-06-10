@@ -72,54 +72,6 @@ class Entity(collections.MutableMapping):
         else:
             self._reconstruct(data)
 
-    @property
-    def state(self):
-        '''Return current state computed from recorded operations in session.'''
-        state = ftrack_api.symbol.NOT_SET
-
-        # TODO: Optimise this.
-        for operation in self.session.recorded_operations:
-
-            # Determine if operation refers to an entity and whether that entity
-            # is this entity.
-            if (
-                isinstance(
-                    operation,
-                    (
-                        ftrack_api.operation.CreateEntityOperation,
-                        ftrack_api.operation.UpdateEntityOperation,
-                        ftrack_api.operation.DeleteEntityOperation
-                    )
-                )
-                and operation.entity_type == self.entity_type
-                and operation.entity_key == ftrack_api.inspection.primary_key(
-                    self
-                )
-            ):
-
-                if (
-                    isinstance(
-                        operation, ftrack_api.operation.CreateEntityOperation
-                    )
-                    and state is ftrack_api.symbol.NOT_SET
-                ):
-                    state = ftrack_api.symbol.CREATED
-
-                elif (
-                    isinstance(
-                        operation, ftrack_api.operation.UpdateEntityOperation
-                    )
-                    and state is ftrack_api.symbol.NOT_SET
-                ):
-                    state = ftrack_api.symbol.MODIFIED
-
-                elif isinstance(
-                    operation, ftrack_api.operation.DeleteEntityOperation
-                ):
-                    state = ftrack_api.symbol.DELETED
-
-        return state
-
     def _construct(self, data):
         '''Construct from *data*.'''
         # Suspend operation recording so that all modifications can be applied

@@ -90,3 +90,7 @@ def test_operation_optimisation_on_commit(session, mocker):
 
     assert payloads[2]['action'] == 'update'
     assert payloads[2]['entity_key'] == user_a_entity_key
+
+
+def test_state_collection(session):
+    '''Session helper collection properties return correct entities.'''
