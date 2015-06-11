@@ -1047,7 +1047,7 @@ class Session(object):
             return data
 
         if isinstance(
-            item, ftrack_api.attribute.DictionaryAttributeCollection
+            item, ftrack_api.collection.DictionaryAttributeCollection
         ):
             # TODO: Correctly encode dictionary collection so that it can be
             # decoded properly.
