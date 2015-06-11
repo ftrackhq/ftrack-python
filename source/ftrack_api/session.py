@@ -463,7 +463,7 @@ class Session(object):
 
             return merged_collection
 
-        # TODO: Handle DictionaryAttributeCollection.
+        # TODO: Handle MappedCollection.
 
         else:
             return value
@@ -1047,7 +1047,7 @@ class Session(object):
             return data
 
         if isinstance(
-            item, ftrack_api.collection.DictionaryAttributeCollection
+            item, ftrack_api.collection.MappedCollection
         ):
             # TODO: Correctly encode dictionary collection so that it can be
             # decoded properly.

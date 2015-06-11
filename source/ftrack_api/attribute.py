@@ -358,7 +358,7 @@ class DictionaryAttribute(Attribute):
         primary_key = tuple(ftrack_api.inspection.primary_key(entity).values())
         if primary_key not in self._collections:
             key_value_collection = (
-                ftrack_api.collection.DictionaryAttributeCollection(
+                ftrack_api.collection.MappedCollection(
                     entity=entity,
                     name=self._name,
                     schema=self._schema

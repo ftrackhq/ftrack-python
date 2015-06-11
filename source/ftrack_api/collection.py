@@ -106,7 +106,7 @@ class Collection(collections.MutableSequence):
         return not self == other
 
 
-class DictionaryAttributeCollection(object):
+class MappedCollection(object):
     '''Class representing a dictionary collection.'''
 
     def __init__(self, entity, name, schema):
