@@ -106,105 +106,92 @@ class Collection(collections.MutableSequence):
         return not self == other
 
 
-class MappedCollection(object):
-    '''Class representing a dictionary collection.'''
+class MappedCollectionProxy(collections.MutableMapping):
+    '''A mapped collection of entities.
 
-    def __init__(self, entity, name, schema):
-        '''Initialise collection from *entity*, *name* and *schema*.'''
-        self._entity = entity
-        self._name = name
-        self._store = {}
-        self._is_store_loaded = False
+    Proxy a standard :class:`Collection` as a mapping where certain attributes
+    from the entities in the collection are mapped to key, value pairs.
 
-        self._schema = schema
-        keys = self._schema.get('keys', {})
-        self._key_property = keys.get('key', 'key')
-        self._value_property = keys.get('value', 'value')
-        self._foreign_key_property = keys.get('parent_id', 'parent_id')
-        self._class = self._schema.get('items').get('$ref')
+    For example::
 
-    def _get_store(self):
-        '''Return the store loaded with data.'''
-        self._load_store()
-        return self._store
+        >>> collection = [Metadata(key='foo', value='bar'), ...]
+        >>> mapped = MappedCollectionProxy(
+        ...     collection, create_metadata,
+        ...     key_attribute='key', value_attribute='value'
+        ... )
+        >>> print mapped['foo']
+        'bar'
+        >>> mapped['bam'] = 'biz'
+        >>> print mapped.collection[-1]
+        Metadata(key='bam', value='biz')
 
-    def _load_store(self):
-        '''Populate store with all remote values.'''
-        if self._is_store_loaded:
-            return
+    '''
 
-        results = self._entity.session.query(
-            '{0} where {1} = {2}'.format(
-                self._class,
-                self._foreign_key_property,
-                self._entity['id']
-            )
-        )
+    def __init__(
+        self, collection, creator, key_attribute, value_attribute
+    ):
+        '''Initialise collection.'''
+        self.collection = collection
+        self.creator = creator
+        self.key_attribute = key_attribute
+        self.value_attribute = value_attribute
 
-        for key_value_object in results:
-            key = key_value_object[self._key_property]
-            if key not in self._store:
-                self._store[key] = key_value_object
+    def _get_entity_by_key(self, key):
+        '''Return entity instance with matching *key* from collection.'''
+        for entity in self.collection:
+            if entity[self.key_attribute] == key:
+                return entity
 
-        self._is_store_loaded = True
-
-    def _get(self, key):
-        '''Return object by *key* or raise KeyError.'''
-        try:
-            return self._get_store()[key]
-
-        except KeyError:
-            raise KeyError(
-                '{0} key {1} was not found for {2}'.format(
-                    self._name, key, self._entity
-                )
-            )
+        raise KeyError(key)
 
     def __getitem__(self, key):
         '''Return value for *key*.'''
-        return self._get(key)[self._value_property]
+        entity = self._get_entity_by_key(key)
+        return entity[self.value_attribute]
 
     def __setitem__(self, key, value):
         '''Set *value* for *key*.'''
         try:
-            key_value_object = self._get(key)
-
+            entity = self._get_entity_by_key(key)
         except KeyError:
             data = {
-                self._foreign_key_property: self._entity['id'],
-                self._key_property: key,
-                self._value_property: value
+                self.key_attribute: key,
+                self.value_attribute: value
             }
-            data.update(self._schema.get('defaults', {}))
-            key_value_object = self._entity.session.create(self._class, data)
-            self._store[key] = key_value_object
-
+            entity = self.creator(self, data)
+            self.collection.append(entity)
         else:
-            key_value_object[self._value_property] = value
+            entity[self.key_attribute] = value
 
     def __delitem__(self, key):
-        '''Delete *key*.'''
-        self._entity.session.delete(self._get(key))
-        self._get_store().pop(key)
+        '''Remove and delete *key*.
 
-    def keys(self):
-        '''Return keys for all objects in collection.'''
-        return self._get_store().keys()
+        .. note::
 
-    def items(self):
-        '''Return list of tuples.'''
-        result = []
-        for index, key_value_object in self._get_store().items():
-            result.append((index, key_value_object[self._value_property]))
+            The associated entity will be deleted as well.
 
-        return result
+        '''
+        for index, entity in enumerate(self.collection):
+            if entity[self.key_attribute] == key:
+                break
+        else:
+            raise KeyError(key)
 
-    def replace(self, data):
-        '''Replace collection with *data*.'''
-        # Delete.
-        for key in self._get_store().keys():
-            if key not in data:
-                del self[key]
+        del self.collection[index]
+        entity.session.delete(entity)
 
-        for key, value in data.items():
-            self[key] = value
+    def __iter__(self):
+        '''Iterate over all keys.'''
+        keys = set()
+        for entity in self.collection:
+            keys.add(entity[self.key_attribute])
+
+        return iter(keys)
+
+    def __len__(self):
+        '''Return count of keys.'''
+        keys = set()
+        for entity in self.collection:
+            keys.add(entity[self.key_attribute])
+
+        return len(keys)
