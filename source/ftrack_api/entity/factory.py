@@ -10,6 +10,7 @@ import ftrack_api.entity.location
 import ftrack_api.entity.component
 import ftrack_api.entity.asset_version
 import ftrack_api.entity.project_schema
+import ftrack_api.entity.job
 import ftrack_api.symbol
 
 
@@ -157,6 +158,11 @@ class StandardFactory(Factory):
         elif schema['id'].endswith('Component'):
             cls = super(StandardFactory, self).create(
                 schema, bases=[ftrack_api.entity.component.Component]
+            )
+
+        elif schema['id'].endswith('Job'):
+            cls = super(StandardFactory, self).create(
+                schema, bases=[ftrack_api.entity.job.Job]
             )
 
         else:
