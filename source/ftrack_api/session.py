@@ -1047,11 +1047,13 @@ class Session(object):
             return data
 
         if isinstance(
-            item, ftrack_api.collection.MappedCollection
+            item, ftrack_api.collection.MappedCollectionProxy
         ):
-            # TODO: Correctly encode dictionary collection so that it can be
-            # decoded properly.
-            return {}
+            data = []
+            for entity in item.collection:
+                data.append(self._entity_reference(entity))
+
+            return data
 
         raise TypeError('{0!r} is not JSON serializable'.format(item))
 
