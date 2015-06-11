@@ -26,7 +26,7 @@ class Job(ftrack_api.entity.base.Entity):
                 ...
             }
 
-        Will raise an :py:exc:`ValueError` if *data* contains `type` and `type`
+        Will raise a :py:exc:`ValueError` if *data* contains `type` and `type`
         is set to something not equal to "api_job".
 
         *reconstructing* indicates whether this entity is being reconstructed,

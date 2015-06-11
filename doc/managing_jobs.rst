@@ -7,10 +7,12 @@
 Managing jobs
 *************
 
+.. currentmodule:: ftrack_api.session
+
 Jobs can be used to display feedback to users in the ftrack web interface
 when performing long running tasks in the API.
 
-To create a job use the :meth:`Session.create`.
+To create a job use :meth:`Session.create`.
 
 .. code-block:: python
     
