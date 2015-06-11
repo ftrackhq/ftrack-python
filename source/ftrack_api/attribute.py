@@ -344,37 +344,72 @@ class CollectionAttribute(Attribute):
         return value
 
 
-class DictionaryAttribute(Attribute):
-    '''Represent a dictionary attribute.'''
+class MappedCollectionAttribute(CollectionAttribute):
+    '''Represent a mapped collection of entities.'''
 
-    def __init__(self, name, schema, **kw):
+    def __init__(self, name, creator, key_attribute, value_attribute, **kw):
         '''Initialise property.'''
-        super(DictionaryAttribute, self).__init__(name, **kw)
-        self._collections = {}
-        self._schema = schema
+        self.creator = creator
+        self.key_attribute = key_attribute
+        self.value_attribute = value_attribute
 
-    def _getCollection(self, entity):
-        '''Return collection for *entity*.'''
-        primary_key = tuple(ftrack_api.inspection.primary_key(entity).values())
-        if primary_key not in self._collections:
-            key_value_collection = (
-                ftrack_api.collection.MappedCollection(
-                    entity=entity,
-                    name=self._name,
-                    schema=self._schema
-                )
-            )
-            self._collections[primary_key] = key_value_collection
-
-        return self._collections[primary_key]
+        super(MappedCollectionAttribute, self).__init__(name, **kw)
 
     def get_value(self, entity):
-        '''Return collection for *entity*.'''
-        return self._getCollection(entity)
+        '''Return current value for *entity*.
 
-    def set_local_value(self, entity, value):
-        '''Update collection for *entity* with *value*.'''
-        if value == ftrack_api.symbol.NOT_SET:
-            return
+        If a value was set locally then return it, otherwise return last known
+        remote value. If no remote value yet retrieved, make a request for it
+        via the session and block until available.
 
-        self._getCollection(entity).replace(value)
+        .. note::
+
+            As value is a collection that is mutable, will transfer a remote
+            value into the local value on access if no local value currently
+            set.
+
+        '''
+        super(MappedCollectionAttribute, self).get_value(entity)
+
+        # Conditionally, copy remote value into local value so that it can be
+        # mutated without side effects.
+        local_value = self.get_local_value(entity)
+        remote_value = self.get_remote_value(entity)
+        if (
+            local_value is ftrack_api.symbol.NOT_SET
+            and isinstance(
+                remote_value, ftrack_api.collection.MappedCollectionProxy
+            )
+        ):
+            try:
+                self.set_local_value(entity, remote_value.collection[:])
+            except ftrack_api.exception.ImmutableAttributeError:
+                pass
+
+        return self.get_local_value(entity)
+
+    def _adapt_to_collection(self, entity, value):
+        '''Adapt *value* to a MappedCollectionProxy instance on *entity*.'''
+        if not isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+            if isinstance(value, (list, ftrack_api.collection.Collection)):
+                value = super(
+                    MappedCollectionAttribute, self
+                )._adapt_to_collection(
+                    entity, value
+                )
+
+            elif isinstance(value, collections.Mapping):
+                # Convert. Does this involve creating querying for / creating
+                # entities.
+                pass
+
+            value = ftrack_api.collection.MappedCollectionProxy(
+                value, self.creator, self.key_attribute, self.value_attribute
+            )
+        else:
+            if value.collection.attribute is not self:
+                raise ftrack_api.exception.AttributeError(
+                    'Collection already bound to a different attribute.'
+                )
+
+        return value
