@@ -58,9 +58,9 @@ def test_create_then_delete_operation_ordering(session, unique_name):
 
 def test_create_and_modify_to_have_required_attribute(session, unique_name):
     '''Create and modify entity to have required attribute in transaction.'''
-    entity = session.create('User', {})
-    other = session.create('User', {'username': unique_name})
-    entity['username'] = '{0}2'.format(unique_name)
+    entity = session.create('Scope', {})
+    other = session.create('Scope', {'name': unique_name})
+    entity['name'] = '{0}2'.format(unique_name)
     session.commit()
 
 
