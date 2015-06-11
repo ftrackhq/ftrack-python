@@ -754,7 +754,7 @@ class EventHub(object):
         try:
             response = requests.get(
                 socket_io_url,
-                timeout=10,
+                timeout=10, # 10 seconds timeout to recieve errors faster.
                 verify=False  # Allow self-signed SSL.
             )
         except requests.exceptions.Timeout as error:
