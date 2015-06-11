@@ -15,8 +15,9 @@ Release Notes
     .. change:: new
         :tags: Notes
 
-        Added support for handling notes. Check out
-        the :ref:`usage guide <using_notes>`.
+        Added support for handling notes.
+
+        .. seealso:: :ref:`Usage guide <using_notes>`.
 
     .. change:: changed
 

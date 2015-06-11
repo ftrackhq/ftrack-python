@@ -43,12 +43,12 @@ them manually::
     # Manually create a note
     note = session.create('Note', {
         'text': 'My new note',
-        'user': user,
+        'author': user,
         'parent_id': task['id'],
-        'parent_id': entity.entity_type
+        'parent_type': entity.entity_type
     })
 
-Replying on an existing note can also be done with a helper method or by
+Replying to an existing note can also be done with a helper method or by
 using :meth:`Session.create`::
     
     # Create using helper method.
@@ -58,8 +58,8 @@ using :meth:`Session.create`::
     # Create manually
     reply = session.create('Note', {
         'text': 'My new note',
-        'user': user,
-        'note_parent_id': first_note_on_task['id'],
+        'author': user,
+        'in_reply_to_id': first_note_on_task['id'],
         'parent_id': first_note_on_task['parent_id'],
         'parent_type': first_note_on_task['parent_type']
     })

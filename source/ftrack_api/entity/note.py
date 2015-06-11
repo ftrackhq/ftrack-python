@@ -5,12 +5,12 @@ import ftrack_api.entity.base
 
 
 class Note(ftrack_api.entity.base.Entity):
-    '''Represent asset version.'''
+    '''Represent a note.'''
 
     def create_reply(
-        self, text, user
+        self, text, author
     ):
-        '''Create a reply with *text* and *user.
+        '''Create a reply with *text* and *author*.
 
         .. note::
 
@@ -18,14 +18,13 @@ class Note(ftrack_api.entity.base.Entity):
             standard :meth:`Session.create` method.
 
         '''
-
         return self.session.create(
             'Note', {
-                'user': user,
+                'author': author,
                 'text': text,
                 'parent_id': self['parent_id'],
                 'parent_type': self['parent_type'],
-                'note_parent': self
+                'in_reply_to': self
             }
         )
 
@@ -33,8 +32,8 @@ class Note(ftrack_api.entity.base.Entity):
 class CreateNoteMixin(object):
     '''Mixin to add create_note method on entity class.'''
 
-    def create_note(self, text, user, category=None):
-        '''Create note with *text*, *user* and optional *category*.'''
+    def create_note(self, text, author, category=None):
+        '''Create note with *text*, *author* and optional *category*.'''
 
         category_id = None
         if category:
@@ -42,7 +41,7 @@ class CreateNoteMixin(object):
 
         data = {
             'text': text,
-            'user': user,
+            'author': author,
             'category_id': category_id,
             'parent_id': self['id'],
             'parent_type': self.entity_type

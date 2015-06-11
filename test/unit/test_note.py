@@ -28,9 +28,10 @@ def test_create_note_on_asset_version(session, user, unique_name):
 
     new_session = ftrack_api.Session()
 
-    assert len(
-        new_session.get('AssetVersion', asset_version['id'])['notes']
-    ) == (notes_count + 1)
+    assert (
+        len(new_session.get('AssetVersion', asset_version['id'])['notes'])
+        == (notes_count + 1)
+    )
 
     session.delete(note)
     session.commit()

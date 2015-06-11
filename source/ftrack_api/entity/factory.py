@@ -156,11 +156,11 @@ class StandardFactory(Factory):
         elif schema['id'].endswith('Component'):
             bases = [ftrack_api.entity.component.Component]
 
-        elif schema['id'].endswith('Note'):
+        elif schema['id'] == 'Note':
             bases = [ftrack_api.entity.note.Note]
 
         # If bases does not contain any items, add the base entity class.
-        if not len(bases):
+        if not bases:
             bases = [ftrack_api.entity.base.Entity]
 
         # Add mixins.
