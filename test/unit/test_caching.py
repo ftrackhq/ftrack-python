@@ -125,3 +125,35 @@ def test_get_entity_tree_from_cache(cache, new_project, mocker):
 
     # Check that no call was made to server.
     assert not session._call.called
+
+
+def test_get_metadata_from_cache(session, mocker, cache, new_task):
+    '''Retrieve an entity along with its metadata from cache.'''
+    new_task['metadata']['key'] = 'value'
+    session.commit()
+
+    fresh_session = ftrack_api.Session(cache=cache)
+
+    # Prepare cache.
+    fresh_session.query(
+        'select metadata.key, metadata.value from '
+        'Task where id is "{0}"'
+        .format(new_task['id'])
+    ).all()
+
+    # Disable server calls.
+    mocker.patch.object(fresh_session, '_call')
+
+    # Retrieve entity from cache.
+    entity = fresh_session.get(*ftrack_api.inspection.identity(new_task))
+
+    assert entity is not None, 'Failed to retrieve entity from cache.'
+    assert entity == new_task
+    assert entity is not new_task
+
+    # Check metadata cached correctly.
+    with fresh_session.auto_populating(False):
+        metadata = entity['metadata']
+        assert metadata['key'] == 'value'
+
+    assert not session._call.called
