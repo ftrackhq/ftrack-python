@@ -637,6 +637,10 @@ class Session(object):
             skipped as they have no remote values to fetch.
 
         '''
+        self.logger.debug(
+            'Populate {0!r} projections for {1}.'.format(projections, entities)
+        )
+
         if not isinstance(
             entities, (list, tuple, ftrack_api.query.QueryResult)
         ):
@@ -655,6 +659,11 @@ class Session(object):
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
                 # are NOT_SET.
+                self.logger.debug(
+                    'Skipping newly created entity {0!r} for population as no '
+                    'data will exist in the remote for this entity yet.'
+                    .format(entity)
+                )
                 continue
 
             entities_to_process.append(entity)
@@ -687,11 +696,14 @@ class Session(object):
 
                 if len(entity_keys) > 1:
                     query = '{0} where {1} in ({2})'.format(
-                        query, primary_key, ','.join(map(str, entity_keys))
+                        query, primary_key,
+                        ','.join([
+                            str(entity_key[0]) for entity_key in entity_keys
+                        ])
                     )
                 else:
                     query = '{0} where {1} is {2}'.format(
-                        query, primary_key, str(entity_keys[0])
+                        query, primary_key, str(entity_keys[0][0])
                     )
 
             result = self.query(query)
