@@ -347,8 +347,22 @@ class CollectionAttribute(Attribute):
 class MappedCollectionAttribute(CollectionAttribute):
     '''Represent a mapped collection of entities.'''
 
-    def __init__(self, name, creator, key_attribute, value_attribute, **kw):
-        '''Initialise property.'''
+    def __init__(
+        self, name, creator, key_attribute, value_attribute, **kw
+    ):
+        '''Initialise attribute with *name*.
+
+        *creator* should be a function that accepts a dictionary of data and
+        is used by the referenced collection to create new entities in the
+        collection.
+
+        *key_attribute* should be the name of the attribute on an entity in
+        the collection that represents the value for 'key' of the dictionary.
+
+        *value_attribute* should be the name of the attribute on an entity in
+        the collection that represents the value for 'value' of the dictionary.
+
+        '''
         self.creator = creator
         self.key_attribute = key_attribute
         self.value_attribute = value_attribute
