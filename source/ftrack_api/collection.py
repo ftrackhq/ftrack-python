@@ -181,7 +181,7 @@ class MappedCollectionProxy(collections.MutableMapping):
             entity = self.creator(self, data)
             self.collection.append(entity)
         else:
-            entity[self.key_attribute] = value
+            entity[self.value_attribute] = value
 
     def __delitem__(self, key):
         '''Remove and delete *key*.
