@@ -364,6 +364,9 @@ class Session(object):
 
         except KeyError:
             # Query for matching entity.
+            self.logger.debug(
+                'Entity not present in cache. Issuing new query.'
+            )
             condition = []
             for key, value in zip(primary_key_definition, entity_key):
                 condition.append('{0} is "{1}"'.format(key, value))
