@@ -156,4 +156,4 @@ def test_get_metadata_from_cache(session, mocker, cache, new_task):
         metadata = entity['metadata']
         assert metadata['key'] == 'value'
 
-    assert not session._call.called
+    assert not fresh_session._call.called
