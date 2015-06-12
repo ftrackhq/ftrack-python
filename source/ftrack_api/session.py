@@ -329,21 +329,25 @@ class Session(object):
         )
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
-        if len(primary_key_definition) > 1:
-            # TODO: Handle composite primary key using a syntax of
-            # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
-            raise ValueError('Composite primary keys not supported.')
+        if isinstance(entity_key, basestring):
+            entity_key = [entity_key]
 
-        primary_key_definition = primary_key_definition[0]
-        if not isinstance(entity_key, basestring):
-            entity_key = entity_key[0]
+        if len(entity_key) != len(primary_key_definition):
+            raise ValueError(
+                'Incompatible entity_key {0!r} supplied. Entity type {1} '
+                'expects a primary key composed of {2} values ({3}).'
+                .format(
+                    entity_key, entity_type, len(primary_key_definition),
+                    ', '.join(primary_key_definition)
+                )
+            )
 
         entity = None
 
         # Check cache for existing entity emulating 
         # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
-            (str(entity_type), [str(entity_key)])
+            (str(entity_type), map(str, entity_key))
         )
         self.logger.debug(
             'Checking cache for entity with key {0}'.format(cache_key)
@@ -360,8 +364,12 @@ class Session(object):
 
         except KeyError:
             # Query for matching entity.
-            expression = '{0} where {1} is {2}'.format(
-                entity_type, primary_key_definition, entity_key
+            condition = []
+            for key, value in zip(primary_key_definition, entity_key):
+                condition.append('{0} is "{1}"'.format(key, value))
+
+            expression = '{0} where ({1})'.format(
+                entity_type, ' and '.join(condition)
             )
 
             results = self.query(expression).all()
