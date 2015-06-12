@@ -421,7 +421,7 @@ class MappedCollectionAttribute(CollectionAttribute):
                 value, self.creator, self.key_attribute, self.value_attribute
             )
         else:
-            if value.collection.attribute is not self:
+            if value.attribute is not self:
                 raise ftrack_api.exception.AttributeError(
                     'Collection already bound to a different attribute.'
                 )

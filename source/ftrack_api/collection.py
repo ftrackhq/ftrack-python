@@ -136,6 +136,26 @@ class MappedCollectionProxy(collections.MutableMapping):
         self.key_attribute = key_attribute
         self.value_attribute = value_attribute
 
+    @property
+    def mutable(self):
+        '''Return whether collection is mutable.'''
+        return self.collection.mutable
+
+    @mutable.setter
+    def mutable(self, value):
+        '''Set whether collection is mutable to *value*.'''
+        self.collection.mutable = value
+
+    @property
+    def attribute(self):
+        '''Return attribute bound to.'''
+        return self.collection.attribute
+
+    @attribute.setter
+    def attribute(self, value):
+        '''Set bound attribute to *value*.'''
+        self.collection.attribute = value
+
     def _get_entity_by_key(self, key):
         '''Return entity instance with matching *key* from collection.'''
         for entity in self.collection:
