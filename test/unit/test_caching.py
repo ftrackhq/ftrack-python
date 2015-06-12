@@ -88,7 +88,7 @@ def test_get_entity_from_cache(cache, task, mocker):
     assert not session._call.called
 
 
-def test_get_entity_tree_from_cache(cache, new_project, mocker):
+def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
     '''Retrieve an entity tree from cache.'''
     session = ftrack_api.Session(cache=cache)
 
@@ -99,18 +99,18 @@ def test_get_entity_tree_from_cache(cache, new_project, mocker):
         'children.children.children.assignments, '
         'children.children.children.assignments.resource '
         'from Project where id is "{0}"'
-        .format(new_project['id'])
+        .format(new_project_tree['id'])
     )[0]
 
     # Disable server calls.
     mocker.patch.object(session, '_call')
 
     # Retrieve entity from cache.
-    entity = session.get(*ftrack_api.inspection.identity(new_project))
+    entity = session.get(*ftrack_api.inspection.identity(new_project_tree))
 
     assert entity is not None, 'Failed to retrieve entity from cache.'
-    assert entity == new_project
-    assert entity is not new_project
+    assert entity == new_project_tree
+    assert entity is not new_project_tree
 
     # Check tree.
     with session.auto_populating(False):
