@@ -474,7 +474,19 @@ class Session(object):
 
             return merged_collection
 
-        # TODO: Handle MappedCollectionProxy.
+        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+            self.logger.debug(
+                'Merging mapped collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
+
+            merged_collection = []
+            for entry in value.collection:
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
+                )
+
+            return merged_collection
 
         else:
             return value
@@ -571,7 +583,8 @@ class Session(object):
                 local_value,
                 (
                     ftrack_api.entity.base.Entity, 
-                    ftrack_api.collection.Collection
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
                 )
             ):
                 self.logger.debug(
@@ -588,7 +601,8 @@ class Session(object):
                 remote_value,
                 (
                     ftrack_api.entity.base.Entity, 
-                    ftrack_api.collection.Collection
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
                 )
             ):
                 self.logger.debug(
