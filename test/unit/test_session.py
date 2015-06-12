@@ -4,6 +4,7 @@
 import pytest
 
 import ftrack_api.inspection
+import ftrack_api.symbol
 
 
 def test_get_entity(session, user):
@@ -61,8 +62,39 @@ def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
         )
 
 
+def test_populate_entity(session, new_user):
+    '''Populate entity that uses single primary key.'''
+    with session.auto_populating(False):
+        assert new_user['email'] is ftrack_api.symbol.NOT_SET
+
+    session.populate(new_user, 'email')
+    assert new_user['email'] is not ftrack_api.symbol.NOT_SET
+
+
+def test_populate_entities(session, unique_name):
+    '''Populate multiple entities that use single primary key.'''
+    users = []
+    for index in range(3):
+        users.append(
+            session.create(
+                'User', {'username': '{0}-{1}'.format(unique_name, index)}
+            )
+        )
+
+    session.commit()
+
+    with session.auto_populating(False):
+        for user in users:
+            assert user['email'] is ftrack_api.symbol.NOT_SET
+
+    session.populate(users, 'email')
+
+    for user in users:
+        assert user['email'] is not ftrack_api.symbol.NOT_SET
+
+
 def test_populate_entity_with_composite_primary_key(session, new_project):
-    '''Retrieve entity that uses a composite primary key.'''
+    '''Populate entity that uses a composite primary key.'''
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
