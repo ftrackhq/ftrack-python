@@ -463,7 +463,7 @@ class Session(object):
 
             return merged_collection
 
-        # TODO: Handle MappedCollection.
+        # TODO: Handle MappedCollectionProxy.
 
         else:
             return value
@@ -1039,18 +1039,15 @@ class Session(object):
 
             return data
 
-        if isinstance(item, ftrack_api.collection.Collection):
-            data = []
-            for entity in item:
-                data.append(self._entity_reference(entity))
-
-            return data
-
         if isinstance(
             item, ftrack_api.collection.MappedCollectionProxy
         ):
+            # Use proxied collection for serialisation.
+            item = item.collection
+
+        if isinstance(item, ftrack_api.collection.Collection):
             data = []
-            for entity in item.collection:
+            for entity in item:
                 data.append(self._entity_reference(entity))
 
             return data
