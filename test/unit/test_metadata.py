@@ -99,3 +99,16 @@ class TestMetadata(object):
         )[0]
 
         assert set(sequence['metadata'].keys()) == set(['key1', 'key2'])
+
+
+def test_metadata_parent_type_remains_in_schema_id_format(session, new_project):
+    '''Metadata parent_type remains in schema id format post commit.'''
+    entity = session.create('Metadata', {
+        'key': 'key', 'value': 'value',
+        'parent_type': new_project.entity_type,
+        'parent_id':  new_project['id']
+    })
+
+    session.commit()
+
+    assert entity['parent_type'] == new_project.entity_type
