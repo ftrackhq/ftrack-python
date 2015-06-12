@@ -59,3 +59,29 @@ def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
         new_session.get(
             'Metadata', ftrack_api.inspection.primary_key(entity).values()[0]
         )
+
+
+def test_populate_entity_with_composite_primary_key(session, new_project):
+    '''Retrieve entity that uses a composite primary key.'''
+    entity = session.create('Metadata', {
+        'key': 'key', 'value': 'value',
+        'parent_type': new_project.entity_type,
+        'parent_id':  new_project['id']
+    })
+
+    session.commit()
+
+    # Avoid cache.
+    new_session = ftrack_api.Session()
+    retrieved_entity = new_session.get(
+        'Metadata', ftrack_api.inspection.primary_key(entity).values()
+    )
+
+    # Manually change already populated remote value so can test it gets reset
+    # on populate call.
+    retrieved_entity.attributes.get('value').set_remote_value(
+        retrieved_entity, 'changed'
+    )
+
+    new_session.populate(retrieved_entity, 'value')
+    assert retrieved_entity['value'] == 'value'

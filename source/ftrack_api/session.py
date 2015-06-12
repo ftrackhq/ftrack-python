@@ -660,32 +660,39 @@ class Session(object):
             entities_to_process.append(entity)
 
         if entities_to_process:
-            # TODO: Mark attributes as 'fetching'?
             reference_entity = entities_to_process[0]
             entity_type = reference_entity.entity_type
             query = 'select {0} from {1}'.format(projections, entity_type)
 
             primary_key_definition = reference_entity.primary_key_attributes
-            if len(primary_key_definition) > 1:
-                # TODO: Handle composite primary key using a syntax of
-                # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
-                raise ValueError('Composite primary keys not supported.')
-
-            primary_key = primary_key_definition[0]
-
             entity_keys = [
-                ftrack_api.inspection.primary_key(entity).values()[0]
+                ftrack_api.inspection.primary_key(entity).values()
                 for entity in entities_to_process
             ]
 
-            if len(entity_keys) > 1:
-                query = '{0} where {1} in ({2})'.format(
-                    query, primary_key, ','.join(map(str, entity_keys))
-                )
+            if len(primary_key_definition) > 1:
+                # Composite keys require full OR syntax unfortunately.
+                conditions = []
+                for entity_key in entity_keys:
+                    condition = []
+                    for key, value in zip(primary_key_definition, entity_key):
+                        condition.append('{0} is "{1}"'.format(key, value))
+
+                    conditions.append('({0})'.format('and '.join(condition)))
+
+                query = '{0} where {1}'.format(query, ' or '.join(conditions))
+
             else:
-                query = '{0} where {1} is {2}'.format(
-                    query, primary_key, str(entity_keys[0])
-                )
+                primary_key = primary_key_definition[0]
+
+                if len(entity_keys) > 1:
+                    query = '{0} where {1} in ({2})'.format(
+                        query, primary_key, ','.join(map(str, entity_keys))
+                    )
+                else:
+                    query = '{0} where {1} is {2}'.format(
+                        query, primary_key, str(entity_keys[0])
+                    )
 
             result = self.query(query)
 
