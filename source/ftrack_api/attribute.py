@@ -334,7 +334,15 @@ class CollectionAttribute(Attribute):
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to a Collection instance on *entity*.'''
         if not isinstance(value, ftrack_api.collection.Collection):
-            value = ftrack_api.collection.Collection(entity, self, data=value)
+            if isinstance(value, list):
+                value = ftrack_api.collection.Collection(
+                    entity, self, data=value
+                )
+            else:
+                raise NotImplementedError(
+                    'Cannot convert {0!r} to collection.'.format(value)
+                )
+
         else:
             if not value.attribute is self:
                 raise ftrack_api.exception.AttributeError(
@@ -412,14 +420,46 @@ class MappedCollectionAttribute(CollectionAttribute):
                     entity, value
                 )
 
-            elif isinstance(value, collections.Mapping):
-                # Convert. Does this involve creating querying for / creating
-                # entities.
-                pass
+                value = ftrack_api.collection.MappedCollectionProxy(
+                    value, self.creator, self.key_attribute, self.value_attribute
+                )
 
-            value = ftrack_api.collection.MappedCollectionProxy(
-                value, self.creator, self.key_attribute, self.value_attribute
-            )
+            elif isinstance(value, collections.Mapping):
+                # Convert mapping.
+                # TODO: When backend model improves, revisit this logic.
+                # First get existing value and delete all references. This is
+                # needed because otherwise they will not be automatically
+                # removed server side.
+                # The following should not cause recursion as the internal
+                # values should be mapped collections already.
+                current_value = self.get_value(entity)
+                if not isinstance(
+                    current_value, ftrack_api.collection.MappedCollectionProxy
+                ):
+                    raise NotImplementedError(
+                        'Cannot adapt mapping to collection as current value '
+                        'type is not a MappedCollectionProxy.'
+                    )
+
+                for entity in current_value.collection:
+                    entity.session.delete(entity)
+
+                # Now create the new collection.
+                collection = ftrack_api.collection.Collection(entity, self)
+                collection_proxy = ftrack_api.collection.MappedCollectionProxy(
+                    collection, self.creator,
+                    self.key_attribute, self.value_attribute
+                )
+
+                for key, value in value.items():
+                    collection_proxy[key] = value
+
+                value = collection_proxy
+
+            else:
+                raise NotImplementedError(
+                    'Cannot convert {0!r} to collection.'.format(value)
+                )
         else:
             if value.attribute is not self:
                 raise ftrack_api.exception.AttributeError(
