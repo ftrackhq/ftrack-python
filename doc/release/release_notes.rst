@@ -84,7 +84,7 @@ Release Notes
 
         Changed name of API from `ftrack` to `ftrack_api`.
 
-        .. seealso:: :ref:`release/migration/next/new_api_name`.
+        .. seealso:: :ref:`release/migration/0.2.0/new_api_name`.
 
     .. change:: new
         :tags: caching
