@@ -11,6 +11,19 @@ Release Notes
 
 .. release:: next
 
+    .. change:: fixed
+
+        Session operations may be applied server side in invalid order resulting
+        in unexpected error.
+
+    .. change:: fixed
+
+        Creating and deleting an entity in single commit causes error as create
+        operation never persisted to server.
+
+        Now all operations for the entity are ignored on commit when this case
+        is detected.
+
     .. change:: changed
 
         Internally moved from differential state to operation tracking for
@@ -58,19 +71,6 @@ Release Notes
         There is also an optimised inspection,
         :func:`ftrack_api.inspection.states`. for determining state of many
         entities at once.
-
-    .. change:: fixed
-
-        Session operations may be applied server side in invalid order resulting
-        in unexpected error.
-
-    .. change:: fixed
-
-        Creating and deleting an entity in single commit causes error as create
-        operation never persisted to server.
-
-        Now all operations for the entity are ignored on commit when this case
-        is detected.
 
     .. change:: changed
 
