@@ -18,7 +18,7 @@ Release Notes
 
     .. change:: new
 
-        ``Session.recorded_operations`` attribute for examing current
+        ``Session.recorded_operations`` attribute for examining current
         pending operations on a :class:`Session`.
 
     .. change:: new
