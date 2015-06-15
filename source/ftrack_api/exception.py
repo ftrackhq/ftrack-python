@@ -85,6 +85,12 @@ class UnrecognisedEntityTypeError(EntityTypeError):
         super(UnrecognisedEntityTypeError, self).__init__(**kw)
 
 
+class OperationError(Error):
+    '''Raise when an operation error occurs.'''
+
+    default_message = 'Operation error.'
+
+
 class InvalidStateError(Error):
     '''Raise when an invalid state detected.'''
 
