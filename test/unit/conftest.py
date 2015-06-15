@@ -8,7 +8,7 @@ import pytest
 import ftrack_api
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def session():
     '''Return session instance.'''
     return ftrack_api.Session()
@@ -125,7 +125,7 @@ def new_project(request, session, user):
     return project
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def project(session):
     '''Return same project for entire session.'''
     # Test project.
@@ -166,7 +166,7 @@ def new_task(request, session, unique_name):
     return task
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()
 def task(session):
     '''Return same task for entire session.'''
     # Tests/python_api/tasks/t1

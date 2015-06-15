@@ -8,6 +8,7 @@ import datetime
 import os
 import getpass
 import functools
+import itertools
 
 import pkg_resources
 import requests
@@ -28,6 +29,7 @@ import ftrack_api.event.hub
 import ftrack_api.event.base
 import ftrack_api.plugin
 import ftrack_api.inspection
+import ftrack_api.operation
 import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
@@ -147,9 +149,9 @@ class Session(object):
 
         self._api_user = api_user
 
-        self._batches = {
-            'write': []
-        }
+        # Currently pending operations.
+        self.recorded_operations = ftrack_api.operation.Operations()
+        self.record_operations = True
 
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
@@ -226,22 +228,13 @@ class Session(object):
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
-        if self.created:
+        if self.recorded_operations:
             self.logger.warning(
-                'Resetting session with pending creations not persisted.'
-            )
-
-        if self.modified:
-            self.logger.warning(
-                'Resetting session with pending modifications not persisted.'
-            )
-
-        if self.deleted:
-            self.logger.warning(
-                'Resetting session with pending deletions not persisted.'
+                'Resetting session with pending operations not persisted.'
             )
 
         self._attached.clear()
+        self.recorded_operations.clear()
         self._request.close()
 
     def auto_populating(self, auto_populate):
@@ -257,28 +250,50 @@ class Session(object):
         '''
         return AutoPopulatingContext(self, auto_populate)
 
+    def operation_recording(self, record_operations):
+        '''Temporarily set operation recording to *record_operations*.
+
+        The current setting will be restored automatically when done.
+
+        Example::
+
+            with session.operation_recording(False):
+                entity['name'] = 'change_not_recorded'
+
+        '''
+        return OperationRecordingContext(self, record_operations)
+
     @property
     def created(self):
         '''Return list of newly created entities.'''
+        entities = self._attached.values()
+        states = ftrack_api.inspection.states(entities)
+
         return [
-            entity for entity in self._attached.values()
-            if entity.state is ftrack_api.symbol.CREATED
+            entity for (entity, state) in itertools.izip(entities, states)
+            if state is ftrack_api.symbol.CREATED
         ]
 
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
+        entities = self._attached.values()
+        states = ftrack_api.inspection.states(entities)
+
         return [
-            entity for entity in self._attached.values()
-            if entity.state is ftrack_api.symbol.MODIFIED
+            entity for (entity, state) in itertools.izip(entities, states)
+            if state is ftrack_api.symbol.MODIFIED
         ]
 
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
+        entities = self._attached.values()
+        states = ftrack_api.inspection.states(entities)
+
         return [
-            entity for entity in self._attached.values()
-            if entity.state is ftrack_api.symbol.DELETED
+            entity for (entity, state) in itertools.izip(entities, states)
+            if state is ftrack_api.symbol.DELETED
         ]
 
     def create(self, entity_type, data=None, reconstructing=False):
@@ -296,7 +311,28 @@ class Session(object):
 
         '''
         entity = self._create(entity_type, data, reconstructing=reconstructing)
-        entity = self._merge(entity)
+        entity = self.merge(entity)
+
+        if not reconstructing:
+
+            # Record create operation.
+            # This is done here rather than in the Entity constructor in order
+            # to ensure that all recorded values are fully merged into session.
+            if self.record_operations:
+                entity_data = {}
+                with self.auto_populating(False):
+                    for key, value in entity.items():
+                        if value is not ftrack_api.symbol.NOT_SET:
+                            entity_data[key] = value
+
+                self.recorded_operations.push(
+                    ftrack_api.operation.CreateEntityOperation(
+                        entity.entity_type,
+                        ftrack_api.inspection.primary_key(entity),
+                        entity_data
+                    )
+                )
+
         return entity
 
     def _create(self, entity_type, data, reconstructing):
@@ -313,7 +349,13 @@ class Session(object):
 
     def delete(self, entity):
         '''Mark *entity* for deletion.'''
-        entity.state = ftrack_api.symbol.DELETED
+        if self.record_operations:
+            self.recorded_operations.push(
+                ftrack_api.operation.DeleteEntityOperation(
+                    entity.entity_type,
+                    ftrack_api.inspection.primary_key(entity)
+                )
+            )
 
     def get(self, entity_type, entity_key):
         '''Return entity of *entity_type* with unique *entity_key*.
@@ -425,7 +467,7 @@ class Session(object):
         # Merge entities into local cache and return merged entities.
         data = []
         for entity in results[0]['data']:
-            data.append(self._merge(entity))
+            data.append(self.merge(entity))
 
         return data
 
@@ -448,11 +490,22 @@ class Session(object):
         key = str(ftrack_api.inspection.identity(entity))
         del self._attached[key]
 
-    def _merge(self, value, merged=None):
-        '''Return merged *value*.'''
+    def merge(self, value, merged=None):
+        '''Merge *value* into session and return merged value.
+
+        *merged* should be a mapping to record merges during run and should be
+        used to avoid infinite recursion. If not set will default to a
+        dictionary.
+
+        '''
         if merged is None:
             merged = {}
 
+        with self.operation_recording(False):
+            return self._merge(value, merged)
+
+    def _merge(self, value, merged):
+        '''Return merged *value*.'''
         if isinstance(value, ftrack_api.entity.base.Entity):
             self.logger.debug(
                 'Merging entity into session: {0} at {1}'
@@ -593,7 +646,8 @@ class Session(object):
 
                 merged_local_value = self._merge(local_value, merged=merged)
                 if merged_local_value is not local_value:
-                    attribute.set_local_value(entity, merged_local_value)
+                    with self.operation_recording(False):
+                        attribute.set_local_value(entity, merged_local_value)
 
             # Remote attributes.
             remote_value = attribute.get_remote_value(entity)
@@ -654,7 +708,7 @@ class Session(object):
         entities_to_process = []
 
         for entity in entities:
-            if entity.state is ftrack_api.symbol.CREATED:
+            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.CREATED:
                 # Created entities that are not yet persisted have no remote
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
@@ -719,75 +773,175 @@ class Session(object):
     # TODO: Make atomic.
     def commit(self):
         '''Commit all local changes to the server.'''
+        batch = []
+
         with self.auto_populating(False):
+            for operation in self.recorded_operations:
 
-            # Add all deletions in order.
-            for entity in self.deleted:
-                self._batches['write'].append({
-                    'action': 'delete',
-                    'entity_type': entity.entity_type,
-                    'entity_key': ftrack_api.inspection.primary_key(
-                        entity
-                    ).values()
-                })
+                # Convert operation to payload.
+                if isinstance(
+                    operation, ftrack_api.operation.CreateEntityOperation
+                ):
+                    # At present, data payload requires duplicating entity
+                    # type in data and also ensuring primary key added.
+                    entity_data = {
+                        '__entity_type__': operation.entity_type,
+                    }
+                    entity_data.update(operation.entity_key)
+                    entity_data.update(operation.entity_data)
 
-            # Add all creations in order.
-            for entity in self.created:
-                self._batches['write'].append({
-                    'action': 'create',
-                    'entity_type': entity.entity_type,
-                    'entity_data': entity
-                })
+                    payload = {
+                        'action': 'create',
+                        'entity_type': operation.entity_type,
+                        'entity_key': operation.entity_key.values(),
+                        'entity_data': entity_data
+                    }
 
-            # Add all modifications.
-            for entity in self.modified:
-                self._batches['write'].append({
-                    'action': 'update',
-                    'entity_type': entity.entity_type,
-                    'entity_key': ftrack_api.inspection.primary_key(
-                        entity
-                    ).values(),
-                    'entity_data': entity
-                })
+                elif isinstance(
+                    operation, ftrack_api.operation.UpdateEntityOperation
+                ):
+                    entity_data = {
+                        # At present, data payload requires duplicating entity
+                        # type.
+                        '__entity_type__': operation.entity_type,
+                        operation.attribute_name: operation.new_value
+                    }
 
-        batch = self._batches['write']
+                    payload = {
+                        'action': 'update',
+                        'entity_type': operation.entity_type,
+                        'entity_key': operation.entity_key.values(),
+                        'entity_data': entity_data
+                    }
+
+                elif isinstance(
+                    operation, ftrack_api.operation.DeleteEntityOperation
+                ):
+                    payload = {
+                        'action': 'delete',
+                        'entity_type': operation.entity_type,
+                        'entity_key': operation.entity_key.values()
+                    }
+
+                else:
+                    raise ValueError(
+                        'Cannot commit. Unrecognised operation type {0} '
+                        'detected.'.format(type(operation))
+                    )
+
+                batch.append(payload)
+
+        # Optimise batch.
+        # TODO: Might be better to perform these on the operations list instead
+        # so all operation contextual information available.
+
+        # If entity was created and deleted in one batch then remove all
+        # payloads for that entity.
+        created = set()
+        deleted = set()
+
+        for payload in batch:
+            if payload['action'] == 'create':
+                created.add(
+                    (payload['entity_type'], str(payload['entity_key']))
+                )
+
+            elif payload['action'] == 'delete':
+                deleted.add(
+                    (payload['entity_type'], str(payload['entity_key']))
+                )
+
+        created_then_deleted = deleted.intersection(created)
+        if created_then_deleted:
+            optimised_batch = []
+            for payload in batch:
+                entity_type = payload.get('entity_type')
+                entity_key = str(payload.get('entity_key'))
+
+                if (entity_type, entity_key) in created_then_deleted:
+                    continue
+
+                optimised_batch.append(payload)
+
+            batch = optimised_batch
+
+        # Remove early update operations so that only last operation on
+        # attribute is applied server side.
+        updates_map = set()
+        for payload in reversed(batch):
+            if payload['action'] == 'update':
+                for key, value in payload['entity_data'].items():
+                    if key == '__entity_type__':
+                        continue
+
+                    identity = (
+                        payload['entity_type'], str(payload['entity_key']), key
+                    )
+                    if identity in updates_map:
+                        del payload['entity_data'][key]
+                    else:
+                        updates_map.add(identity)
+
+        # Remove NOT_SET values from entity_data.
+        for payload in batch:
+            entity_data = payload.get('entity_data', {})
+            for key, value in entity_data.items():
+                if value is ftrack_api.symbol.NOT_SET:
+                    del entity_data[key]
+
+        # Remove payloads with redundant entity_data.
+        optimised_batch = []
+        for payload in batch:
+            entity_data = payload.get('entity_data')
+            if entity_data is not None:
+                keys = entity_data.keys()
+                if not keys or keys == ['__entity_type__']:
+                    continue
+
+            optimised_batch.append(payload)
+
+        batch = optimised_batch
+
+        # Collapse updates that are consecutive into one payload. Also, collapse
+        # updates that occur immediately after creation into the create payload.
+        optimised_batch = []
+        previous_payload = None
+
+        for payload in batch:
+            if (
+                previous_payload is not None
+                and payload['action'] == 'update'
+                and previous_payload['action'] in ('create', 'update')
+                and previous_payload['entity_type'] == payload['entity_type']
+                and previous_payload['entity_key'] == payload['entity_key']
+            ):
+                previous_payload['entity_data'].update(payload['entity_data'])
+                continue
+
+            else:
+                optimised_batch.append(payload)
+                previous_payload = payload
+
+        batch = optimised_batch
+
+        # Process batch.
         if batch:
-            try:
-                result = self._call(batch)
-
-            finally:
-                # Always clear write batches.
-                del self._batches['write'][:]
-
-            # If successful commit then update states.
-            for entity in self.created:
-                entity.state = ftrack_api.symbol.NOT_SET
-                for attribute in entity.attributes:
-                    attribute.set_local_value(
-                        entity, ftrack_api.symbol.NOT_SET
-                    )
-
-            for entity in self.modified:
-                entity.state = ftrack_api.symbol.NOT_SET
-                for attribute in entity.attributes:
-                    attribute.set_local_value(
-                        entity, ftrack_api.symbol.NOT_SET
-                    )
-
-            for entity in self.deleted:
-                entity.state = ftrack_api.symbol.NOT_SET
-                self._detach(entity)
+            result = self._call(batch)
 
             # Process results merging into cache relevant data.
             for entry in result:
 
                 if entry['action'] in ('create', 'update'):
                     # Merge returned entities into local cache.
-                    self._merge(entry['data'])
+                    self.merge(entry['data'])
 
                 elif entry['action'] == 'delete':
+                    # TODO: Detach entity - need identity returned?
                     # TODO: Expunge entity from cache.
                     pass
+
+            # Clear operations.
+            self.recorded_operations.clear()
 
     def _discover_plugins(self):
         '''Find and load plugins in search paths.
@@ -1115,7 +1269,8 @@ class Session(object):
 
     def decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
-        return json.loads(string, object_hook=self._decode)
+        with self.operation_recording(False):
+            return json.loads(string, object_hook=self._decode)
 
     def _decode(self, item):
         '''Return *item* transformed into appropriate representation.'''
@@ -1442,3 +1597,23 @@ class AutoPopulatingContext(object):
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context resetting auto populate to original setting.'''
         self._session.auto_populate = self._current_auto_populate
+
+
+class OperationRecordingContext(object):
+    '''Context manager for temporary change of session record_operations.'''
+
+    def __init__(self, session, record_operations):
+        '''Initialise context.'''
+        super(OperationRecordingContext, self).__init__()
+        self._session = session
+        self._record_operations = record_operations
+        self._current_record_operations = None
+
+    def __enter__(self):
+        '''Enter context.'''
+        self._current_record_operations = self._session.record_operations
+        self._session.record_operations = self._record_operations
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        '''Exit context.'''
+        self._session.record_operations = self._current_record_operations
