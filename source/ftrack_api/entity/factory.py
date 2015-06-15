@@ -216,7 +216,8 @@ class StandardFactory(Factory):
         # Add mixins.
         if schema['id'] in (
             'AssetVersion', 'Episode', 'Sequence',
-            'Shot', 'AssetBuild', 'Task', 'Project'
+            'Shot', 'AssetBuild', 'Task', 'Project',
+            'ReviewSessionObject'
         ):
             bases.append(
                 ftrack_api.entity.note.CreateNoteMixin
