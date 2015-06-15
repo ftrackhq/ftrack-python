@@ -12,8 +12,9 @@ Release Notes
     .. change:: new
         :tags: Client review
         
-        Added support for handling review sessions. Check out
-        the :ref:`the tutorial <review_sessions>`.
+        Added support for handling review sessions.
+
+        .. seealso:: :ref:`Usage guide <review_sessions>`.
 
     .. change:: fixed
         :tags: events
