@@ -25,6 +25,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     environment_variables
     locations/index
     caching
+    managing_jobs
     api_reference/index
     release/index
     glossary

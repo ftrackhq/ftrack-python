@@ -193,3 +193,23 @@ def new_scope(request, session, unique_name):
     request.addfinalizer(cleanup)
 
     return scope
+
+
+@pytest.fixture()
+def new_job(request, session, unique_name, user):
+    '''Return a new scope.'''
+    job = session.create('Job', {
+        'type': 'api_job',
+        'user': user
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(job)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return job
