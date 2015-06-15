@@ -9,6 +9,9 @@
 Tutorial
 ********
 
+This tutorial provides a quick dive into using the API and the broad stroke
+concepts involved.
+
 First make sure the ftrack Python API is :ref:`installed <installing>`.
 
 Then start a Python session and import the ftrack API::
@@ -138,3 +141,7 @@ The sequence also needs a parent. This can be done in one of two ways:
 When ready, persist to the server using :meth:`Session.commit`::
 
     >>> session.commit()
+
+Continue to the next section to start learning more about the API in greater
+depth or jump over to the :ref:`usage examples <example>` if you prefer to learn
+by example.
