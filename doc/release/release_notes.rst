@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: new
+        :tags: Client review
+        
+        Added support for handling review sessions.
+
+        .. seealso:: :ref:`Usage guide <using_review_sessions>`.
+
 .. release:: 0.3.0
     :date: 2015-06-14
 

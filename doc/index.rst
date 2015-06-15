@@ -24,6 +24,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     working_with_entities
     environment_variables
     locations/index
+    using_review_sessions
     caching
     api_reference/index
     release/index
