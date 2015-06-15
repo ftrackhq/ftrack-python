@@ -1,7 +1,7 @@
 ..
     :copyright: Copyright (c) 2015 ftrack
 
-.. _review_sessions:
+.. _using_review_sessions:
 
 *********************
 Using Review sessions
