@@ -9,7 +9,6 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-
 .. release:: next
 
     .. change:: new
@@ -19,11 +18,122 @@ Release Notes
 
         .. seealso:: :ref:`Usage guide <using_notes>`.
 
+    .. change:: fixed
+
+        Metadata property not working in line with rest of system, particularly
+        the caching framework.
+
+    .. change:: new
+        :tags: collection
+
+        Added :class:`ftrack_api.collection.MappedCollectionProxy` class for
+        providing a dictionary interface to a standard
+        :class:`ftrack_api.collection.Collection`.
+
+    .. change:: new
+        :tags: collection, attribute
+
+        Added :class:`ftrack_api.attribute.MappedCollectionAttribute` class for
+        describing an attribute that should use the
+        :class:`ftrack_api.collection.MappedCollectionProxy`.
+
+    .. change:: new
+
+        Entities that use composite primary keys are now fully supported in the
+        session, including for :meth:`Session.get` and :meth:`Session.populate`.
+
+    .. change:: change
+
+        Base :class:`ftrack_api.entity.factory.Factory` refactored to separate
+        out attribute instantiation into dedicated methods to make extending
+        simpler.
+
+    .. change:: change
+        :tags: collection, attribute
+
+        :class:`ftrack_api.attribute.DictionaryAttribute` and
+        :class:`ftrack_api.attribute.DictionaryAttributeCollection` removed.
+        They have been replaced by the new
+        :class:`ftrack_api.attribute.MappedCollectionAttribute` and
+        :class:`ftrack_api.collection.MappedCollectionProxy` respectively.
+
+.. release:: 0.3.0
+    :date: 2015-06-14
+
+    .. change:: fixed
+
+        Session operations may be applied server side in invalid order resulting
+        in unexpected error.
+
+    .. change:: fixed
+
+        Creating and deleting an entity in single commit causes error as create
+        operation never persisted to server.
+
+        Now all operations for the entity are ignored on commit when this case
+        is detected.
+
+    .. change:: changed
+
+        Internally moved from differential state to operation tracking for
+        determining session changes when persisting.
+
+    .. change:: new
+
+        ``Session.recorded_operations`` attribute for examining current
+        pending operations on a :class:`Session`.
+
+    .. change:: new
+
+        :meth:`Session.operation_recording` context manager for suspending
+        recording operations temporarily. Can also manually control
+        ``Session.record_operations`` boolean.
+
+    .. change:: new
+
+        Operation classes to track individual operations occurring in session.
+
+    .. change:: new
+
+        Public :meth:`Session.merge` method for merging arbitrary values into
+        the session manually.
+
+    .. change:: changed
+
+        An entity's state is now computed from the operations performed on it
+        and is no longer manually settable.
+
+    .. change:: changed
+
+        ``Entity.state`` attribute removed. Instead use the new inspection
+        :func:`ftrack_api.inspection.state`.
+
+        Previously::
+
+            print entity.state
+
+        Now::
+
+            import ftrack_api.inspection
+            print ftrack_api.inspection.state(entity)
+
+        There is also an optimised inspection,
+        :func:`ftrack_api.inspection.states`. for determining state of many
+        entities at once.
+
+    .. change:: changed
+
+        Shallow copying a :class:`ftrack_api.symbol.Symbol` instance now
+        returns same instance.
+
+.. release:: 0.2.0
+    :date: 2015-06-04
+
     .. change:: changed
 
         Changed name of API from `ftrack` to `ftrack_api`.
 
-        .. seealso:: :ref:`release/migration/next/new_api_name`.
+        .. seealso:: :ref:`release/migration/0.2.0/new_api_name`.
 
     .. change:: new
         :tags: caching
@@ -139,6 +249,12 @@ Release Notes
 
         :meth:`ftrack_api.event.hub.EventHub.subscribe` fails when subscription
         argument contains special characters such as `@` or `+`.
+
+    .. change:: fixed
+        :tags: collection
+
+        :meth:`ftrack_api.collection.Collection` incorrectly modifies entity
+        state on initialisation.
 
 .. release:: 0.1.0
     :date: 2015-03-25

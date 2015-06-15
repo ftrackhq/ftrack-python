@@ -23,7 +23,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "description": "",
          "end_date": null,
          "id": "{0}",
-         "metadata": {{}},
+         "metadata": [],
          "name": "{1}",
          "notes": [],
          "object_type": {{"__entity_type__": "ObjectType",
@@ -68,7 +68,6 @@ def test_encode_entity_using_only_set_attributes_strategy(
          "context_type": "task",
          "description": "",
          "id": "{0}",
-         "metadata": {{}},
          "name": "{1}",
          "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
          "parent": {{"__entity_type__": "Project", "id":

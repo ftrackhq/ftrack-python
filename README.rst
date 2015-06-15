@@ -4,6 +4,11 @@ ftrack Python API
 
 Python API for ftrack.
 
+.. important::
+
+    This new Python API for ftrack is currently in beta. As such, there may be
+    missing features and/or bugs and it should not be used in production.
+
 *************
 Documentation
 *************
