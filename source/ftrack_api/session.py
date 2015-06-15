@@ -371,21 +371,25 @@ class Session(object):
         )
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
-        if len(primary_key_definition) > 1:
-            # TODO: Handle composite primary key using a syntax of
-            # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
-            raise ValueError('Composite primary keys not supported.')
+        if isinstance(entity_key, basestring):
+            entity_key = [entity_key]
 
-        primary_key_definition = primary_key_definition[0]
-        if not isinstance(entity_key, basestring):
-            entity_key = entity_key[0]
+        if len(entity_key) != len(primary_key_definition):
+            raise ValueError(
+                'Incompatible entity_key {0!r} supplied. Entity type {1} '
+                'expects a primary key composed of {2} values ({3}).'
+                .format(
+                    entity_key, entity_type, len(primary_key_definition),
+                    ', '.join(primary_key_definition)
+                )
+            )
 
         entity = None
 
         # Check cache for existing entity emulating 
         # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
-            (str(entity_type), [str(entity_key)])
+            (str(entity_type), map(str, entity_key))
         )
         self.logger.debug(
             'Checking cache for entity with key {0}'.format(cache_key)
@@ -402,8 +406,15 @@ class Session(object):
 
         except KeyError:
             # Query for matching entity.
-            expression = '{0} where {1} is {2}'.format(
-                entity_type, primary_key_definition, entity_key
+            self.logger.debug(
+                'Entity not present in cache. Issuing new query.'
+            )
+            condition = []
+            for key, value in zip(primary_key_definition, entity_key):
+                condition.append('{0} is "{1}"'.format(key, value))
+
+            expression = '{0} where ({1})'.format(
+                entity_type, ' and '.join(condition)
             )
 
             results = self.query(expression).all()
@@ -516,7 +527,19 @@ class Session(object):
 
             return merged_collection
 
-        # TODO: Handle DictionaryAttributeCollection.
+        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+            self.logger.debug(
+                'Merging mapped collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
+
+            merged_collection = []
+            for entry in value.collection:
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
+                )
+
+            return merged_collection
 
         else:
             return value
@@ -613,7 +636,8 @@ class Session(object):
                 local_value,
                 (
                     ftrack_api.entity.base.Entity, 
-                    ftrack_api.collection.Collection
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
                 )
             ):
                 self.logger.debug(
@@ -631,7 +655,8 @@ class Session(object):
                 remote_value,
                 (
                     ftrack_api.entity.base.Entity, 
-                    ftrack_api.collection.Collection
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
                 )
             ):
                 self.logger.debug(
@@ -666,6 +691,10 @@ class Session(object):
             skipped as they have no remote values to fetch.
 
         '''
+        self.logger.debug(
+            'Populate {0!r} projections for {1}.'.format(projections, entities)
+        )
+
         if not isinstance(
             entities, (list, tuple, ftrack_api.query.QueryResult)
         ):
@@ -684,37 +713,52 @@ class Session(object):
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
                 # are NOT_SET.
+                self.logger.debug(
+                    'Skipping newly created entity {0!r} for population as no '
+                    'data will exist in the remote for this entity yet.'
+                    .format(entity)
+                )
                 continue
 
             entities_to_process.append(entity)
 
         if entities_to_process:
-            # TODO: Mark attributes as 'fetching'?
             reference_entity = entities_to_process[0]
             entity_type = reference_entity.entity_type
             query = 'select {0} from {1}'.format(projections, entity_type)
 
             primary_key_definition = reference_entity.primary_key_attributes
-            if len(primary_key_definition) > 1:
-                # TODO: Handle composite primary key using a syntax of
-                # (pka, pkb) in ((v1a,v1b), (v2a, v2b))
-                raise ValueError('Composite primary keys not supported.')
-
-            primary_key = primary_key_definition[0]
-
             entity_keys = [
-                ftrack_api.inspection.primary_key(entity).values()[0]
+                ftrack_api.inspection.primary_key(entity).values()
                 for entity in entities_to_process
             ]
 
-            if len(entity_keys) > 1:
-                query = '{0} where {1} in ({2})'.format(
-                    query, primary_key, ','.join(map(str, entity_keys))
-                )
+            if len(primary_key_definition) > 1:
+                # Composite keys require full OR syntax unfortunately.
+                conditions = []
+                for entity_key in entity_keys:
+                    condition = []
+                    for key, value in zip(primary_key_definition, entity_key):
+                        condition.append('{0} is "{1}"'.format(key, value))
+
+                    conditions.append('({0})'.format('and '.join(condition)))
+
+                query = '{0} where {1}'.format(query, ' or '.join(conditions))
+
             else:
-                query = '{0} where {1} is {2}'.format(
-                    query, primary_key, str(entity_keys[0])
-                )
+                primary_key = primary_key_definition[0]
+
+                if len(entity_keys) > 1:
+                    query = '{0} where {1} in ({2})'.format(
+                        query, primary_key,
+                        ','.join([
+                            str(entity_key[0]) for entity_key in entity_keys
+                        ])
+                    )
+                else:
+                    query = '{0} where {1} is {2}'.format(
+                        query, primary_key, str(entity_keys[0][0])
+                    )
 
             result = self.query(query)
 
@@ -1193,19 +1237,18 @@ class Session(object):
 
             return data
 
+        if isinstance(
+            item, ftrack_api.collection.MappedCollectionProxy
+        ):
+            # Use proxied collection for serialisation.
+            item = item.collection
+
         if isinstance(item, ftrack_api.collection.Collection):
             data = []
             for entity in item:
                 data.append(self._entity_reference(entity))
 
             return data
-
-        if isinstance(
-            item, ftrack_api.attribute.DictionaryAttributeCollection
-        ):
-            # TODO: Correctly encode dictionary collection so that it can be
-            # decoded properly.
-            return {}
 
         raise TypeError('{0!r} is not JSON serializable'.format(item))
 

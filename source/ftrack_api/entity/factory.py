@@ -3,6 +3,7 @@
 
 import logging
 import uuid
+import functools
 
 import ftrack_api.attribute
 import ftrack_api.entity.base
@@ -66,27 +67,34 @@ class Factory(object):
                         if data_format == 'date-time':
                             data_type = 'datetime'
 
-                    attribute = ftrack_api.attribute.ScalarAttribute(
-                        name, data_type=data_type, default_value=default,
-                        mutable=mutable
+                    attribute = self.create_scalar_attribute(
+                        class_name, name, mutable, default, data_type
                     )
-                    attributes.add(attribute)
+                    if attribute:
+                        attributes.add(attribute)
 
                 elif data_type == 'array':
-                    # Collection attribute.
-                    # reference = fragment.get(
-                    #    '$ref', ftrack_api.symbol.NOT_SET
-                    # )
-                    attribute = ftrack_api.attribute.CollectionAttribute(
-                        name, mutable=mutable
+                    attribute = self.create_collection_attribute(
+                        class_name, name, mutable
                     )
-                    attributes.add(attribute)
+                    if attribute:
+                        attributes.add(attribute)
 
-                elif data_type == 'dict':
-                    attribute = ftrack_api.attribute.DictionaryAttribute(
-                        name, schema=fragment, mutable=mutable
+                elif data_type == 'mapped_array':
+                    reference = fragment.get('items', {}).get('$ref')
+                    if not reference:
+                        self.logger.debug(
+                            'Skipping {0}.{1} mapped_array attribute that does '
+                            'not define a schema reference.'
+                            .format(class_name, name)
+                        )
+                        continue
+
+                    attribute = self.create_mapped_collection_attribute(
+                        class_name, name, mutable, reference
                     )
-                    attributes.add(attribute)
+                    if attribute:
+                        attributes.add(attribute)
 
                 else:
                     self.logger.debug(
@@ -96,10 +104,18 @@ class Factory(object):
             else:
                 # Reference attribute.
                 reference = fragment.get('$ref', ftrack_api.symbol.NOT_SET)
-                if reference is not ftrack_api.symbol.NOT_SET:
-                    attribute = ftrack_api.attribute.ReferenceAttribute(
-                        name, reference
+                if reference is ftrack_api.symbol.NOT_SET:
+                    self.logger.debug(
+                        'Skipping {0}.{1} mapped_array attribute that does '
+                        'not define a schema reference.'
+                        .format(class_name, name)
                     )
+                    continue
+
+                attribute = self.create_reference_attribute(
+                    class_name, name, mutable, reference
+                )
+                if attribute:
                     attributes.add(attribute)
 
         default_projections = schema.get('default_projections', [])
@@ -117,6 +133,36 @@ class Factory(object):
         )
 
         return cls
+
+    def create_scalar_attribute(
+        self, class_name, name, mutable, default, data_type
+    ):
+        '''Return appropriate scalar attribute instance.'''
+        return ftrack_api.attribute.ScalarAttribute(
+            name, data_type=data_type, default_value=default, mutable=mutable
+        )
+
+    def create_reference_attribute(self, class_name, name, mutable, reference):
+        '''Return appropriate reference attribute instance.'''
+        return ftrack_api.attribute.ReferenceAttribute(
+            name, reference, mutable=mutable
+        )
+
+    def create_collection_attribute(self, class_name, name, mutable):
+        '''Return appropriate collection attribute instance.'''
+        return ftrack_api.attribute.CollectionAttribute(
+            name, mutable=mutable
+        )
+
+    def create_mapped_collection_attribute(
+        self, class_name, name, mutable, reference
+    ):
+        '''Return appropriate mapped collection attribute instance.'''
+        self.logger.debug(
+            'Skipping {0}.{1} mapped_array attribute that has '
+            'no implementation defined for reference {3}.'
+            .format(class_name, name, reference)
+        )
 
 
 def default_task_status(entity):
@@ -182,3 +228,58 @@ class StandardFactory(Factory):
             cls.attributes.get('type').default_value = default_task_type
 
         return cls
+
+    def create_mapped_collection_attribute(
+        self, class_name, name, mutable, reference
+    ):
+        '''Return appropriate mapped collection attribute instance.'''
+        creator = None
+        key_attribute = None
+        value_attribute = None
+
+        if reference == 'Metadata':
+
+            def create_metadata(proxy, data, reference):
+                '''Return metadata for *data*.'''
+                entity = proxy.collection.entity
+                session = entity.session
+                data.update({
+                    'parent_id': entity['id'],
+                    'parent_type': entity.entity_type
+                })
+                return session.create(reference, data)
+
+            creator = functools.partial(
+                create_metadata, reference=reference
+            )
+            key_attribute = 'key'
+            value_attribute = 'value'
+
+        if creator is None:
+            self.logger.debug(
+                'Skipping {0}.{1} mapped_array attribute that has '
+                'no creator defined for reference {3}.'
+                .format(class_name, name, reference)
+            )
+            return
+
+        if key_attribute is None:
+            self.logger.debug(
+                'Skipping {0}.{1} mapped_array attribute that has '
+                'no key_attribute defined for reference {3}.'
+                .format(class_name, name, reference)
+            )
+            return
+
+        if value_attribute is None:
+            self.logger.debug(
+                'Skipping {0}.{1} mapped_array attribute that has '
+                'no value_attribute defined for reference {3}.'
+                .format(class_name, name, reference)
+            )
+            return
+
+        return ftrack_api.attribute.MappedCollectionAttribute(
+            name, creator, key_attribute, value_attribute,
+            mutable=mutable
+        )
