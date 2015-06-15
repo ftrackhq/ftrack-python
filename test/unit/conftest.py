@@ -94,30 +94,3 @@ def new_scope(request, session, unique_name):
     request.addfinalizer(cleanup)
 
     return scope
-
-
-@pytest.fixture()
-def new_review_session(request, session, unique_name):
-    '''Return a new review session.'''
-
-    # Create new review session on 'client review' test project.
-    project = session.query(
-        'Project where id is 81b98c47-5910-11e4-901f-3c0754282242'
-    )[0]
-
-    review_session = session.create('ReviewSession', {
-        'name': unique_name,
-        'description': unique_name,
-        'project': project
-    })
-
-    session.commit()
-
-    def cleanup():
-        '''Remove created entity.'''
-        session.delete(review_session)
-        session.commit()
-
-    request.addfinalizer(cleanup)
-
-    return review_session
