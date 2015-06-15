@@ -22,11 +22,11 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     using_sessions
     querying
     working_with_entities
-    environment_variables
     locations/index
     caching
     example/index
     api_reference/index
+    environment_variables
     release/index
     glossary
 
