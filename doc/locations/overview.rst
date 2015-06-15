@@ -85,7 +85,7 @@ track data, but also manage it through ftrack by using the accessor to add and
 remove data from the location.
 
 At present, ftrack includes a :py:class:`disk accessor
-<ftrack.accessor.disk.DiskAccessor>` for local filesystem access. More will be
+<ftrack_api.accessor.disk.DiskAccessor>` for local filesystem access. More will be
 added over time and developers are encouraged to contribute their own.
 
 .. _locations/overview/structure:

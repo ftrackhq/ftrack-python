@@ -7,6 +7,8 @@
 Release Notes
 *************
 
+.. currentmodule:: ftrack_api.session
+
 .. release:: next
 
     .. change:: new
@@ -16,11 +18,204 @@ Release Notes
 
         .. seealso:: :ref:`Usage guide <review_sessions>`.
 
+.. release:: 0.3.0
+    :date: 2015-06-14
+
+    .. change:: fixed
+
+        Session operations may be applied server side in invalid order resulting
+        in unexpected error.
+
+    .. change:: fixed
+
+        Creating and deleting an entity in single commit causes error as create
+        operation never persisted to server.
+
+        Now all operations for the entity are ignored on commit when this case
+        is detected.
+
+    .. change:: changed
+
+        Internally moved from differential state to operation tracking for
+        determining session changes when persisting.
+
+    .. change:: new
+
+        ``Session.recorded_operations`` attribute for examining current
+        pending operations on a :class:`Session`.
+
+    .. change:: new
+
+        :meth:`Session.operation_recording` context manager for suspending
+        recording operations temporarily. Can also manually control
+        ``Session.record_operations`` boolean.
+
+    .. change:: new
+
+        Operation classes to track individual operations occurring in session.
+
+    .. change:: new
+
+        Public :meth:`Session.merge` method for merging arbitrary values into
+        the session manually.
+
+    .. change:: changed
+
+        An entity's state is now computed from the operations performed on it
+        and is no longer manually settable.
+
+    .. change:: changed
+
+        ``Entity.state`` attribute removed. Instead use the new inspection
+        :func:`ftrack_api.inspection.state`.
+
+        Previously::
+
+            print entity.state
+
+        Now::
+
+            import ftrack_api.inspection
+            print ftrack_api.inspection.state(entity)
+
+        There is also an optimised inspection,
+        :func:`ftrack_api.inspection.states`. for determining state of many
+        entities at once.
+
+    .. change:: changed
+
+        Shallow copying a :class:`ftrack_api.symbol.Symbol` instance now
+        returns same instance.
+
+.. release:: 0.2.0
+    :date: 2015-06-04
+
+    .. change:: changed
+
+        Changed name of API from `ftrack` to `ftrack_api`.
+
+        .. seealso:: :ref:`release/migration/0.2.0/new_api_name`.
+
+    .. change:: new
+        :tags: caching
+
+        Configurable caching support in :class:`Session`, including the ability
+        to use an external persisted cache and new cache implementations.
+
+        .. seealso:: :ref:`caching`.
+
+    .. change:: new
+        :tags: caching
+
+        :meth:`Session.get` now tries to retrieve matching entity from
+        configured cache first.
+
+    .. change:: new
+        :tags: serialisation, caching
+
+        :meth:`Session.encode` supports a new mode *persisted_only* that will
+        only encode persisted attribute values.
+
+    .. change:: changed
+
+        Session.merge method is now private (:meth:`Session._merge`) until it is
+        qualified for general usage.
+
+    .. change:: changed
+        :tags: entity state
+
+        :class:`~ftrack_api.entity.base.Entity` state now managed on the entity
+        directly rather than stored separately in the :class:`Session`.
+
+        Previously::
+
+            session.set_state(entity, state)
+            print session.get_state(entity)
+
+        Now::
+
+            entity.state = state
+            print entity.state
+
+    .. change:: changed
+        :tags: entity state
+
+        Entity states are now :class:`ftrack_api.symbol.Symbol` instances rather
+        than strings.
+
+        Previously::
+
+            entity.state = 'created'
+
+        Now::
+
+            entity.state = ftrack_api.symbol.CREATED
+
+    .. change:: fixed
+        :tags: entity state
+
+        It is now valid to transition from most entity states to an
+        :attr:`ftrack_api.symbol.NOT_SET` state.
+
+    .. change:: changed
+        :tags: caching
+
+        :class:`~ftrack_api.cache.EntityKeyMaker` removed and replaced by
+        :class:`~ftrack_api.cache.StringKeyMaker`. Entity identity now
+        computed separately and passed to key maker to allow key maker to work
+        with non entity instances.
+
+    .. change:: fixed
+        :tags: entity
+
+        Internal data keys ignored when re/constructing entities reducing
+        distracting and irrelevant warnings in logs.
+
+    .. change:: fixed
+        :tags: entity
+
+        :class:`~ftrack_api.entity.base.Entity` equality test raises error when
+        other is not an entity instance.
+
+    .. change:: changed
+        :tags: entity, caching
+
+        :meth:`~ftrack_api.entity.base.Entity.merge` now also merges state and
+        local attributes. In addition, it ensures values being merged have also
+        been merged into the session and outputs more log messages.
+
+    .. change:: fixed
+        :tags: inspection
+
+        :func:`ftrack_api.inspection.identity` returns different result for same
+        entity depending on whether entity type is unicode or string.
+
+    .. change:: fixed
+
+        :func:`ftrack_api.mixin` causes method resolution failure when same
+        class mixed in multiple times.
+
+    .. change:: changed
+
+        Representations of objects now show plain id rather than converting to
+        hex.
+
     .. change:: fixed
         :tags: events
 
-        :meth:`ftrack.session.event_hub.subscribe` fails when `subscription`
+        Event hub raises TypeError when listening to ftrack.update events.
+
+    .. change:: fixed
+        :tags: events
+
+        :meth:`ftrack_api.event.hub.EventHub.subscribe` fails when subscription
         argument contains special characters such as `@` or `+`.
+
+    .. change:: fixed
+        :tags: collection
+
+        :meth:`ftrack_api.collection.Collection` incorrectly modifies entity
+        state on initialisation.
 
 .. release:: 0.1.0
     :date: 2015-03-25
@@ -28,8 +223,8 @@ Release Notes
     .. change:: changed
 
         Moved standardised construct entity type logic to core package (as part
-        of the :class:`~ftrack.entity.factory.StandardFactory`) for easier reuse
-        and extension.
+        of the :class:`~ftrack_api.entity.factory.StandardFactory`) for easier
+        reuse and extension.
 
 .. release:: 0.1.0-beta.2
     :date: 2015-03-17
@@ -48,34 +243,34 @@ Release Notes
 
     .. change:: new
 
-        A new inspection API (:mod:`ftrack.inspection`) has been added for
+        A new inspection API (:mod:`ftrack_api.inspection`) has been added for
         extracting useful information from objects in the system, such as the
         identity of an entity.
 
     .. change:: changed
 
         ``Entity.primary_key`` and ``Entity.identity`` have been removed.
-        Instead, use the new :func:`ftrack.inspection.primary_key` and
-        :func:`ftrack.inspection.identity` functions. This was done to make it
+        Instead, use the new :func:`ftrack_api.inspection.primary_key` and
+        :func:`ftrack_api.inspection.identity` functions. This was done to make it
         clearer the the extracted information is determined from the current
         entity state and modifying the returned object will have no effect on
         the entity instance itself.
 
     .. change:: changed
 
-        :func:`ftrack.inspection.primary_key` now returns a mapping of the
+        :func:`ftrack_api.inspection.primary_key` now returns a mapping of the
         attribute names and values that make up the primary key, rather than
         the previous behaviour of returning a tuple of just the values. To
         emulate previous behaviour do::
 
-            ftrack.inspection.primary_key(entity).values()
+            ftrack_api.inspection.primary_key(entity).values()
 
     .. change:: changed
 
-        :meth:`Session.encode <ftrack.session.Session.encode>` now supports
-        different strategies for encoding entities via the
-        *entity_attribute_strategy* keyword argument. This makes it possible to
-        use this method for general serialisation of entity instances.
+        :meth:`Session.encode` now supports different strategies for encoding
+        entities via the entity_attribute_strategy* keyword argument. This makes
+        it possible to use this method for general serialisation of entity
+        instances.
 
     .. change:: changed
 
@@ -90,18 +285,17 @@ Release Notes
 
     .. change:: changed
 
-        :meth:`Session.decode <ftrack.session.Session.decode>` no longer
-        automatically adds decoded entities to the
-        :class:`~ftrack.session.Session` cache making it possible to use decode
+        :meth:`Session.decode` no longer automatically adds decoded entities to
+        the :class:`Session` cache making it possible to use decode
         independently.
 
     .. change:: new
 
-        Added :meth:`Session.merge <ftrack.session.Session.merge>` for merging
-        entities recursively into the session cache.
+        Added :meth:`Session.merge` for merging entities recursively into the
+        session cache.
 
     .. change:: fixed
 
-        Replacing an entity in a :class:`ftrack.collection.Collection` with an
+        Replacing an entity in a :class:`ftrack_api.collection.Collection` with an
         identical entity no longer raises
-        :exc:`ftrack.exception.DuplicateItemInCollectionError`.
+        :exc:`ftrack_api.exception.DuplicateItemInCollectionError`.

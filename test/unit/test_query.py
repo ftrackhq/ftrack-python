@@ -3,7 +3,7 @@
 
 import uuid
 
-import ftrack
+import ftrack_api
 
 
 class TestQuery(object):
@@ -11,7 +11,7 @@ class TestQuery(object):
 
     def setup_method(self, method):
         '''Setup the test.'''
-        self.session = ftrack.Session()
+        self.session = ftrack_api.Session()
         self.project = self._create_project()
 
     def teardown_method(self, method):
