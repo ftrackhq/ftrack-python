@@ -18,17 +18,6 @@ Then start a Python session and import the ftrack API::
 
     >>> import ftrack_api
 
-Before continuing, execute the following code to create a helper function for
-printing entities in a more human readable format.::
-
-    >>> import ftrack_api.formatter
-    >>>
-    >>> def print_entity(entity):
-    ...     '''Pretty print *entity* without fetching unset attribute values.'''
-    ...     with session.auto_populating(False):
-    ...         print ftrack_api.formatter.format(entity)
-
-
 The API uses :ref:`sessions <using_sessions>` to manage communication with an
 ftrack server. Create a session that connects to your ftrack server (changing
 the passed values as appropriate)::
@@ -58,8 +47,8 @@ entities of a particular type by using the :meth:`Session.query` method::
 
 Each project retrieved will be an :ref:`entity <working_with_entities>` instance
 that behaves much like a standard Python dictionary. For example, to find out
-the available keys for an entity, call the :meth:`~ftrack_api.entity.Entity.keys`
-method::
+the available keys for an entity, call the
+:meth:`~ftrack_api.entity.Entity.keys` method::
 
     >>> print projects[0].keys()
     [u'status', u'is_global', u'name', u'end_date', u'context_type',
