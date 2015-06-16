@@ -35,3 +35,9 @@ can reference:
 .. envvar:: FTRACK_APIKEY
 
     For backwards compatibility. See :envvar:`FTRACK_API_KEY`.
+
+.. envvar:: FTRACK_EVENT_PLUGIN_PATH
+
+    Paths to search recursively for plugins to load and use in a session.
+    Multiple paths can be specified by separating with the value of
+    :attr:`os.pathsep` (e.g. ':' or ';').
