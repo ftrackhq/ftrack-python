@@ -548,3 +548,25 @@ class OriginLocationMixin(MemoryLocationMixin, UnmanagedLocationMixin):
             ))
 
         return context
+
+
+class _ServerLocationMixin(object):
+    '''Special server location mixin.'''
+
+    def _add_data(self, component, resource_identifier, source):
+        '''Manage transfer of *component* data from *source*.
+
+        *resource_identifier* specifies the identifier to use with this
+        locations accessor.
+
+        Overridden to commit before adding data.
+
+        '''
+        # Commit to ensure component is persisted to server before adding data.
+        # This is needed to ensure server has information about the component
+        # when generating a signed put URL.
+        self.session.commit()
+
+        super(_ServerLocationMixin, self)._add_data(
+            component, resource_identifier, source
+        )
