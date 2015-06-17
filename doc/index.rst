@@ -19,7 +19,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     introduction
     installing
     tutorial
-    using_sessions
+    understanding_sessions
     querying
     working_with_entities
     locations/index
