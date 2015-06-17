@@ -14,7 +14,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     production.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     introduction
     installing
