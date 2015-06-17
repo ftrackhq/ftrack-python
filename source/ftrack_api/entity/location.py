@@ -548,18 +548,3 @@ class OriginLocationMixin(MemoryLocationMixin, UnmanagedLocationMixin):
             ))
 
         return context
-
-
-class _ServerLocationMixin(object):
-    '''Special server location mixin.'''
-
-    def add_components(self, components, sources, recursive=True):
-        '''Overridden add_components method to auto commit before adding.'''
-        # Commit to ensure components are persisted to server before adding
-        # data. This is needed to ensure server has information about a
-        # component when generating a signed put URL.
-        self.session.commit()
-
-        super(_ServerLocationMixin, self).add_components(
-            components, sources, recursive
-        )
