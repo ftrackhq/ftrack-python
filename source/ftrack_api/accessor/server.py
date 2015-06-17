@@ -61,6 +61,23 @@ class ServerFile(String):
             self._session.server_url
         )
 
+        # Retrieve component from cache to construct a filename.
+        component = self._session.get('FileComponent', self.resource_identifier)
+        if not component:
+            raise AccessorOperationFailedError(
+                'Unable to retrieve component with id: {0}.'.format(
+                    self.resource_identifier
+                )
+            )
+
+        # Construct a name from component name and file_type.
+        name = component['name']
+        if component['file_type']:
+            name = u'{0}.{1}'.format(
+                name,
+                component['file_type'].lstrip('.')
+            )
+
         # Get put metadata.
         response = requests.get(
             url,
@@ -69,7 +86,8 @@ class ServerFile(String):
                 'username': self._session.api_user,
                 'apiKey': self._session.api_key,
                 'checksum': self._compute_checksum(),
-                'fileSize': self._get_size()
+                'fileSize': self._get_size(),
+                'fileName': name
             }
         )
 
