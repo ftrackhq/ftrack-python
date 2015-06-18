@@ -9,8 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-
 .. release:: next
+
+    .. change:: new
+        :tags: Client review
+        
+        Added support for handling review sessions.
+
+        .. seealso:: :ref:`Usage guide <using_review_sessions>`.
 
     .. change:: new
         :tags: events
@@ -20,6 +26,75 @@ Release Notes
         session initialisation. This is useful for when only local events should
         be supported or when the connection should be manually controlled.
 
+.. release:: 0.3.0
+    :date: 2015-06-14
+
+    .. change:: fixed
+
+        Session operations may be applied server side in invalid order resulting
+        in unexpected error.
+
+    .. change:: fixed
+
+        Creating and deleting an entity in single commit causes error as create
+        operation never persisted to server.
+
+        Now all operations for the entity are ignored on commit when this case
+        is detected.
+
+    .. change:: changed
+
+        Internally moved from differential state to operation tracking for
+        determining session changes when persisting.
+
+    .. change:: new
+
+        ``Session.recorded_operations`` attribute for examining current
+        pending operations on a :class:`Session`.
+
+    .. change:: new
+
+        :meth:`Session.operation_recording` context manager for suspending
+        recording operations temporarily. Can also manually control
+        ``Session.record_operations`` boolean.
+
+    .. change:: new
+
+        Operation classes to track individual operations occurring in session.
+
+    .. change:: new
+
+        Public :meth:`Session.merge` method for merging arbitrary values into
+        the session manually.
+
+    .. change:: changed
+
+        An entity's state is now computed from the operations performed on it
+        and is no longer manually settable.
+
+    .. change:: changed
+
+        ``Entity.state`` attribute removed. Instead use the new inspection
+        :func:`ftrack_api.inspection.state`.
+
+        Previously::
+
+            print entity.state
+
+        Now::
+
+            import ftrack_api.inspection
+            print ftrack_api.inspection.state(entity)
+
+        There is also an optimised inspection,
+        :func:`ftrack_api.inspection.states`. for determining state of many
+        entities at once.
+
+    .. change:: changed
+
+        Shallow copying a :class:`ftrack_api.symbol.Symbol` instance now
+        returns same instance.
+
 .. release:: 0.2.0
     :date: 2015-06-04
 
@@ -27,7 +102,7 @@ Release Notes
 
         Changed name of API from `ftrack` to `ftrack_api`.
 
-        .. seealso:: :ref:`release/migration/next/new_api_name`.
+        .. seealso:: :ref:`release/migration/0.2.0/new_api_name`.
 
     .. change:: new
         :tags: caching

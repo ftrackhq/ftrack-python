@@ -72,7 +72,7 @@ def test_get_entity_from_cache(cache, task, mocker):
     session = ftrack_api.Session(cache=cache)
 
     # Prepare cache.
-    session._merge(task)
+    session.merge(task)
 
     # Disable server calls.
     mocker.patch.object(session, '_call')
