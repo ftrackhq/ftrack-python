@@ -1,13 +1,13 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-.. currentmodule:: ftrack_api.session
-
 .. _tutorial:
 
 ********
 Tutorial
 ********
+
+.. currentmodule:: ftrack_api.session
 
 This tutorial provides a quick dive into using the API and the broad stroke
 concepts involved.
@@ -18,9 +18,9 @@ Then start a Python session and import the ftrack API::
 
     >>> import ftrack_api
 
-The API uses :ref:`sessions <using_sessions>` to manage communication with an
-ftrack server. Create a session that connects to your ftrack server (changing
-the passed values as appropriate)::
+The API uses :ref:`sessions <understanding_sessions>` to manage communication
+with an ftrack server. Create a session that connects to your ftrack server
+(changing the passed values as appropriate)::
 
     >>> session = ftrack_api.Session(
     ...     server_url='http://mycompany.ftrackapp.com',
@@ -31,8 +31,7 @@ the passed values as appropriate)::
 .. note::
 
     A session can use :ref:`environment variables
-    <using_sessions/configuring_with_environment_variables>` to configure
-    itself.
+    <understanding_sessions/connection>` to configure itself.
 
 Now print a list of the available entity types retrieved from the server::
 
@@ -40,8 +39,9 @@ Now print a list of the available entity types retrieved from the server::
     [u'AbstractTask', u'ObjectType', u'PriorityType', u'Project', u'Sequence',
      u'Shot', u'Task', u'TaskStatus', u'TaskType', u'Timelog', u'User']
 
-Now the list of possible entity types is known, query the server to retrieve
-entities of a particular type by using the :meth:`Session.query` method::
+Now the list of possible entity types is known, :ref:`query <querying>` the
+server to retrieve entities of a particular type by using the
+:meth:`Session.query` method::
 
     >>> projects = session.query('Project')
 
@@ -69,10 +69,13 @@ Now, iterate over the retrieved entities and print each ones name::
 
     Many attributes for retrieved entities are loaded on demand when the
     attribute is first accessed. Doing this lots of times in a script can be
-    inefficient, so there is also an easy way to :ref:`optimise queries
-    <querying/optimising_queries>`.
+    inefficient, so it worth using :ref:`projections <querying/projections>` in
+    queries or :ref:`pre-populating <working_with_entities/populating>` entities
+    where appropriate. You can also :ref:`customise default projections
+    <working_with_entities/entity_types/default_projections>` to help others
+    pre-load common attributes.
 
-To narrow a search, add :ref:`criteria <querying/using_criteria>` to the query::
+To narrow a search, add :ref:`criteria <querying/criteria>` to the query::
 
     >>> active_projects = session.query('Project where status is active')
 
