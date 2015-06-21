@@ -20,8 +20,8 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     installing
     tutorial
     understanding_sessions
-    querying
     working_with_entities
+    querying
     locations/index
     caching
     example/index

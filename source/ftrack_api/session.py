@@ -430,6 +430,8 @@ class Session(object):
         :class:`ftrack_api.query.QueryResult` instance that will execute remote
         call on access.
 
+        .. seealso:: :ref:`querying`
+
         '''
         self.logger.debug(
             'Query {0!r}'.format(expression)
