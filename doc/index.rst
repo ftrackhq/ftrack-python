@@ -22,6 +22,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     understanding_sessions
     working_with_entities
     querying
+    handling_events
     caching
     locations/index
     example/index
