@@ -172,6 +172,8 @@ the attributes that are available.
 
         >>> isinstance(entity, session.types['Project'])
 
+.. _understanding_sessions/plugins:
+
 Configuring plugins
 ===================
 
@@ -186,7 +188,8 @@ use the default plugins.
 
 Plugins are discovered using :func:`ftrack_api.plugin.discover` with the
 session instance passed as the sole argument. Most plugins should take the form
-of a mount function that then subscribes to specific events on the session::
+of a mount function that then subscribes to specific :ref:`events
+<handling_events>` on the session::
 
     def configure_locations(event):
         '''Configure locations for session.'''

@@ -39,9 +39,10 @@ then be managed centrally if desired.
 
 The configuration is handled through the standard events system via a topic
 *ftrack.api.session.configure-location*. Set up an :ref:`event listener plugin
-<events>` as normal with a register function that accepts a
-:class:`~ftrack_api.session.Session` instance. Then register a callback against the
-relevant topic to configure locations at the appropriate time::
+<understanding_sessions/plugins>` as normal with a register function that
+accepts a :class:`~ftrack_api.session.Session` instance. Then register a
+callback against the relevant topic to configure locations at the appropriate
+time::
 
     import ftrack_api
     import ftrack_api.entity.location
