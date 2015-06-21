@@ -69,7 +69,7 @@ relevant topic to configure locations at the appropriate time::
         )
 
 So long as the directory containing the plugin exists on your
-:envvar:`FTRACK_LOCATION_PLUGIN_PATH`, the plugin will run for each session
+:envvar:`FTRACK_EVENT_PLUGIN_PATH`, the plugin will run for each session
 created and any configured locations will then remain configured for the
 duration of that related session.
 
