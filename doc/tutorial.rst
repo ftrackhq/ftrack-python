@@ -69,9 +69,9 @@ Now, iterate over the retrieved entities and print each ones name::
 
     Many attributes for retrieved entities are loaded on demand when the
     attribute is first accessed. Doing this lots of times in a script can be
-    inefficient, so it worth using :ref:`projections <querying/projections>` in
-    queries or :ref:`pre-populating <working_with_entities/populating>` entities
-    where appropriate. You can also :ref:`customise default projections
+    inefficient, so it is worth using :ref:`projections <querying/projections>`
+    in queries or :ref:`pre-populating <working_with_entities/populating>`
+    entities where appropriate. You can also :ref:`customise default projections
     <working_with_entities/entity_types/default_projections>` to help others
     pre-load common attributes.
 
