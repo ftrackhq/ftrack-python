@@ -24,6 +24,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     querying
     handling_events
     caching
+    using_review_sessions
     locations/index
     example/index
     api_reference/index
