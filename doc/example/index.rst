@@ -29,6 +29,7 @@ already constructed a :class:`Session`::
 
     project
     component
+    review_session
     metadata
     scope
     job

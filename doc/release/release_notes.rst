@@ -16,7 +16,7 @@ Release Notes
         
         Added support for handling review sessions.
 
-        .. seealso:: :ref:`Usage guide <using_review_sessions>`.
+        .. seealso:: :ref:`Usage guide <example/review_session>`.
 
     .. change:: fixed
 
