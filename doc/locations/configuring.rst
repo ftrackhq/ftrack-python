@@ -19,6 +19,8 @@ supported, a location instance needs to be configured in a session with an
 Before continuing, make sure that you are familiar with the general concepts
 of locations by reading the :ref:`locations/overview`.
 
+.. _locations/configuring/manually:
+
 Configuring manually
 ====================
 
@@ -28,6 +30,8 @@ location and setting the appropriate attributes::
     location = session.query('Location where name is "my.location"')[0]
     location.structure = ftrack_api.structure.id.IdStructure()
     location.priority = 50
+
+.. _locations/configuring/automatically:
 
 Configuring automatically
 =========================
