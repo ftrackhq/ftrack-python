@@ -1,11 +1,13 @@
 ..
     :copyright: Copyright (c) 2015 ftrack
 
-.. _using_review_sessions:
+.. _example/review_session:
 
 *********************
-Using Review sessions
+Using review sessions
 *********************
+
+.. currentmodule:: ftrack_api.session
 
 Client review sessions can either be queried manually or by using a project
 instance.

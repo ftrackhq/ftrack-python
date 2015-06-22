@@ -14,19 +14,21 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     production.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     introduction
     installing
     tutorial
-    using_sessions
-    querying
+    understanding_sessions
     working_with_entities
-    environment_variables
-    locations/index
-    using_review_sessions
+    querying
+    handling_events
     caching
+    locations/index
+    example/index
     api_reference/index
+    event_list
+    environment_variables
     release/index
     glossary
 

@@ -16,7 +16,46 @@ Release Notes
         
         Added support for handling review sessions.
 
-        .. seealso:: :ref:`Usage guide <using_review_sessions>`.
+        .. seealso:: :ref:`Usage guide <example/review_session>`.
+
+    .. change:: fixed
+
+        Metadata property not working in line with rest of system, particularly
+        the caching framework.
+
+    .. change:: new
+        :tags: collection
+
+        Added :class:`ftrack_api.collection.MappedCollectionProxy` class for
+        providing a dictionary interface to a standard
+        :class:`ftrack_api.collection.Collection`.
+
+    .. change:: new
+        :tags: collection, attribute
+
+        Added :class:`ftrack_api.attribute.MappedCollectionAttribute` class for
+        describing an attribute that should use the
+        :class:`ftrack_api.collection.MappedCollectionProxy`.
+
+    .. change:: new
+
+        Entities that use composite primary keys are now fully supported in the
+        session, including for :meth:`Session.get` and :meth:`Session.populate`.
+
+    .. change:: change
+
+        Base :class:`ftrack_api.entity.factory.Factory` refactored to separate
+        out attribute instantiation into dedicated methods to make extending
+        simpler.
+
+    .. change:: change
+        :tags: collection, attribute
+
+        :class:`ftrack_api.attribute.DictionaryAttribute` and
+        :class:`ftrack_api.attribute.DictionaryAttributeCollection` removed.
+        They have been replaced by the new
+        :class:`ftrack_api.attribute.MappedCollectionAttribute` and
+        :class:`ftrack_api.collection.MappedCollectionProxy` respectively.
 
     .. change:: new
         :tags: events

@@ -47,7 +47,7 @@ def user(session):
 
 
 @pytest.fixture()
-def new_project(request, session, user):
+def new_project_tree(request, session, user):
     '''Return new project with basic tree.'''
     project_schema = session.query('ProjectSchema')[0]
     default_shot_status = project_schema.get_statuses('Shot')[0]
@@ -89,6 +89,29 @@ def new_project(request, session, user):
                     'context': task,
                     'resource': user
                 })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return project
+
+
+@pytest.fixture()
+def new_project(request, session, user):
+    '''Return new empty project.'''
+    project_schema = session.query('ProjectSchema')[0]
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
 
     session.commit()
 
@@ -170,3 +193,23 @@ def new_scope(request, session, unique_name):
     request.addfinalizer(cleanup)
 
     return scope
+
+
+@pytest.fixture()
+def new_job(request, session, unique_name, user):
+    '''Return a new scope.'''
+    job = session.create('Job', {
+        'type': 'api_job',
+        'user': user
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(job)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return job
