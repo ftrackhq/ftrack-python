@@ -18,6 +18,14 @@ Release Notes
 
         .. seealso:: :ref:`Usage guide <using_review_sessions>`.
 
+    .. change:: new
+        :tags: events
+
+        :class:`Session` now supports an *auto_connect_event_hub* argument to
+        control whether the built in event hub should connect to the server on
+        session initialisation. This is useful for when only local events should
+        be supported or when the connection should be manually controlled.
+
 .. release:: 0.3.0
     :date: 2015-06-14
 

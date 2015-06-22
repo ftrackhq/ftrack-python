@@ -59,7 +59,8 @@ class Session(object):
 
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
-        plugin_paths=None, cache=None, cache_key_maker=None
+        plugin_paths=None, cache=None, cache_key_maker=None,
+        auto_connect_event_hub=True
     ):
         '''Initialise session.
 
@@ -99,6 +100,13 @@ class Session(object):
         :class:`ftrack_api.cache.KeyMaker` interface and will be used to 
         generate keys for objects being stored in the *cache*. If not specified, 
         a :class:`~ftrack_api.cache.StringKeyMaker` will be used.
+
+        If *auto_connect_event_hub* is True then embedded event hub will be
+        automatically connected to the event server and allow for publishing and
+        subscribing to **non-local** events. If False, then only publishing and
+        subscribing to **local** events will be possible until the hub is
+        manually connected using :meth:`EventHub.connect
+        <ftrack_api.event.hub.EventHub.connect>`.
 
         '''
         super(Session, self).__init__()
@@ -179,8 +187,14 @@ class Session(object):
         self.auto_populate = auto_populate
 
         # Construct event hub and load plugins.
-        self._event_hub = ftrack_api.event.hub.EventHub(self._server_url)
-        self._event_hub.connect()
+        self._event_hub = ftrack_api.event.hub.EventHub(
+            self._server_url,
+            self._api_user,
+            self._api_key
+        )
+
+        if auto_connect_event_hub:
+            self._event_hub.connect()
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
