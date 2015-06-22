@@ -99,7 +99,7 @@ passing in the entity type to create and any initial attribute values::
     new_user = session.create('User', {'username': 'martin'})
 
 If there are any default values that can be set client side then they will be
-applied at this point. Typically this will be the unique entity id::
+applied at this point. Typically this will be the unique entity key::
 
     >>> print new_user['id']
     170f02a4-6656-4f15-a5cb-c4dd77ce0540
