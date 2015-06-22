@@ -4,8 +4,10 @@
 .. _example/review_session:
 
 *********************
-Using Review sessions
+Using review sessions
 *********************
+
+.. currentmodule:: ftrack_api.session
 
 Client review sessions can either be queried manually or by using a project
 instance.
