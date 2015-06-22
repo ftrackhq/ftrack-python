@@ -160,6 +160,11 @@ the entity and :meth:`Session.commit` when ready::
     instance and any local data stored on that instance whilst that instance
     remains in memory.
 
+Keep in mind that some deletions, when propagated to the server, will cause
+other entities to be deleted also, so you don't have to worry about deleting an
+entire hierarchy manually. For example, deleting a *Task* will also delete all
+*Notes* on that task.
+
 .. _working_with_entities/populating:
 
 Populating entities
