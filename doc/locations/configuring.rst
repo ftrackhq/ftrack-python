@@ -19,6 +19,8 @@ supported, a location instance needs to be configured in a session with an
 Before continuing, make sure that you are familiar with the general concepts
 of locations by reading the :ref:`locations/overview`.
 
+.. _locations/configuring/manually:
+
 Configuring manually
 ====================
 
@@ -28,6 +30,8 @@ location and setting the appropriate attributes::
     location = session.query('Location where name is "my.location"')[0]
     location.structure = ftrack_api.structure.id.IdStructure()
     location.priority = 50
+
+.. _locations/configuring/automatically:
 
 Configuring automatically
 =========================
@@ -39,9 +43,10 @@ then be managed centrally if desired.
 
 The configuration is handled through the standard events system via a topic
 *ftrack.api.session.configure-location*. Set up an :ref:`event listener plugin
-<events>` as normal with a register function that accepts a
-:class:`~ftrack_api.session.Session` instance. Then register a callback against the
-relevant topic to configure locations at the appropriate time::
+<understanding_sessions/plugins>` as normal with a register function that
+accepts a :class:`~ftrack_api.session.Session` instance. Then register a
+callback against the relevant topic to configure locations at the appropriate
+time::
 
     import ftrack_api
     import ftrack_api.entity.location
@@ -69,7 +74,7 @@ relevant topic to configure locations at the appropriate time::
         )
 
 So long as the directory containing the plugin exists on your
-:envvar:`FTRACK_LOCATION_PLUGIN_PATH`, the plugin will run for each session
+:envvar:`FTRACK_EVENT_PLUGIN_PATH`, the plugin will run for each session
 created and any configured locations will then remain configured for the
 duration of that related session.
 

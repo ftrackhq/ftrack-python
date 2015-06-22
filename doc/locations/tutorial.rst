@@ -185,5 +185,5 @@ Location events
 If you want to receive event notifications when components are added to or 
 removed from locations, you can subscribe to the topics published,
 :data:`ftrack_api.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC` or
-:data:`ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback you
-want to be run.
+:data:`ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback
+you want to be run.
