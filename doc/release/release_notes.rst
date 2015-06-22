@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: next
 
+    .. change:: changed
+        :tags: documentation
+
+        Documentation extensively updated.
+
     .. change:: new
         :tags: Client review
         
