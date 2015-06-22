@@ -11,6 +11,13 @@ Release Notes
 
 .. release:: next
 
+    .. change:: new
+        :tags: Client review
+        
+        Added support for handling review sessions.
+
+        .. seealso:: :ref:`Usage guide <using_review_sessions>`.
+
     .. change:: fixed
 
         Metadata property not working in line with rest of system, particularly
@@ -49,6 +56,14 @@ Release Notes
         They have been replaced by the new
         :class:`ftrack_api.attribute.MappedCollectionAttribute` and
         :class:`ftrack_api.collection.MappedCollectionProxy` respectively.
+
+    .. change:: new
+        :tags: events
+
+        :class:`Session` now supports an *auto_connect_event_hub* argument to
+        control whether the built in event hub should connect to the server on
+        session initialisation. This is useful for when only local events should
+        be supported or when the connection should be manually controlled.
 
 .. release:: 0.3.0
     :date: 2015-06-14
