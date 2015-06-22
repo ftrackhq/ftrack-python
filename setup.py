@@ -75,10 +75,6 @@ setup(
     cmdclass={
         'test': PyTest
     },
-    dependency_links=[
-        'https://bitbucket.org/ftrack/lowdown/get/0.1.0.zip'
-        '#egg=lowdown-0.1.0'
-    ],
     data_files=[
         (
             'ftrack_default_plugins',
