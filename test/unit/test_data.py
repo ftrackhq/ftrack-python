@@ -99,3 +99,31 @@ def test_close(data):
         data.read()
 
     assert 'I/O operation on closed file' in str(error.value)
+
+
+class Dummy(ftrack_api.data.Data):
+    '''Dummy string.'''
+
+    def read(self, limit=None):
+        '''Return content from current position up to *limit*.'''
+
+    def write(self, content):
+        '''Write content at current position.'''
+
+
+def test_unsupported_tell():
+    '''Fail when tell unsupported.'''
+    data = Dummy()
+    with pytest.raises(NotImplementedError) as error:
+        data.tell()
+
+    assert 'Tell not supported' in str(error.value)
+
+
+def test_unsupported_seek():
+    '''Fail when seek unsupported.'''
+    data = Dummy()
+    with pytest.raises(NotImplementedError) as error:
+        data.seek(5)
+
+    assert 'Seek not supported' in str(error.value)
