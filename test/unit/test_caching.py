@@ -100,7 +100,7 @@ def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
         'children.children.children.assignments.resource '
         'from Project where id is "{0}"'
         .format(new_project_tree['id'])
-    )[0]
+    ).one()
 
     # Disable server calls.
     mocker.patch.object(session, '_call')

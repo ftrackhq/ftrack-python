@@ -14,7 +14,7 @@ objects whose keys correspond to attributes for that type in the system. They
 may also provide helper methods to perform common operations such as replying to
 a note::
 
-    note = session.query('Note')[0]
+    note = session.query('Note').first()
     print note.keys()
     print note['content']
     note['content'] = 'A different message!'
@@ -34,7 +34,7 @@ attribute access or provide your own helper methods.
 To see the available attribute names on an entity use the
 :meth:`~ftrack_api.entity.base.Entity.keys` method on the instance::
 
-    >>> task = session.query('Task')[0]
+    >>> task = session.query('Task').first()
     >>> print task.keys()
     ['id', 'name', ...]
 
@@ -64,7 +64,7 @@ accessing a particular attribute by key:
     >>> # Single reference
     >>> print task['status']
     <TaskStatus(e610b180-4e64-11e1-a500-f23c91df25eb)>
-    >>> new_status = session.query('TaskStatus')[0]
+    >>> new_status = session.query('TaskStatus').first()
     >>> task['status'] = new_status
 
     >>> # Collection
@@ -128,7 +128,7 @@ Updating an entity is as simple as modifying the values for specific keys on
 the dict-like instance and calling :meth:`Session.commit` when ready. The entity
 to update can either be a new entity or a retrieved entity::
 
-    task = session.query('Task')[0]
+    task = session.query('Task').first()
     task['bid'] = 8
 
 Remember that, for existing entities, accessing an attribute will load it from
@@ -137,7 +137,7 @@ first fetching them from the server, turn :ref:`auto-population
 <understanding_sessions/auto_population>` off temporarily::
 
     >>> with session.auto_populating(False):
-    ...    task = session.query('Task')[0]
+    ...    task = session.query('Task').first()
     ...    task['bid'] = 8
 
 .. _working_with_entities/deleting:
@@ -149,7 +149,7 @@ To delete an entity you need an instance of the entity in your session (either
 from having created one or retrieving one). Then call :meth:`Session.delete` on
 the entity and :meth:`Session.commit` when ready::
 
-    task_to_delete = session.query('Task')[0]
+    task_to_delete = session.query('Task').first()
     session.delete(task_to_delete)
     ...
     session.commit()
@@ -212,7 +212,7 @@ To do this, use :func:`ftrack_api.inspection.state`::
     >>> new_user = session.create('User', {})
     >>> print ftrack_api.inspection.state(new_user)
     CREATED
-    >>> existing_user = session.query('User')[0]
+    >>> existing_user = session.query('User').first()
     >>> print ftrack_api.inspection.state(existing_user)
     NOT_SET
     >>> existing_user['email'] = 'martin@example.com'
@@ -266,7 +266,7 @@ according to the type of the entity.
 For example, the following shows that for a *User*, only *id* is fetched by
 default when no projections added to the query::
 
-    >>> user = session.query('User')[0]
+    >>> user = session.query('User').first()
     >>> with session.auto_populating(False):  # For demonstration purpose only.
     ...     print user.items()
     [
@@ -307,7 +307,7 @@ Now a projection-less query will also query *username* by default:
 
 .. code-block:: python
 
-    >>> user = session.query('User')[0]
+    >>> user = session.query('User').first()
     >>> with session.auto_populating(False):  # For demonstration purpose only.
     ...     print user.items()
     [
@@ -322,7 +322,7 @@ the default projections entirely. This allows you to also *reduce* the data
 loaded on demand::
 
     >>> session = ftrack_api.Session()  # Start new session to avoid cache.
-    >>> user = session.query('select id from User')[0]
+    >>> user = session.query('select id from User').first()
     >>> with session.auto_populating(False):  # For demonstration purpose only.
     ...     print user.items()
     [
@@ -361,7 +361,7 @@ classes in your factory, much like with changing the default projections::
 Now you have a new helper method *get_full_name* on your *User* entities::
 
     >>> session = ftrack_api.Session()  # New session to pick up changes.
-    >>> user = session.query('User')[0]
+    >>> user = session.query('User').first()
     >>> print user.get_full_name()
     Martin Pengelly-Phillips
 
@@ -399,7 +399,7 @@ class in its ancestor classes::
 The resulting effect is the same::
 
     >>> session = ftrack_api.Session()  # New session to pick up changes.
-    >>> user = session.query('User')[0]
+    >>> user = session.query('User').first()
     >>> print user.get_full_name()
     Martin Pengelly-Phillips
 

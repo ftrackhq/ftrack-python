@@ -66,6 +66,24 @@ class NotUniqueError(Error):
     default_message = 'Non-unique value detected.'
 
 
+class IncorrectResultError(Error):
+    '''Raise when a result is incorrect.'''
+
+    default_message = 'Incorrect result detected.'
+
+
+class NoResultFoundError(Error):
+    '''Raise when a result was expected but no result was found.'''
+
+    default_message = 'Expected result, but no result was found.'
+
+
+class MultipleResultsFoundError(Error):
+    '''Raise when a single result expected, but multiple results found.'''
+
+    default_message = 'Expected single result, but received multiple results.'
+
+
 class EntityTypeError(Error):
     '''Raise when an entity type error occurs.'''
 

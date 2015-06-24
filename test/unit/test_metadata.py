@@ -66,7 +66,7 @@ class TestMetadata(object):
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+        ).one()
 
         assert sequence['metadata'][metadata_key] == metadata_value
 
@@ -78,7 +78,7 @@ class TestMetadata(object):
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+        ).one()
 
         assert sequence['metadata'][metadata_key] != metadata_value
 
@@ -96,7 +96,7 @@ class TestMetadata(object):
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+        ).one()
 
         assert set(sequence['metadata'].keys()) == set(['key1', 'key2'])
 
