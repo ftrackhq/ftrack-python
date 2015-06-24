@@ -3,7 +3,10 @@
 
 import uuid
 
+import pytest
+
 import ftrack_api
+import ftrack_api.exception
 
 
 class TestQuery(object):
@@ -91,3 +94,45 @@ class TestQuery(object):
             result[0]['name'] in task_names and
             result[1]['name'] in task_names
         )
+
+
+
+def test_all(session):
+    '''Return all results using convenience method.'''
+    results = session.query('User').all()
+    # TODO: Improve this test when we have arbitrary context by explicitly
+    # creating a set number of entities of a new unique type.
+    assert len(results) == 14
+
+
+def test_one(session):
+    '''Return single result using convenience method.'''
+    user = session.query('User where username is jenkins').one()
+    assert user['username'] == 'jenkins'
+
+
+def test_one_fails_for_no_results(session):
+    '''Fail to fetch single result when no results available.'''
+    with pytest.raises(ftrack_api.exception.NoResultFoundError):
+        session.query('User where username is does_not_exist').one()
+
+
+def test_one_fails_for_multiple_results(session):
+    '''Fail to fetch single result when multiple results available.'''
+    with pytest.raises(ftrack_api.exception.MultipleResultsFoundError):
+        session.query('User').one()
+
+
+def test_first(session):
+    '''Return first result using convenience method.'''
+    users = session.query('User').all()
+
+    user = session.query('User').first()
+    assert user == users[0]
+
+
+def test_first_returns_none_when_no_results(session):
+    '''Return None when no results available.'''
+    user = session.query('User where username is does_not_exist').first()
+    assert user is None
+
