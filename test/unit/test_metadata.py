@@ -6,99 +6,84 @@ import uuid
 import ftrack_api
 
 
-class TestMetadata(object):
-    '''Class for testing metadata.'''
+def test_query_metadata(new_project):
+    '''Query metadata.'''
+    session = new_project.session
 
-    def setup_method(self, method):
-        '''Setup the test.'''
-        self.session = ftrack_api.Session()
-        name = 'projectname_{0}'.format(uuid.uuid1().hex)
-        project_schemas = self.session.query('ProjectSchema')
-        project = self.session.create('Project', {
-            'name': name,
-            'full_name': name + '_full',
-            'project_schema': project_schemas[0]
-        })
+    metadata_key = uuid.uuid1().hex
+    metadata_value = uuid.uuid1().hex
+    new_project['metadata'][metadata_key] = metadata_value
+    session.commit()
 
-        self.sequence = self.session.create('Sequence', {
-            'name': 'seq_1',
-            'parent': project
-        })
-        self.session.commit()
+    results = session.query(
+        'Project where metadata.key is {0}'.format(metadata_key)
+    )
 
-    def test_query_metadata(self):
-        '''Query metadata.'''
-        metadata_key = uuid.uuid1().hex
-        metadata_value = uuid.uuid1().hex
-        self.sequence['metadata'][metadata_key] = metadata_value
-        self.session.commit()
+    assert len(results) == 1
+    assert new_project['id'] == results[0]['id']
 
-        results = self.session.query(
-            'Sequence where metadata.key is {0}'.format(metadata_key)
-        )
+    results = session.query(
+        'Project where metadata.value is {0}'.format(metadata_value)
+    )
 
-        assert len(results) == 1
-        assert self.sequence['id'] == results[0]['id']
+    assert len(results) == 1
+    assert new_project['id'] == results[0]['id']
 
-        results = self.session.query(
-            'Sequence where metadata.value is {0}'.format(metadata_value)
-        )
+    results = session.query(
+        'Project where metadata.key is {0} and '
+        'metadata.value is {1}'.format(metadata_key, metadata_value)
+    )
 
-        assert len(results) == 1
-        assert self.sequence['id'] == results[0]['id']
+    assert len(results) == 1
+    assert new_project['id'] == results[0]['id']
 
-        results = self.session.query(
-            'Sequence where metadata.key is {0} and '
-            'metadata.value is {1}'.format(metadata_key, metadata_value)
-        )
 
-        assert len(results) == 1
-        assert self.sequence['id'] == results[0]['id']
+def test_set_get_metadata_from_different_sessions(new_project):
+    '''Get and set metadata using different sessions.'''
+    session = new_project.session
 
-    def test_set_get_metadata_from_different_sessions(self):
-        '''Get and set metadata using different sessions.'''
-        metadata_key = uuid.uuid1().hex
-        metadata_value = uuid.uuid1().hex
-        self.sequence['metadata'][metadata_key] = metadata_value
-        self.session.commit()
+    metadata_key = uuid.uuid1().hex
+    metadata_value = uuid.uuid1().hex
+    new_project['metadata'][metadata_key] = metadata_value
+    session.commit()
 
-        new_session = ftrack_api.Session()
+    new_session = ftrack_api.Session()
+    project = new_session.query(
+        'Project where id is {0}'.format(new_project['id'])
+    )[0]
 
-        sequence = new_session.query(
-            'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+    assert project['metadata'][metadata_key] == metadata_value
 
-        assert sequence['metadata'][metadata_key] == metadata_value
+    project['metadata'][metadata_key] = uuid.uuid1().hex
 
-        sequence['metadata'][metadata_key] = uuid.uuid1().hex
+    new_session.commit()
 
-        new_session.commit()
+    new_session = ftrack_api.Session()
+    project = new_session.query(
+        'Project where id is {0}'.format(project['id'])
+    )[0]
 
-        new_session = ftrack_api.Session()
+    assert project['metadata'][metadata_key] != metadata_value
 
-        sequence = new_session.query(
-            'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
 
-        assert sequence['metadata'][metadata_key] != metadata_value
+def test_get_set_multiple_metadata(new_project):
+    '''Get and set multiple metadata.'''
+    session = new_project.session
 
-    def test_get_set_multiple_metadata(self):
-        '''Get and set multiple metadata.'''
-        self.sequence['metadata'] = {
-            'key1': 'value1',
-            'key2': 'value2'
-        }
-        self.session.commit()
+    new_project['metadata'] = {
+        'key1': 'value1',
+        'key2': 'value2'
+    }
+    session.commit()
 
-        assert set(self.sequence['metadata'].keys()) == set(['key1', 'key2'])
+    assert set(new_project['metadata'].keys()) == set(['key1', 'key2'])
 
-        new_session = ftrack_api.Session()
+    new_session = ftrack_api.Session()
+    retrieved = new_session.query(
+        'Project where id is {0}'.format(new_project['id'])
+    )[0]
 
-        sequence = new_session.query(
-            'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
-
-        assert set(sequence['metadata'].keys()) == set(['key1', 'key2'])
+    assert set(retrieved['metadata'].keys()) == set(['key1', 'key2'])
 
 
 def test_metadata_parent_type_remains_in_schema_id_format(session, new_project):
