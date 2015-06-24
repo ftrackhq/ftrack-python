@@ -151,7 +151,8 @@ def test_remove(temporary_path):
     '''Delete path.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
-    _, temporary_file = tempfile.mkstemp(dir=temporary_path)
+    file_handle, temporary_file = tempfile.mkstemp(dir=temporary_path)
+    os.close(file_handle)
     accessor.remove(temporary_file)
     assert os.path.exists(temporary_file) is False
 
