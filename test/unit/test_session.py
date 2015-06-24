@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import uuid
+
 import pytest
 
 import ftrack_api.inspection
@@ -23,6 +25,83 @@ def test_get_entity_of_invalid_type(session):
     '''Fail to retrieve an entity using an invalid type.'''
     with pytest.raises(KeyError):
         session.get('InvalidType', 'id')
+
+
+def test_create(session):
+    '''Create entity.'''
+    user = session.create('User', {'username': 'martin'})
+    with session.auto_populating(False):
+        assert user['id'] is not ftrack_api.symbol.NOT_SET
+        assert user['username'] == 'martin'
+        assert user['email'] is ftrack_api.symbol.NOT_SET
+
+
+def test_create_using_only_defaults(session):
+    '''Create entity using defaults only.'''
+    user = session.create('User')
+    with session.auto_populating(False):
+        assert user['id'] is not ftrack_api.symbol.NOT_SET
+        assert user['username'] is ftrack_api.symbol.NOT_SET
+
+
+def test_create_using_server_side_defaults(session):
+    '''Create entity using server side defaults.'''
+    user = session.create('User')
+    with session.auto_populating(False):
+        assert user['id'] is not ftrack_api.symbol.NOT_SET
+        assert user['username'] is ftrack_api.symbol.NOT_SET
+
+    session.commit()
+    assert user['username'] is not ftrack_api.symbol.NOT_SET
+
+
+def test_create_overriding_defaults(session):
+    '''Create entity overriding defaults.'''
+    uid = str(uuid.uuid4())
+    user = session.create('User', {'id': uid})
+    with session.auto_populating(False):
+        assert user['id'] == uid
+
+
+def test_create_with_reference(session):
+    '''Create entity with a reference to another.'''
+    status = session.query('TaskStatus')[0]
+    task = session.create('Task', {'status': status})
+    assert task['status'] is status
+
+
+def test_reconstruct_entity(session):
+    '''Reconstruct entity.'''
+    uid = str(uuid.uuid4())
+    user = session.create('User', {
+        'id': uid,
+        'username': 'martin',
+        'email': 'martin@example.com'
+    }, reconstructing=True)
+
+    with session.auto_populating(False):
+        items = dict(user.items())
+        assert items.pop('id') == uid
+        assert items.pop('username') == 'martin'
+        assert items.pop('email') == 'martin@example.com'
+
+        assert set(items.values()) == set([ftrack_api.symbol.NOT_SET])
+
+
+def test_reconstruct_entity_does_not_apply_defaults(session):
+    '''Reconstruct entity does not apply defaults.'''
+    # Note: Use private method to avoid merge which requires id be set.
+    user = session._create('User', {}, reconstructing=True)
+    with session.auto_populating(False):
+        assert user['id'] is ftrack_api.symbol.NOT_SET
+
+
+def test_reconstruct_empty_entity(session):
+    '''Reconstruct empty entity.'''
+    # Note: Use private method to avoid merge which requires id be set.
+    user = session._create('User', {}, reconstructing=True)
+    with session.auto_populating(False):
+        assert set(user.values()) == set([ftrack_api.symbol.NOT_SET])
 
 
 def test_delete_operation_ordering(session, unique_name):
