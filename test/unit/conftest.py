@@ -2,6 +2,8 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import uuid
+import tempfile
+import shutil
 
 import pytest
 
@@ -18,6 +20,23 @@ def session():
 def unique_name():
     '''Return a unique name.'''
     return 'test-{0}'.format(uuid.uuid4())
+
+
+@pytest.fixture()
+def temporary_path(request):
+    '''Return temporary path.'''
+    path = tempfile.mkdtemp()
+
+    def cleanup():
+        '''Remove created path.'''
+        try:
+            shutil.rmtree(path)
+        except OSError:
+            pass
+
+    request.addfinalizer(cleanup)
+
+    return path
 
 
 @pytest.fixture()
