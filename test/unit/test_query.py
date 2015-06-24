@@ -100,9 +100,8 @@ class TestQuery(object):
 def test_all(session):
     '''Return all results using convenience method.'''
     results = session.query('User').all()
-    # TODO: Improve this test when we have arbitrary context by explicitly
-    # creating a set number of entities of a new unique type.
-    assert len(results) == 14
+    assert isinstance(results, list)
+    assert len(results)
 
 
 def test_one(session):
