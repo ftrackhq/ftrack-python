@@ -18,10 +18,6 @@ class Data(object):
         '''Initialise data access.'''
         self.closed = False
 
-    def __del__(self):
-        '''Perform cleanup on object deletion.'''
-        self.close()
-
     @abstractmethod
     def read(self, limit=None):
         '''Return content from current position up to *limit*.'''
