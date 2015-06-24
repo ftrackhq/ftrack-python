@@ -25,7 +25,7 @@ class TestQuery(object):
     def _create_project(self):
         '''Create a project with tasks and return their names.'''
         name = 'projectname_{0}'.format(uuid.uuid1().hex)
-        project_schema = self.session.query('ProjectSchema')[0]
+        project_schema = self.session.query('ProjectSchema').first()
         default_task_type = project_schema.get_types('Task')[0]
         default_task_status = project_schema.get_statuses(
             'Task', default_task_type['id']
