@@ -84,3 +84,18 @@ def test_states(session, unique_name, user):
         ftrack_api.symbol.MODIFIED,
         ftrack_api.symbol.DELETED
     ]
+
+
+def test_states_for_no_entities():
+    '''Return empty list of states when no entities passed.'''
+    states = ftrack_api.inspection.states([])
+    assert states == []
+
+
+def test_skip_operations_for_non_inspected_entities(session, unique_name):
+    '''Skip operations for non inspected entities.'''
+    user_a = session.create('User', {'username': unique_name + '-1'})
+    user_b = session.create('User', {'username': unique_name + '-2'})
+
+    states = ftrack_api.inspection.states([user_a])
+    assert states == [ftrack_api.symbol.CREATED]
