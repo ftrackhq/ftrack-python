@@ -3,7 +3,7 @@
 
 import os
 from abc import ABCMeta, abstractmethod
-try:
+try:    # pragma: no cover
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
