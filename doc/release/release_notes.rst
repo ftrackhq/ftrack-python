@@ -9,6 +9,21 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: fixed
+        :tags: metadata
+
+        Setting exact same metadata twice can cause
+        :exc:`~ftrack_api.exception.ImmutableAttributeError` to be incorrectly
+        raised.
+
+    .. change:: fixed
+        :tags: session
+
+        Calling :meth:`Session.commit` does not clear locally set attribute
+        values leading to immutability checks being bypassed in certain cases.
+
 .. release:: 0.4.1
     :date: 2015-06-25
 
