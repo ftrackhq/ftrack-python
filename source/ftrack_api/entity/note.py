@@ -39,6 +39,8 @@ class CreateNoteMixin(object):
         can be specified as a list of user or group instances.
 
         '''
+        if not recipients:
+            recipients = []
 
         category_id = None
         if category:
