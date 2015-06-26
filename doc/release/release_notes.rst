@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: 0.4.1
+    :date: 2015-06-25
+
+    .. change:: fixed
+        :tags: metadata
+
+        Setting metadata twice in one session causes `KeyError`.
+
 .. release:: 0.4.0
     :date: 2015-06-22
 

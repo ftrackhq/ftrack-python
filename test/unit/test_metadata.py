@@ -112,3 +112,22 @@ def test_metadata_parent_type_remains_in_schema_id_format(session, new_project):
     session.commit()
 
     assert entity['parent_type'] == new_project.entity_type
+
+
+def test_set_metadata_twice(new_project):
+    '''Set metadata twice in a row.'''
+    session = new_project.session
+
+    new_project['metadata'] = {
+        'key1': 'value1',
+        'key2': 'value2'
+    }
+    session.commit()
+
+    assert set(new_project['metadata'].keys()) == set(['key1', 'key2'])
+
+    new_project['metadata'] = {
+        'key1': 'value1',
+        'key2': 'value2'
+    }
+    session.commit()
