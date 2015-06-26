@@ -127,7 +127,24 @@ def test_set_metadata_twice(new_project):
     assert set(new_project['metadata'].keys()) == set(['key1', 'key2'])
 
     new_project['metadata'] = {
-        'key1': 'value1',
-        'key2': 'value2'
+        'key3': 'value3',
+        'key4': 'value4'
+    }
+    session.commit()
+
+
+def test_set_same_metadata_on_retrieved_entity(new_project):
+    '''Set same metadata on retrieved entity.'''
+    session = new_project.session
+
+    new_project['metadata'] = {
+        'key1': 'value1'
+    }
+    session.commit()
+
+    project = session.get('Project', new_project['id'])
+
+    project['metadata'] = {
+        'key1': 'value1'
     }
     session.commit()
