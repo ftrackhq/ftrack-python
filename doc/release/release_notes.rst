@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: next
+.. release:: 0.4.2
+    :date: 2015-06-26
 
     .. change:: fixed
         :tags: metadata
