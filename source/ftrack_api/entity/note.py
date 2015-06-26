@@ -32,8 +32,13 @@ class Note(ftrack_api.entity.base.Entity):
 class CreateNoteMixin(object):
     '''Mixin to add create_note method on entity class.'''
 
-    def create_note(self, text, author, category=None):
-        '''Create note with *text*, *author* and optional *category*.'''
+    def create_note(self, text, author, recipients=None, category=None):
+        '''Create note with *text*, *author*.
+
+        Note category can be set by including *category* and *recipients*
+        can be specified as a list of user or group instances.
+
+        '''
 
         category_id = None
         if category:
@@ -47,4 +52,12 @@ class CreateNoteMixin(object):
             'parent_type': self.entity_type
         }
 
-        return self.session.create('Note', data)
+        note = self.session.create('Note', data)
+
+        for resource in recipients:
+            self.session.create('Recipient', {
+                'note_id': note['id'],
+                'resource_id': resource['id']
+            })
+
+        return note

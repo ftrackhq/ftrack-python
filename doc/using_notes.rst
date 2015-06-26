@@ -86,3 +86,16 @@ You can also set the category when creating a note manually::
 
     The category is specified for an entire notes thread. Therefore categories
     can only be set on new notes and not on replies.
+
+When writing notes you might want to direct the note to someone. This is done
+by adding users as recipients. If a user is added as a recipient the user will
+receive notifications and the note will be displayed in their inbox.
+
+To add recipients pass a list of user or group instances to the helper method::
+
+    user = session.query('User where first_name is "John"').all()[0]
+    animation_group = session.query('Group where name is "Animation"').all()[0]
+
+    note = task.create_note(
+        'Note with recipients', user, recipients=[user, group]
+    )
