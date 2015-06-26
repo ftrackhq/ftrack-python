@@ -399,26 +399,14 @@ class Session(object):
             )
 
         entity = None
-
-        # Check cache for existing entity emulating 
-        # ftrack_api.inspection.identity result object to pass to key maker.
-        cache_key = self.cache_key_maker.key(
-            (str(entity_type), map(str, entity_key))
-        )
-        self.logger.debug(
-            'Checking cache for entity with key {0}'.format(cache_key)
-        )
         try:
-            entity = self.cache.get(cache_key)
-            self.logger.debug(
-                'Retrieved existing entity from cache: {0} at {1}'
-                .format(entity, id(entity))
-            )
+            entity = self._get(entity_type, entity_key)
 
             # Ensure any references in the retrieved cache object are expanded.
             self._merge_references(entity)
 
         except KeyError:
+
             # Query for matching entity.
             self.logger.debug(
                 'Entity not present in cache. Issuing new query.'
@@ -434,6 +422,28 @@ class Session(object):
             results = self.query(expression).all()
             if results:
                 entity = results[0]
+
+        return entity
+
+    def _get(self, entity_type, entity_key):
+        '''Return cached entity of *entity_type* with unique *entity_key*.
+
+        Raise :exc:`KeyError` if no such entity in the cache.
+
+        '''
+        # Check cache for existing entity emulating
+        # ftrack_api.inspection.identity result object to pass to key maker.
+        cache_key = self.cache_key_maker.key(
+            (str(entity_type), map(str, entity_key))
+        )
+        self.logger.debug(
+            'Checking cache for entity with key {0}'.format(cache_key)
+        )
+        entity = self.cache.get(cache_key)
+        self.logger.debug(
+            'Retrieved existing entity from cache: {0} at {1}'
+            .format(entity, id(entity))
+        )
 
         return entity
 
@@ -943,6 +953,26 @@ class Session(object):
         # Process batch.
         if batch:
             result = self._call(batch)
+
+            # Clear all local values for committed attributes before proceeding
+            # with merge. Otherwise it is possible for an immutable attribute
+            # error to be bypassed.
+            with self.operation_recording(False):
+                for payload in batch:
+                    if payload['action'] in ('create', 'update'):
+                        # Retrieve entity from cache.
+                        entity = self._get(
+                            payload['entity_type'], payload['entity_key']
+                        )
+
+                        for key in payload['entity_data'].keys():
+                            if key in ('__entity_type__', ):
+                                continue
+
+                            attribute = entity.attributes.get(key)
+                            attribute.set_local_value(
+                                entity, ftrack_api.symbol.NOT_SET
+                            )
 
             # Process results merging into cache relevant data.
             for entry in result:
