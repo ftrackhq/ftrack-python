@@ -28,7 +28,7 @@ def test_get_entity_of_invalid_type(session):
 def test_delete_operation_ordering(session, unique_name):
     '''Delete entities in valid order.'''
     # Construct entities.
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
     project = session.create('Project', {
         'name': unique_name,
         'full_name': unique_name,

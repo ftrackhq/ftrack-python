@@ -3,7 +3,7 @@
 
 .. currentmodule:: ftrack_api.session
 
-.. _using_notes:
+.. _example/note:
 
 ***********
 Using notes

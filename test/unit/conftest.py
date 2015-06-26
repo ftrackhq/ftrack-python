@@ -49,7 +49,7 @@ def user(session):
 @pytest.fixture()
 def new_project_tree(request, session, user):
     '''Return new project with basic tree.'''
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
     default_shot_status = project_schema.get_statuses('Shot')[0]
     default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(
@@ -105,7 +105,7 @@ def new_project_tree(request, session, user):
 @pytest.fixture()
 def new_project(request, session, user):
     '''Return new empty project.'''
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
     project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
     project = session.create('Project', {
         'name': project_name,
@@ -140,7 +140,7 @@ def new_task(request, session, unique_name):
     '''Return a new task.'''
     project = session.query(
         'Project where id is 5671dcb0-66de-11e1-8e6e-f23c91df25eb'
-    )[0]
+    ).one()
     project_schema = project['project_schema']
     default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(

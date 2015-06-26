@@ -453,8 +453,8 @@ class MappedCollectionAttribute(CollectionAttribute):
                         'type is not a MappedCollectionProxy.'
                     )
 
-                for entity in current_value.collection:
-                    entity.session.delete(entity)
+                for collection_entity in current_value.collection:
+                    collection_entity.session.delete(collection_entity)
 
                 # Now create the new collection.
                 collection = ftrack_api.collection.Collection(entity, self)
