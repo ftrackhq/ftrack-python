@@ -63,3 +63,26 @@ using :meth:`Session.create`::
         'parent_id': first_note_on_task['parent_id'],
         'parent_type': first_note_on_task['parent_type']
     })
+
+To specify a category when creating a note simply pass a `NoteCategory` instance
+to the helper method::
+    
+    category = session.query('NoteCategory where name is "External Note"').all()[0]
+
+    note = task.create_note('New note with external category', user, category)
+
+You can also set the category when creating a note manually::
+    
+    category = session.query('NoteCategory where name is "External Note"').all()[0]
+    note = session.create('Note', {
+        'text': 'New note with external category',
+        'author': user,
+        'parent_id': task['id'],
+        'parent_type': entity.entity_type,
+        'category': category
+    })
+
+.. note::
+
+    The category is specified for an entire notes thread. Therefore categories
+    can only be set on new notes and not on replies.
