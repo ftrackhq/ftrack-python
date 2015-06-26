@@ -111,15 +111,15 @@ def test_operation_optimisation_on_commit(session, mocker):
     user_c['email'] = 'ignore@example.com'
     session.delete(user_c)
 
+    user_a_entity_key = ftrack_api.inspection.primary_key(user_a).values()
+    user_b_entity_key = ftrack_api.inspection.primary_key(user_b).values()
+
     session.commit()
 
     # The above operations should have translated into three payloads to call
     # (two creates and one update).
     payloads = mocked.call_args[0][0]
     assert len(payloads) == 3
-
-    user_a_entity_key = ftrack_api.inspection.primary_key(user_a).values()
-    user_b_entity_key= ftrack_api.inspection.primary_key(user_b).values()
 
     assert payloads[0]['action'] == 'create'
     assert payloads[0]['entity_key'] == user_a_entity_key
