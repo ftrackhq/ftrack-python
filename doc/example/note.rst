@@ -67,13 +67,13 @@ using :meth:`Session.create`::
 To specify a category when creating a note simply pass a `NoteCategory` instance
 to the helper method::
     
-    category = session.query('NoteCategory where name is "External Note"').all()[0]
+    category = session.query('NoteCategory where name is "External Note"').first()
 
     note = task.create_note('New note with external category', user, category)
 
 You can also set the category when creating a note manually::
     
-    category = session.query('NoteCategory where name is "External Note"').all()[0]
+    category = session.query('NoteCategory where name is "External Note"').first()
     note = session.create('Note', {
         'text': 'New note with external category',
         'author': user,
@@ -93,8 +93,8 @@ receive notifications and the note will be displayed in their inbox.
 
 To add recipients pass a list of user or group instances to the helper method::
 
-    user = session.query('User where first_name is "John"').all()[0]
-    animation_group = session.query('Group where name is "Animation"').all()[0]
+    user = session.query('User where first_name is "John"').first()
+    animation_group = session.query('Group where name is "Animation"').first()
 
     note = task.create_note(
         'Note with recipients', user, recipients=[user, group]
