@@ -9,14 +9,22 @@ Event list
 
 The following is a consolidated list of events published directly by this API.
 
+For some events, a template plugin file is also listed for download
+(:guilabel:`Download template plugin`) to help get you started with writing your
+own plugin for a particular event.
+
 .. seealso::
 
-    :ref:`ftrack server event list <ftrack:developing/events/list>`
+    * :ref:`handling_events`
+    * :ref:`ftrack server event list <ftrack:developing/events/list>`
 
 .. _event_list/ftrack.api.session.construct-entity-type:
 
 ftrack.api.session.construct-entity-type
 ========================================
+
+:download:`Download template plugin
+</../resource/plugin/construct_entity_type.py>`
 
 :ref:`Synchronous <handling_events/publishing/synchronously>`. Published by
 the session to retrieve constructed class for specified schema::
@@ -39,6 +47,9 @@ Expects returned data to be::
 
 ftrack.api.session.configure-location
 =====================================
+
+:download:`Download template plugin
+</../resource/plugin/configure_locations.py>`
 
 :ref:`Synchronous <handling_events/publishing/synchronously>`. Published by
 the session to allow configuring of location instances::
