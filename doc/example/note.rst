@@ -69,7 +69,7 @@ to the helper method::
     
     category = session.query('NoteCategory where name is "External Note"').first()
 
-    note = task.create_note('New note with external category', user, category)
+    note = task.create_note('New note with external category', user, category=category)
 
 You can also set the category when creating a note manually::
     
