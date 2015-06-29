@@ -54,6 +54,12 @@ class ServerError(Error):
     default_message = 'Server reported error processing request.'
 
 
+class ServerCompatibilityError(ServerError):
+    '''Raise when server appears incompatible.'''
+
+    default_message = 'Server incompatible.'
+
+
 class NotFoundError(Error):
     '''Raise when something that should exist is not found.'''
 
