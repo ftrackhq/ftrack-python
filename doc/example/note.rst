@@ -34,8 +34,8 @@ entity you can either query them or use the relation called `notes`::
         parent_of_note = note['parent']
 
 To create new notes you can either use the helper method called `create_note`
-on any entity that can have notes or use the :meth:`Session.create` to create
-them manually::
+on any entity that can have notes or use :meth:`Session.create` to create them
+manually::
     
     # Create note using the helper method.
     note = task.create_note('My new note', user)
