@@ -10,7 +10,6 @@ import getpass
 import functools
 import itertools
 
-import pkg_resources
 import requests
 import requests.auth
 import arrow
@@ -18,6 +17,7 @@ import clique
 
 import ftrack_api
 import ftrack_api.exception
+import ftrack_api.entity.factory
 import ftrack_api.entity.base
 import ftrack_api.entity.location
 import ftrack_api.cache
@@ -198,17 +198,8 @@ class Session(object):
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
-            try:
-                default_plugin_path = pkg_resources.resource_filename(
-                    pkg_resources.Requirement.parse('ftrack-python-api'),
-                    'ftrack_default_plugins'
-                )
-            except pkg_resources.DistributionNotFound:
-                default_plugin_path = ''
-
             self._plugin_paths = os.environ.get(
-                'FTRACK_EVENT_PLUGIN_PATH',
-                default_plugin_path
+                'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
 
         self._discover_plugins()
@@ -399,26 +390,14 @@ class Session(object):
             )
 
         entity = None
-
-        # Check cache for existing entity emulating 
-        # ftrack_api.inspection.identity result object to pass to key maker.
-        cache_key = self.cache_key_maker.key(
-            (str(entity_type), map(str, entity_key))
-        )
-        self.logger.debug(
-            'Checking cache for entity with key {0}'.format(cache_key)
-        )
         try:
-            entity = self.cache.get(cache_key)
-            self.logger.debug(
-                'Retrieved existing entity from cache: {0} at {1}'
-                .format(entity, id(entity))
-            )
+            entity = self._get(entity_type, entity_key)
 
             # Ensure any references in the retrieved cache object are expanded.
             self._merge_references(entity)
 
         except KeyError:
+
             # Query for matching entity.
             self.logger.debug(
                 'Entity not present in cache. Issuing new query.'
@@ -434,6 +413,28 @@ class Session(object):
             results = self.query(expression).all()
             if results:
                 entity = results[0]
+
+        return entity
+
+    def _get(self, entity_type, entity_key):
+        '''Return cached entity of *entity_type* with unique *entity_key*.
+
+        Raise :exc:`KeyError` if no such entity in the cache.
+
+        '''
+        # Check cache for existing entity emulating
+        # ftrack_api.inspection.identity result object to pass to key maker.
+        cache_key = self.cache_key_maker.key(
+            (str(entity_type), map(str, entity_key))
+        )
+        self.logger.debug(
+            'Checking cache for entity with key {0}'.format(cache_key)
+        )
+        entity = self.cache.get(cache_key)
+        self.logger.debug(
+            'Retrieved existing entity from cache: {0} at {1}'
+            .format(entity, id(entity))
+        )
 
         return entity
 
@@ -944,6 +945,26 @@ class Session(object):
         if batch:
             result = self._call(batch)
 
+            # Clear all local values for committed attributes before proceeding
+            # with merge. Otherwise it is possible for an immutable attribute
+            # error to be bypassed.
+            with self.operation_recording(False):
+                for payload in batch:
+                    if payload['action'] in ('create', 'update'):
+                        # Retrieve entity from cache.
+                        entity = self._get(
+                            payload['entity_type'], payload['entity_key']
+                        )
+
+                        for key in payload['entity_data'].keys():
+                            if key in ('__entity_type__', ):
+                                continue
+
+                            attribute = entity.attributes.get(key)
+                            attribute.set_local_value(
+                                entity, ftrack_api.symbol.NOT_SET
+                            )
+
             # Process results merging into cache relevant data.
             for entry in result:
 
@@ -982,6 +1003,7 @@ class Session(object):
 
     def _build_entity_type_classes(self, schemas):
         '''Build default entity type classes.'''
+        fallback_factory = ftrack_api.entity.factory.StandardFactory()
         classes = {}
 
         for schema in schemas:
@@ -999,14 +1021,11 @@ class Session(object):
             results = [result for result in results if result is not None]
 
             if not results:
-                raise ValueError(
-                    'Expected entity type to represent schema "{0}" but '
-                    'received 0 entity types. Ensure '
-                    'FTRACK_EVENT_PLUGIN_PATH has been set to point to '
-                    'resource/plugin.'.format(
-                        schema['id']
-                    )
+                self.logger.debug(
+                    'Using default StandardFactory to construct entity type '
+                    'class for "{0}"'.format(schema['id'])
                 )
+                entity_type_class = fallback_factory.create(schema)
 
             elif len(results) > 1:
                 raise ValueError(
@@ -1015,7 +1034,9 @@ class Session(object):
                     .format(schema['id'], len(results))
                 )
 
-            entity_type_class = results[0]
+            else:
+                entity_type_class = results[0]
+
             classes[entity_type_class.entity_type] = entity_type_class
 
         return classes

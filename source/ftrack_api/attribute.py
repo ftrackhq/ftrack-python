@@ -453,16 +453,24 @@ class MappedCollectionAttribute(CollectionAttribute):
                         'type is not a MappedCollectionProxy.'
                     )
 
-                for collection_entity in current_value.collection:
-                    collection_entity.session.delete(collection_entity)
-
-                # Now create the new collection.
-                collection = ftrack_api.collection.Collection(entity, self)
+                # Create the new collection using the existing collection as
+                # basis. Then update through proxy interface to ensure all
+                # internal operations called consistently (such as entity
+                # deletion for key removal).
+                collection = ftrack_api.collection.Collection(
+                    entity, self, data=current_value.collection[:]
+                )
                 collection_proxy = ftrack_api.collection.MappedCollectionProxy(
                     collection, self.creator,
                     self.key_attribute, self.value_attribute
                 )
 
+                # Remove expired keys from collection.
+                expired_keys = set(current_value.keys()) - set(value.keys())
+                for key in expired_keys:
+                    del collection_proxy[key]
+
+                # Set new values for existing keys / add new keys.
                 for key, value in value.items():
                     collection_proxy[key] = value
 
