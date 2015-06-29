@@ -36,7 +36,7 @@ entity you can either query them or use the relation called `notes`::
 To create new notes you can either use the helper method called `create_note`
 on any entity that can have notes or use :meth:`Session.create` to create them
 manually::
-    
+
     # Create note using the helper method.
     note = task.create_note('My new note', user)
 
@@ -50,7 +50,7 @@ manually::
 
 Replying to an existing note can also be done with a helper method or by
 using :meth:`Session.create`::
-    
+
     # Create using helper method.
     first_note_on_task = task_entity['notes'][0]
     first_note_on_task.create_reply('My new reply on note', user)
@@ -66,14 +66,21 @@ using :meth:`Session.create`::
 
 To specify a category when creating a note simply pass a `NoteCategory` instance
 to the helper method::
-    
-    category = session.query('NoteCategory where name is "External Note"').first()
 
-    note = task.create_note('New note with external category', user, category=category)
+    category = session.query(
+        'NoteCategory where name is "External Note"'
+    ).first()
+
+    note = task.create_note(
+        'New note with external category', user, category=category
+    )
 
 You can also set the category when creating a note manually::
-    
-    category = session.query('NoteCategory where name is "External Note"').first()
+
+    category = session.query(
+        'NoteCategory where name is "External Note"'
+    ).first()
+
     note = session.create('Note', {
         'text': 'New note with external category',
         'author': user,
