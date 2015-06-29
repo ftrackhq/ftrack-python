@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: fixed
+        :tags: session
+
+        Ambiguous error raised when :class:`Session` is started with an invalid
+        user or key.
+
 .. release:: 0.4.3
     :date: 2015-06-29
 
