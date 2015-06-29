@@ -16,7 +16,7 @@ Release Notes
 
         Added support for handling notes.
 
-        .. seealso:: :ref:`Usage guide <using_notes>`.
+        .. seealso:: :ref:`example/note`.
 
 .. release:: 0.4.3
     :date: 2015-06-29
