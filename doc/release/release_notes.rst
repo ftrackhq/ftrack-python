@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: new
+        :tags: notes
+
+        Added support for handling notes.
+
+        .. seealso:: :ref:`Usage guide <using_notes>`.
+
 .. release:: 0.4.3
     :date: 2015-06-29
 
@@ -62,13 +71,6 @@ Release Notes
         Added support for handling review sessions.
 
         .. seealso:: :ref:`Usage guide <example/review_session>`.
-
-    .. change:: new
-        :tags: Notes
-
-        Added support for handling notes.
-
-        .. seealso:: :ref:`Usage guide <using_notes>`.
 
     .. change:: fixed
 
