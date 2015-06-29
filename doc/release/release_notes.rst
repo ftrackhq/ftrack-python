@@ -9,6 +9,20 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: fixed
+        :tags: plugins, session, entity types
+
+        Entity types not constructed following standard install.
+
+        This is because the discovery of the default plugins is unreliable
+        across Python installation processes (pip, wheel etc). Instead, the
+        default plugins have been added as templates to the :ref:`event_list`
+        documentation and the
+        :class:`~ftrack_api.entity.factory.StandardFactory` used to create any
+        missing classes on :class:`Session` startup.
+
 .. release:: 0.4.2
     :date: 2015-06-26
 
