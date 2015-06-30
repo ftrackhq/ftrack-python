@@ -2,9 +2,11 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import pytest
+import mock
 
 import ftrack_api.inspection
 import ftrack_api.symbol
+import ftrack_api.exception
 
 
 def test_get_entity(session, user):
@@ -255,3 +257,28 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
     new_session.populate(retrieved_entity, 'value')
     assert retrieved_entity['value'] == 'value'
+
+
+@pytest.mark.parametrize('server_information, compatible', [
+    ({}, False),
+    ({'version': '3.1'}, True),
+    ({'version': '4'}, True),
+    ({'version': '3.0'}, False)
+], ids=[
+    'No information',
+    'Valid current version',
+    'Valid higher version',
+    'Invalid lower version'
+])
+def test_check_server_compatibility(
+    server_information, compatible, session
+):
+    '''Check server compatibility.'''
+    with mock.patch.dict(
+        session._server_information, server_information, clear=True
+    ):
+        if compatible:
+            session.check_server_compatibility()
+        else:
+            with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
+                session.check_server_compatibility()
