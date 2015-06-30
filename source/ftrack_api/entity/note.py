@@ -18,7 +18,7 @@ class Note(ftrack_api.entity.base.Entity):
             standard :meth:`Session.create` method.
 
         '''
-        return self.session.create(
+        reply = self.session.create(
             'Note', {
                 'author': author,
                 'text': text,
@@ -27,6 +27,10 @@ class Note(ftrack_api.entity.base.Entity):
                 'in_reply_to': self
             }
         )
+
+        self['replies'].append(reply)
+
+        return reply
 
 
 class CreateNoteMixin(object):
@@ -56,10 +60,14 @@ class CreateNoteMixin(object):
 
         note = self.session.create('Note', data)
 
+        self['notes'].append(note)
+
         for resource in recipients:
-            self.session.create('Recipient', {
+            recipient = self.session.create('Recipient', {
                 'note_id': note['id'],
                 'resource_id': resource['id']
             })
+
+            note['recipients'].append(recipient)
 
         return note

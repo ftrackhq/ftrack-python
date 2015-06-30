@@ -11,13 +11,15 @@ Using notes
 
 Notes can be written on almost all levels in ftrack. To retrieve notes on an
 entity you can either query them or use the relation called `notes`::
-
+    
+    task = session.query('Task').first()
+    
     # Retrieve notes using notes property.
-    notes_on_task = task_entity['notes']
+    notes_on_task = task['notes']
 
     # Or query them.
     notes_on_task = session.query('Note where parent_id is "{}"'.format(
-        task_entity['id']
+        task['id']
     ))
 
 .. note::
@@ -25,9 +27,11 @@ entity you can either query them or use the relation called `notes`::
     It's currently not possible to use the `parent` property when querying
     notes or to use the `parent` property on notes::
 
+        task = session.query('Task').first()
+
         # This won't work in the current version of the API.
         session.query('Note where parent.id is "{}"'.format(
-            task_entity['id']
+            task['id']
         ))
 
         # Neither will this.
@@ -37,32 +41,33 @@ To create new notes you can either use the helper method called `create_note`
 on any entity that can have notes or use :meth:`Session.create` to create them
 manually::
 
+    user = session.query('User').first()
+
     # Create note using the helper method.
-    note = task.create_note('My new note', user)
+    note = task.create_note('My new note', author=user)
 
     # Manually create a note
     note = session.create('Note', {
         'text': 'My new note',
-        'author': user,
-        'parent_id': task['id'],
-        'parent_type': entity.entity_type
+        'author': user
     })
+    
+    task['notes'].append(note)
 
 Replying to an existing note can also be done with a helper method or by
 using :meth:`Session.create`::
 
     # Create using helper method.
-    first_note_on_task = task_entity['notes'][0]
-    first_note_on_task.create_reply('My new reply on note', user)
+    first_note_on_task = task['notes'][0]
+    first_note_on_task.create_reply('My new reply on note', author=user)
 
     # Create manually
     reply = session.create('Note', {
         'text': 'My new note',
-        'author': user,
-        'in_reply_to_id': first_note_on_task['id'],
-        'parent_id': first_note_on_task['parent_id'],
-        'parent_type': first_note_on_task['parent_type']
+        'author': user
     })
+    
+    first_note_on_task.replies.append(reply)
 
 To specify a category when creating a note simply pass a `NoteCategory` instance
 to the helper method::
@@ -72,7 +77,7 @@ to the helper method::
     ).first()
 
     note = task.create_note(
-        'New note with external category', user, category=category
+        'New note with external category', author=user, category=category
     )
 
 You can also set the category when creating a note manually::
@@ -84,10 +89,10 @@ You can also set the category when creating a note manually::
     note = session.create('Note', {
         'text': 'New note with external category',
         'author': user,
-        'parent_id': task['id'],
-        'parent_type': entity.entity_type,
         'category': category
     })
+
+    task['notes'].append(note)
 
 .. note::
 
@@ -100,9 +105,9 @@ receive notifications and the note will be displayed in their inbox.
 
 To add recipients pass a list of user or group instances to the helper method::
 
-    user = session.query('User where first_name is "John"').first()
+    john = session.query('User where first_name is "John"').first()
     animation_group = session.query('Group where name is "Animation"').first()
 
     note = task.create_note(
-        'Note with recipients', user, recipients=[user, group]
+        'Note with recipients', author=user, recipients=[john, group]
     )
