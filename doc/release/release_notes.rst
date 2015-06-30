@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: next
 
+    .. change:: changed
+
+        Now checks for server compatibility and requires an ftrack server
+        version of 3.1 or greater.
+
     .. change:: fixed
         :tags: session
 
