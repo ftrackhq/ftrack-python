@@ -78,13 +78,13 @@ class IncorrectResultError(Error):
     default_message = 'Incorrect result detected.'
 
 
-class NoResultFoundError(Error):
+class NoResultFoundError(IncorrectResultError):
     '''Raise when a result was expected but no result was found.'''
 
     default_message = 'Expected result, but no result was found.'
 
 
-class MultipleResultsFoundError(Error):
+class MultipleResultsFoundError(IncorrectResultError):
     '''Raise when a single result expected, but multiple results found.'''
 
     default_message = 'Expected single result, but received multiple results.'
