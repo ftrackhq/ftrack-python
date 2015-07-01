@@ -16,6 +16,12 @@ Release Notes
         Now checks for server compatibility and requires an ftrack server
         version of 3.1 or greater.
 
+    .. change:: new
+
+        Added convenience methods to :class:`~ftrack_api.query.QueryResult` to
+        fetch :meth:`~ftrack_api.query.QueryResult.first` or exactly
+        :meth:`~ftrack_api.query.QueryResult.one` result.
+
     .. change:: fixed
         :tags: session
 
