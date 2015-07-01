@@ -9,6 +9,7 @@ import os
 import getpass
 import functools
 import itertools
+import distutils.version
 
 import requests
 import requests.auth
@@ -186,6 +187,12 @@ class Session(object):
 
         self.auto_populate = auto_populate
 
+        # Fetch server information and in doing so also check credentials.
+        self._server_information = self._fetch_server_information()
+
+        # Now check compatibility of server based on retrieved information.
+        self.check_server_compatibility()
+
         # Construct event hub and load plugins.
         self._event_hub = ftrack_api.event.hub.EventHub(
             self._server_url,
@@ -212,6 +219,11 @@ class Session(object):
         self._configure_locations()
 
     @property
+    def server_information(self):
+        '''Return server information such as server version.'''
+        return self._server_information.copy()
+
+    @property
     def server_url(self):
         '''Return server ulr used for session.'''
         return self._server_url
@@ -230,6 +242,28 @@ class Session(object):
     def event_hub(self):
         '''Return event hub.'''
         return self._event_hub
+
+    def check_server_compatibility(self):
+        '''Check compatibility with connected server.'''
+        server_version = self.server_information.get('version')
+        if server_version is None:
+            raise ftrack_api.exception.ServerCompatibilityError(
+                'Could not determine server version.'
+            )
+
+        # Perform basic version check.
+        if server_version != 'dev':
+            minimum_server_version = '3.1'
+            if (
+                distutils.version.LooseVersion(server_version)
+                < distutils.version.LooseVersion(minimum_server_version)
+            ):
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {} incompatible with this version of the '
+                    'API which requires a server version >= {}'.format(
+                        server_version, minimum_server_version
+                    )
+                )
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
@@ -979,6 +1013,11 @@ class Session(object):
 
             # Clear operations.
             self.recorded_operations.clear()
+
+    def _fetch_server_information(self):
+        '''Return server information.'''
+        result = self._call([{'action': 'query_server_information'}])
+        return result[0]
 
     def _discover_plugins(self):
         '''Find and load plugins in search paths.

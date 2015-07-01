@@ -167,17 +167,17 @@ class Factory(object):
 
 def default_task_status(entity):
     '''Return default task status entity for *entity*.'''
-    return entity.session.query('TaskStatus')[0]
+    return entity.session.query('TaskStatus').first()
 
 
 def default_task_type(entity):
     '''Return default task type entity for *entity*.'''
-    return entity.session.query('TaskType')[0]
+    return entity.session.query('TaskType').first()
 
 
 def default_task_priority(entity):
     '''Return default task priority entity for *entity*.'''
-    return entity.session.query('PriorityType')[0]
+    return entity.session.query('PriorityType').first()
 
 
 class StandardFactory(Factory):

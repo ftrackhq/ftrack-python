@@ -3,7 +3,10 @@
 
 import uuid
 
+import pytest
+
 import ftrack_api
+import ftrack_api.exception
 
 
 class TestQuery(object):
@@ -22,7 +25,7 @@ class TestQuery(object):
     def _create_project(self):
         '''Create a project with tasks and return their names.'''
         name = 'projectname_{0}'.format(uuid.uuid1().hex)
-        project_schema = self.session.query('ProjectSchema')[0]
+        project_schema = self.session.query('ProjectSchema').first()
         default_task_type = project_schema.get_types('Task')[0]
         default_task_status = project_schema.get_statuses(
             'Task', default_task_type['id']
@@ -91,3 +94,44 @@ class TestQuery(object):
             result[0]['name'] in task_names and
             result[1]['name'] in task_names
         )
+
+
+
+def test_all(session):
+    '''Return all results using convenience method.'''
+    results = session.query('User').all()
+    assert isinstance(results, list)
+    assert len(results)
+
+
+def test_one(session):
+    '''Return single result using convenience method.'''
+    user = session.query('User where username is jenkins').one()
+    assert user['username'] == 'jenkins'
+
+
+def test_one_fails_for_no_results(session):
+    '''Fail to fetch single result when no results available.'''
+    with pytest.raises(ftrack_api.exception.NoResultFoundError):
+        session.query('User where username is does_not_exist').one()
+
+
+def test_one_fails_for_multiple_results(session):
+    '''Fail to fetch single result when multiple results available.'''
+    with pytest.raises(ftrack_api.exception.MultipleResultsFoundError):
+        session.query('User').one()
+
+
+def test_first(session):
+    '''Return first result using convenience method.'''
+    users = session.query('User').all()
+
+    user = session.query('User').first()
+    assert user == users[0]
+
+
+def test_first_returns_none_when_no_results(session):
+    '''Return None when no results available.'''
+    user = session.query('User where username is does_not_exist').first()
+    assert user is None
+
