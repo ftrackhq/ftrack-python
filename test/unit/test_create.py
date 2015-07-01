@@ -35,7 +35,7 @@ class TestCreateProject(object):
     def test_create_project(self):
         '''Create a project with sequences, shots and tasks.'''
         name = 'projectname_{0}'.format(uuid.uuid1().hex)
-        project_schema = self.session.query('ProjectSchema')[0]
+        project_schema = self.session.query('ProjectSchema').first()
         default_shot_status = project_schema.get_statuses('Shot')[0]
         default_task_type = project_schema.get_types('Task')[0]
         default_task_status = project_schema.get_statuses(

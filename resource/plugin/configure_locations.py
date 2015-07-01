@@ -14,7 +14,7 @@ def configure_locations(event):
 
     # Find location(s) and customise instances.
     #
-    # location = session.query('Location where name is "my.location"')[0]
+    # location = session.query('Location where name is "my.location"').one()
     # ftrack_api.mixin(location, ftrack_api.entity.location.UnmanagedLocationMixin)
     # location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
 
