@@ -8,7 +8,7 @@ class Note(ftrack_api.entity.base.Entity):
     '''Represent a note.'''
 
     def create_reply(
-        self, text, author
+        self, content, author
     ):
         '''Create a reply with *text* and *author*.
 
@@ -21,10 +21,7 @@ class Note(ftrack_api.entity.base.Entity):
         reply = self.session.create(
             'Note', {
                 'author': author,
-                'text': text,
-                'parent_id': self['parent_id'],
-                'parent_type': self['parent_type'],
-                'in_reply_to': self
+                'content': content
             }
         )
 
@@ -36,7 +33,7 @@ class Note(ftrack_api.entity.base.Entity):
 class CreateNoteMixin(object):
     '''Mixin to add create_note method on entity class.'''
 
-    def create_note(self, text, author, recipients=None, category=None):
+    def create_note(self, content, author, recipients=None, category=None):
         '''Create note with *text*, *author*.
 
         Note category can be set by including *category* and *recipients*
@@ -51,11 +48,9 @@ class CreateNoteMixin(object):
             category_id = category['id']
 
         data = {
-            'text': text,
+            'content': content,
             'author': author,
-            'category_id': category_id,
-            'parent_id': self['id'],
-            'parent_type': self.entity_type
+            'category_id': category_id
         }
 
         note = self.session.create('Note', data)

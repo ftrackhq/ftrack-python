@@ -13,7 +13,7 @@ def test_create_reply(session, new_note, user, unique_name):
 
     assert len(new_note['replies']) == 1
 
-    assert reply_text == new_note['replies'][0]['text']
+    assert reply_text == new_note['replies'][0]['content']
 
 
 def test_create_note_on_asset_version(session, user, unique_name):
