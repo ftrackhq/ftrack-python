@@ -1168,7 +1168,8 @@ class Session(object):
         '''Make request to server with *data*.'''
         url = self._server_url + '/api'
         headers = {
-            'content-type': 'application/json'
+            'content-type': 'application/json',
+            'accept': 'application/json'
         }
         data = self.encode(data, entity_attribute_strategy='modified_only')
 
@@ -1186,43 +1187,21 @@ class Session(object):
             'Call took: {0}'.format(response.elapsed.total_seconds())
         )
 
-        if response.status_code != 200:
-            message = (
-                'Unanticipated server error occurred. '
-                'Please contact support@ftrack.com'
-            )
-
-            # TODO: Would be good if the server returned structured errors
-            # rather than HTML for error codes so that extraction /
-            # reinterpreting is not necessary.
-            if response.status_code == 402:
-                message = (
-                    'Server reported a license error. Please check your server '
-                    'license is valid and try again.'
-                )
-
-            elif 'Python API is disabled' in response.text:
-                message = (
-                    'Python API is disabled on the server. Please ask your '
-                    'system administrator to enable it.'
-                )
-
-            elif response.status_code == 500:
-                message = response.text
-
-            raise ftrack_api.exception.ServerError(message)
-
-        else:
-            self.logger.debug(
-                'Response: {0!r}'.format(response.text)
-            )
-
+        self.logger.debug('Response: {0!r}'.format(response.text))
+        try:
             result = self.decode(response.text)
 
+        except Exception:
+            raise ftrack_api.exception.ServerError(
+                'Server reported error in unexpected format. Raw error was: {}'
+                .format(response.text)
+            )
+
+        else:
             if 'exception' in result:
                 # Handle exceptions.
                 raise ftrack_api.exception.ServerError(
-                    'Server reported error {0}({1})'.format(
+                    'Server reported error: {0}({1})'.format(
                         result['exception'],
                         result['content']
                     )
