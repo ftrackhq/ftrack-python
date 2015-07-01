@@ -383,10 +383,6 @@ class CollectionAttribute(AbstractCollectionAttribute):
     #: Collection class used by attribute.
     collection_class = ftrack_api.collection.Collection
 
-    def _placeholder_collection(self, entity):
-        '''Create and return an appropriate placeholder collection.'''
-        return ftrack_api.collection.Collection(entity, self)
-
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to a Collection instance on *entity*.'''
 
