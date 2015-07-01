@@ -158,6 +158,22 @@ class MappedCollectionProxy(collections.MutableMapping):
         self.key_attribute = key_attribute
         self.value_attribute = value_attribute
 
+    def __copy__(self):
+        '''Return shallow copy.
+
+        .. note::
+
+            To maintain expectations on usage, the shallow copy will include a
+            shallow copy of the underlying collection.
+
+        '''
+        cls = self.__class__
+        copied_instance = cls.__new__(cls)
+        copied_instance.__dict__.update(self.__dict__)
+        copied_instance.collection = copy.copy(self.collection)
+
+        return copied_instance
+
     @property
     def mutable(self):
         '''Return whether collection is mutable.'''
