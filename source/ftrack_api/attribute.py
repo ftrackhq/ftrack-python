@@ -319,6 +319,22 @@ class CollectionAttribute(Attribute):
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
 
+        value = self.get_local_value(entity)
+
+        # If the local value has not yet been set at this point populate it
+        # with an empty default Collection so that the user can access the
+        # the attribute in an expected manner. This is for example needed
+        # when accessing Collection attributes on a newly created entity
+        # before it has been persisted.
+        if value is ftrack_api.symbol.NOT_SET:
+            try:
+                with entity.session.operation_recording(False):
+                    self.set_local_value(
+                        entity, ftrack_api.collection.Collection(entity, self)
+                    )
+            except ftrack_api.exception.ImmutableAttributeError:
+                pass
+
         return self.get_local_value(entity)
 
     def set_local_value(self, entity, value):

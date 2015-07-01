@@ -16,13 +16,13 @@ def test_create_reply(session, new_note, user, unique_name):
     assert reply_text == new_note['replies'][0]['content']
 
 
-def test_create_note_on_asset_version(session, user, unique_name):
+def test_create_note_on_asset_version(session, user, unique_name, new_user):
     '''Test create note method on asset version.'''
     asset_version = session.query('AssetVersion').all()[0]
 
     notes_count = len(asset_version['notes'])
 
-    note = asset_version.create_note(unique_name, user)
+    note = asset_version.create_note(unique_name, user, recipients=[new_user])
 
     session.commit()
 
