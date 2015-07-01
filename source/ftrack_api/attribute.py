@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import collections
+import copy
 
 import ftrack_api.symbol
 import ftrack_api.exception
@@ -286,8 +287,11 @@ class ReferenceAttribute(Attribute):
         return False
 
 
-class CollectionAttribute(Attribute):
-    '''Represent a collection of other entities.'''
+class AbstractCollectionAttribute(Attribute):
+    '''Base class for collection attributes.'''
+
+    #: Collection class used by attribute.
+    collection_class = None
 
     def get_value(self, entity):
         '''Return current value for *entity*.
@@ -303,7 +307,7 @@ class CollectionAttribute(Attribute):
             set.
 
         '''
-        super(CollectionAttribute, self).get_value(entity)
+        super(AbstractCollectionAttribute, self).get_value(entity)
 
         # Conditionally, copy remote value into local value so that it can be
         # mutated without side effects.
@@ -311,26 +315,29 @@ class CollectionAttribute(Attribute):
         remote_value = self.get_remote_value(entity)
         if (
             local_value is ftrack_api.symbol.NOT_SET
-            and isinstance(remote_value, ftrack_api.collection.Collection)
+            and isinstance(remote_value, self.collection_class)
         ):
             try:
                 with entity.session.operation_recording(False):
-                    self.set_local_value(entity, remote_value[:])
+                    self.set_local_value(entity, copy.copy(remote_value))
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
 
         value = self.get_local_value(entity)
 
-        # If the local value has not yet been set at this point populate it
-        # with an empty default Collection so that the user can access the
-        # the attribute in an expected manner. This is for example needed
-        # when accessing Collection attributes on a newly created entity
-        # before it has been persisted.
+        # If the local value is still not set then attempt to set it with a
+        # suitable placeholder collection so that the caller can interact with
+        # the collection using its normal interface. This is required for a
+        # newly created entity for example. It *could* be done as a simple
+        # default value, but that would incur cost for every collection even
+        # when they are not modified before commit.
         if value is ftrack_api.symbol.NOT_SET:
             try:
                 with entity.session.operation_recording(False):
                     self.set_local_value(
-                        entity, ftrack_api.collection.Collection(entity, self)
+                        entity,
+                        # None should be treated as empty collection.
+                        self._adapt_to_collection(entity, None)
                     )
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
@@ -343,7 +350,7 @@ class CollectionAttribute(Attribute):
             value = self._adapt_to_collection(entity, value)
             value.mutable = self.mutable
 
-        super(CollectionAttribute, self).set_local_value(entity, value)
+        super(AbstractCollectionAttribute, self).set_local_value(entity, value)
 
     def set_remote_value(self, entity, value):
         '''Set remote *value*.
@@ -357,22 +364,49 @@ class CollectionAttribute(Attribute):
             value = self._adapt_to_collection(entity, value)
             value.mutable = False
 
-        super(CollectionAttribute, self).set_remote_value(entity, value)
+        super(AbstractCollectionAttribute, self).set_remote_value(entity, value)
+
+    def _adapt_to_collection(self, entity, value):
+        '''Adapt *value* to appropriate collection instance for *entity*.
+
+        .. note::
+
+            If *value* is None then return a suitable empty collection.
+
+        '''
+        raise NotImplementedError()
+
+
+class CollectionAttribute(AbstractCollectionAttribute):
+    '''Represent a collection of other entities.'''
+
+    #: Collection class used by attribute.
+    collection_class = ftrack_api.collection.Collection
+
+    def _placeholder_collection(self, entity):
+        '''Create and return an appropriate placeholder collection.'''
+        return ftrack_api.collection.Collection(entity, self)
 
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to a Collection instance on *entity*.'''
+
         if not isinstance(value, ftrack_api.collection.Collection):
-            if isinstance(value, list):
+
+            if value is None:
+                value = ftrack_api.collection.Collection(entity, self)
+
+            elif isinstance(value, list):
                 value = ftrack_api.collection.Collection(
                     entity, self, data=value
                 )
+
             else:
                 raise NotImplementedError(
                     'Cannot convert {0!r} to collection.'.format(value)
                 )
 
         else:
-            if not value.attribute is self:
+            if value.attribute is not self:
                 raise ftrack_api.exception.AttributeError(
                     'Collection already bound to a different attribute'
                 )
@@ -380,8 +414,11 @@ class CollectionAttribute(Attribute):
         return value
 
 
-class MappedCollectionAttribute(CollectionAttribute):
+class MappedCollectionAttribute(AbstractCollectionAttribute):
     '''Represent a mapped collection of entities.'''
+
+    #: Collection class used by attribute.
+    collection_class = ftrack_api.collection.MappedCollectionProxy
 
     def __init__(
         self, name, creator, key_attribute, value_attribute, **kw
@@ -405,51 +442,27 @@ class MappedCollectionAttribute(CollectionAttribute):
 
         super(MappedCollectionAttribute, self).__init__(name, **kw)
 
-    def get_value(self, entity):
-        '''Return current value for *entity*.
-
-        If a value was set locally then return it, otherwise return last known
-        remote value. If no remote value yet retrieved, make a request for it
-        via the session and block until available.
-
-        .. note::
-
-            As value is a collection that is mutable, will transfer a remote
-            value into the local value on access if no local value currently
-            set.
-
-        '''
-        super(MappedCollectionAttribute, self).get_value(entity)
-
-        # Conditionally, copy remote value into local value so that it can be
-        # mutated without side effects.
-        local_value = self.get_local_value(entity)
-        remote_value = self.get_remote_value(entity)
-        if (
-            local_value is ftrack_api.symbol.NOT_SET
-            and isinstance(
-                remote_value, ftrack_api.collection.MappedCollectionProxy
-            )
-        ):
-            try:
-                self.set_local_value(entity, remote_value.collection[:])
-            except ftrack_api.exception.ImmutableAttributeError:
-                pass
-
-        return self.get_local_value(entity)
-
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to a MappedCollectionProxy instance on *entity*.'''
         if not isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-            if isinstance(value, (list, ftrack_api.collection.Collection)):
-                value = super(
-                    MappedCollectionAttribute, self
-                )._adapt_to_collection(
-                    entity, value
+
+            if value is None:
+                value = ftrack_api.collection.MappedCollectionProxy(
+                    ftrack_api.collection.Collection(entity, self),
+                    self.creator, self.key_attribute,
+                    self.value_attribute
                 )
 
+            elif isinstance(value, (list, ftrack_api.collection.Collection)):
+
+                if isinstance(value, list):
+                    value = ftrack_api.collection.Collection(
+                        entity, self, data=value
+                    )
+
                 value = ftrack_api.collection.MappedCollectionProxy(
-                    value, self.creator, self.key_attribute, self.value_attribute
+                    value, self.creator, self.key_attribute,
+                    self.value_attribute
                 )
 
             elif isinstance(value, collections.Mapping):
