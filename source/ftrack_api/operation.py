@@ -52,11 +52,17 @@ class CreateEntityOperation(Operation):
         *entity_data* should be a mapping of the initial data to populate the
         entity with when creating.
 
+        .. note::
+
+            Shallow copies will be made of each value in *entity_data*.
+
         '''
         super(CreateEntityOperation, self).__init__()
         self.entity_type = entity_type
         self.entity_key = entity_key
-        self.entity_data = copy.copy(entity_data)
+        self.entity_data = {}
+        for key, value in entity_data.items():
+            self.entity_data[key] = copy.copy(value)
 
 
 class UpdateEntityOperation(Operation):
