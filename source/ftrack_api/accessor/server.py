@@ -2,7 +2,6 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import os
-import uuid
 import hashlib
 import base64
 import json
@@ -58,47 +57,63 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        size = self._get_size()
-        response = requests.post(
-            '{0}/component/put'.format(self._session.server_url),
-            data={
+        url = '{0}/component/getPutMetadata'.format(
+            self._session.server_url
+        )
+
+        # Retrieve component from cache to construct a filename.
+        component = self._session.get('FileComponent', self.resource_identifier)
+        if not component:
+            raise AccessorOperationFailedError(
+                'Unable to retrieve component with id: {0}.'.format(
+                    self.resource_identifier
+                )
+            )
+
+        # Construct a name from component name and file_type.
+        name = component['name']
+        if component['file_type']:
+            name = u'{0}.{1}'.format(
+                name,
+                component['file_type'].lstrip('.')
+            )
+
+        # Get put metadata.
+        response = requests.get(
+            url,
+            params={
                 'id': self.resource_identifier,
                 'username': self._session.api_user,
                 'apiKey': self._session.api_key,
-                'resumableChunkNumber': 1,
-                'resumableChunkSize': size,
-                'resumableCurrentChunkSize': size,
-                'resumableTotalSize': size,
-                'resumableIdentifier': uuid.uuid1().hex,
-                'checksum': self._compute_checksum()
-            },
-            files={'file': self.wrapped_file},
-            allow_redirects=False
+                'checksum': self._compute_checksum(),
+                'fileSize': self._get_size(),
+                'fileName': name
+            }
         )
 
-        if response.status_code == 200:
-            try:
-                data = json.loads(response.text)
-            except ValueError:
-                pass
-            else:
-                if 'url' in data and 'headers' in data:
-                    # The response contains a url and headers that should be
-                    # used to put the file.
-                    self.seek(0)
-
-                    response = requests.put(
-                        data['url'],
-                        data=self.wrapped_file,
-                        headers=data['headers']
-                    )
-                    if response.status_code != 200:
-                        raise AccessorOperationFailedError(
-                            'Failed to write file.'
-                        )
-        else:
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
             raise AccessorOperationFailedError(
-                'Failed to write file.'
+                'Failed to get put metadata: {0}.'.format(error)
+            )
+
+        metadata = json.loads(response.text)
+
+        self.seek(0)
+
+        # Put the file based on the metadata.
+        response = requests.put(
+            metadata['url'],
+            data=self.wrapped_file,
+            headers=metadata['headers']
+        )
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise AccessorOperationFailedError(
+                'Failed to put file to server: {0}.'.format(error)
             )
 
         self.seek(position)
