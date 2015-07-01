@@ -11,12 +11,29 @@ Release Notes
 
 .. release:: next
 
+    .. change:: changed
+
+        Now checks for server compatibility and requires an ftrack server
+        version of 3.1 or greater.
+
+    .. change:: new
+
+        Added convenience methods to :class:`~ftrack_api.query.QueryResult` to
+        fetch :meth:`~ftrack_api.query.QueryResult.first` or exactly
+        :meth:`~ftrack_api.query.QueryResult.one` result.
+
     .. change:: new
         :tags: notes
 
         Added support for handling notes.
 
         .. seealso:: :ref:`example/note`.
+
+    .. change:: fixed
+        :tags: session
+
+        Ambiguous error raised when :class:`Session` is started with an invalid
+        user or key.
 
 .. release:: 0.4.3
     :date: 2015-06-29
