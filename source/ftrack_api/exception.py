@@ -54,6 +54,12 @@ class ServerError(Error):
     default_message = 'Server reported error processing request.'
 
 
+class ServerCompatibilityError(ServerError):
+    '''Raise when server appears incompatible.'''
+
+    default_message = 'Server incompatible.'
+
+
 class NotFoundError(Error):
     '''Raise when something that should exist is not found.'''
 
@@ -64,6 +70,24 @@ class NotUniqueError(Error):
     '''Raise when unique value required and duplicate detected.'''
 
     default_message = 'Non-unique value detected.'
+
+
+class IncorrectResultError(Error):
+    '''Raise when a result is incorrect.'''
+
+    default_message = 'Incorrect result detected.'
+
+
+class NoResultFoundError(IncorrectResultError):
+    '''Raise when a result was expected but no result was found.'''
+
+    default_message = 'Expected result, but no result was found.'
+
+
+class MultipleResultsFoundError(IncorrectResultError):
+    '''Raise when a single result expected, but multiple results found.'''
+
+    default_message = 'Expected single result, but received multiple results.'
 
 
 class EntityTypeError(Error):
