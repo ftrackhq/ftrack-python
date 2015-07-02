@@ -253,7 +253,7 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            minimum_server_version = '3.1'
+            minimum_server_version = '3.1.2'
             if (
                 distutils.version.LooseVersion(server_version)
                 < distutils.version.LooseVersion(minimum_server_version)
