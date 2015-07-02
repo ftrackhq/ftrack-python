@@ -29,6 +29,12 @@ Release Notes
 
         .. seealso:: :ref:`example/note`.
 
+    .. change:: changed
+
+        Collection attributes generate empty collection on first access when no
+        remote value available. This allows interacting with a collection on a
+        newly created entity before committing.
+
     .. change:: fixed
         :tags: session
 
