@@ -481,12 +481,15 @@ class Memoiser(object):
 
     '''
 
-    def __init__(self, cache=None, key_maker=None):
+    def __init__(self, cache=None, key_maker=None, return_copies=True):
         '''Initialise with *cache* and *key_maker* to use.
 
         If *cache* is not specified a default :class:`MemoryCache` will be
         used. Similarly, if *key_maker* is not specified a default
         :class:`ObjectKeyMaker` will be used.
+
+        If *return_copies* is True then all results returned from the cache will
+        be deep copies to avoid indirect mutation of cached values.
 
         '''
         self.cache = cache
@@ -497,6 +500,7 @@ class Memoiser(object):
         if self.key_maker is None:
             self.key_maker = ObjectKeyMaker()
 
+        self.return_copies = return_copies
         super(Memoiser, self).__init__()
 
     def call(self, function, args=None, kw=None):
@@ -525,9 +529,12 @@ class Memoiser(object):
             value = function(*args, **kw)
             self.cache.set(key, value)
 
-        # Return copy of value to avoid stored value being inadvertently
-        # altered by the caller.
-        return copy.deepcopy(value)
+        # If requested, deep copy value to return in order to avoid cached value
+        # being inadvertently altered by the caller.
+        if self.return_copies:
+            value = copy.deepcopy(value)
+
+        return value
 
 
 def memoise_decorator(memoiser):
