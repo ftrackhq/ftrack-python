@@ -2,10 +2,30 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import uuid
+import tempfile
+import os
 
 import pytest
 
 import ftrack_api
+
+
+@pytest.fixture()
+def temporary_file(request):
+    '''Return temporary file.'''
+    file_handle, path = tempfile.mkstemp()
+    os.close(file_handle)
+
+    def cleanup():
+        '''Remove temporary file.'''
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+    request.addfinalizer(cleanup)
+
+    return path
 
 
 @pytest.fixture()

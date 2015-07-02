@@ -41,6 +41,13 @@ Release Notes
         Ambiguous error raised when :class:`Session` is started with an invalid
         user or key.
 
+    .. change:: fixed
+        :tags: caching, session
+
+        :meth:`Session.merge` fails against
+        :class:`~ftrack_api.cache.SerialisedCache` when circular reference
+        encountered due to entity identity not being prioritised in merge.
+
 .. release:: 0.4.3
     :date: 2015-06-29
 
