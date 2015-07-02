@@ -233,3 +233,21 @@ def new_job(request, session, unique_name, user):
     request.addfinalizer(cleanup)
 
     return job
+
+
+@pytest.fixture()
+def new_note(request, session, unique_name, new_task, user):
+    '''Return a new note.'''
+
+    note = new_task.create_note(unique_name, user)
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(note)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return note

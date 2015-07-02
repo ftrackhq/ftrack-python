@@ -9,12 +9,12 @@ Handling events
 
 .. currentmodule:: ftrack_api.event
 
-Events are generated in ftrack when things happen such as a task being updatedor
-a new version being published. Each :class:`~ftrack_api.session.Session`
-automatically connectsto the event server and can be used to subscribe to
-specific events and performan action as a result. That action could be updating
-another related entitybased on a status change or generating folders when a new
-shot is created forexample.
+Events are generated in ftrack when things happen such as a task being updated
+or a new version being published. Each :class:`~ftrack_api.session.Session`
+automatically connects to the event server and can be used to subscribe to
+specific events and perform an action as a result. That action could be updating
+another related entity based on a status change or generating folders when a new
+shot is created for example.
 
 The :class:`~hub.EventHub` for each :class:`~ftrack_api.session.Session` is
 accessible via :attr:`Session.event_hub
