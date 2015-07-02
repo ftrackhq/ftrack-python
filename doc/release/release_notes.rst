@@ -13,6 +13,17 @@ Release Notes
 
     .. change:: changed
 
+        Defaults computed by :class:`~ftrack_api.entity.factory.StandardFactory`
+        are now memoised per session to improve performance.
+
+    .. change:: changed
+
+        :class:`~ftrack_api.cache.Memoiser` now supports a *return_copies*
+        parameter to control whether deep copies should be returned when a value
+        was retrieved from the cache.
+
+    .. change:: changed
+
         Now checks for server compatibility and requires an ftrack server
         version of 3.1 or greater.
 
