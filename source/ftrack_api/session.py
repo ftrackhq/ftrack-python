@@ -359,10 +359,13 @@ class Session(object):
             # to ensure that all recorded values are fully merged into session.
             if self.record_operations:
                 entity_data = {}
-                with self.auto_populating(False):
-                    for key, value in entity.items():
-                        if value is not ftrack_api.symbol.NOT_SET:
-                            entity_data[key] = value
+
+                # Lower level API used here to avoid including any empty
+                # collections that are automatically generated on access.
+                for attribute in entity.attributes:
+                    value = attribute.get_local_value(entity)
+                    if value is not ftrack_api.symbol.NOT_SET:
+                        entity_data[attribute.name] = value
 
                 self.recorded_operations.push(
                     ftrack_api.operation.CreateEntityOperation(
@@ -1281,19 +1284,19 @@ class Session(object):
         if isinstance(item, ftrack_api.entity.base.Entity):
             data = self._entity_reference(item)
 
-            auto_populate = False
-            if entity_attribute_strategy == 'all':
-                auto_populate = True
-
-            with self.auto_populating(auto_populate):
+            with self.auto_populating(True):
 
                 for attribute in item.attributes:
                     value = ftrack_api.symbol.NOT_SET
 
-                    if entity_attribute_strategy in ('all', 'set_only'):
-                        # Note: Auto-populate setting ensures correct behaviour
-                        # when attribute has not been set.
+                    if entity_attribute_strategy == 'all':
                         value = attribute.get_value(item)
+
+                    elif entity_attribute_strategy == 'set_only':
+                        if attribute.is_set(item):
+                            value = attribute.get_local_value(item)
+                            if value is ftrack_api.symbol.NOT_SET:
+                                value = attribute.get_remote_value(item)
 
                     elif entity_attribute_strategy == 'modified_only':
                         if attribute.is_modified(item):

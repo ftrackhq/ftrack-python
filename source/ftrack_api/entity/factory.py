@@ -11,6 +11,7 @@ import ftrack_api.entity.location
 import ftrack_api.entity.component
 import ftrack_api.entity.asset_version
 import ftrack_api.entity.project_schema
+import ftrack_api.entity.note
 import ftrack_api.entity.job
 import ftrack_api.symbol
 
@@ -185,34 +186,44 @@ class StandardFactory(Factory):
 
     def create(self, schema, bases=None):
         '''Create and return entity class from *schema*.'''
+
+        if not bases:
+            bases = []
+
         # Customise classes.
         if schema['id'] == 'ProjectSchema':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.project_schema.ProjectSchema]
-            )
+            bases = [ftrack_api.entity.project_schema.ProjectSchema]
 
         elif schema['id'] == 'Location':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.location.Location]
-            )
+            bases = [ftrack_api.entity.location.Location]
 
         elif schema['id'] == 'AssetVersion':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.asset_version.AssetVersion]
-            )
+            bases = [ftrack_api.entity.asset_version.AssetVersion]
 
         elif schema['id'].endswith('Component'):
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.component.Component]
+            bases = [ftrack_api.entity.component.Component]
+
+        elif schema['id'] == 'Note':
+            bases = [ftrack_api.entity.note.Note]
+
+        elif schema['id'] == 'Job':
+            bases = [ftrack_api.entity.job.Job]
+
+        # If bases does not contain any items, add the base entity class.
+        if not bases:
+            bases = [ftrack_api.entity.base.Entity]
+
+        # Add mixins.
+        if schema['id'] in (
+            'AssetVersion', 'Episode', 'Sequence',
+            'Shot', 'AssetBuild', 'Task', 'Project',
+            'ReviewSessionObject'
+        ):
+            bases.append(
+                ftrack_api.entity.note.CreateNoteMixin
             )
 
-        elif schema['id'].endswith('Job'):
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.job.Job]
-            )
-
-        else:
-            cls = super(StandardFactory, self).create(schema, bases=bases)
+        cls = super(StandardFactory, self).create(schema, bases=bases)
 
         # Add dynamic default values to appropriate attributes so that end
         # users don't need to specify them each time.
