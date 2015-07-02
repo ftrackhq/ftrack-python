@@ -37,9 +37,9 @@ entity you can either query them or use the relation called `notes`::
         # Neither will this.
         parent_of_note = note['parent']
 
-To create new notes you can either use the helper method called `create_note`
-on any entity that can have notes or use :meth:`Session.create` to create them
-manually::
+To create new notes you can either use the helper method called
+:meth:`~ftrack_api.entity.note.CreateNoteMixin.create_note` on any entity that
+can have notes or use :meth:`Session.create` to create them manually::
 
     user = session.query('User').first()
 
@@ -105,9 +105,9 @@ receive notifications and the note will be displayed in their inbox.
 
 To add recipients pass a list of user or group instances to the helper method::
 
-    john = session.query('User where first_name is "John"').first()
+    john = session.query('User where username is "john"').one()
     animation_group = session.query('Group where name is "Animation"').first()
 
     note = task.create_note(
-        'Note with recipients', author=user, recipients=[john, group]
+        'Note with recipients', author=user, recipients=[john, animation_group]
     )
