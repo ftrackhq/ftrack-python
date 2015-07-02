@@ -48,7 +48,7 @@ manually::
 
     # Manually create a note
     note = session.create('Note', {
-        'text': 'My new note',
+        'content': 'My new note',
         'author': user
     })
     
@@ -63,7 +63,7 @@ using :meth:`Session.create`::
 
     # Create manually
     reply = session.create('Note', {
-        'text': 'My new note',
+        'content': 'My new note',
         'author': user
     })
     
@@ -87,7 +87,7 @@ You can also set the category when creating a note manually::
     ).first()
 
     note = session.create('Note', {
-        'text': 'New note with external category',
+        'content': 'New note with external category',
         'author': user,
         'category': category
     })

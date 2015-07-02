@@ -10,7 +10,7 @@ class Note(ftrack_api.entity.base.Entity):
     def create_reply(
         self, content, author
     ):
-        '''Create a reply with *text* and *author*.
+        '''Create a reply with *content* and *author*.
 
         .. note::
 
@@ -34,7 +34,7 @@ class CreateNoteMixin(object):
     '''Mixin to add create_note method on entity class.'''
 
     def create_note(self, content, author, recipients=None, category=None):
-        '''Create note with *text*, *author*.
+        '''Create note with *content*, *author*.
 
         Note category can be set by including *category* and *recipients*
         can be specified as a list of user or group instances.
