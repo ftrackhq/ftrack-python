@@ -9,6 +9,19 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: changed
+
+        Defaults computed by :class:`~ftrack_api.entity.factory.StandardFactory`
+        are now memoised per session to improve performance.
+
+    .. change:: changed
+
+        :class:`~ftrack_api.cache.Memoiser` now supports a *return_copies*
+        parameter to control whether deep copies should be returned when a value
+        was retrieved from the cache.
+
 .. release:: 0.5.0
     :date: 2015-07-02
 

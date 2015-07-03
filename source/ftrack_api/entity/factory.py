@@ -14,6 +14,7 @@ import ftrack_api.entity.project_schema
 import ftrack_api.entity.note
 import ftrack_api.entity.job
 import ftrack_api.symbol
+import ftrack_api.cache
 
 
 class Factory(object):
@@ -166,16 +167,43 @@ class Factory(object):
         )
 
 
+
+class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
+    '''Generate key for defaults.'''
+
+    def _key(self, obj):
+        '''Return key for *obj*.'''
+        if isinstance(obj, dict):
+            entity = obj.get('entity')
+            if entity is not None:
+                # Key by session only.
+                return str(id(entity.session))
+
+        return str(obj)
+
+
+#: Memoiser for use with default callables that should only be called once per
+# session.
+memoise_defaults = ftrack_api.cache.memoise_decorator(
+    ftrack_api.cache.Memoiser(
+        key_maker=PerSessionDefaultKeyMaker(), return_copies=False
+    )
+)
+
+
+@memoise_defaults
 def default_task_status(entity):
     '''Return default task status entity for *entity*.'''
     return entity.session.query('TaskStatus').first()
 
 
+@memoise_defaults
 def default_task_type(entity):
     '''Return default task type entity for *entity*.'''
     return entity.session.query('TaskType').first()
 
 
+@memoise_defaults
 def default_task_priority(entity):
     '''Return default task priority entity for *entity*.'''
     return entity.session.query('PriorityType').first()
