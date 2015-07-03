@@ -9,8 +9,7 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: 0.5.0
-    :date: 2015-07-02
+.. release:: next
 
     .. change:: changed
 
@@ -22,6 +21,9 @@ Release Notes
         :class:`~ftrack_api.cache.Memoiser` now supports a *return_copies*
         parameter to control whether deep copies should be returned when a value
         was retrieved from the cache.
+
+.. release:: 0.5.0
+    :date: 2015-07-02
 
     .. change:: changed
 
