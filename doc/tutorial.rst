@@ -92,7 +92,7 @@ Some attributes on an entity will refer to another entity or collection of
 entities, such as *children* on a *Project* being a collection of *Context*
 entities that have the project as their parent::
 
-    >>> project = session.query('Project')[0]
+    >>> project = session.query('Project').first()
     >>> print project['children']
     <ftrack_api.collection.Collection object at 0x00000000045B1438>
 

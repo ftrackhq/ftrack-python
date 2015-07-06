@@ -94,11 +94,11 @@ server::
 Where possible, query results are merged in with existing data transparently
 with any local changes preserved::
 
-    >>> user = session.query('User')[0]
+    >>> user = session.query('User').first()
     >>> user['email'] = 'me@example.com'  # Not yet committed to server.
     >>> retrieved = session.query(
     ...     'User where id is "{0}"'.format(user['id'])
-    ... )[0]
+    ... ).one()
     >>> print retrieved['email']  # Displays locally set value.
     'me@example.com'
     >>> print retrieved is user
@@ -116,7 +116,7 @@ session is configured to auto-populate missing attribute values on access. This
 means that the first time you access an attribute on an entity instance a query
 will be sent to the server to fetch the value::
 
-    user = session.query('User')[0]
+    user = session.query('User').first()
     # The next command will issue a request to the server to fetch the
     # 'username' value on demand at this is the first time it is accessed.
     print user['username']

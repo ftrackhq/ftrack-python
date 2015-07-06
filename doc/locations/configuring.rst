@@ -27,7 +27,7 @@ Configuring manually
 Locations can be configured manually when using a session by retrieving the
 location and setting the appropriate attributes::
 
-    location = session.query('Location where name is "my.location"')[0]
+    location = session.query('Location where name is "my.location"').one()
     location.structure = ftrack_api.structure.id.IdStructure()
     location.priority = 50
 
@@ -59,7 +59,7 @@ time::
         session = event['data']['session']
 
         # Find location(s) and customise instances.
-        location = session.query('Location where name is "my.location"')[0]
+        location = session.query('Location where name is "my.location"').one()
         ftrack_api.mixin(location, ftrack_api.entity.location.UnmanagedLocationMixin)
         location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
         location.structure = ftrack_api.structure.id.IdStructure()

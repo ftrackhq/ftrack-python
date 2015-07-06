@@ -4,9 +4,11 @@
 import uuid
 
 import pytest
+import mock
 
 import ftrack_api.inspection
 import ftrack_api.symbol
+import ftrack_api.exception
 
 
 def test_get_entity(session, user):
@@ -107,7 +109,7 @@ def test_reconstruct_empty_entity(session):
 def test_delete_operation_ordering(session, unique_name):
     '''Delete entities in valid order.'''
     # Construct entities.
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
     project = session.create('Project', {
         'name': unique_name,
         'full_name': unique_name,
@@ -190,15 +192,15 @@ def test_operation_optimisation_on_commit(session, mocker):
     user_c['email'] = 'ignore@example.com'
     session.delete(user_c)
 
+    user_a_entity_key = ftrack_api.inspection.primary_key(user_a).values()
+    user_b_entity_key = ftrack_api.inspection.primary_key(user_b).values()
+
     session.commit()
 
     # The above operations should have translated into three payloads to call
     # (two creates and one update).
     payloads = mocked.call_args[0][0]
     assert len(payloads) == 3
-
-    user_a_entity_key = ftrack_api.inspection.primary_key(user_a).values()
-    user_b_entity_key= ftrack_api.inspection.primary_key(user_b).values()
 
     assert payloads[0]['action'] == 'create'
     assert payloads[0]['entity_key'] == user_a_entity_key
@@ -334,3 +336,28 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
     new_session.populate(retrieved_entity, 'value')
     assert retrieved_entity['value'] == 'value'
+
+
+@pytest.mark.parametrize('server_information, compatible', [
+    ({}, False),
+    ({'version': '3.1.2'}, True),
+    ({'version': '4'}, True),
+    ({'version': '3.0'}, False)
+], ids=[
+    'No information',
+    'Valid current version',
+    'Valid higher version',
+    'Invalid lower version'
+])
+def test_check_server_compatibility(
+    server_information, compatible, session
+):
+    '''Check server compatibility.'''
+    with mock.patch.dict(
+        session._server_information, server_information, clear=True
+    ):
+        if compatible:
+            session.check_server_compatibility()
+        else:
+            with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
+                session.check_server_compatibility()

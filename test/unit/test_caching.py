@@ -100,7 +100,7 @@ def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
         'children.children.children.assignments.resource '
         'from Project where id is "{0}"'
         .format(new_project_tree['id'])
-    )[0]
+    ).one()
 
     # Disable server calls.
     mocker.patch.object(session, '_call')
@@ -157,3 +157,17 @@ def test_get_metadata_from_cache(session, mocker, cache, new_task):
         assert metadata['key'] == 'value'
 
     assert not fresh_session._call.called
+
+
+def test_merge_circular_reference(cache, temporary_file):
+    '''Merge circular reference into cache.'''
+    session = ftrack_api.Session(cache=cache)
+    # The following will test the condition as a FileComponent will be created
+    # with corresponding ComponentLocation. The server will return the file
+    # component data with the component location embedded. The component
+    # location will in turn have an embedded reference to the file component.
+    # If the merge does not prioritise the primary keys of the instance then
+    # any cache that relies on using the identity of the file component will
+    # fail.
+    component = session.create_component(path=temporary_file)
+    assert component

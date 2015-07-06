@@ -9,6 +9,99 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: 0.5.1
+    :date: 2015-06-06
+
+    .. change:: changed
+
+        Defaults computed by :class:`~ftrack_api.entity.factory.StandardFactory`
+        are now memoised per session to improve performance.
+
+    .. change:: changed
+
+        :class:`~ftrack_api.cache.Memoiser` now supports a *return_copies*
+        parameter to control whether deep copies should be returned when a value
+        was retrieved from the cache.
+
+.. release:: 0.5.0
+    :date: 2015-07-02
+
+    .. change:: changed
+
+        Now checks for server compatibility and requires an ftrack server
+        version of 3.1 or greater.
+
+    .. change:: new
+
+        Added convenience methods to :class:`~ftrack_api.query.QueryResult` to
+        fetch :meth:`~ftrack_api.query.QueryResult.first` or exactly
+        :meth:`~ftrack_api.query.QueryResult.one` result.
+
+    .. change:: new
+        :tags: notes
+
+        Added support for handling notes.
+
+        .. seealso:: :ref:`example/note`.
+
+    .. change:: changed
+
+        Collection attributes generate empty collection on first access when no
+        remote value available. This allows interacting with a collection on a
+        newly created entity before committing.
+
+    .. change:: fixed
+        :tags: session
+
+        Ambiguous error raised when :class:`Session` is started with an invalid
+        user or key.
+
+    .. change:: fixed
+        :tags: caching, session
+
+        :meth:`Session.merge` fails against
+        :class:`~ftrack_api.cache.SerialisedCache` when circular reference
+        encountered due to entity identity not being prioritised in merge.
+
+.. release:: 0.4.3
+    :date: 2015-06-29
+
+    .. change:: fixed
+        :tags: plugins, session, entity types
+
+        Entity types not constructed following standard install.
+
+        This is because the discovery of the default plugins is unreliable
+        across Python installation processes (pip, wheel etc). Instead, the
+        default plugins have been added as templates to the :ref:`event_list`
+        documentation and the
+        :class:`~ftrack_api.entity.factory.StandardFactory` used to create any
+        missing classes on :class:`Session` startup.
+
+.. release:: 0.4.2
+    :date: 2015-06-26
+
+    .. change:: fixed
+        :tags: metadata
+
+        Setting exact same metadata twice can cause
+        :exc:`~ftrack_api.exception.ImmutableAttributeError` to be incorrectly
+        raised.
+
+    .. change:: fixed
+        :tags: session
+
+        Calling :meth:`Session.commit` does not clear locally set attribute
+        values leading to immutability checks being bypassed in certain cases.
+
+.. release:: 0.4.1
+    :date: 2015-06-25
+
+    .. change:: fixed
+        :tags: metadata
+
+        Setting metadata twice in one session causes `KeyError`.
+
 .. release:: 0.4.0
     :date: 2015-06-22
 
