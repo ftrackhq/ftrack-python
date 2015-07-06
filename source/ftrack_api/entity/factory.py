@@ -11,8 +11,10 @@ import ftrack_api.entity.location
 import ftrack_api.entity.component
 import ftrack_api.entity.asset_version
 import ftrack_api.entity.project_schema
+import ftrack_api.entity.note
 import ftrack_api.entity.job
 import ftrack_api.symbol
+import ftrack_api.cache
 
 
 class Factory(object):
@@ -165,16 +167,43 @@ class Factory(object):
         )
 
 
+
+class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
+    '''Generate key for defaults.'''
+
+    def _key(self, obj):
+        '''Return key for *obj*.'''
+        if isinstance(obj, dict):
+            entity = obj.get('entity')
+            if entity is not None:
+                # Key by session only.
+                return str(id(entity.session))
+
+        return str(obj)
+
+
+#: Memoiser for use with default callables that should only be called once per
+# session.
+memoise_defaults = ftrack_api.cache.memoise_decorator(
+    ftrack_api.cache.Memoiser(
+        key_maker=PerSessionDefaultKeyMaker(), return_copies=False
+    )
+)
+
+
+@memoise_defaults
 def default_task_status(entity):
     '''Return default task status entity for *entity*.'''
     return entity.session.query('TaskStatus').first()
 
 
+@memoise_defaults
 def default_task_type(entity):
     '''Return default task type entity for *entity*.'''
     return entity.session.query('TaskType').first()
 
 
+@memoise_defaults
 def default_task_priority(entity):
     '''Return default task priority entity for *entity*.'''
     return entity.session.query('PriorityType').first()
@@ -185,34 +214,44 @@ class StandardFactory(Factory):
 
     def create(self, schema, bases=None):
         '''Create and return entity class from *schema*.'''
+
+        if not bases:
+            bases = []
+
         # Customise classes.
         if schema['id'] == 'ProjectSchema':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.project_schema.ProjectSchema]
-            )
+            bases = [ftrack_api.entity.project_schema.ProjectSchema]
 
         elif schema['id'] == 'Location':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.location.Location]
-            )
+            bases = [ftrack_api.entity.location.Location]
 
         elif schema['id'] == 'AssetVersion':
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.asset_version.AssetVersion]
-            )
+            bases = [ftrack_api.entity.asset_version.AssetVersion]
 
         elif schema['id'].endswith('Component'):
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.component.Component]
+            bases = [ftrack_api.entity.component.Component]
+
+        elif schema['id'] == 'Note':
+            bases = [ftrack_api.entity.note.Note]
+
+        elif schema['id'] == 'Job':
+            bases = [ftrack_api.entity.job.Job]
+
+        # If bases does not contain any items, add the base entity class.
+        if not bases:
+            bases = [ftrack_api.entity.base.Entity]
+
+        # Add mixins.
+        if schema['id'] in (
+            'AssetVersion', 'Episode', 'Sequence',
+            'Shot', 'AssetBuild', 'Task', 'Project',
+            'ReviewSessionObject'
+        ):
+            bases.append(
+                ftrack_api.entity.note.CreateNoteMixin
             )
 
-        elif schema['id'].endswith('Job'):
-            cls = super(StandardFactory, self).create(
-                schema, bases=[ftrack_api.entity.job.Job]
-            )
-
-        else:
-            cls = super(StandardFactory, self).create(schema, bases=bases)
+        cls = super(StandardFactory, self).create(schema, bases=bases)
 
         # Add dynamic default values to appropriate attributes so that end
         # users don't need to specify them each time.

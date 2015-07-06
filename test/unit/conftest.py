@@ -2,10 +2,30 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import uuid
+import tempfile
+import os
 
 import pytest
 
 import ftrack_api
+
+
+@pytest.fixture()
+def temporary_file(request):
+    '''Return temporary file.'''
+    file_handle, path = tempfile.mkstemp()
+    os.close(file_handle)
+
+    def cleanup():
+        '''Remove temporary file.'''
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+    request.addfinalizer(cleanup)
+
+    return path
 
 
 @pytest.fixture()
@@ -213,3 +233,21 @@ def new_job(request, session, unique_name, user):
     request.addfinalizer(cleanup)
 
     return job
+
+
+@pytest.fixture()
+def new_note(request, session, unique_name, new_task, user):
+    '''Return a new note.'''
+
+    note = new_task.create_note(unique_name, user)
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(note)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return note

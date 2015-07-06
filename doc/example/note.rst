@@ -1,0 +1,113 @@
+..
+    :copyright: Copyright (c) 2015 ftrack
+
+.. currentmodule:: ftrack_api.session
+
+.. _example/note:
+
+***********
+Using notes
+***********
+
+Notes can be written on almost all levels in ftrack. To retrieve notes on an
+entity you can either query them or use the relation called `notes`::
+    
+    task = session.query('Task').first()
+    
+    # Retrieve notes using notes property.
+    notes_on_task = task['notes']
+
+    # Or query them.
+    notes_on_task = session.query('Note where parent_id is "{}"'.format(
+        task['id']
+    ))
+
+.. note::
+
+    It's currently not possible to use the `parent` property when querying
+    notes or to use the `parent` property on notes::
+
+        task = session.query('Task').first()
+
+        # This won't work in the current version of the API.
+        session.query('Note where parent.id is "{}"'.format(
+            task['id']
+        ))
+
+        # Neither will this.
+        parent_of_note = note['parent']
+
+To create new notes you can either use the helper method called
+:meth:`~ftrack_api.entity.note.CreateNoteMixin.create_note` on any entity that
+can have notes or use :meth:`Session.create` to create them manually::
+
+    user = session.query('User').first()
+
+    # Create note using the helper method.
+    note = task.create_note('My new note', author=user)
+
+    # Manually create a note
+    note = session.create('Note', {
+        'content': 'My new note',
+        'author': user
+    })
+    
+    task['notes'].append(note)
+
+Replying to an existing note can also be done with a helper method or by
+using :meth:`Session.create`::
+
+    # Create using helper method.
+    first_note_on_task = task['notes'][0]
+    first_note_on_task.create_reply('My new reply on note', author=user)
+
+    # Create manually
+    reply = session.create('Note', {
+        'content': 'My new note',
+        'author': user
+    })
+    
+    first_note_on_task.replies.append(reply)
+
+To specify a category when creating a note simply pass a `NoteCategory` instance
+to the helper method::
+
+    category = session.query(
+        'NoteCategory where name is "External Note"'
+    ).first()
+
+    note = task.create_note(
+        'New note with external category', author=user, category=category
+    )
+
+You can also set the category when creating a note manually::
+
+    category = session.query(
+        'NoteCategory where name is "External Note"'
+    ).first()
+
+    note = session.create('Note', {
+        'content': 'New note with external category',
+        'author': user,
+        'category': category
+    })
+
+    task['notes'].append(note)
+
+.. note::
+
+    The category is specified for an entire notes thread. Therefore categories
+    can only be set on new notes and not on replies.
+
+When writing notes you might want to direct the note to someone. This is done
+by adding users as recipients. If a user is added as a recipient the user will
+receive notifications and the note will be displayed in their inbox.
+
+To add recipients pass a list of user or group instances to the helper method::
+
+    john = session.query('User where username is "john"').one()
+    animation_group = session.query('Group where name is "Animation"').first()
+
+    note = task.create_note(
+        'Note with recipients', author=user, recipients=[john, animation_group]
+    )

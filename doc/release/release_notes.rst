@@ -9,7 +9,22 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: next
+.. release:: 0.5.1
+    :date: 2015-06-06
+
+    .. change:: changed
+
+        Defaults computed by :class:`~ftrack_api.entity.factory.StandardFactory`
+        are now memoised per session to improve performance.
+
+    .. change:: changed
+
+        :class:`~ftrack_api.cache.Memoiser` now supports a *return_copies*
+        parameter to control whether deep copies should be returned when a value
+        was retrieved from the cache.
+
+.. release:: 0.5.0
+    :date: 2015-07-02
 
     .. change:: changed
 
@@ -22,11 +37,31 @@ Release Notes
         fetch :meth:`~ftrack_api.query.QueryResult.first` or exactly
         :meth:`~ftrack_api.query.QueryResult.one` result.
 
+    .. change:: new
+        :tags: notes
+
+        Added support for handling notes.
+
+        .. seealso:: :ref:`example/note`.
+
+    .. change:: changed
+
+        Collection attributes generate empty collection on first access when no
+        remote value available. This allows interacting with a collection on a
+        newly created entity before committing.
+
     .. change:: fixed
         :tags: session
 
         Ambiguous error raised when :class:`Session` is started with an invalid
         user or key.
+
+    .. change:: fixed
+        :tags: caching, session
+
+        :meth:`Session.merge` fails against
+        :class:`~ftrack_api.cache.SerialisedCache` when circular reference
+        encountered due to entity identity not being prioritised in merge.
 
 .. release:: 0.4.3
     :date: 2015-06-29
