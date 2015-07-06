@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import collections
+import copy
 
 import ftrack_api.exception
 import ftrack_api.inspection
@@ -25,6 +26,22 @@ class Collection(collections.MutableSequence):
 
         with self.entity.session.operation_recording(False):
             self.extend(data)
+
+    def __copy__(self):
+        '''Return shallow copy.
+
+        .. note::
+
+            To maintain expectations on usage, the shallow copy will include a
+            shallow copy of the underlying data store.
+
+        '''
+        cls = self.__class__
+        copied_instance = cls.__new__(cls)
+        copied_instance.__dict__.update(self.__dict__)
+        copied_instance._data = copy.copy(self._data)
+
+        return copied_instance
 
     def _notify(self, old_value):
         '''Notify about modification.'''
@@ -140,6 +157,22 @@ class MappedCollectionProxy(collections.MutableMapping):
         self.creator = creator
         self.key_attribute = key_attribute
         self.value_attribute = value_attribute
+
+    def __copy__(self):
+        '''Return shallow copy.
+
+        .. note::
+
+            To maintain expectations on usage, the shallow copy will include a
+            shallow copy of the underlying collection.
+
+        '''
+        cls = self.__class__
+        copied_instance = cls.__new__(cls)
+        copied_instance.__dict__.update(self.__dict__)
+        copied_instance.collection = copy.copy(self.collection)
+
+        return copied_instance
 
     @property
     def mutable(self):

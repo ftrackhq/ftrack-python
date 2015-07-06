@@ -9,8 +9,8 @@ import os
 import getpass
 import functools
 import itertools
+import distutils.version
 
-import pkg_resources
 import requests
 import requests.auth
 import arrow
@@ -18,6 +18,7 @@ import clique
 
 import ftrack_api
 import ftrack_api.exception
+import ftrack_api.entity.factory
 import ftrack_api.entity.base
 import ftrack_api.entity.location
 import ftrack_api.cache
@@ -186,6 +187,12 @@ class Session(object):
 
         self.auto_populate = auto_populate
 
+        # Fetch server information and in doing so also check credentials.
+        self._server_information = self._fetch_server_information()
+
+        # Now check compatibility of server based on retrieved information.
+        self.check_server_compatibility()
+
         # Construct event hub and load plugins.
         self._event_hub = ftrack_api.event.hub.EventHub(
             self._server_url,
@@ -198,17 +205,8 @@ class Session(object):
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
-            try:
-                default_plugin_path = pkg_resources.resource_filename(
-                    pkg_resources.Requirement.parse('ftrack-python-api'),
-                    'ftrack_default_plugins'
-                )
-            except pkg_resources.DistributionNotFound:
-                default_plugin_path = ''
-
             self._plugin_paths = os.environ.get(
-                'FTRACK_EVENT_PLUGIN_PATH',
-                default_plugin_path
+                'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
 
         self._discover_plugins()
@@ -219,6 +217,11 @@ class Session(object):
         self.types = self._build_entity_type_classes(self.schemas)
 
         self._configure_locations()
+
+    @property
+    def server_information(self):
+        '''Return server information such as server version.'''
+        return self._server_information.copy()
 
     @property
     def server_url(self):
@@ -239,6 +242,28 @@ class Session(object):
     def event_hub(self):
         '''Return event hub.'''
         return self._event_hub
+
+    def check_server_compatibility(self):
+        '''Check compatibility with connected server.'''
+        server_version = self.server_information.get('version')
+        if server_version is None:
+            raise ftrack_api.exception.ServerCompatibilityError(
+                'Could not determine server version.'
+            )
+
+        # Perform basic version check.
+        if server_version != 'dev':
+            minimum_server_version = '3.1.2'
+            if (
+                distutils.version.LooseVersion(server_version)
+                < distutils.version.LooseVersion(minimum_server_version)
+            ):
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {} incompatible with this version of the '
+                    'API which requires a server version >= {}'.format(
+                        server_version, minimum_server_version
+                    )
+                )
 
     def reset(self):
         '''Reset session clearing all locally stored data.'''
@@ -334,10 +359,13 @@ class Session(object):
             # to ensure that all recorded values are fully merged into session.
             if self.record_operations:
                 entity_data = {}
-                with self.auto_populating(False):
-                    for key, value in entity.items():
-                        if value is not ftrack_api.symbol.NOT_SET:
-                            entity_data[key] = value
+
+                # Lower level API used here to avoid including any empty
+                # collections that are automatically generated on access.
+                for attribute in entity.attributes:
+                    value = attribute.get_local_value(entity)
+                    if value is not ftrack_api.symbol.NOT_SET:
+                        entity_data[attribute.name] = value
 
                 self.recorded_operations.push(
                     ftrack_api.operation.CreateEntityOperation(
@@ -399,26 +427,14 @@ class Session(object):
             )
 
         entity = None
-
-        # Check cache for existing entity emulating 
-        # ftrack_api.inspection.identity result object to pass to key maker.
-        cache_key = self.cache_key_maker.key(
-            (str(entity_type), map(str, entity_key))
-        )
-        self.logger.debug(
-            'Checking cache for entity with key {0}'.format(cache_key)
-        )
         try:
-            entity = self.cache.get(cache_key)
-            self.logger.debug(
-                'Retrieved existing entity from cache: {0} at {1}'
-                .format(entity, id(entity))
-            )
+            entity = self._get(entity_type, entity_key)
 
             # Ensure any references in the retrieved cache object are expanded.
             self._merge_references(entity)
 
         except KeyError:
+
             # Query for matching entity.
             self.logger.debug(
                 'Entity not present in cache. Issuing new query.'
@@ -434,6 +450,28 @@ class Session(object):
             results = self.query(expression).all()
             if results:
                 entity = results[0]
+
+        return entity
+
+    def _get(self, entity_type, entity_key):
+        '''Return cached entity of *entity_type* with unique *entity_key*.
+
+        Raise :exc:`KeyError` if no such entity in the cache.
+
+        '''
+        # Check cache for existing entity emulating
+        # ftrack_api.inspection.identity result object to pass to key maker.
+        cache_key = self.cache_key_maker.key(
+            (str(entity_type), map(str, entity_key))
+        )
+        self.logger.debug(
+            'Checking cache for entity with key {0}'.format(cache_key)
+        )
+        entity = self.cache.get(cache_key)
+        self.logger.debug(
+            'Retrieved existing entity from cache: {0} at {1}'
+            .format(entity, id(entity))
+        )
 
         return entity
 
@@ -944,6 +982,26 @@ class Session(object):
         if batch:
             result = self._call(batch)
 
+            # Clear all local values for committed attributes before proceeding
+            # with merge. Otherwise it is possible for an immutable attribute
+            # error to be bypassed.
+            with self.operation_recording(False):
+                for payload in batch:
+                    if payload['action'] in ('create', 'update'):
+                        # Retrieve entity from cache.
+                        entity = self._get(
+                            payload['entity_type'], payload['entity_key']
+                        )
+
+                        for key in payload['entity_data'].keys():
+                            if key in ('__entity_type__', ):
+                                continue
+
+                            attribute = entity.attributes.get(key)
+                            attribute.set_local_value(
+                                entity, ftrack_api.symbol.NOT_SET
+                            )
+
             # Process results merging into cache relevant data.
             for entry in result:
 
@@ -958,6 +1016,11 @@ class Session(object):
 
             # Clear operations.
             self.recorded_operations.clear()
+
+    def _fetch_server_information(self):
+        '''Return server information.'''
+        result = self._call([{'action': 'query_server_information'}])
+        return result[0]
 
     def _discover_plugins(self):
         '''Find and load plugins in search paths.
@@ -982,6 +1045,7 @@ class Session(object):
 
     def _build_entity_type_classes(self, schemas):
         '''Build default entity type classes.'''
+        fallback_factory = ftrack_api.entity.factory.StandardFactory()
         classes = {}
 
         for schema in schemas:
@@ -999,14 +1063,11 @@ class Session(object):
             results = [result for result in results if result is not None]
 
             if not results:
-                raise ValueError(
-                    'Expected entity type to represent schema "{0}" but '
-                    'received 0 entity types. Ensure '
-                    'FTRACK_EVENT_PLUGIN_PATH has been set to point to '
-                    'resource/plugin.'.format(
-                        schema['id']
-                    )
+                self.logger.debug(
+                    'Using default StandardFactory to construct entity type '
+                    'class for "{0}"'.format(schema['id'])
                 )
+                entity_type_class = fallback_factory.create(schema)
 
             elif len(results) > 1:
                 raise ValueError(
@@ -1015,7 +1076,9 @@ class Session(object):
                     .format(schema['id'], len(results))
                 )
 
-            entity_type_class = results[0]
+            else:
+                entity_type_class = results[0]
+
             classes[entity_type_class.entity_type] = entity_type_class
 
         return classes
@@ -1221,19 +1284,19 @@ class Session(object):
         if isinstance(item, ftrack_api.entity.base.Entity):
             data = self._entity_reference(item)
 
-            auto_populate = False
-            if entity_attribute_strategy == 'all':
-                auto_populate = True
-
-            with self.auto_populating(auto_populate):
+            with self.auto_populating(True):
 
                 for attribute in item.attributes:
                     value = ftrack_api.symbol.NOT_SET
 
-                    if entity_attribute_strategy in ('all', 'set_only'):
-                        # Note: Auto-populate setting ensures correct behaviour
-                        # when attribute has not been set.
+                    if entity_attribute_strategy == 'all':
                         value = attribute.get_value(item)
+
+                    elif entity_attribute_strategy == 'set_only':
+                        if attribute.is_set(item):
+                            value = attribute.get_local_value(item)
+                            if value is ftrack_api.symbol.NOT_SET:
+                                value = attribute.get_remote_value(item)
 
                     elif entity_attribute_strategy == 'modified_only':
                         if attribute.is_modified(item):

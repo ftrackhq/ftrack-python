@@ -33,3 +33,4 @@ already constructed a :class:`Session`::
     metadata
     scope
     job
+    note

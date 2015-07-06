@@ -245,7 +245,19 @@ class Entity(collections.MutableMapping):
         changes = []
 
         # Attributes.
-        for other_attribute in entity.attributes:
+
+        # Prioritise by type so that scalar values are set first. This should
+        # guarantee that the attributes making up the identity of the entity
+        # are merged before merging any collections that may have references to
+        # this entity.
+        attributes = collections.deque()
+        for attribute in entity.attributes:
+            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+                attributes.appendleft(attribute)
+            else:
+                attributes.append(attribute)
+
+        for other_attribute in attributes:
             attribute = self.attributes.get(other_attribute.name)
 
             # Local attributes.

@@ -3,7 +3,6 @@
 
 import os
 import re
-import glob
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
@@ -75,11 +74,5 @@ setup(
     cmdclass={
         'test': PyTest
     },
-    data_files=[
-        (
-            'ftrack_default_plugins',
-            glob.glob(os.path.join(RESOURCE_PATH, 'plugin', '*.py'))
-        )
-    ],
     zip_safe=False
 )

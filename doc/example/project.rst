@@ -22,7 +22,7 @@ project schema::
     name = 'projectname_{0}'.format(uuid.uuid1().hex)
 
     # Choose project schema.
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
 
     # Create the project with the chosen schema.
     project = session.create('Project', {

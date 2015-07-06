@@ -66,7 +66,7 @@ class TestMetadata(object):
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+        ).one()
 
         assert sequence['metadata'][metadata_key] == metadata_value
 
@@ -78,7 +78,7 @@ class TestMetadata(object):
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+        ).one()
 
         assert sequence['metadata'][metadata_key] != metadata_value
 
@@ -96,7 +96,7 @@ class TestMetadata(object):
 
         sequence = new_session.query(
             'Sequence where id is {0}'.format(self.sequence['id'])
-        )[0]
+        ).one()
 
         assert set(sequence['metadata'].keys()) == set(['key1', 'key2'])
 
@@ -112,3 +112,39 @@ def test_metadata_parent_type_remains_in_schema_id_format(session, new_project):
     session.commit()
 
     assert entity['parent_type'] == new_project.entity_type
+
+
+def test_set_metadata_twice(new_project):
+    '''Set metadata twice in a row.'''
+    session = new_project.session
+
+    new_project['metadata'] = {
+        'key1': 'value1',
+        'key2': 'value2'
+    }
+    session.commit()
+
+    assert set(new_project['metadata'].keys()) == set(['key1', 'key2'])
+
+    new_project['metadata'] = {
+        'key3': 'value3',
+        'key4': 'value4'
+    }
+    session.commit()
+
+
+def test_set_same_metadata_on_retrieved_entity(new_project):
+    '''Set same metadata on retrieved entity.'''
+    session = new_project.session
+
+    new_project['metadata'] = {
+        'key1': 'value1'
+    }
+    session.commit()
+
+    project = session.get('Project', new_project['id'])
+
+    project['metadata'] = {
+        'key1': 'value1'
+    }
+    session.commit()

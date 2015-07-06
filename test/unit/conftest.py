@@ -2,10 +2,30 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import uuid
+import tempfile
+import os
 
 import pytest
 
 import ftrack_api
+
+
+@pytest.fixture()
+def temporary_file(request):
+    '''Return temporary file.'''
+    file_handle, path = tempfile.mkstemp()
+    os.close(file_handle)
+
+    def cleanup():
+        '''Remove temporary file.'''
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+    request.addfinalizer(cleanup)
+
+    return path
 
 
 @pytest.fixture()
@@ -49,7 +69,7 @@ def user(session):
 @pytest.fixture()
 def new_project_tree(request, session, user):
     '''Return new project with basic tree.'''
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
     default_shot_status = project_schema.get_statuses('Shot')[0]
     default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(
@@ -105,7 +125,7 @@ def new_project_tree(request, session, user):
 @pytest.fixture()
 def new_project(request, session, user):
     '''Return new empty project.'''
-    project_schema = session.query('ProjectSchema')[0]
+    project_schema = session.query('ProjectSchema').first()
     project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
     project = session.create('Project', {
         'name': project_name,
@@ -140,7 +160,7 @@ def new_task(request, session, unique_name):
     '''Return a new task.'''
     project = session.query(
         'Project where id is 5671dcb0-66de-11e1-8e6e-f23c91df25eb'
-    )[0]
+    ).one()
     project_schema = project['project_schema']
     default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(
@@ -213,3 +233,21 @@ def new_job(request, session, unique_name, user):
     request.addfinalizer(cleanup)
 
     return job
+
+
+@pytest.fixture()
+def new_note(request, session, unique_name, new_task, user):
+    '''Return a new note.'''
+
+    note = new_task.create_note(unique_name, user)
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(note)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return note
