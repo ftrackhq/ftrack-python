@@ -75,19 +75,23 @@ def test_create_with_reference(session):
 def test_reconstruct_entity(session):
     '''Reconstruct entity.'''
     uid = str(uuid.uuid4())
-    user = session.create('User', {
+    data = {
         'id': uid,
         'username': 'martin',
         'email': 'martin@example.com'
-    }, reconstructing=True)
+    }
+    user = session.create('User', data, reconstructing=True)
 
-    with session.auto_populating(False):
-        items = dict(user.items())
-        assert items.pop('id') == uid
-        assert items.pop('username') == 'martin'
-        assert items.pop('email') == 'martin@example.com'
+    for attribute in user.attributes:
+        # No local attributes should be set.
+        assert attribute.get_local_value(user) is ftrack_api.symbol.NOT_SET
 
-        assert set(items.values()) == set([ftrack_api.symbol.NOT_SET])
+        # Only remote attributes that had explicit values should be set.
+        value = attribute.get_remote_value(user)
+        if attribute.name in data:
+            assert value == data[attribute.name]
+        else:
+            assert value is ftrack_api.symbol.NOT_SET
 
 
 def test_reconstruct_entity_does_not_apply_defaults(session):
@@ -102,8 +106,13 @@ def test_reconstruct_empty_entity(session):
     '''Reconstruct empty entity.'''
     # Note: Use private method to avoid merge which requires id be set.
     user = session._create('User', {}, reconstructing=True)
-    with session.auto_populating(False):
-        assert set(user.values()) == set([ftrack_api.symbol.NOT_SET])
+
+    for attribute in user.attributes:
+        # No local attributes should be set.
+        assert attribute.get_local_value(user) is ftrack_api.symbol.NOT_SET
+
+        # No remote attributes should be set.
+        assert attribute.get_remote_value(user) is ftrack_api.symbol.NOT_SET
 
 
 def test_delete_operation_ordering(session, unique_name):
