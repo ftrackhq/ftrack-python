@@ -1195,20 +1195,21 @@ class Session(object):
             result = self.decode(response.text)
 
         except Exception:
-            raise ftrack_api.exception.ServerError(
+            error_message = (
                 'Server reported error in unexpected format. Raw error was: {}'
                 .format(response.text)
             )
+            self.logger.error(error_message)
+            raise ftrack_api.exception.ServerError(error_message)
 
         else:
             if 'exception' in result:
                 # Handle exceptions.
-                raise ftrack_api.exception.ServerError(
-                    'Server reported error: {0}({1})'.format(
-                        result['exception'],
-                        result['content']
-                    )
+                error_message = 'Server reported error: {0}({1})'.format(
+                    result['exception'], result['content']
                 )
+                self.logger.error(error_message)
+                raise ftrack_api.exception.ServerError(error_message)
 
         return result
 
