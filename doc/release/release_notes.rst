@@ -10,7 +10,7 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 .. release:: 0.5.1
-    :date: 2015-06-06
+    :date: 2015-07-06
 
     .. change:: changed
 
