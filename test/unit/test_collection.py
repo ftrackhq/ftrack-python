@@ -244,3 +244,26 @@ def test_mapped_collection_proxy_shallow_copy(new_project, unique_name):
 
     assert unique_name not in metadata
     assert unique_name in metadata_copy
+
+
+def test_mapped_collection_proxy_mutable_property(new_project):
+    '''Mapped collection mutable property maps to underlying collection.'''
+    metadata = new_project['metadata']
+
+    assert metadata.mutable is True
+    assert metadata.collection.mutable is True
+
+    metadata.mutable = False
+    assert metadata.collection.mutable is False
+
+
+def test_mapped_collection_proxy_attribute_property(
+    new_project, mock_attribute
+):
+    '''Mapped collection attribute property maps to underlying collection.'''
+    metadata = new_project['metadata']
+
+    assert metadata.attribute is metadata.collection.attribute
+
+    metadata.attribute = mock_attribute
+    assert metadata.collection.attribute is mock_attribute
