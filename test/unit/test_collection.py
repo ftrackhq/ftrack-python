@@ -11,6 +11,7 @@ import ftrack_api.collection
 import ftrack_api.symbol
 import ftrack_api.inspection
 import ftrack_api.exception
+import ftrack_api.operation
 
 
 @pytest.fixture
@@ -163,6 +164,74 @@ def test_immutable_collection_delete_item(mock_entity, mock_attribute):
 
     with pytest.raises(ftrack_api.exception.ImmutableCollectionError):
         del collection[0]
+
+
+def test_collection_count(mock_entity, mock_attribute):
+    '''Count items in collection.'''
+    collection = ftrack_api.collection.Collection(
+        mock_entity, mock_attribute, data=[1, 2]
+    )
+    assert len(collection) == 2
+
+    collection.append(3)
+    assert len(collection) == 3
+
+    del collection[0]
+    assert len(collection) == 2
+
+
+@pytest.mark.parametrize('other, expected', [
+    ([], False),
+    ([1, 2], True),
+    ([1, 2, 3], False),
+    ([1], False)
+], ids=[
+    'empty',
+    'same',
+    'additional',
+    'missing'
+])
+def test_collection_equal(mocker, mock_entity, mock_attribute, other, expected):
+    '''Determine collection equality against another collection.'''
+    collection_a = ftrack_api.collection.Collection(
+        mock_entity, mock_attribute, data=[1, 2]
+    )
+
+    collection_b = ftrack_api.collection.Collection(
+        mock_entity, mock_attribute, data=other
+    )
+
+    # Temporarily override determination of entity identity so that it works
+    # against simple scalar values for purpose of test.
+    mocker.patch.object(
+        ftrack_api.inspection, 'identity', lambda entity: str(entity)
+    )
+    assert (collection_a == collection_b) is expected
+
+
+def test_collection_not_equal_to_non_collection(mock_entity, mock_attribute):
+    '''Collection not equal to a non-collection.'''
+    collection = ftrack_api.collection.Collection(
+        mock_entity, mock_attribute, data=[1, 2]
+    )
+
+    assert (collection != {}) is True
+
+
+def test_collection_notify_on_modification(
+    mock_entity, mock_attribute, session
+):
+    '''Record UpdateEntityOperation on collection modification.'''
+    collection = ftrack_api.collection.Collection(
+        mock_entity, mock_attribute, data=[1, 2]
+    )
+    assert len(session.recorded_operations) == 0
+
+    collection.append(3)
+    assert len(session.recorded_operations) == 1
+    operation = session.recorded_operations.pop()
+    assert isinstance(operation, ftrack_api.operation.UpdateEntityOperation)
+    assert operation.new_value == list(collection)
 
 
 def test_mapped_collection_proxy_shallow_copy(new_project, unique_name):
