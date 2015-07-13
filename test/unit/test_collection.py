@@ -30,7 +30,7 @@ def mock_attribute():
     return attribute
 
 
-def test_initialisation_does_not_modify_entity_state(
+def test_collection_initialisation_does_not_modify_entity_state(
     mock_entity, mock_attribute
 ):
     '''Initialising collection does not modify entity state.'''
@@ -39,6 +39,16 @@ def test_initialisation_does_not_modify_entity_state(
     )
 
     assert ftrack_api.inspection.state(mock_entity) is ftrack_api.symbol.NOT_SET
+
+
+def test_immutable_collection_initialisation(mock_entity, mock_attribute):
+    '''Initialise immutable collection.'''
+    collection = ftrack_api.collection.Collection(
+        mock_entity, mock_attribute, data=[1, 2], mutable=False
+    )
+
+    assert list(collection) == [1, 2]
+    assert collection.mutable is False
 
 
 def test_collection_shallow_copy(mock_entity, mock_attribute):
@@ -53,16 +63,6 @@ def test_collection_shallow_copy(mock_entity, mock_attribute):
 
     assert list(collection) == [1, 2]
     assert list(collection_copy) == [1, 2, 3]
-
-
-def test_immutable_collection_initialisation(mock_entity, mock_attribute):
-    '''Initialise immutable collection.'''
-    collection = ftrack_api.collection.Collection(
-        mock_entity, mock_attribute, data=[1, 2], mutable=False
-    )
-
-    assert list(collection) == [1, 2]
-    assert collection.mutable is False
 
 
 def test_mapped_collection_proxy_shallow_copy(new_project, unique_name):
