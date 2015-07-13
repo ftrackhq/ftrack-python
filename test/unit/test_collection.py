@@ -4,32 +4,55 @@
 import copy
 import uuid
 
+import mock
+import pytest
+
 import ftrack_api.collection
 import ftrack_api.symbol
 import ftrack_api.inspection
 
 
-def test_initialisation_does_not_modify_entity_state(new_user):
+@pytest.fixture
+def mock_entity(session):
+    '''Return mock entity.'''
+    entity = mock.MagicMock()
+    entity.session = session
+    entity.primary_key_attributes = ['id']
+    entity['id'] = str(uuid.uuid4())
+    return entity
+
+
+@pytest.fixture
+def mock_attribute():
+    '''Return mock attribute.'''
+    attribute = mock.MagicMock()
+    attribute.name = 'test'
+    return attribute
+
+
+def test_initialisation_does_not_modify_entity_state(
+    mock_entity, mock_attribute
+):
     '''Initialising collection does not modify entity state.'''
     ftrack_api.collection.Collection(
-        new_user, None, data=[1, 2]
+        mock_entity, mock_attribute, data=[1, 2]
     )
 
-    assert ftrack_api.inspection.state(new_user) is ftrack_api.symbol.NOT_SET
+    assert ftrack_api.inspection.state(mock_entity) is ftrack_api.symbol.NOT_SET
 
 
-def test_collection_shallow_copy(new_user):
+def test_collection_shallow_copy(mock_entity, mock_attribute):
     '''Shallow copying collection should avoid indirect mutation.'''
     collection = ftrack_api.collection.Collection(
-        new_user, None, data=[1, 2]
+        mock_entity, mock_attribute, data=[1, 2]
     )
 
-    with new_user.session.operation_recording(False):
+    with mock_entity.session.operation_recording(False):
         collection_copy = copy.copy(collection)
         collection_copy.append(3)
 
-    assert set(collection) == set([1, 2])
-    assert set(collection_copy) == set([1, 2, 3])
+    assert list(collection) == [1, 2]
+    assert list(collection_copy) == [1, 2, 3]
 
 
 def test_mapped_collection_proxy_shallow_copy(new_project, unique_name):
