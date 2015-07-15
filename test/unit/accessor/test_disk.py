@@ -79,48 +79,65 @@ def test_list(temporary_path):
 
 
 def test_exists(temporary_path):
-    '''Check whether path exists.'''
+    '''Valid path exists.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
     _, temporary_file = tempfile.mkstemp(dir=temporary_path)
     assert accessor.exists(temporary_file) is True
 
-    # Missing path
+
+def test_missing_does_not_exist(temporary_path):
+    '''Missing path does not exist.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
     assert accessor.exists('non-existant.txt') is False
 
 
 def test_is_file(temporary_path):
-    '''Check whether path is a file.'''
+    '''Valid file is considered a file.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
     _, temporary_file = tempfile.mkstemp(dir=temporary_path)
     assert accessor.is_file(temporary_file) is True
 
-    # Missing path
-    assert accessor.is_file('non-existant.txt') is False
 
-    # Directory
+def test_missing_is_not_file(temporary_path):
+    '''Missing path is not considered a file.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
+    assert accessor.is_file('non_existant.txt') is False
+
+
+def test_container_is_not_file(temporary_path):
+    '''Valid container is not considered a file.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
+
     temporary_directory = tempfile.mkdtemp(dir=temporary_path)
     assert accessor.is_file(temporary_directory) is False
 
 
 def test_is_container(temporary_path):
-    '''Check whether path is a container.'''
+    '''Valid container is considered a container.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
     temporary_directory = tempfile.mkdtemp(dir=temporary_path)
     assert accessor.is_container(temporary_directory) is True
 
-    # Missing path
-    assert accessor.is_container('non-existant') is False
 
-    # File
+def test_missing_is_not_container(temporary_path):
+    '''Missing path is not considered a container.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
+    assert accessor.is_container('non_existant') is False
+
+
+def test_file_is_not_container(temporary_path):
+    '''Valid file is not considered a container.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
+
     _, temporary_file = tempfile.mkstemp(dir=temporary_path)
     assert accessor.is_container(temporary_file) is False
 
 
 def test_is_sequence(temporary_path):
-    '''Check whether path is a sequence.'''
+    '''Sequence detection unsupported.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
     with pytest.raises(
@@ -147,8 +164,8 @@ def test_open(temporary_path):
     data.close()
 
 
-def test_remove(temporary_path):
-    '''Delete path.'''
+def test_remove_file(temporary_path):
+    '''Delete file at path.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
     file_handle, temporary_file = tempfile.mkstemp(dir=temporary_path)
@@ -156,9 +173,21 @@ def test_remove(temporary_path):
     accessor.remove(temporary_file)
     assert os.path.exists(temporary_file) is False
 
+
+def test_remove_container(temporary_path):
+    '''Delete container at path.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
+
     temporary_directory = tempfile.mkdtemp(dir=temporary_path)
     accessor.remove(temporary_directory)
     assert os.path.exists(temporary_directory) is False
+
+
+def test_remove_missing(temporary_path):
+    '''Fail to remove path that does not exist.'''
+    accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
+    with pytest.raises(ftrack_api.exception.AccessorResourceNotFoundError):
+        accessor.remove('non_existant')
 
 
 def test_make_container(temporary_path):
