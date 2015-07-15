@@ -144,7 +144,13 @@ class Expression(object):
 
 
 class All(Expression):
-    '''Match candidate that matches all of the specified expressions.'''
+    '''Match candidate that matches all of the specified expressions.
+
+    .. note::
+
+        If no expressions are supplied then will always match.
+
+    '''
 
     def __init__(self, expressions=None):
         '''Initialise with list of *expressions* to match against.'''
@@ -166,7 +172,13 @@ class All(Expression):
 
 
 class Any(Expression):
-    '''Match candidate that matches any of the specified expressions.'''
+    '''Match candidate that matches any of the specified expressions.
+
+    .. note::
+
+        If no expressions are supplied then will never match.
+
+    '''
 
     def __init__(self, expressions=None):
         '''Initialise with list of *expressions* to match against.'''
