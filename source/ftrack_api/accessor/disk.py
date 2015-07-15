@@ -82,7 +82,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
 
     def is_sequence(self, resource_identifier):
         '''Return whether *resource_identifier* refers to a file sequence.'''
-        raise AccessorUnsupportedOperationError('is_sequence')
+        raise AccessorUnsupportedOperationError(operation='is_sequence')
 
     def open(self, resource_identifier, mode='rb'):
         '''Return :class:`~ftrack_api.Data` for *resource_identifier*.'''
@@ -117,7 +117,9 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                 os.rmdir(filesystem_path)
 
         else:
-            raise AccessorResourceNotFoundError(resource_identifier)
+            raise AccessorResourceNotFoundError(
+                resource_identifier=resource_identifier
+            )
 
     def make_container(self, resource_identifier, recursive=True):
         '''Make a container at *resource_identifier*.
@@ -139,7 +141,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                     except OSError as error:
                         if error.errno == errno.ENOENT:
                             raise AccessorParentResourceNotFoundError(
-                                resource_identifier
+                                resource_identifier=resource_identifier
                             )
                         else:
                             raise
@@ -162,7 +164,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
         if self.prefix:
             if not container.startswith(self.prefix):
                 raise AccessorParentResourceNotFoundError(
-                    resource_identifier,
+                    resource_identifier=resource_identifier,
                     message='Could not determine container for '
                             '{resource_identifier} as container falls outside '
                             'of configured prefix.'
@@ -206,7 +208,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
 
             if not filesystem_path.startswith(self.prefix):
                 raise AccessorFilesystemPathError(
-                    resource_identifier,
+                    resource_identifier=resource_identifier,
                     message='Could not determine access path for '
                             'resource_identifier outside of configured prefix: '
                             '{resource_identifier}.'
