@@ -266,11 +266,25 @@ class Session(object):
                 )
 
     def reset(self):
-        '''Reset session clearing all locally stored data.'''
+        '''Reset session clearing all locally stored data.
+
+        If the cache used by the session is a
+        :class:`~ftrack_api.cache.LayeredCache` then only clear top level cache.
+        Otherwise, clear the entire cache.
+
+        '''
         if self.recorded_operations:
             self.logger.warning(
                 'Resetting session with pending operations not persisted.'
             )
+
+        if isinstance(self.cache, ftrack_api.cache.LayeredCache):
+            try:
+                self.cache.caches[0].clear()
+            except IndexError:
+                pass
+        elif isinstance(self.cache, ftrack_api.cache.Cache):
+            self.cache.clear()
 
         self._attached.clear()
         self.recorded_operations.clear()
