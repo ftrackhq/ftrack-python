@@ -65,7 +65,7 @@ class Parser(object):
                     + Group(conjunction + current)(conjunction.resultsName)
                 )
 
-            else:
+            else:  # pragma: no cover
                 raise ValueError('Unrecognised conjunction.')
 
             current <<= (conjunction_expression | previous)
