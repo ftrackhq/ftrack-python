@@ -267,3 +267,127 @@ def test_mapped_collection_proxy_attribute_property(
 
     metadata.attribute = mock_attribute
     assert metadata.collection.attribute is mock_attribute
+
+
+def test_mapped_collection_proxy_get_item(new_project, unique_name):
+    '''Retrieve item in mapped collection proxy.'''
+    session = new_project.session
+
+    # Prepare data.
+    metadata = new_project['metadata']
+    value = 'value'
+    metadata[unique_name] = value
+    session.commit()
+
+    # Check in clean session retrieval of value.
+    session.reset()
+    retrieved = session.get(*ftrack_api.inspection.identity(new_project))
+
+    assert retrieved is not new_project
+    assert retrieved['metadata'].keys() == [unique_name]
+    assert retrieved['metadata'][unique_name] == value
+
+
+def test_mapped_collection_proxy_set_item(new_project, unique_name):
+    '''Set new item in mapped collection proxy.'''
+    session = new_project.session
+
+    metadata = new_project['metadata']
+    assert unique_name not in metadata
+
+    value = 'value'
+    metadata[unique_name] = value
+    assert metadata[unique_name] == value
+
+    # Check change persisted correctly.
+    session.commit()
+    session.reset()
+    retrieved = session.get(*ftrack_api.inspection.identity(new_project))
+
+    assert retrieved is not new_project
+    assert retrieved['metadata'].keys() == [unique_name]
+    assert retrieved['metadata'][unique_name] == value
+
+
+def test_mapped_collection_proxy_update_item(new_project, unique_name):
+    '''Update existing item in mapped collection proxy.'''
+    session = new_project.session
+
+    # Prepare a pre-existing value.
+    metadata = new_project['metadata']
+    value = 'value'
+    metadata[unique_name] = value
+    session.commit()
+
+    # Set new value.
+    new_value = 'new_value'
+    metadata[unique_name] = new_value
+
+    # Confirm change persisted correctly.
+    session.commit()
+    session.reset()
+    retrieved = session.get(*ftrack_api.inspection.identity(new_project))
+
+    assert retrieved is not new_project
+    assert retrieved['metadata'].keys() == [unique_name]
+    assert retrieved['metadata'][unique_name] == new_value
+
+
+def test_mapped_collection_proxy_delete_item(new_project, unique_name):
+    '''Remove existing item from mapped collection proxy.'''
+    session = new_project.session
+
+    # Prepare a pre-existing value to remove.
+    metadata = new_project['metadata']
+    value = 'value'
+    metadata[unique_name] = value
+    session.commit()
+
+    # Now remove value.
+    del new_project['metadata'][unique_name]
+    assert unique_name not in new_project['metadata']
+
+    # Confirm change persisted correctly.
+    session.commit()
+    session.reset()
+    retrieved = session.get(*ftrack_api.inspection.identity(new_project))
+
+    assert retrieved is not new_project
+    assert retrieved['metadata'].keys() == []
+    assert unique_name not in retrieved['metadata']
+
+
+def test_mapped_collection_proxy_delete_missing_item(new_project, unique_name):
+    '''Fail to remove item for missing key from mapped collection proxy.'''
+    metadata = new_project['metadata']
+    assert unique_name not in metadata
+    with pytest.raises(KeyError):
+        del metadata[unique_name]
+
+
+def test_mapped_collection_proxy_iterate_keys(new_project, unique_name):
+    '''Iterate over keys in mapped collection proxy.'''
+    metadata = new_project['metadata']
+    metadata.update({
+        'a': 'value-a',
+        'b': 'value-b',
+        'c': 'value-c'
+    })
+
+    iterated = set()
+    for key in metadata:
+        iterated.add(key)
+
+    assert iterated == set(['a', 'b', 'c'])
+
+
+def test_mapped_collection_proxy_count(new_project, unique_name):
+    '''Count items in mapped collection proxy.'''
+    metadata = new_project['metadata']
+    metadata.update({
+        'a': 'value-a',
+        'b': 'value-b',
+        'c': 'value-c'
+    })
+
+    assert len(metadata) == 3
