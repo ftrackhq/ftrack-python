@@ -11,6 +11,23 @@ import pytest
 import ftrack_api
 
 
+def pytest_generate_tests(metafunc):
+    '''Parametrize tests dynamically.
+
+    If a test function has a corresponding parametrize function then call it
+    passing along the *metafunc*. For example, for a "test_foo" function, look
+    for and call "parametrize_test_foo" if it exists.
+
+    This is useful when more complex dynamic parametrization is needed than the
+    standard pytest.mark.parametrize decorator can provide.
+
+    '''
+    generator_name = 'parametrize_{}'.format(metafunc.function.__name__)
+    generator = getattr(metafunc.module, generator_name, None)
+    if callable(generator):
+        generator(metafunc)
+
+
 @pytest.fixture()
 def temporary_file(request):
     '''Return temporary file.'''

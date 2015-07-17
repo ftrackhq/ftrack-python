@@ -25,12 +25,6 @@ def candidate():
     }
 
 
-def pytest_generate_tests(metafunc):
-    '''Generate tests dynamically.'''
-    if metafunc.function == test_condition_match:
-        generate_condition_match_tests(metafunc)
-
-
 @pytest.mark.parametrize('expression, expected', [
     ('', Expression()),
     ('invalid', ParseError),
@@ -128,8 +122,8 @@ def test_match(expression, candidate, expected):
     assert expression.match(candidate) is expected
 
 
-def generate_condition_match_tests(metafunc):
-    '''Generate condition match tests.'''
+def parametrize_test_condition_match(metafunc):
+    '''Parametrize condition_match tests.'''
     identifiers = []
     data = []
 
