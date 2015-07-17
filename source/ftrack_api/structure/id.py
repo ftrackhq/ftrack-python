@@ -40,12 +40,6 @@ class IdStructure(ftrack_api.structure.base.Structure):
         *context* can be a mapping that supplies additional information.
 
         '''
-        if entity.entity_type not in (
-            'FileComponent', 'ContainerComponent', 'SequenceComponent'
-        ):
-            raise NotImplementedError('Cannot generate path for unsupported '
-                                      'entity {0}'.format(entity))
-
         if entity.entity_type in ('FileComponent',):
             # When in a container, place the file inside a directory named
             # after the container.
