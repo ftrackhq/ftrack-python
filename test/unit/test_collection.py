@@ -374,6 +374,10 @@ def test_mapped_collection_proxy_iterate_keys(new_project, unique_name):
         'c': 'value-c'
     })
 
+    # Commit here as otherwise cleanup operation will fail because transaction
+    # will include updating metadata to refer to a deleted entity.
+    new_project.session.commit()
+
     iterated = set()
     for key in metadata:
         iterated.add(key)
@@ -389,5 +393,9 @@ def test_mapped_collection_proxy_count(new_project, unique_name):
         'b': 'value-b',
         'c': 'value-c'
     })
+
+    # Commit here as otherwise cleanup operation will fail because transaction
+    # will include updating metadata to refer to a deleted entity.
+    new_project.session.commit()
 
     assert len(metadata) == 3
