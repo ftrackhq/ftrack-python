@@ -631,6 +631,9 @@ class EventHub(object):
 
         except Exception:
             # Failure to send event should not cause caller to fail.
+            # TODO: This behaviour is inconsistent with the failing earlier on
+            # lack of connection and also with the error handling parameter of
+            # EventHub.publish. Consider refactoring.
             self.logger.exception('Error sending event {0}.'.format(event))
 
     def _on_published(self, event, response):
