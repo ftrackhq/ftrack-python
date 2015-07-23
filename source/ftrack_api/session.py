@@ -735,11 +735,8 @@ class Session(object):
                 if merged_remote_value is not remote_value:
                     attribute.set_remote_value(entity, merged_remote_value)
 
-    def populate(self, entities, projections, background=False):
+    def populate(self, entities, projections):
         '''Populate *entities* with attributes specified by *projections*.
-
-        if *background* is True make request without blocking and populate
-        entities when result received.
 
         Any locally set values included in the *projections* will not be
         overwritten with the retrieved remote value. If this 'synchronise'
