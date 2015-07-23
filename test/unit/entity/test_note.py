@@ -1,11 +1,14 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import pytest
+
 import ftrack_api
+import ftrack_api.inspection
 
 
 def test_create_reply(session, new_note, user, unique_name):
-    '''Test create reply on *new_note*.'''
+    '''Create reply to a note.'''
     reply_text = 'My reply on note'
     new_note.create_reply(reply_text, user)
 
@@ -16,22 +19,52 @@ def test_create_reply(session, new_note, user, unique_name):
     assert reply_text == new_note['replies'][0]['content']
 
 
-def test_create_note_on_asset_version(session, user, unique_name, new_user):
-    '''Test create note method on asset version.'''
-    asset_version = session.query('AssetVersion').all()[0]
-
-    notes_count = len(asset_version['notes'])
-
-    note = asset_version.create_note(unique_name, user, recipients=[new_user])
-
+def test_create_note_on_entity(session, new_task, user, unique_name):
+    '''Create note attached to an entity.'''
+    note = new_task.create_note(unique_name, user)
     session.commit()
 
-    new_session = ftrack_api.Session()
-
+    session.reset()
+    retrieved_task = session.get(*ftrack_api.inspection.identity(new_task))
+    assert len(retrieved_task['notes']) == 1
     assert (
-        len(new_session.get('AssetVersion', asset_version['id'])['notes'])
-        == (notes_count + 1)
+        ftrack_api.inspection.identity(retrieved_task['notes'][0])
+        == ftrack_api.inspection.identity(note)
     )
 
-    session.delete(note)
+
+def test_create_note_on_entity_specifying_recipients(
+    session, new_task, user, unique_name, new_user
+):
+    '''Create note with specified recipients attached to an entity.'''
+    recipient = new_user
+    note = new_task.create_note(unique_name, user, recipients=[recipient])
     session.commit()
+
+    session.reset()
+    retrieved_note = session.get(*ftrack_api.inspection.identity(note))
+
+    # Note: The calling user is automatically added server side so there will be
+    # 2 recipients.
+    assert len(retrieved_note['recipients']) == 2
+    specified_recipient_present = False
+    for entry in retrieved_note['recipients']:
+        if entry['resource_id'] == recipient['id']:
+            specified_recipient_present = True
+            break
+
+    assert specified_recipient_present
+
+
+def test_create_note_on_entity_specifying_category(
+    session, new_task, user, unique_name
+):
+    '''Create note with specified category attached to an entity.'''
+    category = session.query('NoteCategory').first()
+    note = new_task.create_note(unique_name, user, category=category)
+    session.commit()
+
+    session.reset()
+    retrieved_note = session.get(*ftrack_api.inspection.identity(note))
+    assert retrieved_note['category']['id'] == category['id']
+
