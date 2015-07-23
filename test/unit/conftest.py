@@ -295,3 +295,19 @@ def new_note(request, session, unique_name, new_task, user):
     request.addfinalizer(cleanup)
 
     return note
+
+
+@pytest.fixture()
+def new_component(request, session, temporary_file):
+    '''Return a new component not in any location except origin.'''
+    component = session.create_component(temporary_file, location=None)
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(component)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return component
