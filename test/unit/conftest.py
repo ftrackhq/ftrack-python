@@ -298,6 +298,22 @@ def new_note(request, session, unique_name, new_task, user):
 
 
 @pytest.fixture()
+def new_asset_version(request, session):
+    '''Return a new asset version.'''
+    asset_version = session.create('AssetVersion')
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(asset_version)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return asset_version
+
+
+@pytest.fixture()
 def new_component(request, session, temporary_file):
     '''Return a new component not in any location except origin.'''
     component = session.create_component(temporary_file, location=None)
