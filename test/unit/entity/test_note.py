@@ -1,8 +1,6 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import pytest
-
 import ftrack_api
 import ftrack_api.inspection
 
@@ -67,4 +65,3 @@ def test_create_note_on_entity_specifying_category(
     session.reset()
     retrieved_note = session.get(*ftrack_api.inspection.identity(note))
     assert retrieved_note['category']['id'] == category['id']
-
