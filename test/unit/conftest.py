@@ -102,6 +102,17 @@ def user(session):
 
 
 @pytest.fixture()
+def project_schema(session):
+    '''Return project schema.'''
+    # VFX Scheme
+    entity = session.get(
+        'ProjectSchema', '69cb7f92-4dbf-11e1-9902-f23c91df25eb'
+    )
+    assert entity is not None
+    return entity
+
+
+@pytest.fixture()
 def new_project_tree(request, session, user):
     '''Return new project with basic tree.'''
     project_schema = session.query('ProjectSchema').first()
