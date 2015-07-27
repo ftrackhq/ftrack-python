@@ -7,8 +7,10 @@ import shutil
 import os
 
 import pytest
+import clique
 
 import ftrack_api
+import ftrack_api.symbol
 
 
 def pytest_generate_tests(metafunc):
@@ -44,6 +46,46 @@ def temporary_file(request):
     request.addfinalizer(cleanup)
 
     return path
+
+
+@pytest.fixture()
+def temporary_directory(request):
+    '''Return temporary directory.'''
+    path = tempfile.mkdtemp()
+
+    def cleanup():
+        '''Remove temporary directory.'''
+        shutil.rmtree(path)
+
+    request.addfinalizer(cleanup)
+
+    return path
+
+
+@pytest.fixture()
+def temporary_sequence(temporary_directory):
+    '''Return temporary sequence of three files.
+
+    Return the path using the `clique
+    <http://clique.readthedocs.org/en/latest/>`_ format, for example::
+
+        /tmp/asfjsfjoj3/%04d.jpg [1-3]
+
+    '''
+    items = []
+    for index in range(3):
+        item_path = os.path.join(
+            temporary_directory, '{0:04d}.jpg'.format(index)
+        )
+        with open(item_path, 'w') as file_descriptor:
+            file_descriptor.close()
+
+        items.append(item_path)
+
+    collections, _ = clique.assemble(items)
+    sequence_path = collections[0].format()
+
+    return sequence_path
 
 
 @pytest.fixture()
@@ -317,6 +359,48 @@ def new_asset_version(request, session):
 def new_component(request, session, temporary_file):
     '''Return a new component not in any location except origin.'''
     component = session.create_component(temporary_file, location=None)
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(component)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return component
+
+
+@pytest.fixture()
+def new_container_component(request, session, temporary_directory):
+    '''Return a new container component not in any location except origin.'''
+    component = session.create('ContainerComponent')
+
+    # Add to special origin location so that it is possible to add to other
+    # locations.
+    origin_location = session.get(
+        'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
+    )
+    origin_location.add_component(
+        component, temporary_directory, recursive=False
+    )
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(component)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return component
+
+
+@pytest.fixture()
+def new_sequence_component(request, session, temporary_sequence):
+    '''Return a new sequence component not in any location except origin.'''
+    component = session.create_component(temporary_sequence, location=None)
     session.commit()
 
     def cleanup():
