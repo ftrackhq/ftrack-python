@@ -1541,9 +1541,9 @@ class Session(object):
             # Create member components for sequence.
             for member_path in collection:
                 member_data = {
-                    'name': collection.match(item).group('index'),
+                    'name': collection.match(member_path).group('index'),
                     'container': container,
-                    'size': member_sizes[item],
+                    'size': member_sizes[member_path],
                     'file_type': os.path.splitext(member_path)[-1]
                 }
 
