@@ -259,8 +259,8 @@ class Session(object):
                 < distutils.version.LooseVersion(minimum_server_version)
             ):
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {} incompatible with this version of the '
-                    'API which requires a server version >= {}'.format(
+                    'Server version {0} incompatible with this version of the '
+                    'API which requires a server version >= {0}'.format(
                         server_version, minimum_server_version
                     )
                 )
@@ -1196,7 +1196,7 @@ class Session(object):
 
         except Exception:
             error_message = (
-                'Server reported error in unexpected format. Raw error was: {}'
+                'Server reported error in unexpected format. Raw error was: {0}'
                 .format(response.text)
             )
             self.logger.error(error_message)
