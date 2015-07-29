@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: changed
+
+        Server reported errors are now more readable and are no longer sometimes
+        presented as an HTML page.
+
 .. release:: 0.5.1
     :date: 2015-07-06
 
