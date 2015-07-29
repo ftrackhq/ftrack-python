@@ -12,6 +12,11 @@ Release Notes
 .. release:: next
 
     .. change:: changed
+        :tags: server version
+
+        ftrack server version 3.1.5 or greater required.
+
+    .. change:: changed
 
         Server reported errors are now more readable and are no longer sometimes
         presented as an HTML page.
