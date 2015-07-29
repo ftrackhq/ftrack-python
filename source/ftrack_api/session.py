@@ -266,11 +266,25 @@ class Session(object):
                 )
 
     def reset(self):
-        '''Reset session clearing all locally stored data.'''
+        '''Reset session clearing all locally stored data.
+
+        If the cache used by the session is a
+        :class:`~ftrack_api.cache.LayeredCache` then only clear top level cache.
+        Otherwise, clear the entire cache.
+
+        '''
         if self.recorded_operations:
             self.logger.warning(
                 'Resetting session with pending operations not persisted.'
             )
+
+        if isinstance(self.cache, ftrack_api.cache.LayeredCache):
+            try:
+                self.cache.caches[0].clear()
+            except IndexError:
+                pass
+        elif isinstance(self.cache, ftrack_api.cache.Cache):
+            self.cache.clear()
 
         self._attached.clear()
         self.recorded_operations.clear()
@@ -721,11 +735,8 @@ class Session(object):
                 if merged_remote_value is not remote_value:
                     attribute.set_remote_value(entity, merged_remote_value)
 
-    def populate(self, entities, projections, background=False):
+    def populate(self, entities, projections):
         '''Populate *entities* with attributes specified by *projections*.
-
-        if *background* is True make request without blocking and populate
-        entities when result received.
 
         Any locally set values included in the *projections* will not be
         overwritten with the retrieved remote value. If this 'synchronise'
@@ -1530,9 +1541,9 @@ class Session(object):
             # Create member components for sequence.
             for member_path in collection:
                 member_data = {
-                    'name': collection.match(item).group('index'),
+                    'name': collection.match(member_path).group('index'),
                     'container': container,
-                    'size': member_sizes[item],
+                    'size': member_sizes[member_path],
                     'file_type': os.path.splitext(member_path)[-1]
                 }
 

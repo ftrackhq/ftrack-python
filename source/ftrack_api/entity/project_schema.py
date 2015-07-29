@@ -44,7 +44,7 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
         raise ValueError('Schema {0} does not have statuses.'.format(schema))
 
     def get_types(self, schema):
-        '''Return statuses for *schema*.'''
+        '''Return types for *schema*.'''
         # TODO: Refactor this once arbitrary context is supported on server.
         if schema == 'Task':
             return self['_task_type_schema']['types'][:]

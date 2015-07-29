@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: changed
+
+        :meth:`Session.reset` now also clears the top most level cache (by
+        default a :class:`~ftrack_api.cache.MemoryCache`).
+
 .. release:: 0.5.1
     :date: 2015-06-06
 

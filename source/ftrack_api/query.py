@@ -33,8 +33,6 @@ class QueryResult(collections.Sequence):
     def _fetch_results(self):
         '''Fetch and store results.'''
         self._results = self._session._query(self._expression)
-        if self._results is None:
-            self._results = []
 
     def all(self):
         '''Fetch and return all data.'''
