@@ -260,7 +260,7 @@ class Session(object):
             ):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0} incompatible with this version of the '
-                    'API which requires a server version >= {0}'.format(
+                    'API which requires a server version >= {1}'.format(
                         server_version, minimum_server_version
                     )
                 )
