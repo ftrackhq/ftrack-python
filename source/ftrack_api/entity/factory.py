@@ -167,7 +167,6 @@ class Factory(object):
         )
 
 
-
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     '''Generate key for defaults.'''
 
@@ -294,10 +293,21 @@ class StandardFactory(Factory):
             key_attribute = 'key'
             value_attribute = 'value'
 
+        if reference == 'CustomAttributeValue':
+            def create_custom_attribute_value(proxy, data, reference):
+                '''Return custom attribute value for *data*.'''
+                raise NotImplementedError()
+
+            creator = functools.partial(
+                create_custom_attribute_value, reference=reference
+            )
+            key_attribute = 'custom_attribute_configuration_id'
+            value_attribute = 'value'
+
         if creator is None:
             self.logger.debug(
                 'Skipping {0}.{1} mapped_array attribute that has '
-                'no creator defined for reference {3}.'
+                'no creator defined for reference {2}.'
                 .format(class_name, name, reference)
             )
             return
@@ -305,7 +315,7 @@ class StandardFactory(Factory):
         if key_attribute is None:
             self.logger.debug(
                 'Skipping {0}.{1} mapped_array attribute that has '
-                'no key_attribute defined for reference {3}.'
+                'no key_attribute defined for reference {2}.'
                 .format(class_name, name, reference)
             )
             return
@@ -313,7 +323,7 @@ class StandardFactory(Factory):
         if value_attribute is None:
             self.logger.debug(
                 'Skipping {0}.{1} mapped_array attribute that has '
-                'no value_attribute defined for reference {3}.'
+                'no value_attribute defined for reference {2}.'
                 .format(class_name, name, reference)
             )
             return
