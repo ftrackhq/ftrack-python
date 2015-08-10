@@ -125,11 +125,11 @@ def test_write_unset_custom_attribute_value(
 @pytest.mark.parametrize(
     'entity_type,entity_id,custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'NotExisting'),
-        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'NotExisting'),
+        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'fstart'),
+        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'Not existing'),
         (
             'AssetVersion', 'e80fd79c-c5ea-11e1-94af-f23c91df25eb',
-            'NotExisting'
+            'fstart'
         )
     ],
     ids=[
@@ -155,11 +155,11 @@ def test_read_custom_attribute_that_does_not_exist(
 @pytest.mark.parametrize(
     'entity_type,entity_id,custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'NotExisting'),
-        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'NotExisting'),
+        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'fstart'),
+        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'Not existing'),
         (
             'AssetVersion', 'e80fd79c-c5ea-11e1-94af-f23c91df25eb',
-            'NotExisting'
+            'fstart'
         )
     ],
     ids=[
