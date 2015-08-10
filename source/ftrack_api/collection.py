@@ -284,7 +284,7 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
 
 
 @memoise_defaults
-def get_configurations(entity):
+def get_custom_attribute_configurations(entity):
     '''Return configurations.'''
     return entity.session.query(
         'select key, top_id, id, entity_key from '
@@ -302,8 +302,6 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         self.collection = collection
         self.key_attribute = 'custom_attribute_configuration_id'
         self.value_attribute = 'value'
-        import traceback
-        traceback.print_stack(limit=10)
 
     def __copy__(self):
         '''Return shallow copy.
@@ -370,7 +368,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             )
 
         configurations = []
-        for configuration in get_configurations(entity):
+        for configuration in get_custom_attribute_configurations(entity):
             if (
                 configuration['entity'] == entity_type and
                 configuration['top_id'] in (project_id, None),
