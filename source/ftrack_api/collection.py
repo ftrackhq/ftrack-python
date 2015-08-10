@@ -8,6 +8,7 @@ import ftrack_api.exception
 import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.operation
+import ftrack_api.cache
 
 
 class Collection(collections.MutableSequence):
@@ -259,7 +260,30 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
         return len(keys)
 
 
-#: TODO: Add session level caching for this function. 
+class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
+    '''Generate key for defaults.'''
+
+    def _key(self, obj):
+        '''Return key for *obj*.'''
+        if isinstance(obj, dict):
+            entity = obj.get('entity')
+            if entity is not None:
+                # Key by session only.
+                return str(id(entity.session))
+
+        return str(obj)
+
+
+#: Memoiser for use with default callables that should only be called once per
+# session.
+memoise_defaults = ftrack_api.cache.memoise_decorator(
+    ftrack_api.cache.Memoiser(
+        key_maker=PerSessionDefaultKeyMaker(), return_copies=False
+    )
+)
+
+
+@memoise_defaults
 def get_configurations(entity):
     '''Return configurations.'''
     return entity.session.query(
@@ -378,15 +402,6 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         for configuration in self._get_entity_configurations():
             if data == configuration['key']:
                 return configuration['id']
-
-        raise KeyError(data)
-
-    def decode(self, data):
-        '''Decode a custom attribute configuration id to a key.'''
-        entity = self.collection.entity
-        for configuration in get_configurations(entity):
-            if configuration['id'] == data:
-                return configuration['key']
 
         raise KeyError(data)
 
