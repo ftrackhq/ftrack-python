@@ -259,18 +259,13 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
         return len(keys)
 
 
-CONFIGURATIONS = None
-
-
+#: TODO: Add session level caching for this function. 
 def get_configurations(entity):
-    global CONFIGURATIONS
-    if CONFIGURATIONS is None:
-        CONFIGURATIONS = entity.session.query(
-            'select key, top_id, id, entity_key from '
-            'CustomAttributeConfiguration'
-        ).all()
-
-    return CONFIGURATIONS
+    '''Return configurations.'''
+    return entity.session.query(
+        'select key, top_id, id, entity_key from '
+        'CustomAttributeConfiguration'
+    ).all()
 
 
 class CustomAttributeCollectionProxy(MappedCollectionProxy):
