@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+import logging
+
 import collections
 import copy
 
@@ -303,6 +305,10 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         self.key_attribute = 'custom_attribute_configuration_id'
         self.value_attribute = 'value'
 
+        self.logger = logging.getLogger(
+            __name__ + '.' + self.__class__.__name__
+        )
+
     def __copy__(self):
         '''Return shallow copy.
 
@@ -450,14 +456,18 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             The associated entity will be deleted as well.
 
         '''
-        for index, entity in enumerate(self.collection):
-            if entity[self.key_attribute] == key:
-                break
-        else:
-            raise KeyError(key)
+        custom_attribute_value = self._get_entity_by_key(key)
 
-        del self.collection[index]
-        entity.session.delete(entity)
+        if custom_attribute_value:
+            index = self.collection.index(custom_attribute_value)
+            del self.collection[index]
+
+            custom_attribute_value.session.delete(custom_attribute_value)
+        else:
+            self.logger.warning(
+                'Cannot delete {0!r} on {1!r}, no custom attribute value set.'
+                .format(key, self.collection.entity)
+            )
 
     def __iter__(self):
         '''Iterate over all keys.'''
