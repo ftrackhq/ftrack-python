@@ -47,8 +47,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "timelogs": [],
          "type": {{"__entity_type__": "TaskType",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8",
-         "workload": 100}}
+         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
         new_task['id'], new_task['name']
     )).replace('\n', '')
@@ -82,8 +81,7 @@ def test_encode_entity_using_only_set_attributes_strategy(
          "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
          "type": {{"__entity_type__": "TaskType",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8",
-         "workload": 100}}
+         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
         new_task['id'], new_task['name']
     )).replace('\n', '')
