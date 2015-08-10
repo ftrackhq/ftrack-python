@@ -376,7 +376,12 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             ):
                 configurations.append(configuration)
 
-        return configurations
+        # Return with global configurations at the end of the list. This is done
+        # so that global conigurations are shadowed by project specific if the
+        # configurations list is looped when looking for a matching `key`.
+        return sorted(
+            configurations, key=lambda item: item['project_id'] is None
+        )
 
     def _get_keys(self):
         '''Return a list of all keys.'''
