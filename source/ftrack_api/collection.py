@@ -323,6 +323,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         self.collection.attribute = value
 
     def _get_entity_configurations(self):
+        '''Return all configurations for current collection entity.'''
         entity = self.collection.entity
         entity_type = None
         project_id = None
@@ -360,6 +361,23 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
 
         return configurations
 
+    def _get_keys(self):
+        '''Return a list of all keys.'''
+        keys = []
+        for configuration in self._get_entity_configurations():
+            keys.append(configuration['key'])
+
+        return keys
+
+    def _get_entity_by_key(self, key):
+        '''Return entity instance with matching *key* from collection.'''
+        translated_key = self.encode(key)
+        for entity in self.collection:
+            if entity[self.key_attribute] == translated_key:
+                return entity
+
+        return None
+
     def encode(self, data):
         '''Encode a key to a custom attribute configuration id.'''
         for configuration in self._get_entity_configurations():
@@ -376,22 +394,6 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
                 return configuration['key']
 
         raise KeyError(data)
-
-    def _get_keys(self):
-        keys = []
-        for configuration in self._get_entity_configurations():
-            keys.append(configuration['key'])
-
-        return keys
-
-    def _get_entity_by_key(self, key):
-        '''Return entity instance with matching *key* from collection.'''
-        translated_key = self.encode(key)
-        for entity in self.collection:
-            if entity[self.key_attribute] == translated_key:
-                return entity
-
-        return None
 
     def __getitem__(self, key):
         '''Return value for *key*.'''

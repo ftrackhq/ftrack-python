@@ -439,8 +439,10 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
         super(MappedCollectionAttribute, self).__init__(name, **kw)
 
     def _adapt_to_collection(self, entity, value):
-        '''Adapt *value* to a KeyValueMappedCollectionProxy instance on *entity*.'''
-        if not isinstance(value, ftrack_api.collection.KeyValueMappedCollectionProxy):
+        '''Adapt *value* to an *entity*.'''
+        if not isinstance(
+            value, ftrack_api.collection.KeyValueMappedCollectionProxy
+        ):
 
             if value is None:
                 value = ftrack_api.collection.KeyValueMappedCollectionProxy(
@@ -471,7 +473,8 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
                 # values should be mapped collections already.
                 current_value = self.get_value(entity)
                 if not isinstance(
-                    current_value, ftrack_api.collection.KeyValueMappedCollectionProxy
+                    current_value,
+                    ftrack_api.collection.KeyValueMappedCollectionProxy
                 ):
                     raise NotImplementedError(
                         'Cannot adapt mapping to collection as current value '
@@ -485,9 +488,11 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
                 collection = ftrack_api.collection.Collection(
                     entity, self, data=current_value.collection[:]
                 )
-                collection_proxy = ftrack_api.collection.KeyValueMappedCollectionProxy(
-                    collection, self.creator,
-                    self.key_attribute, self.value_attribute
+                collection_proxy = (
+                    ftrack_api.collection.KeyValueMappedCollectionProxy(
+                        collection, self.creator,
+                        self.key_attribute, self.value_attribute
+                    )
                 )
 
                 # Remove expired keys from collection.
@@ -523,7 +528,7 @@ class MappedCustomAttributeCollectionAttribute(AbstractCollectionAttribute):
     )
 
     def _adapt_to_collection(self, entity, value):
-        '''Adapt *value* to a KeyValueMappedCollectionProxy instance on *entity*.'''
+        '''Adapt *value* to an *entity*.'''
         if not isinstance(
             value, ftrack_api.collection.CustomAttributeCollectionProxy
         ):
@@ -571,8 +576,10 @@ class MappedCustomAttributeCollectionAttribute(AbstractCollectionAttribute):
                 collection = ftrack_api.collection.Collection(
                     entity, self, data=current_value.collection[:]
                 )
-                collection_proxy = ftrack_api.collection.CustomAttributeCollectionProxy(
-                    collection, self.creator
+                collection_proxy = (
+                    ftrack_api.collection.CustomAttributeCollectionProxy(
+                        collection, self.creator
+                    )
                 )
 
                 # Remove expired keys from collection.
