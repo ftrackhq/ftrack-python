@@ -371,7 +371,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         for configuration in get_custom_attribute_configurations(entity):
             if (
                 configuration['entity'] == entity_type and
-                configuration['project_id'] in (project_id, None),
+                configuration['project_id'] in (project_id, None) and
                 configuration['object_type_id'] == object_type_id
             ):
                 configurations.append(configuration)
