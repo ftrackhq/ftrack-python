@@ -129,6 +129,10 @@ class Collection(collections.MutableSequence):
 
 
 class MappedCollectionProxy(collections.MutableMapping):
+    pass
+
+
+class KeyValueMappedCollectionProxy(MappedCollectionProxy):
     '''A mapped collection of entities.
 
     Proxy a standard :class:`Collection` as a mapping where certain attributes
@@ -252,4 +256,200 @@ class MappedCollectionProxy(collections.MutableMapping):
         for entity in self.collection:
             keys.add(entity[self.key_attribute])
 
+        return len(keys)
+
+
+CONFIGURATIONS = None
+
+
+def get_configurations(entity):
+    global CONFIGURATIONS
+    if CONFIGURATIONS is None:
+        CONFIGURATIONS = entity.session.query(
+            'select key, top_id, id, entity_key from '
+            'CustomAttributeConfiguration'
+        ).all()
+
+    return CONFIGURATIONS
+
+
+class CustomAttributeCollectionProxy(MappedCollectionProxy):
+    '''A mapped collection of custom attribute value entities.'''
+
+    def __init__(
+        self, collection
+    ):
+        '''Initialise collection.'''
+        self.collection = collection
+        self.key_attribute = 'custom_attribute_configuration_id'
+        self.value_attribute = 'value'
+        import traceback
+        traceback.print_stack(limit=10)
+
+    def __copy__(self):
+        '''Return shallow copy.
+
+        .. note::
+
+            To maintain expectations on usage, the shallow copy will include a
+            shallow copy of the underlying collection.
+
+        '''
+        cls = self.__class__
+        copied_instance = cls.__new__(cls)
+        copied_instance.__dict__.update(self.__dict__)
+        copied_instance.collection = copy.copy(self.collection)
+
+        return copied_instance
+
+    @property
+    def mutable(self):
+        '''Return whether collection is mutable.'''
+        return self.collection.mutable
+
+    @mutable.setter
+    def mutable(self, value):
+        '''Set whether collection is mutable to *value*.'''
+        self.collection.mutable = value
+
+    @property
+    def attribute(self):
+        '''Return attribute bound to.'''
+        return self.collection.attribute
+
+    @attribute.setter
+    def attribute(self, value):
+        '''Set bound attribute to *value*.'''
+        self.collection.attribute = value
+
+    def _get_entity_configurations(self):
+        entity = self.collection.entity
+        entity_type = None
+        project_id = None
+        object_type_id = None
+
+        if 'object_type_id' in entity.keys():
+            project_id = entity['project_id']
+            entity_type = 'task'
+            object_type_id = entity['object_type_id']
+
+        if entity.entity_type == 'AssetVersion':
+            project_id = entity['asset']['parent']['project_id']
+            entity_type = 'assetversion'
+
+        if entity.entity_type == 'Project':
+            project_id = entity['id']
+            entity_type = 'show'
+
+        if entity.entity_type == 'User':
+            entity_type = 'user'
+
+        if entity_type is None:
+            raise ValueError(
+                'Entity {!r} not supported.'.format(entity)
+            )
+
+        configurations = []
+        for configuration in get_configurations(entity):
+            if (
+                configuration['entity'] == entity_type and
+                configuration['top_id'] in (project_id, None),
+                configuration['entity_key'] == object_type_id
+            ):
+                configurations.append(configuration)
+
+        return configurations
+
+    def encode(self, data):
+        '''Encode a key to a custom attribute configuration id.'''
+        for configuration in self._get_entity_configurations():
+            if data == configuration['key']:
+                return configuration['id']
+
+        raise KeyError(data)
+
+    def decode(self, data):
+        '''Decode a custom attribute configuration id to a key.'''
+        entity = self.collection.entity
+        for configuration in get_configurations(entity):
+            if configuration['id'] == data:
+                return configuration['key']
+
+        raise KeyError(data)
+
+    def _get_keys(self):
+        keys = []
+        for configuration in self._get_entity_configurations():
+            keys.append(configuration['key'])
+
+        return keys
+
+    def _get_entity_by_key(self, key):
+        '''Return entity instance with matching *key* from collection.'''
+        translated_key = self.encode(key)
+        for entity in self.collection:
+            if entity[self.key_attribute] == translated_key:
+                return entity
+
+        return None
+
+    def __getitem__(self, key):
+        '''Return value for *key*.'''
+        entity = self._get_entity_by_key(key)
+
+        if entity:
+            return entity[self.value_attribute]
+
+        for configuration in self._get_entity_configurations():
+            if configuration['key'] == key:
+                return configuration['default']
+
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        '''Set *value* for *key*.'''
+        custom_attribute_value = self._get_entity_by_key(key)
+
+        if custom_attribute_value:
+            custom_attribute_value[self.value_attribute] = value
+        else:
+            entity = self.collection.entity
+            session = entity.session
+            data = {
+                self.key_attribute: self.encode(key),
+                self.value_attribute: value,
+                'entity_id': entity['id']
+            }
+
+            # Make sure to use the currently active collection. This is
+            # necessary since a merge might have replaced the current one.
+            self.collection.entity['custom_attributes'].collection.append(
+                session.create('CustomAttributeValue', data)
+            )
+
+    def __delitem__(self, key):
+        '''Remove and delete *key*.
+
+        .. note::
+
+            The associated entity will be deleted as well.
+
+        '''
+        for index, entity in enumerate(self.collection):
+            if entity[self.key_attribute] == key:
+                break
+        else:
+            raise KeyError(key)
+
+        del self.collection[index]
+        entity.session.delete(entity)
+
+    def __iter__(self):
+        '''Iterate over all keys.'''
+        keys = self._get_keys()
+        return iter(keys)
+
+    def __len__(self):
+        '''Return count of keys.'''
+        keys = self._get_keys()
         return len(keys)
