@@ -287,7 +287,7 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
 def get_custom_attribute_configurations(entity):
     '''Return configurations.'''
     return entity.session.query(
-        'select key, top_id, id, entity_key from '
+        'select key, project_id, id, object_type_id from '
         'CustomAttributeConfiguration'
     ).all()
 
@@ -371,8 +371,8 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         for configuration in get_custom_attribute_configurations(entity):
             if (
                 configuration['entity'] == entity_type and
-                configuration['top_id'] in (project_id, None),
-                configuration['entity_key'] == object_type_id
+                configuration['project_id'] in (project_id, None),
+                configuration['object_type_id'] == object_type_id
             ):
                 configurations.append(configuration)
 
