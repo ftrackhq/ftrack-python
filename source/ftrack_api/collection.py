@@ -268,27 +268,26 @@ class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     def _key(self, obj):
         '''Return key for *obj*.'''
         if isinstance(obj, dict):
-            entity = obj.get('entity')
-            if entity is not None:
+            session = obj.get('session')
+            if session is not None:
                 # Key by session only.
-                return str(id(entity.session))
+                return str(id(session))
 
         return str(obj)
 
 
-#: Memoiser for use with default callables that should only be called once per
-# session.
-memoise_defaults = ftrack_api.cache.memoise_decorator(
+#: Memoiser for use with callables that should be called once per session.
+memoise_session = ftrack_api.cache.memoise_decorator(
     ftrack_api.cache.Memoiser(
         key_maker=PerSessionDefaultKeyMaker(), return_copies=False
     )
 )
 
 
-@memoise_defaults
-def get_custom_attribute_configurations(entity):
+@memoise_session
+def get_custom_attribute_configurations(session):
     '''Return configurations.'''
-    return entity.session.query(
+    return session.query(
         'select key, project_id, id, object_type_id from '
         'CustomAttributeConfiguration'
     ).all()
@@ -374,7 +373,9 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             )
 
         configurations = []
-        for configuration in get_custom_attribute_configurations(entity):
+        for configuration in get_custom_attribute_configurations(
+            entity.session
+        ):
             if (
                 configuration['entity'] == entity_type and
                 configuration['project_id'] in (project_id, None) and
