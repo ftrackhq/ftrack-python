@@ -271,7 +271,7 @@ class StandardFactory(Factory):
         self, class_name, name, mutable, reference
     ):
         '''Return appropriate mapped collection attribute instance.'''
-        if reference == ('Metadata',):
+        if reference in ('Metadata',):
             creator = None
             key_attribute = None
             value_attribute = None
