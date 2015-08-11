@@ -132,11 +132,11 @@ class Collection(collections.MutableSequence):
 
 
 class MappedCollectionProxy(collections.MutableMapping):
-    pass
+    '''Mapped collection of entities.'''
 
 
 class KeyValueMappedCollectionProxy(MappedCollectionProxy):
-    '''A mapped collection of entities.
+    '''A mapped collection of key, value entities.
 
     Proxy a standard :class:`Collection` as a mapping where certain attributes
     from the entities in the collection are mapped to key, value pairs.
