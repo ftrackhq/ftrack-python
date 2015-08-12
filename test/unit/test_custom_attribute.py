@@ -180,3 +180,30 @@ def test_write_custom_attribute_that_does_not_exist(
 
     with pytest.raises(KeyError):
         entity['custom_attributes'][custom_attribute_name] = 'FOO'
+
+
+@pytest.mark.parametrize(
+    'entity_type,entity_id,custom_attribute_name',
+    [
+        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber'),
+        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customDate')
+    ],
+    ids=[
+        'task_with_set_custom_attribute',
+        'task_with_unset_custom_attribute'
+    ]
+)
+def test_owerwrite_custom_attributes_with_dictionary(
+    session, entity_type, entity_id, custom_attribute_name
+):
+    '''Successfully overwrite custom attributes with a dictionary.'''
+    entity = session.query(
+        'select custom_attributes from {entity_type} where id is'
+        ' "{entity_id}"'.format(
+            entity_type=entity_type, entity_id=entity_id
+        )
+    ).first()
+
+    entity['custom_attributes'] = {
+        custom_attribute_name: 'Foo'
+    }
