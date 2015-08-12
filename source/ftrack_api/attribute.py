@@ -578,7 +578,7 @@ class MappedCustomAttributeCollectionAttribute(AbstractCollectionAttribute):
                 )
                 collection_proxy = (
                     ftrack_api.collection.CustomAttributeCollectionProxy(
-                        collection, self.creator
+                        collection
                     )
                 )
 
