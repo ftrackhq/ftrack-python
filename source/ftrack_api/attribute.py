@@ -414,7 +414,7 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
     '''Represent a mapped collection of entities.'''
 
     #: Collection class used by attribute.
-    collection_class = ftrack_api.collection.MappedCollectionProxy
+    collection_class = ftrack_api.collection.KeyValueMappedCollectionProxy
 
     def __init__(
         self, name, creator, key_attribute, value_attribute, **kw
@@ -439,11 +439,13 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
         super(MappedCollectionAttribute, self).__init__(name, **kw)
 
     def _adapt_to_collection(self, entity, value):
-        '''Adapt *value* to a MappedCollectionProxy instance on *entity*.'''
-        if not isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+        '''Adapt *value* to an *entity*.'''
+        if not isinstance(
+            value, ftrack_api.collection.KeyValueMappedCollectionProxy
+        ):
 
             if value is None:
-                value = ftrack_api.collection.MappedCollectionProxy(
+                value = ftrack_api.collection.KeyValueMappedCollectionProxy(
                     ftrack_api.collection.Collection(entity, self),
                     self.creator, self.key_attribute,
                     self.value_attribute
@@ -456,7 +458,7 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
                         entity, self, data=value
                     )
 
-                value = ftrack_api.collection.MappedCollectionProxy(
+                value = ftrack_api.collection.KeyValueMappedCollectionProxy(
                     value, self.creator, self.key_attribute,
                     self.value_attribute
                 )
@@ -471,7 +473,96 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
                 # values should be mapped collections already.
                 current_value = self.get_value(entity)
                 if not isinstance(
-                    current_value, ftrack_api.collection.MappedCollectionProxy
+                    current_value,
+                    ftrack_api.collection.KeyValueMappedCollectionProxy
+                ):
+                    raise NotImplementedError(
+                        'Cannot adapt mapping to collection as current value '
+                        'type is not a KeyValueMappedCollectionProxy.'
+                    )
+
+                # Create the new collection using the existing collection as
+                # basis. Then update through proxy interface to ensure all
+                # internal operations called consistently (such as entity
+                # deletion for key removal).
+                collection = ftrack_api.collection.Collection(
+                    entity, self, data=current_value.collection[:]
+                )
+                collection_proxy = (
+                    ftrack_api.collection.KeyValueMappedCollectionProxy(
+                        collection, self.creator,
+                        self.key_attribute, self.value_attribute
+                    )
+                )
+
+                # Remove expired keys from collection.
+                expired_keys = set(current_value.keys()) - set(value.keys())
+                for key in expired_keys:
+                    del collection_proxy[key]
+
+                # Set new values for existing keys / add new keys.
+                for key, value in value.items():
+                    collection_proxy[key] = value
+
+                value = collection_proxy
+
+            else:
+                raise NotImplementedError(
+                    'Cannot convert {0!r} to collection.'.format(value)
+                )
+        else:
+            if value.attribute is not self:
+                raise ftrack_api.exception.AttributeError(
+                    'Collection already bound to a different attribute.'
+                )
+
+        return value
+
+
+class MappedCustomAttributeCollectionAttribute(AbstractCollectionAttribute):
+    '''Represent a mapped custom attribute collection of entities.'''
+
+    #: Collection class used by attribute.
+    collection_class = (
+        ftrack_api.collection.CustomAttributeCollectionProxy
+    )
+
+    def _adapt_to_collection(self, entity, value):
+        '''Adapt *value* to an *entity*.'''
+        if not isinstance(
+            value, ftrack_api.collection.CustomAttributeCollectionProxy
+        ):
+
+            if value is None:
+                value = ftrack_api.collection.CustomAttributeCollectionProxy(
+                    ftrack_api.collection.Collection(entity, self)
+                )
+
+            elif isinstance(value, (list, ftrack_api.collection.Collection)):
+
+                # Why are we creating a new if it is a list? This will cause
+                # any merge to create a new proxy and collection.
+                if isinstance(value, list):
+                    value = ftrack_api.collection.Collection(
+                        entity, self, data=value
+                    )
+
+                value = ftrack_api.collection.CustomAttributeCollectionProxy(
+                    value
+                )
+
+            elif isinstance(value, collections.Mapping):
+                # Convert mapping.
+                # TODO: When backend model improves, revisit this logic.
+                # First get existing value and delete all references. This is
+                # needed because otherwise they will not be automatically
+                # removed server side.
+                # The following should not cause recursion as the internal
+                # values should be mapped collections already.
+                current_value = self.get_value(entity)
+                if not isinstance(
+                    current_value,
+                    ftrack_api.collection.CustomAttributeCollectionProxy
                 ):
                     raise NotImplementedError(
                         'Cannot adapt mapping to collection as current value '
@@ -485,9 +576,10 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
                 collection = ftrack_api.collection.Collection(
                     entity, self, data=current_value.collection[:]
                 )
-                collection_proxy = ftrack_api.collection.MappedCollectionProxy(
-                    collection, self.creator,
-                    self.key_attribute, self.value_attribute
+                collection_proxy = (
+                    ftrack_api.collection.CustomAttributeCollectionProxy(
+                        collection
+                    )
                 )
 
                 # Remove expired keys from collection.

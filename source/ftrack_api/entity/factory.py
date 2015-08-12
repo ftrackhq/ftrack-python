@@ -167,7 +167,6 @@ class Factory(object):
         )
 
 
-
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     '''Generate key for defaults.'''
 
@@ -272,11 +271,10 @@ class StandardFactory(Factory):
         self, class_name, name, mutable, reference
     ):
         '''Return appropriate mapped collection attribute instance.'''
-        creator = None
-        key_attribute = None
-        value_attribute = None
-
-        if reference == 'Metadata':
+        if reference in ('Metadata',):
+            creator = None
+            key_attribute = None
+            value_attribute = None
 
             def create_metadata(proxy, data, reference):
                 '''Return metadata for *data*.'''
@@ -294,31 +292,19 @@ class StandardFactory(Factory):
             key_attribute = 'key'
             value_attribute = 'value'
 
-        if creator is None:
-            self.logger.debug(
-                'Skipping {0}.{1} mapped_array attribute that has '
-                'no creator defined for reference {3}.'
-                .format(class_name, name, reference)
+            return ftrack_api.attribute.MappedCollectionAttribute(
+                name, creator, key_attribute, value_attribute, mutable=mutable
             )
-            return
 
-        if key_attribute is None:
-            self.logger.debug(
-                'Skipping {0}.{1} mapped_array attribute that has '
-                'no key_attribute defined for reference {3}.'
-                .format(class_name, name, reference)
+        if reference == 'CustomAttributeValue':
+            return (
+                ftrack_api.attribute.MappedCustomAttributeCollectionAttribute(
+                    name, mutable=mutable
+                )
             )
-            return
 
-        if value_attribute is None:
-            self.logger.debug(
-                'Skipping {0}.{1} mapped_array attribute that has '
-                'no value_attribute defined for reference {3}.'
-                .format(class_name, name, reference)
-            )
-            return
-
-        return ftrack_api.attribute.MappedCollectionAttribute(
-            name, creator, key_attribute, value_attribute,
-            mutable=mutable
+        self.logger.debug(
+            'Skipping {0}.{1} mapped_array attribute that has no configuration '
+            'for reference {2}.'
+            .format(class_name, name, reference)
         )

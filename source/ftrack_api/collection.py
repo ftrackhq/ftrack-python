@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+import logging
+
 import collections
 import copy
 
@@ -8,6 +10,7 @@ import ftrack_api.exception
 import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.operation
+import ftrack_api.cache
 
 
 class Collection(collections.MutableSequence):
@@ -129,7 +132,11 @@ class Collection(collections.MutableSequence):
 
 
 class MappedCollectionProxy(collections.MutableMapping):
-    '''A mapped collection of entities.
+    '''Mapped collection of entities.'''
+
+
+class KeyValueMappedCollectionProxy(MappedCollectionProxy):
+    '''A mapped collection of key, value entities.
 
     Proxy a standard :class:`Collection` as a mapping where certain attributes
     from the entities in the collection are mapped to key, value pairs.
@@ -252,4 +259,223 @@ class MappedCollectionProxy(collections.MutableMapping):
         for entity in self.collection:
             keys.add(entity[self.key_attribute])
 
+        return len(keys)
+
+
+class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
+    '''Generate key for defaults.'''
+
+    def _key(self, obj):
+        '''Return key for *obj*.'''
+        if isinstance(obj, dict):
+            session = obj.get('session')
+            if session is not None:
+                # Key by session only.
+                return str(id(session))
+
+        return str(obj)
+
+
+#: Memoiser for use with callables that should be called once per session.
+memoise_session = ftrack_api.cache.memoise_decorator(
+    ftrack_api.cache.Memoiser(
+        key_maker=PerSessionDefaultKeyMaker(), return_copies=False
+    )
+)
+
+
+@memoise_session
+def get_custom_attribute_configurations(session):
+    '''Return configurations.'''
+    return session.query(
+        'select key, project_id, id, object_type_id from '
+        'CustomAttributeConfiguration'
+    ).all()
+
+
+class CustomAttributeCollectionProxy(MappedCollectionProxy):
+    '''A mapped collection of custom attribute value entities.'''
+
+    def __init__(
+        self, collection
+    ):
+        '''Initialise collection.'''
+        self.collection = collection
+        self.key_attribute = 'custom_attribute_configuration_id'
+        self.value_attribute = 'value'
+
+        self.logger = logging.getLogger(
+            __name__ + '.' + self.__class__.__name__
+        )
+
+    def __copy__(self):
+        '''Return shallow copy.
+
+        .. note::
+
+            To maintain expectations on usage, the shallow copy will include a
+            shallow copy of the underlying collection.
+
+        '''
+        cls = self.__class__
+        copied_instance = cls.__new__(cls)
+        copied_instance.__dict__.update(self.__dict__)
+        copied_instance.collection = copy.copy(self.collection)
+
+        return copied_instance
+
+    @property
+    def mutable(self):
+        '''Return whether collection is mutable.'''
+        return self.collection.mutable
+
+    @mutable.setter
+    def mutable(self, value):
+        '''Set whether collection is mutable to *value*.'''
+        self.collection.mutable = value
+
+    @property
+    def attribute(self):
+        '''Return attribute bound to.'''
+        return self.collection.attribute
+
+    @attribute.setter
+    def attribute(self, value):
+        '''Set bound attribute to *value*.'''
+        self.collection.attribute = value
+
+    def _get_entity_configurations(self):
+        '''Return all configurations for current collection entity.'''
+        entity = self.collection.entity
+        entity_type = None
+        project_id = None
+        object_type_id = None
+
+        if 'object_type_id' in entity.keys():
+            project_id = entity['project_id']
+            entity_type = 'task'
+            object_type_id = entity['object_type_id']
+
+        if entity.entity_type == 'AssetVersion':
+            project_id = entity['asset']['parent']['project_id']
+            entity_type = 'assetversion'
+
+        if entity.entity_type == 'Project':
+            project_id = entity['id']
+            entity_type = 'show'
+
+        if entity.entity_type == 'User':
+            entity_type = 'user'
+
+        if entity_type is None:
+            raise ValueError(
+                'Entity {!r} not supported.'.format(entity)
+            )
+
+        configurations = []
+        for configuration in get_custom_attribute_configurations(
+            entity.session
+        ):
+            if (
+                configuration['entity'] == entity_type and
+                configuration['project_id'] in (project_id, None) and
+                configuration['object_type_id'] == object_type_id
+            ):
+                configurations.append(configuration)
+
+        # Return with global configurations at the end of the list. This is done
+        # so that global conigurations are shadowed by project specific if the
+        # configurations list is looped when looking for a matching `key`.
+        return sorted(
+            configurations, key=lambda item: item['project_id'] is None
+        )
+
+    def _get_keys(self):
+        '''Return a list of all keys.'''
+        keys = []
+        for configuration in self._get_entity_configurations():
+            keys.append(configuration['key'])
+
+        return keys
+
+    def _get_entity_by_key(self, key):
+        '''Return entity instance with matching *key* from collection.'''
+        translated_key = self.encode(key)
+        for entity in self.collection:
+            if entity[self.key_attribute] == translated_key:
+                return entity
+
+        return None
+
+    def encode(self, data):
+        '''Encode a key to a custom attribute configuration id.'''
+        for configuration in self._get_entity_configurations():
+            if data == configuration['key']:
+                return configuration['id']
+
+        raise KeyError(data)
+
+    def __getitem__(self, key):
+        '''Return value for *key*.'''
+        entity = self._get_entity_by_key(key)
+
+        if entity:
+            return entity[self.value_attribute]
+
+        for configuration in self._get_entity_configurations():
+            if configuration['key'] == key:
+                return configuration['default']
+
+        raise KeyError(key)
+
+    def __setitem__(self, key, value):
+        '''Set *value* for *key*.'''
+        custom_attribute_value = self._get_entity_by_key(key)
+
+        if custom_attribute_value:
+            custom_attribute_value[self.value_attribute] = value
+        else:
+            entity = self.collection.entity
+            session = entity.session
+            data = {
+                self.key_attribute: self.encode(key),
+                self.value_attribute: value,
+                'entity_id': entity['id']
+            }
+
+            # Make sure to use the currently active collection. This is
+            # necessary since a merge might have replaced the current one.
+            self.collection.entity['custom_attributes'].collection.append(
+                session.create('CustomAttributeValue', data)
+            )
+
+    def __delitem__(self, key):
+        '''Remove and delete *key*.
+
+        .. note::
+
+            The associated entity will be deleted as well.
+
+        '''
+        custom_attribute_value = self._get_entity_by_key(key)
+
+        if custom_attribute_value:
+            index = self.collection.index(custom_attribute_value)
+            del self.collection[index]
+
+            custom_attribute_value.session.delete(custom_attribute_value)
+        else:
+            self.logger.warning(
+                'Cannot delete {0!r} on {1!r}, no custom attribute value set.'
+                .format(key, self.collection.entity)
+            )
+
+    def __iter__(self):
+        '''Iterate over all keys.'''
+        keys = self._get_keys()
+        return iter(keys)
+
+    def __len__(self):
+        '''Return count of keys.'''
+        keys = self._get_keys()
         return len(keys)
