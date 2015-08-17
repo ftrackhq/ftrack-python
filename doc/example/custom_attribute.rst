@@ -23,22 +23,41 @@ or items::
     >>> print task['custom_attributes'].items()
     [(u'my_text_field', u'some text')]
 
-.. note::
-    Expression attributes are not yet supported and the reported value will
-    always be the non-evaluated expression.
-
 Read existing custom attributes::
 
     >>> print task['custom_attributes']['my_text_field']
     'some text'
 
-Setting custom attributes can be done in a few ways where that later one will
-replace any existing custom_attribute::
+Setting custom attributes can be done in several ways. The first example below 
+will only update a singe attribute, while the second way will completely replace
+any existing custom_attribute::
 
     task['custom_attributes']['my_text_field'] = 'foo'
     task['custom_attributes'] = {
         'my_text_field': 'bar'
     }
+
+Limitations
+===========
+
+Expression attributes
+---------------------
+
+Expression attributes are not yet supported and the reported value will
+always be the non-evaluated expression.
+
+Hierarchical attributes
+-----------------------
+
+Hierarchical attributes are not yet supported and can not be read or updated
+using the API.
+
+Type conversion
+---------------
+
+Custom attributes will always be returned as unicode strings from the API, 
+even though configured as e.g. a boolean and will need to be converted
+manually.
 
 Validation
 ==========
