@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: API
+
+        The dynamic API classes TaskType, TaskStatus, PriorityType and
+        StatusType have been renamed to Type, Status, Priority and State.
+
 .. release:: 0.5.2
     :date: 2015-07-29
 
