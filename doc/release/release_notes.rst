@@ -9,6 +9,16 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: changed
+        :tags: querying, documentation
+
+        Updated documentation with details on new operators ``has`` and ``any``
+        for querying relationships.
+
+        .. seealso:: :ref:`querying/criteria/operators`
+
 .. release:: 0.5.2
     :date: 2015-07-29
 
