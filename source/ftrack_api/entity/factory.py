@@ -167,7 +167,6 @@ class Factory(object):
         )
 
 
-
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     '''Generate key for defaults.'''
 
@@ -194,19 +193,19 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
 @memoise_defaults
 def default_task_status(entity):
     '''Return default task status entity for *entity*.'''
-    return entity.session.query('TaskStatus').first()
+    return entity.session.query('Status').first()
 
 
 @memoise_defaults
 def default_task_type(entity):
     '''Return default task type entity for *entity*.'''
-    return entity.session.query('TaskType').first()
+    return entity.session.query('Type').first()
 
 
 @memoise_defaults
 def default_task_priority(entity):
-    '''Return default task priority entity for *entity*.'''
-    return entity.session.query('PriorityType').first()
+    '''Return default priority entity for *entity*.'''
+    return entity.session.query('Priority').first()
 
 
 class StandardFactory(Factory):
