@@ -125,10 +125,10 @@ against the subsequent condition)::
 In the above query, each *Task* that has at least one *Timelog* with a *start*
 time greater than the start of today is returned.
 
-When filtering on relationships, the conjunctions ``has`` and ``any`` can be used
-to specify how the criteria should be applied. This becomes important when
-querying using multiple conditions. The relationship condition can be 
-written on the following form::
+When filtering on relationships, the conjunctions ``has`` and ``any`` can be
+used to specify how the criteria should be applied. This becomes important when
+querying using multiple conditions. The relationship condition can be written
+against the following form::
 
     <not?> <relationship> <has|any> (<criteria>)
 
@@ -136,8 +136,7 @@ written on the following form::
 by a specific author when only name is known::
 
     notes_written_by_jane_doe = session.query(
-        'select id from Note '
-        'where author has (first_name is "Jane" and last_name is "Doe")'
+        'Note where author has (first_name is "Jane" and last_name is "Doe")'
     )
 
 In contrast, if the query was written without ``has`` each condition would be
@@ -149,8 +148,7 @@ projects that have at least one metadata instance that has `key=some_key`
 and `value=some_value` the query would be::
 
     projects_where_some_key_is_some_value = session.query(
-        'select id from Project '
-        'where metadata any (key=some_key and value=some_value)'
+        'Project where metadata any (key=some_key and value=some_value)'
     )
 
 If the query was written without ``any``, projects with one metadata matching 
@@ -159,7 +157,7 @@ If the query was written without ``any``, projects with one metadata matching
 ``any`` can also be used to query for empty relationship collections::
 
     users_without_timelogs = session.query(
-        'select id from User where not timelogs any ()'
+        'User where not timelogs any ()'
     )
 
 .. _querying/criteria/operators:
