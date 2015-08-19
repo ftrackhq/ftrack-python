@@ -9,6 +9,21 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: next
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.1.8, < 3.2 required.
+
+    .. change:: changed
+        :tags: querying, documentation
+
+        Updated documentation with details on new operators ``has`` and ``any``
+        for querying relationships.
+
+        .. seealso:: :ref:`querying/criteria/operators`
+
 .. release:: 0.5.2
     :date: 2015-07-29
 
