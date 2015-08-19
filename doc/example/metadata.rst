@@ -39,5 +39,5 @@ any existing metadata::
 Entities can also be queried using metadata::
 
     session.query(
-        'Sequence where metadata has (key is "frame_padding" and value is "4")'
+        'Sequence where metadata any (key is "frame_padding" and value is "4")'
     )
