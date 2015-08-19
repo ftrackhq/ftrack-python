@@ -5,7 +5,7 @@ import pytest
 import ftrack_api.exception
 
 
-def test_create_multiple_timers_with_error(session, new_user):
+def test_manually_create_multiple_timers_with_error(session, new_user):
     '''Fail to create a second timer.'''
     session.create('Timer', {
         'user': new_user
@@ -18,6 +18,18 @@ def test_create_multiple_timers_with_error(session, new_user):
             'user': new_user
         })
 
+        session.commit()
+
+    session.reset()
+
+
+def test_create_multiple_timers_with_error(session, new_user):
+    '''Fail to create a second timer.'''
+    new_user.start_timer()
+    session.commit()
+
+    with pytest.raises(ftrack_api.exception.NotUniqueError):
+        new_user.start_timer()
         session.commit()
 
     session.reset()
