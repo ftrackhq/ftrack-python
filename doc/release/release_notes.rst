@@ -12,6 +12,11 @@ Release Notes
 .. release:: next
 
     .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.1.8, < 3.2 required.
+
+    .. change:: changed
         :tags: querying, documentation
 
         Updated documentation with details on new operators ``has`` and ``any``
