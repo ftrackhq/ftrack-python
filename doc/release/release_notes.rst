@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: next
+.. release:: 0.6.0
+    :date: 2015-08-19
 
     .. change:: changed
         :tags: server version
