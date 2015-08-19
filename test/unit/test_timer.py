@@ -70,4 +70,5 @@ def test_start_a_timer_when_timer_is_running(session, new_user, new_task):
         'Timer where user_id = "{0}"'.format(new_user['id'])
     ).one()
 
+    # Make sure running timer has no context.
     assert timelog['context_id'] is None, 'Timer does not have a context.'
