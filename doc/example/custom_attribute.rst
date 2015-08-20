@@ -1,5 +1,5 @@
 ..
-    :copyright: Copyright (c) 2014 ftrack
+    :copyright: Copyright (c) 2015 ftrack
 
 .. _example/custom_attribute:
 
