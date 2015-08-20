@@ -10,27 +10,28 @@ Using custom attributes
 .. currentmodule:: ftrack_api.session
 
 Custom attributes can be written and read from entities using the
-custom_attribute property.
+``custom_attributes`` property.
 
-The custom_attribute property has a similar interface as a dictionary and keys
-can be printed using the keys method::
+The ``custom_attributes`` property provides a similar interface to a dictionary.
+
+Keys can be printed using the keys method::
 
     >>> task['custom_attributes'].keys()
     [u'my_text_field']
 
-or items::
+or access keys and values as items::
 
     >>> print task['custom_attributes'].items()
     [(u'my_text_field', u'some text')]
 
-Read existing custom attributes::
+Read existing custom attribute values::
 
     >>> print task['custom_attributes']['my_text_field']
     'some text'
 
 Setting custom attributes can be done in several ways. The first example below 
 will only update a singe attribute, while the second way will completely replace
-any existing custom_attribute::
+any existing ``custom_attributes``::
 
     task['custom_attributes']['my_text_field'] = 'foo'
     task['custom_attributes'] = {
