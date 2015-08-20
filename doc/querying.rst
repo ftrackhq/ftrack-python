@@ -125,6 +125,41 @@ against the subsequent condition)::
 In the above query, each *Task* that has at least one *Timelog* with a *start*
 time greater than the start of today is returned.
 
+When filtering on relationships, the conjunctions ``has`` and ``any`` can be
+used to specify how the criteria should be applied. This becomes important when
+querying using multiple conditions. The relationship condition can be written
+against the following form::
+
+    <not?> <relationship> <has|any> (<criteria>)
+
+``has`` should be used for scalar relationships. For example, to find notes 
+by a specific author when only name is known::
+
+    notes_written_by_jane_doe = session.query(
+        'Note where author has (first_name is "Jane" and last_name is "Doe")'
+    )
+
+In contrast, if the query was written without ``has`` each condition would be
+tested separately. In that case, notes written by both *Jane Smith* and 
+*John Doe* would have been returned in addition to those written by *Jane Doe*.
+
+``any`` should be used for collection relationships. For example, to find all
+projects that have at least one metadata instance that has `key=some_key` 
+and `value=some_value` the query would be::
+
+    projects_where_some_key_is_some_value = session.query(
+        'Project where metadata any (key=some_key and value=some_value)'
+    )
+
+If the query was written without ``any``, projects with one metadata matching 
+*key* and another matching the *value* would be returned.
+
+``any`` can also be used to query for empty relationship collections::
+
+    users_without_timelogs = session.query(
+        'User where not timelogs any ()'
+    )
+
 .. _querying/criteria/operators:
 
 Supported operators
@@ -164,6 +199,12 @@ This is the list of currently supported operators:
 +--------------+----------------+----------------------------------------------+
 | not_like     | Does not match | name not_like "%thrones"                     |
 |              | pattern.       |                                              |
++--------------+----------------+----------------------------------------------+
+| has          | Test scalar    | author has (first_name is "Jane" and         |
+|              | relationship.  | last_name is "Doe")                          |
++--------------+----------------+----------------------------------------------+
+| any          | Test collection| metadata any (key=some_key and               |
+|              | relationship.  | value=some_value)                            |
 +--------------+----------------+----------------------------------------------+
 
 .. _querying/projections:

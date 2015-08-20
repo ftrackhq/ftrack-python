@@ -261,13 +261,15 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
 @pytest.mark.parametrize('server_information, compatible', [
     ({}, False),
-    ({'version': '3.1.5'}, True),
-    ({'version': '4'}, True),
-    ({'version': '3.0'}, False)
+    ({'version': '3.1.8'}, True),
+    ({'version': '3.1.9'}, True),
+    ({'version': '3.2'}, False),
+    ({'version': '3.1'}, False)
 ], ids=[
     'No information',
     'Valid current version',
     'Valid higher version',
+    'Invalid higher version',
     'Invalid lower version'
 ])
 def test_check_server_compatibility(
