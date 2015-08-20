@@ -23,7 +23,7 @@ import pytest
 def test_read_set_custom_attribute(
     session, entity_type, entity_id, custom_attribute_name, expected_value
 ):
-    '''Test retrieving a custom attribute.'''
+    '''Retrieve custom attribute value set on instance.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -50,7 +50,7 @@ def test_read_set_custom_attribute(
 def test_read_unset_custom_attribute(
     session, entity_type, entity_id, custom_attribute_name, expected_value
 ):
-    '''Test retrieving a custom attribute.'''
+    '''Retrieve custom attribute default value when not set on instance.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -84,7 +84,7 @@ def test_read_unset_custom_attribute(
 def test_write_set_custom_attribute_value(
     session, entity_type, entity_id, custom_attribute_name
 ):
-    '''Test writing a set custom attribute value.'''
+    '''Overwrite existing instance level custom attribute value.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -109,7 +109,7 @@ def test_write_set_custom_attribute_value(
 def test_write_unset_custom_attribute_value(
     session, entity_type, entity_id, custom_attribute_name
 ):
-    '''Test writing an unset custom attribute value.'''
+    '''Set instance level custom attribute value for first time.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -141,6 +141,7 @@ def test_write_unset_custom_attribute_value(
 def test_read_custom_attribute_that_does_not_exist(
     session, entity_type, entity_id, custom_attribute_name
 ):
+    '''Fail to read value from a custom attribute that does not exist.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -171,6 +172,7 @@ def test_read_custom_attribute_that_does_not_exist(
 def test_write_custom_attribute_that_does_not_exist(
     session, entity_type, entity_id, custom_attribute_name
 ):
+    '''Fail to write a value to a custom attribute that does not exist.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -196,7 +198,7 @@ def test_write_custom_attribute_that_does_not_exist(
 def test_update_custom_attributes_with_dictionary(
     session, entity_type, entity_id, custom_attribute_name
 ):
-    '''Successfully update custom attributes with a dictionary.'''
+    '''Batch set custom attribute values.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
@@ -221,7 +223,7 @@ def test_update_custom_attributes_with_dictionary(
 def test_write_non_existing_custom_attributes_with_dictionary(
     session, entity_type, entity_id, custom_attribute_name
 ):
-    '''Successfully write non existing custom attributes with a dictionary.'''
+    '''Fail to batch set values for missing custom attribute.'''
     entity = session.query(
         'select custom_attributes from {entity_type} where id is'
         ' "{entity_id}"'.format(
