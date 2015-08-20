@@ -72,3 +72,9 @@ def test_start_a_timer_when_timer_is_running(session, new_user, new_task):
 
     # Make sure running timer has no context.
     assert timelog['context_id'] is None, 'Timer does not have a context.'
+
+
+def test_stop_timer_without_timer_running(session, new_user):
+    '''Stop a timer when no timer is running.'''
+    with pytest.raises(ftrack_api.exception.NoResultFoundError):
+        new_user.stop_timer()
