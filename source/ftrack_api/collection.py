@@ -377,7 +377,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             entity.session
         ):
             if (
-                configuration['entity'] == entity_type and
+                configuration['entity_type'] == entity_type and
                 configuration['project_id'] in (project_id, None) and
                 configuration['object_type_id'] == object_type_id
             ):
