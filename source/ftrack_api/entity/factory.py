@@ -272,9 +272,6 @@ class StandardFactory(Factory):
     ):
         '''Return appropriate mapped collection attribute instance.'''
         if reference in ('Metadata',):
-            creator = None
-            key_attribute = None
-            value_attribute = None
 
             def create_metadata(proxy, data, reference):
                 '''Return metadata for *data*.'''
