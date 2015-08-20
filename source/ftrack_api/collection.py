@@ -301,7 +301,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
     ):
         '''Initialise collection.'''
         self.collection = collection
-        self.key_attribute = 'custom_attribute_configuration_id'
+        self.key_attribute = 'configuration_id'
         self.value_attribute = 'value'
 
         self.logger = logging.getLogger(
