@@ -33,8 +33,8 @@ To stop the currently running timer for a user and create a timelog from it::
 
 .. note::
 
-    Staring a timer when a timer is already running will result in an error. Use
-    the force parameter to overcome that issue.
+    Starting a timer when a timer is already running will result in an error.
+    Use the force parameter to overcome that issue.
 
     .. code-block:: python
 

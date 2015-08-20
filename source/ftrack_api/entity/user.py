@@ -8,20 +8,23 @@ import ftrack_api.exception
 
 
 class User(ftrack_api.entity.base.Entity):
-    '''Represent a note.'''
+    '''Represent a user.'''
 
     def start_timer(self, context=None, comment='', name=None, force=False):
         '''Start a timer for *context* and return it.
 
         *force* can be used to automatically stop an existing timer and create a
-        timelog for it.
+        timelog for it. If you need to get access to the created timelog, use
+        :func:`stop_timer` instead.
 
         *comment* and *name* are optional but will be set on the timer.
 
         .. note::
 
             This method will automatically commit the changes and if *force* is
-            False then it will fail if a timer is already running.
+            False then it will fail with a
+            :class:`ftrack_api.exception.NotUniqueError` exception if a
+            timer is already running.
 
         '''
         if force:
@@ -54,6 +57,10 @@ class User(ftrack_api.entity.base.Entity):
 
     def stop_timer(self):
         '''Stop the current timer and return a timelog created from it.
+
+        If a timelog is not running, a
+        :class:`ftrack_api.exception.NoResultFoundError` exception will be
+        raised.
 
         .. note::
 
