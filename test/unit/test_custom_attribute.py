@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name,expected_value',
+    'entity_type, entity_id, custom_attribute_name, expected_value',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber', '213'),
         ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'fstart', '8'),
@@ -39,7 +39,7 @@ def test_read_set_custom_attribute(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name,expected_value',
+    'entity_type, entity_id, custom_attribute_name, expected_value',
     [
         ('Task', '33d56bee-9812-11e1-b87a-f23c91df25eb', 'customNumber', '123')
     ],
@@ -66,7 +66,7 @@ def test_read_unset_custom_attribute(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name',
+    'entity_type, entity_id, custom_attribute_name',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber'),
         ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'fstart'),
@@ -98,7 +98,7 @@ def test_write_set_custom_attribute_value(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name',
+    'entity_type, entity_id, custom_attribute_name',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customDate')
     ],
@@ -123,7 +123,7 @@ def test_write_unset_custom_attribute_value(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name',
+    'entity_type, entity_id, custom_attribute_name',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'fstart'),
         ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'Not existing'),
@@ -153,7 +153,7 @@ def test_read_custom_attribute_that_does_not_exist(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name',
+    'entity_type, entity_id, custom_attribute_name',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'fstart'),
         ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'Not existing'),
@@ -183,7 +183,7 @@ def test_write_custom_attribute_that_does_not_exist(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name',
+    'entity_type, entity_id, custom_attribute_name',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber'),
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customDate')
@@ -210,7 +210,7 @@ def test_update_custom_attributes_with_dictionary(
 
 
 @pytest.mark.parametrize(
-    'entity_type,entity_id,custom_attribute_name',
+    'entity_type, entity_id, custom_attribute_name',
     [
         ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'Bar')
     ],
