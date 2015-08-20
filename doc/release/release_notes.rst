@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+
+        Added convenience methods for handling timers
+        :class:`~ftrack_api.entity.user.User.start_timer` and
+        :class:`~ftrack_api.entity.user.User.stop_timer`.
+
 .. release:: 0.6.0
     :date: 2015-08-19
 
