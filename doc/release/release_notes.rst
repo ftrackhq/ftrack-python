@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+
+        Added initial support for custom attributes.
+
+        .. seealso:: :ref:`example/custom_attribute`.
+
     .. change:: fixed
 
         Reply events not encoded correctly causing them to be misinterpreted by
