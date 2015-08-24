@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+
+        Reply events not encoded correctly causing them to be misinterpreted by
+        the server.
+
 .. release:: 0.7.0
     :date: 2015-08-24
 
