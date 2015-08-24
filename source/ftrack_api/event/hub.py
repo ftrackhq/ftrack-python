@@ -39,18 +39,6 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
-class _EventHubEncoder(json.JSONEncoder):
-    '''Custom JSON encoder.'''
-
-    def encode(self, data):
-        '''Encode *data*.'''
-        if isinstance(data, collections.Mapping):
-            if 'in_reply_to_event' in data:
-                data['inReplyToEvent'] = data.pop('in_reply_to_event')
-
-        return super(_EventHubEncoder, self).encode(data)
-
-
 class EventHub(object):
     '''Manage routing of events.'''
 
@@ -802,10 +790,10 @@ class EventHub(object):
         '''Pop and return callback for *packet_identifier*.'''
         return self._packet_callbacks.pop(packet_identifier)
 
-    def _emit_event_packet(self, event, args, callback):
-        '''Send event packet.'''
+    def _emit_event_packet(self, namespace, event, callback):
+        '''Send *event* packet under *namespace*.'''
         data = self._encode(
-            dict(name=event, args=[args])
+            dict(name=namespace, args=[event])
         )
         self._send_packet(
             self._code_name_mapping['event'], data=data, callback=callback
@@ -950,9 +938,23 @@ class EventHub(object):
         '''Return *data* encoded as JSON formatted string.'''
         return json.dumps(
             data,
-            cls=_EventHubEncoder,
+            default=self._encode_object_hook,
             ensure_ascii=False
         )
+
+    def _encode_object_hook(self, item):
+        '''Return *item* transformed for encoding.'''
+        if isinstance(item, ftrack_api.event.base.Event):
+            # Convert to dictionary for encoding.
+            item = dict(**item)
+
+            if 'in_reply_to_event' in item:
+                # Convert keys to server convention.
+                item['inReplyToEvent'] = item.pop('in_reply_to_event')
+
+            return item
+
+        raise TypeError('{0!r} is not JSON serializable'.format(item))
 
     def _decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
