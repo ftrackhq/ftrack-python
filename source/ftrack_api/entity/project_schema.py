@@ -14,7 +14,7 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
         statuses where the workflow has been overridden.
 
         '''
-        # TODO: Refactor this once arbitrary context is supported on server.
+        # Task has overrides and need to be handled separately.
         if schema == 'Task':
             if type_id is not None:
                 overrides = self['_overrides']
@@ -60,7 +60,7 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
 
     def get_types(self, schema):
         '''Return statuses for *schema*.'''
-        # TODO: Refactor this once arbitrary context is supported on server.
+        # Task need to be handled separately.
         if schema == 'Task':
             return self['_task_type_schema']['types'][:]
 
