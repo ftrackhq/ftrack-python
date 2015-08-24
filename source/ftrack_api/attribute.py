@@ -519,7 +519,7 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
         return value
 
 
-class MappedCustomAttributeCollectionAttribute(AbstractCollectionAttribute):
+class CustomAttributeCollectionAttribute(AbstractCollectionAttribute):
     '''Represent a mapped custom attribute collection of entities.'''
 
     #: Collection class used by attribute.

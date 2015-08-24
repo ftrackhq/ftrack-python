@@ -266,7 +266,7 @@ class StandardFactory(Factory):
 
         elif reference == 'CustomAttributeValue':
             return (
-                ftrack_api.attribute.MappedCustomAttributeCollectionAttribute(
+                ftrack_api.attribute.CustomAttributeCollectionAttribute(
                     name, mutable=mutable
                 )
             )
