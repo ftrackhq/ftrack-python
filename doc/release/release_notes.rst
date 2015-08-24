@@ -17,6 +17,30 @@ Release Notes
         :class:`~ftrack_api.entity.user.User.start_timer` and
         :class:`~ftrack_api.entity.user.User.stop_timer`.
 
+    .. change:: fixed
+
+        Reply events not encoded correctly causing them to be misinterpreted by
+        the server.
+
+.. release:: 0.7.0
+    :date: 2015-08-24
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2, < 3.3 required.
+
+    .. change:: changed
+
+        Removed automatic set of default statusid, priorityid and typeid on
+        objects as that is now either not mandatory or handled on server.
+
+    .. change:: changed
+
+        Updated :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_statuses`
+        and :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_types` to
+        handle custom objects.
+
 .. release:: 0.6.0
     :date: 2015-08-19
 
