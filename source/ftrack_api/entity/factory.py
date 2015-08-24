@@ -191,18 +191,6 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
 
 
 @memoise_defaults
-def default_task_status(entity):
-    '''Return default task status entity for *entity*.'''
-    return entity.session.query('TaskStatus').first()
-
-
-@memoise_defaults
-def default_task_type(entity):
-    '''Return default task type entity for *entity*.'''
-    return entity.session.query('TaskType').first()
-
-
-@memoise_defaults
 def default_task_priority(entity):
     '''Return default task priority entity for *entity*.'''
     return entity.session.query('PriorityType').first()
@@ -241,29 +229,12 @@ class StandardFactory(Factory):
             bases = [ftrack_api.entity.base.Entity]
 
         # Add mixins.
-        if schema['id'] in (
-            'AssetVersion', 'Episode', 'Sequence',
-            'Shot', 'AssetBuild', 'Task', 'Project',
-            'ReviewSessionObject'
-        ):
+        if 'notes' in schema.get('properties', {}):
             bases.append(
                 ftrack_api.entity.note.CreateNoteMixin
             )
 
         cls = super(StandardFactory, self).create(schema, bases=bases)
-
-        # Add dynamic default values to appropriate attributes so that end
-        # users don't need to specify them each time.
-        if schema['id'] in ('Episode', 'Sequence'):
-            cls.attributes.get('status').default_value = default_task_status
-
-        if schema['id'] in (
-            'Episode', 'Sequence', 'Shot', 'AssetBuild', 'Task'
-        ):
-            cls.attributes.get('priority').default_value = default_task_priority
-
-        if schema['id'] in ('Episode', 'Sequence', 'Shot'):
-            cls.attributes.get('type').default_value = default_task_type
 
         return cls
 
