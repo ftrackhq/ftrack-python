@@ -2,9 +2,10 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import uuid
+import collections
 
 
-class Event(dict):
+class Event(collections.MutableMapping):
     '''Represent a single event.'''
 
     def __init__(self, topic, id=None, data=None, sent=None,
@@ -37,7 +38,8 @@ class Event(dict):
         the unique id of the event being replied to.
 
         '''
-        super(Event, self).__init__(
+        super(Event, self).__init__()
+        self._data = dict(
             id=id or uuid.uuid4().hex,
             data=data or {},
             topic=topic,
@@ -46,7 +48,6 @@ class Event(dict):
             target=target,
             in_reply_to_event=in_reply_to_event
         )
-
         self._stopped = False
 
     def stop(self):
@@ -60,5 +61,25 @@ class Event(dict):
     def __str__(self):
         '''Return string representation.'''
         return '<{0} {1}>'.format(
-            self.__class__.__name__, super(Event, self).__str__()
+            self.__class__.__name__, str(self._data)
         )
+
+    def __getitem__(self, key):
+        '''Return value for *key*.'''
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        '''Set *value* for *key*.'''
+        self._data[key] = value
+
+    def __delitem__(self, key):
+        '''Remove *key*.'''
+        del self._data[key]
+
+    def __iter__(self):
+        '''Iterate over all keys.'''
+        return iter(self._data)
+
+    def __len__(self):
+        '''Return count of keys.'''
+        return len(self._data)
