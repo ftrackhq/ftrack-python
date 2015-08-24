@@ -9,6 +9,19 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+
+        Removed automatic set of default statusid, priorityid and typeid on
+        objects as that is now either not mandatory or handled on server.
+
+    .. change:: changed
+
+        Updated :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_statuses`
+        and :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_types` to
+        handle custom objects.
+
 .. release:: 0.6.0
     :date: 2015-08-19
 
