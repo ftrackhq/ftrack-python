@@ -58,8 +58,8 @@ class User(ftrack_api.entity.base.Entity):
     def stop_timer(self):
         '''Stop the current timer and return a timelog created from it.
 
-        If a timelog is not running, a
-        :class:`ftrack_api.exception.NoResultFoundError` exception will be
+        If a timer is not running, a
+        :exc:`ftrack_api.exception.NoResultFoundError` exception will be
         raised.
 
         .. note::

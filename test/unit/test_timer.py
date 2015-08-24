@@ -26,11 +26,9 @@ def test_manually_create_multiple_timers_with_error(session, new_user):
 def test_create_multiple_timers_with_error(session, new_user):
     '''Fail to create a second timer.'''
     new_user.start_timer()
-    session.commit()
 
     with pytest.raises(ftrack_api.exception.NotUniqueError):
         new_user.start_timer()
-        session.commit()
 
     session.reset()
 
@@ -38,10 +36,8 @@ def test_create_multiple_timers_with_error(session, new_user):
 def test_start_and_stop_a_timer(session, new_user, new_task):
     '''Start a new timer and stop it to create a timelog.'''
     new_user.start_timer(new_task)
-    session.commit()
 
     new_user.stop_timer()
-    session.commit()
 
     timelog = session.query(
         'Timelog where context_id = "{0}"'.format(new_task['id'])
@@ -54,11 +50,9 @@ def test_start_and_stop_a_timer(session, new_user, new_task):
 def test_start_a_timer_when_timer_is_running(session, new_user, new_task):
     '''Start a timer when an existing timer is already running.'''
     new_user.start_timer(new_task)
-    session.commit()
 
     # Create the second timer without context.
     new_user.start_timer(force=True)
-    session.commit()
 
     # There should be only one existing timelog for this user.
     timelogs = session.query(
