@@ -9,7 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.7.0
+    :date: 2015-08-24
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2, < 3.3 required.
 
     .. change:: changed
 
