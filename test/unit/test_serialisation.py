@@ -33,8 +33,8 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
          "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
          "priority": {{"__entity_type__": "Priority",
-         "id": "34042886-58dc-11e2-93e8-f23c91df25eb"}},
-         "priority_id": "34042886-58dc-11e2-93e8-f23c91df25eb",
+         "id": "9661b320-3a0c-11e2-81c1-0800200c9a66"}},
+         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
          "project": {{"__entity_type__": "Project",
          "id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
          "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
@@ -47,8 +47,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "timelogs": [],
          "type": {{"__entity_type__": "Type",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8",
-         "workload": 100}}
+         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
         new_task['id'], new_task['name']
     )).replace('\n', '')
@@ -73,17 +72,14 @@ def test_encode_entity_using_only_set_attributes_strategy(
          "parent": {{"__entity_type__": "Project", "id":
          "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
          "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "priority": {{"__entity_type__": "Priority",
-         "id": "34042886-58dc-11e2-93e8-f23c91df25eb"}},
-         "priority_id": "34042886-58dc-11e2-93e8-f23c91df25eb",
+         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
          "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
          "status": {{"__entity_type__": "Status",
          "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
          "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
          "type": {{"__entity_type__": "Type",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8",
-         "workload": 100}}
+         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
         new_task['id'], new_task['name']
     )).replace('\n', '')
