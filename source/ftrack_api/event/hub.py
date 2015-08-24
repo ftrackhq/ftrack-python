@@ -802,10 +802,10 @@ class EventHub(object):
         '''Pop and return callback for *packet_identifier*.'''
         return self._packet_callbacks.pop(packet_identifier)
 
-    def _emit_event_packet(self, event, args, callback):
-        '''Send event packet.'''
+    def _emit_event_packet(self, namespace, event, callback):
+        '''Send *event* packet under *namespace*.'''
         data = self._encode(
-            dict(name=event, args=[args])
+            dict(name=namespace, args=[event])
         )
         self._send_packet(
             self._code_name_mapping['event'], data=data, callback=callback
