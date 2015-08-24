@@ -242,7 +242,7 @@ class StandardFactory(Factory):
         self, class_name, name, mutable, reference
     ):
         '''Return appropriate mapped collection attribute instance.'''
-        if reference in ('Metadata',):
+        if reference == 'Metadata':
 
             def create_metadata(proxy, data, reference):
                 '''Return metadata for *data*.'''
@@ -264,7 +264,7 @@ class StandardFactory(Factory):
                 name, creator, key_attribute, value_attribute, mutable=mutable
             )
 
-        if reference == 'CustomAttributeValue':
+        elif reference == 'CustomAttributeValue':
             return (
                 ftrack_api.attribute.MappedCustomAttributeCollectionAttribute(
                     name, mutable=mutable
