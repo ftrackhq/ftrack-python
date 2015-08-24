@@ -47,7 +47,7 @@ If you need more information about the type of attribute, examine the
     <ftrack_api.attribute.ScalarAttribute(name) object at 66702192>
     <ftrack_api.attribute.ReferenceAttribute(status) object at 66701240>
     <ftrack_api.attribute.CollectionAttribute(timelogs) object at 66701184>
-    <ftrack_api.attribute.MappedCollectionAttribute(metadata) object at 66701632>
+    <ftrack_api.attribute.KeyValueMappedCollectionAttribute(metadata) object at 66701632>
     ...
 
 Notice that there are different types of attribute such as

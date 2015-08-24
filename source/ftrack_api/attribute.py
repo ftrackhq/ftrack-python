@@ -410,8 +410,8 @@ class CollectionAttribute(AbstractCollectionAttribute):
         return value
 
 
-class MappedCollectionAttribute(AbstractCollectionAttribute):
-    '''Represent a mapped collection of entities.'''
+class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
+    '''Represent a mapped key, value collection of entities.'''
 
     #: Collection class used by attribute.
     collection_class = ftrack_api.collection.KeyValueMappedCollectionProxy
@@ -436,7 +436,7 @@ class MappedCollectionAttribute(AbstractCollectionAttribute):
         self.key_attribute = key_attribute
         self.value_attribute = value_attribute
 
-        super(MappedCollectionAttribute, self).__init__(name, **kw)
+        super(KeyValueMappedCollectionAttribute, self).__init__(name, **kw)
 
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to an *entity*.'''

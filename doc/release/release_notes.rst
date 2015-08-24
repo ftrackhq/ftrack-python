@@ -17,6 +17,12 @@ Release Notes
 
         .. seealso:: :ref:`example/custom_attribute`.
 
+    .. change:: changed
+        :tags: collection, attribute
+
+        ``ftrack_api.attribute.MappedCollectionAttribute`` renamed to
+        :class:`ftrack_api.attribute.KeyValueMappedCollectionAttribute`.
+
     .. change:: fixed
 
         Reply events not encoded correctly causing them to be misinterpreted by

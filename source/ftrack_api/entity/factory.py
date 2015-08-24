@@ -260,7 +260,7 @@ class StandardFactory(Factory):
             key_attribute = 'key'
             value_attribute = 'value'
 
-            return ftrack_api.attribute.MappedCollectionAttribute(
+            return ftrack_api.attribute.KeyValueMappedCollectionAttribute(
                 name, creator, key_attribute, value_attribute, mutable=mutable
             )
 
