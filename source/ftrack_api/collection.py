@@ -132,38 +132,15 @@ class Collection(collections.MutableSequence):
 
 
 class MappedCollectionProxy(collections.MutableMapping):
-    '''Mapped collection of entities.'''
+    '''Common base class for mapped collection of entities.'''
 
-
-class KeyValueMappedCollectionProxy(MappedCollectionProxy):
-    '''A mapped collection of key, value entities.
-
-    Proxy a standard :class:`Collection` as a mapping where certain attributes
-    from the entities in the collection are mapped to key, value pairs.
-
-    For example::
-
-        >>> collection = [Metadata(key='foo', value='bar'), ...]
-        >>> mapped = MappedCollectionProxy(
-        ...     collection, create_metadata,
-        ...     key_attribute='key', value_attribute='value'
-        ... )
-        >>> print mapped['foo']
-        'bar'
-        >>> mapped['bam'] = 'biz'
-        >>> print mapped.collection[-1]
-        Metadata(key='bam', value='biz')
-
-    '''
-
-    def __init__(
-        self, collection, creator, key_attribute, value_attribute
-    ):
-        '''Initialise collection.'''
+    def __init__(self, collection):
+        '''Initialise proxy for *collection*.'''
+        self.logger = logging.getLogger(
+            __name__ + '.' + self.__class__.__name__
+        )
         self.collection = collection
-        self.creator = creator
-        self.key_attribute = key_attribute
-        self.value_attribute = value_attribute
+        super(MappedCollectionProxy, self).__init__()
 
     def __copy__(self):
         '''Return shallow copy.
@@ -200,6 +177,37 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
     def attribute(self, value):
         '''Set bound attribute to *value*.'''
         self.collection.attribute = value
+
+
+class KeyValueMappedCollectionProxy(MappedCollectionProxy):
+    '''A mapped collection of key, value entities.
+
+    Proxy a standard :class:`Collection` as a mapping where certain attributes
+    from the entities in the collection are mapped to key, value pairs.
+
+    For example::
+
+        >>> collection = [Metadata(key='foo', value='bar'), ...]
+        >>> mapped = KeyValueMappedCollectionProxy(
+        ...     collection, create_metadata,
+        ...     key_attribute='key', value_attribute='value'
+        ... )
+        >>> print mapped['foo']
+        'bar'
+        >>> mapped['bam'] = 'biz'
+        >>> print mapped.collection[-1]
+        Metadata(key='bam', value='biz')
+
+    '''
+
+    def __init__(
+        self, collection, creator, key_attribute, value_attribute
+    ):
+        '''Initialise collection.'''
+        self.creator = creator
+        self.key_attribute = key_attribute
+        self.value_attribute = value_attribute
+        super(KeyValueMappedCollectionProxy, self).__init__(collection)
 
     def _get_entity_by_key(self, key):
         '''Return entity instance with matching *key* from collection.'''
@@ -300,49 +308,9 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         self, collection
     ):
         '''Initialise collection.'''
-        self.collection = collection
         self.key_attribute = 'configuration_id'
         self.value_attribute = 'value'
-
-        self.logger = logging.getLogger(
-            __name__ + '.' + self.__class__.__name__
-        )
-
-    def __copy__(self):
-        '''Return shallow copy.
-
-        .. note::
-
-            To maintain expectations on usage, the shallow copy will include a
-            shallow copy of the underlying collection.
-
-        '''
-        cls = self.__class__
-        copied_instance = cls.__new__(cls)
-        copied_instance.__dict__.update(self.__dict__)
-        copied_instance.collection = copy.copy(self.collection)
-
-        return copied_instance
-
-    @property
-    def mutable(self):
-        '''Return whether collection is mutable.'''
-        return self.collection.mutable
-
-    @mutable.setter
-    def mutable(self, value):
-        '''Set whether collection is mutable to *value*.'''
-        self.collection.mutable = value
-
-    @property
-    def attribute(self):
-        '''Return attribute bound to.'''
-        return self.collection.attribute
-
-    @attribute.setter
-    def attribute(self, value):
-        '''Set bound attribute to *value*.'''
-        self.collection.attribute = value
+        super(CustomAttributeCollectionProxy, self).__init__(collection)
 
     def _get_entity_configurations(self):
         '''Return all configurations for current collection entity.'''
