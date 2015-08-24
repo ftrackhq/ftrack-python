@@ -368,20 +368,24 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
 
     def _get_entity_by_key(self, key):
         '''Return entity instance with matching *key* from collection.'''
-        translated_key = self.encode(key)
+        translated_key = self.get_configuration_id_from_key(key)
         for entity in self.collection:
             if entity[self.key_attribute] == translated_key:
                 return entity
 
         return None
 
-    def encode(self, data):
-        '''Encode a key to a custom attribute configuration id.'''
+    def get_configuration_id_from_key(self, key):
+        '''Return id of configuration with matching *key*.
+
+        Raise :exc:`KeyError` if no configuration with matching *key* found.
+
+        '''
         for configuration in self._get_entity_configurations():
-            if data == configuration['key']:
+            if key == configuration['key']:
                 return configuration['id']
 
-        raise KeyError(data)
+        raise KeyError(key)
 
     def __getitem__(self, key):
         '''Return value for *key*.'''
@@ -406,7 +410,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             entity = self.collection.entity
             session = entity.session
             data = {
-                self.key_attribute: self.encode(key),
+                self.key_attribute: self.get_configuration_id_from_key(key),
                 self.value_attribute: value,
                 'entity_id': entity['id']
             }
