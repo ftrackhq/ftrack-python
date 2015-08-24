@@ -368,9 +368,9 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
 
     def _get_entity_by_key(self, key):
         '''Return entity instance with matching *key* from collection.'''
-        translated_key = self.get_configuration_id_from_key(key)
+        configuration_id = self.get_configuration_id_from_key(key)
         for entity in self.collection:
-            if entity[self.key_attribute] == translated_key:
+            if entity[self.key_attribute] == configuration_id:
                 return entity
 
         return None
