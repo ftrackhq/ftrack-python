@@ -39,18 +39,6 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
-class _EventHubEncoder(json.JSONEncoder):
-    '''Custom JSON encoder.'''
-
-    def encode(self, data):
-        '''Encode *data*.'''
-        if isinstance(data, collections.Mapping):
-            if 'in_reply_to_event' in data:
-                data['inReplyToEvent'] = data.pop('in_reply_to_event')
-
-        return super(_EventHubEncoder, self).encode(data)
-
-
 class EventHub(object):
     '''Manage routing of events.'''
 
@@ -950,9 +938,23 @@ class EventHub(object):
         '''Return *data* encoded as JSON formatted string.'''
         return json.dumps(
             data,
-            cls=_EventHubEncoder,
+            default=self._encode_object_hook,
             ensure_ascii=False
         )
+
+    def _encode_object_hook(self, item):
+        '''Return *item* transformed for encoding.'''
+        if isinstance(item, ftrack_api.event.base.Event):
+            # Convert to dictionary for encoding.
+            item = dict(**item)
+
+            if 'in_reply_to_event' in item:
+                # Convert keys to server convention.
+                item['inReplyToEvent'] = item.pop('in_reply_to_event')
+
+            return item
+
+        raise TypeError('{0!r} is not JSON serializable'.format(item))
 
     def _decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
