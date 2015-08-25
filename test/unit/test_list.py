@@ -62,48 +62,6 @@ def list_category(session):
     return entity
 
 
-@pytest.mark.parametrize('list_type', [
-    'task',
-    'asset_version'
-], ids=[
-    'task',
-    'asset_version'
-])
-def test_create_list(list_type, session, project, unique_name,
-                     list_category, user):
-    '''Create a new list of *list_type*.'''
-    session.create('List', {
-        'name': unique_name,
-        'project': project,
-        'type': list_type,
-        'category': list_category,
-        'user': user
-    })
-
-    session.commit()
-
-    new_list = session.query('List where name is {0}'.format(unique_name)).one()
-
-    assert new_list['type'] == list_type, 'List type is correct'
-
-
-def test_create_list_with_bad_type(session, project, unique_name, list_category,
-                                   user):
-    '''Create a list with bad type.'''
-    with pytest.raises(ftrack_api.exception.ServerError):
-        session.create('List', {
-            'name': unique_name,
-            'project': project,
-            'type': 'bad_type',
-            'category': list_category,
-            'user': user
-        })
-
-        session.commit()
-
-    session.reset()
-
-
 def test_create_asset_version_list_with_versions(
     session, project, unique_name, list_category, user, five_new_versions
 ):
