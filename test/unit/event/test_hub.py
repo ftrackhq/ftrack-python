@@ -642,10 +642,9 @@ def test_stop_event(event_hub):
 
 def test_encode(session):
     '''Encode event data.'''
-    encoded = session.event_hub._encode({
-        'in_reply_to_event': 'id'
-    })
-
+    encoded = session.event_hub._encode(
+        dict(name='ftrack.event', args=[Event('test')])
+    )
     assert 'inReplyToEvent' in encoded
     assert 'in_reply_to_event' not in encoded
 

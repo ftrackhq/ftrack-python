@@ -253,15 +253,18 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            minimum_server_version = '3.1.2'
-            if (
-                distutils.version.LooseVersion(server_version)
-                < distutils.version.LooseVersion(minimum_server_version)
+            server_version_range = ('3.2', '3.3')
+            if not (
+                distutils.version.LooseVersion(server_version_range[0])
+                <= distutils.version.LooseVersion(server_version)
+                < distutils.version.LooseVersion(server_version_range[1])
             ):
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {} incompatible with this version of the '
-                    'API which requires a server version >= {}'.format(
-                        server_version, minimum_server_version
+                    'Server version {0} incompatible with this version of the '
+                    'API which requires a server version >= {1}, < {2}'.format(
+                        server_version,
+                        server_version_range[0],
+                        server_version_range[1]
                     )
                 )
 
@@ -1182,7 +1185,8 @@ class Session(object):
         '''Make request to server with *data*.'''
         url = self._server_url + '/api'
         headers = {
-            'content-type': 'application/json'
+            'content-type': 'application/json',
+            'accept': 'application/json'
         }
         data = self.encode(data, entity_attribute_strategy='modified_only')
 
@@ -1200,47 +1204,26 @@ class Session(object):
             'Call took: {0}'.format(response.elapsed.total_seconds())
         )
 
-        if response.status_code != 200:
-            message = (
-                'Unanticipated server error occurred. '
-                'Please contact support@ftrack.com'
-            )
-
-            # TODO: Would be good if the server returned structured errors
-            # rather than HTML for error codes so that extraction /
-            # reinterpreting is not necessary.
-            if response.status_code == 402:
-                message = (
-                    'Server reported a license error. Please check your server '
-                    'license is valid and try again.'
-                )
-
-            elif 'Python API is disabled' in response.text:
-                message = (
-                    'Python API is disabled on the server. Please ask your '
-                    'system administrator to enable it.'
-                )
-
-            elif response.status_code == 500:
-                message = response.text
-
-            raise ftrack_api.exception.ServerError(message)
-
-        else:
-            self.logger.debug(
-                'Response: {0!r}'.format(response.text)
-            )
-
+        self.logger.debug('Response: {0!r}'.format(response.text))
+        try:
             result = self.decode(response.text)
 
+        except Exception:
+            error_message = (
+                'Server reported error in unexpected format. Raw error was: {0}'
+                .format(response.text)
+            )
+            self.logger.error(error_message)
+            raise ftrack_api.exception.ServerError(error_message)
+
+        else:
             if 'exception' in result:
                 # Handle exceptions.
-                raise ftrack_api.exception.ServerError(
-                    'Server reported error {0}({1})'.format(
-                        result['exception'],
-                        result['content']
-                    )
+                error_message = 'Server reported error: {0}({1})'.format(
+                    result['exception'], result['content']
                 )
+                self.logger.error(error_message)
+                raise ftrack_api.exception.ServerError(error_message)
 
         return result
 

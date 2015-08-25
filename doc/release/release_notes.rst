@@ -9,15 +9,68 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: next
+.. release:: Upcoming
 
     .. change:: changed
 
         :meth:`Session.reset` now also clears the top most level cache (by
         default a :class:`~ftrack_api.cache.MemoryCache`).
 
+    .. change:: fixed
+
+        Reply events not encoded correctly causing them to be misinterpreted by
+        the server.
+
+.. release:: 0.7.0
+    :date: 2015-08-24
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2, < 3.3 required.
+
+    .. change:: changed
+
+        Removed automatic set of default statusid, priorityid and typeid on
+        objects as that is now either not mandatory or handled on server.
+
+    .. change:: changed
+
+        Updated :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_statuses`
+        and :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_types` to
+        handle custom objects.
+
+.. release:: 0.6.0
+    :date: 2015-08-19
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.1.8, < 3.2 required.
+
+    .. change:: changed
+        :tags: querying, documentation
+
+        Updated documentation with details on new operators ``has`` and ``any``
+        for querying relationships.
+
+        .. seealso:: :ref:`querying/criteria/operators`
+
+.. release:: 0.5.2
+    :date: 2015-07-29
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version 3.1.5 or greater required.
+
+    .. change:: changed
+
+        Server reported errors are now more readable and are no longer sometimes
+        presented as an HTML page.
+
 .. release:: 0.5.1
-    :date: 2015-06-06
+    :date: 2015-07-06
 
     .. change:: changed
 
