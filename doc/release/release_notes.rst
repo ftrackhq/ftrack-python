@@ -12,7 +12,6 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
-        :tags: API
 
         The dynamic API classes TaskType, TaskStatus, PriorityType and
         StatusType have been renamed to Type, Status, Priority and State.
