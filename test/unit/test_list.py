@@ -169,3 +169,36 @@ def test_add_task_to_version_list(
         session.commit()
 
     session.reset()
+
+
+def test_remove_task_from_list(
+    session, unique_name, list_category, user, five_new_tasks
+):
+    '''Remove a task from a list.'''
+    task_list = session.create('AbstractTaskList', {
+        'name': unique_name,
+        'project': five_new_tasks[0]['project'],
+        'category': list_category,
+        'user': user
+    })
+
+    for task in five_new_tasks:
+        task_list['items'].append(task)
+
+    session.commit()
+    session.reset()
+
+    task_list = session.query(
+        'List where name is {0}'.format(unique_name)
+    ).one()
+
+    task_list['items'].remove(five_new_tasks[2])
+
+    session.commit()
+    session.reset()
+
+    task_list = session.query(
+        'List where name is {0}'.format(unique_name)
+    ).one()
+
+    assert len(task_list['items']) == 4, 'Contains 4 tasks.'
