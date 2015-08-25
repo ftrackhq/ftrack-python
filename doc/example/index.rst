@@ -35,3 +35,4 @@ already constructed a :class:`Session`::
     job
     note
     list
+    timer

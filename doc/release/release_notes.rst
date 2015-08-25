@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+
+        Added convenience methods for handling timers
+        :class:`~ftrack_api.entity.user.User.start_timer` and
+        :class:`~ftrack_api.entity.user.User.stop_timer`.
+
     .. change:: changed
 
         The dynamic API classes TaskType, TaskStatus, PriorityType and
