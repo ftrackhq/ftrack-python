@@ -154,7 +154,7 @@ def test_connected_property(session):
 ])
 def test_initialise_against_server_url(server_url, expected):
     '''Initialise against server url.'''
-    if inspect.isclass(expected) and isinstance(expected, Exception):
+    if inspect.isclass(expected) and issubclass(expected, Exception):
         with pytest.raises(expected):
             ftrack_api.event.hub.EventHub(
                 server_url, 'user', 'key'
