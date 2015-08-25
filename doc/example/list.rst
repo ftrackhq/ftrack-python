@@ -19,8 +19,6 @@ such as tasks.
 
 To create a list use :meth:`Session.create`::
 
-.. code-block:: python
-
     user = # Get a user from ftrack.
     project = # Get a project from ftrack.
     list_category = # Get a list category from ftrack.
@@ -39,14 +37,10 @@ To create a list use :meth:`Session.create`::
 
 Then add items to the list like this::
 
-.. code-block:: python
-
     asset_version_list['items'].append(asset_version)
     task_list['items'].append(task)
 
 And remove items from the list like this::
-
-.. code-block:: python
 
     asset_version_list['items'].remove(asset_version)
     task_list['items'].remove(task)
