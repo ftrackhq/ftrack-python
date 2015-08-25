@@ -8,8 +8,8 @@ import ftrack_api.exception
 
 
 @pytest.fixture()
-def new_versions(request, session, new_task, user):
-    '''Return a new versions.'''
+def five_new_versions(request, session, new_task, user):
+    '''Return 5 new versions.'''
     versions = []
     for i in range(5):
         asset = session.create('Asset', {
@@ -27,6 +27,30 @@ def new_versions(request, session, new_task, user):
     session.commit()
 
     return versions
+
+
+@pytest.fixture()
+def five_new_tasks(request, session, new_project):
+    '''Return 5 new tasks.'''
+    project_schema = new_project['project_schema']
+    default_task_type = project_schema.get_types('Task')[0]
+    default_task_status = project_schema.get_statuses(
+        'Task', default_task_type['id']
+    )[0]
+
+    tasks = []
+    for i in range(5):
+        task = session.create('Task', {
+            'name': uuid.uuid4().hex,
+            'parent': new_project,
+            'status': default_task_status,
+            'type': default_task_type
+        })
+        tasks.append(task)
+
+    session.commit()
+
+    return tasks
 
 
 @pytest.fixture()
@@ -81,7 +105,7 @@ def test_create_list_with_bad_type(session, project, unique_name, list_category,
 
 
 def test_create_asset_version_list_with_versions(
-    session, project, unique_name, list_category, user, new_versions
+    session, project, unique_name, list_category, user, five_new_versions
 ):
     '''Create a list with asset versions.'''
     asset_version_list = session.create('AssetVersionList', {
@@ -91,7 +115,7 @@ def test_create_asset_version_list_with_versions(
         'user': user
     })
 
-    for version in new_versions:
+    for version in five_new_versions:
         asset_version_list['items'].append(version)
 
     session.commit()
@@ -101,4 +125,47 @@ def test_create_asset_version_list_with_versions(
         'List where name is {0}'.format(unique_name)
     ).one()
 
-    assert len(asset_version_list['items']) == 5, 'Must contain 5 versions.'
+    assert len(asset_version_list['items']) == 5, 'Contains 5 versions.'
+
+
+def test_create_list_with_tasks(
+    session, unique_name, list_category, user, five_new_tasks
+):
+    '''Create a list with tasks.'''
+    task_list = session.create('AbstractTaskList', {
+        'name': unique_name,
+        'project': five_new_tasks[0]['project'],
+        'category': list_category,
+        'user': user
+    })
+
+    for task in five_new_tasks:
+        task_list['items'].append(task)
+
+    session.commit()
+    session.reset()
+
+    task_list = session.query(
+        'List where name is {0}'.format(unique_name)
+    ).one()
+
+    assert len(task_list['items']) == 5, 'Contains 5 tasks.'
+
+
+def test_add_task_to_version_list(
+    session, new_task, user, list_category, unique_name
+):
+    '''Add a task to a version list.'''
+    asset_version_list = session.create('AssetVersionList', {
+        'name': unique_name,
+        'project': new_task['project'],
+        'category': list_category,
+        'user': user
+    })
+
+    asset_version_list['items'].append(new_task)
+
+    with pytest.raises(ftrack_api.exception.ServerError):
+        session.commit()
+
+    session.reset()
