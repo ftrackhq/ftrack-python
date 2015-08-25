@@ -167,7 +167,6 @@ class Factory(object):
         )
 
 
-
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     '''Generate key for defaults.'''
 
@@ -189,12 +188,6 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
         key_maker=PerSessionDefaultKeyMaker(), return_copies=False
     )
 )
-
-
-@memoise_defaults
-def default_task_priority(entity):
-    '''Return default task priority entity for *entity*.'''
-    return entity.session.query('PriorityType').first()
 
 
 class StandardFactory(Factory):

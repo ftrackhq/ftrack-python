@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+
+        The dynamic API classes TaskType, TaskStatus, PriorityType and
+        StatusType have been renamed to Type, Status, Priority and State.
+
     .. change:: fixed
 
         Reply events not encoded correctly causing them to be misinterpreted by
