@@ -26,7 +26,7 @@ def candidate():
 
 
 @pytest.mark.parametrize('expression, expected', [
-    ('', Expression()),
+    ('', Expression()),  # TODO: Currently failing. Fix on server.
     ('invalid', ParseError),
     ('key=value nor other=value', ParseError),
     ('key=value', Condition('key', operator.eq, 'value')),
