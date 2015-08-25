@@ -18,6 +18,10 @@ Release Notes
 
     .. change:: fixed
 
+        Some invalid server url formats not detected.
+
+    .. change:: fixed
+
         Reply events not encoded correctly causing them to be misinterpreted by
         the server.
 
