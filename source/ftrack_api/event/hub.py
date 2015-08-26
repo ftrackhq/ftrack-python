@@ -1,7 +1,6 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
-import os
 import collections
 import urlparse
 import threading
@@ -96,6 +95,12 @@ class EventHub(object):
 
         # Parse server URL and store server details.
         url_parse_result = urlparse.urlparse(self._server_url)
+        if not url_parse_result.scheme:
+            raise ValueError('Could not determine scheme from server url.')
+
+        if not url_parse_result.hostname:
+            raise ValueError('Could not determine hostname from server url.')
+
         self.server = ServerDetails(
             url_parse_result.scheme,
             url_parse_result.hostname,
@@ -619,6 +624,9 @@ class EventHub(object):
 
         except Exception:
             # Failure to send event should not cause caller to fail.
+            # TODO: This behaviour is inconsistent with the failing earlier on
+            # lack of connection and also with the error handling parameter of
+            # EventHub.publish. Consider refactoring.
             self.logger.exception('Error sending event {0}.'.format(event))
 
     def _on_published(self, event, response):

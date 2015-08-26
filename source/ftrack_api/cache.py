@@ -71,7 +71,7 @@ class Cache(object):
             Actual keys may differ from those returned due to timing of access.
 
         '''
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def clear(self, pattern=None):
         '''Remove all keys matching *pattern*.

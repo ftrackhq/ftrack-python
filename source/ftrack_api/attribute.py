@@ -37,7 +37,11 @@ class Attributes(object):
         self._data.pop(attribute.name)
 
     def get(self, name):
-        '''Return attribute by name.'''
+        '''Return attribute by *name*.
+
+        If no attribute matches *name* then return None.
+
+        '''
         return self._data.get(name, None)
 
     def keys(self):

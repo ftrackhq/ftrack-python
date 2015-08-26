@@ -11,6 +11,15 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+
+        :meth:`Session.reset` now also clears the top most level cache (by
+        default a :class:`~ftrack_api.cache.MemoryCache`).
+
+    .. change:: fixed
+
+        Some invalid server url formats not detected.
+
     .. change:: fixed
 
         Reply events not encoded correctly causing them to be misinterpreted by
