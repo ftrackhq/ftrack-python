@@ -19,13 +19,17 @@ import pytest
     ('AssetBuild', [
         'Normal', 'Omitted', 'On Hold'
     ]),
-    ('Invalid', ValueError)
+    ('Invalid', ValueError),
+    ('Project', ValueError),
+    ('Folder', ValueError)
 ], ids=[
     'task',
     'shot',
     'asset version',
     'asset build',
-    'invalid'
+    'invalid',
+    'invalid2',
+    'invalid3'
 ])
 def test_get_statuses(project_schema, schema, expected):
     '''Retrieve statuses for schema and optional type.'''
@@ -46,11 +50,15 @@ def test_get_statuses(project_schema, schema, expected):
         'test 1', 'test type 2'
     ]),
     ('AssetBuild', ['Character', 'Prop', 'Environment', 'Matte Painting']),
-    ('Invalid', ValueError)
+    ('Invalid', ValueError),
+    ('Project', ValueError),
+    ('Folder', ValueError)
 ], ids=[
     'task',
     'asset build',
-    'invalid'
+    'invalid',
+    'invalid2',
+    'invalid3'
 ])
 def test_get_types(project_schema, schema, expected):
     '''Retrieve types for schema.'''
