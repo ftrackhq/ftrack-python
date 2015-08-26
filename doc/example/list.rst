@@ -24,13 +24,13 @@ To create a list use :meth:`Session.create`::
     list_category = # Get a list category from ftrack.
 
     asset_version_list = session.create('AssetVersionList', {
-        'user': user,
+        'owner': user,
         'project': project,
         'category': list_category
     })
 
     task_list = session.create('AbstractTaskList', {
-        'user': user,
+        'owner': user,
         'project': project,
         'category': list_category
     })
