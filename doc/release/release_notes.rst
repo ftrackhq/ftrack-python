@@ -13,6 +13,12 @@ Release Notes
 
     .. change:: new
 
+        Added lists example.
+
+            .. seealso:: :ref:`example/list`.
+
+    .. change:: new
+
         Added convenience methods for handling timers
         :class:`~ftrack_api.entity.user.User.start_timer` and
         :class:`~ftrack_api.entity.user.User.stop_timer`.

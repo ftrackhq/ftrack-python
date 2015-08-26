@@ -23,6 +23,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "description": "",
          "end_date": null,
          "id": "{0}",
+         "lists": [],
          "metadata": [],
          "name": "{1}",
          "notes": [],

@@ -34,4 +34,5 @@ already constructed a :class:`Session`::
     scope
     job
     note
+    list
     timer
