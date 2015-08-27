@@ -3,9 +3,9 @@
 
 .. _example/timer:
 
-***************
-Managing timers
-***************
+************
+Using timers
+************
 
 .. currentmodule:: ftrack_api.session
 

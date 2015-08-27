@@ -3,9 +3,9 @@
 
 .. _example/list:
 
-**************
-Managing lists
-**************
+***********
+Using lists
+***********
 
 .. currentmodule:: ftrack_api.session
 
