@@ -172,13 +172,8 @@ efficient query.
 Caching
 =======
 
-In this new API we chose to tackle some of the common issues that developers
-face using an API in larger productions. Our first significant contribution is a
-built-in caching system to optimise retrieval of frequently used data within a
-session. The cache is present by default so everyone benefits from the default
-setup, but if you want to take it further rest assured that we have you covered.
-For example, configuring a per-site, selective persistent cache is just a few
-lines of code away.
+The new API makes use of caching in order to provide more efficient retrieval of
+data by reducing the number of calls to the remote server.
 
 .. seealso:: :ref:`caching`
 
@@ -195,7 +190,7 @@ addition, there are a few helper methods to reduce the amount of boilerplate
 necessary to create certain objects. Don't forget to call :meth:`session.commit`
 once you have issued your create statements to commit your changes.
 
-As an example, let's look at creating a few entities on a project.
+As an example, let's look at populating a project with a few entities.
 
 Old API::
 
@@ -413,11 +408,10 @@ in the new API. Let us know if you depend on any of them.
     * Calendar and Calendar Type
     * Dependency
     * Disk
-    * List
     * Manager and Manager Type
     * Phase
     * Role
-    * Socal Event and Social Feed
+    * Social Event and Social Feed
     * Task template
     * Temp data
     * Version link
