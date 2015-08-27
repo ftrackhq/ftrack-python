@@ -29,7 +29,7 @@ To create a list use :meth:`Session.create`::
         'category': list_category
     })
 
-    task_list = session.create('AbstractTaskList', {
+    task_list = session.create('TypedContextList', {
         'owner': user,
         'project': project,
         'category': list_category

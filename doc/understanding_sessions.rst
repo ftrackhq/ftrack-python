@@ -158,7 +158,7 @@ entity types you expect are present. Here's how to print a list of all entity
 types registered for use in the current API session::
 
     >>> print session.types.keys()
-    [u'Task', u'Shot', u'AbstractTask', u'Sequence', u'PriorityType',
+    [u'Task', u'Shot', u'TypedContext', u'Sequence', u'PriorityType',
      u'TaskStatus', u'Project', u'User', u'TaskType', u'ObjectType']
 
 Each entity type is backed by a :ref:`customisable class
