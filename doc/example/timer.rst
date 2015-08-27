@@ -13,8 +13,6 @@ Timers can be used to track how much time has been spend working on something.
 
 To start a timer for a user::
 
-.. code-block:: python
-
     user = # Get a user from ftrack.
     task = # Get a task from ftrack.
 
@@ -24,8 +22,6 @@ A timer has now been created for that user and should show up in the ftrack web
 UI.
 
 To stop the currently running timer for a user and create a timelog from it::
-
-.. code-block:: python
 
     user = # Get a user from ftrack.
 
