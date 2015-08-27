@@ -50,6 +50,10 @@ session – with consistent methods for interacting with entities in the system:
     import ftrack_api
     session = ftrack_api.Session()
 
+The session is responsible for loading plugins and communicating with the ftrack
+server and allows you to use multiple simultaneous sessions. You will no longer
+to explicitly call :meth:`ftrack.setup` to load plugins.
+
 The core methods are straightforward:
 
 Session.create
@@ -76,6 +80,9 @@ well::
 
     new_timelog = session.create('Timelog', {...})
     task['timelogs'].append(new_timelog)
+
+
+.. seealso :: :ref:`tutorial`
 
 Open source and standard code style
 ===================================
