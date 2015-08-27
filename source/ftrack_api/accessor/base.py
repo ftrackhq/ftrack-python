@@ -93,11 +93,11 @@ class Accessor(object):
 
         '''
 
-    def remove_container(self, resource_identifier):
+    def remove_container(self, resource_identifier):  # pragma: no cover
         '''Remove container at *resource_identifier*.'''
         return self.remove(resource_identifier)
 
-    def get_filesystem_path(self, resource_identifier):
+    def get_filesystem_path(self, resource_identifier):  # pragma: no cover
         '''Return filesystem path for *resource_identifier*.
 
         Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if

@@ -5,7 +5,7 @@ import os
 from abc import ABCMeta, abstractmethod
 try:
     from cStringIO import StringIO
-except ImportError:
+except ImportError:  # pragma: no cover
     from StringIO import StringIO
 
 
@@ -17,10 +17,6 @@ class Data(object):
     def __init__(self):
         '''Initialise data access.'''
         self.closed = False
-
-    def __del__(self):
-        '''Perform cleanup on object deletion.'''
-        self.close()
 
     @abstractmethod
     def read(self, limit=None):
@@ -60,10 +56,13 @@ class FileWrapper(Data):
     def __init__(self, wrapped_file):
         '''Initialise access to *wrapped_file*.'''
         self.wrapped_file = wrapped_file
+        self._read_since_last_write = False
         super(FileWrapper, self).__init__()
 
     def read(self, limit=None):
         '''Return content from current position up to *limit*.'''
+        self._read_since_last_write = True
+
         if limit is None:
             limit = -1
 
@@ -71,7 +70,12 @@ class FileWrapper(Data):
 
     def write(self, content):
         '''Write content at current position.'''
+        if self._read_since_last_write:
+            # Windows requires a seek before switching from read to write.
+            self.seek(self.tell())
+
         self.wrapped_file.write(content)
+        self._read_since_last_write = False
 
     def flush(self):
         '''Flush buffers ensuring data written.'''

@@ -25,8 +25,17 @@ Release Notes
 
     .. change:: changed
 
-        The dynamic API classes TaskType, TaskStatus, PriorityType and
+        The dynamic API classes Type, Status, Priority and
         StatusType have been renamed to Type, Status, Priority and State.
+
+    .. change:: changed
+
+        :meth:`Session.reset` now also clears the top most level cache (by
+        default a :class:`~ftrack_api.cache.MemoryCache`).
+
+    .. change:: fixed
+
+        Some invalid server url formats not detected.
 
     .. change:: fixed
 
