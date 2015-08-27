@@ -25,17 +25,20 @@ extensions. In essence, we decided to build the API that, as pipeline
 developers, we had always wanted from our production tracking and asset
 management systems. We think we succeeded, and we hope you agree.
 
-Quick setup
-===========
+Installing
+==========
 
-Probably the first most important aspect of any API is making it easy to get
-started, so we made the decision to do a little extra and integrate with
-existing package repositories for our API clients.
-
-To install the Python client for the API, all you need to do today is the
-familiar::
+Before, you used to download the API package from your ftrack instance. With 
+each release of the new API we make it available on :term:`PyPi`, and 
+installing is super simple.
 
     pip install ftrack-python-api
+
+Before installing, it is always good to check the latest
+:ref:`release/release_notes`  to see which version of the ftrack server is
+required.
+
+.. seealso:: :ref:`installing`
 
 Overview
 ========

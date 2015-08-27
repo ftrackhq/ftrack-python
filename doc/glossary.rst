@@ -41,6 +41,11 @@ Glossary
         your systems more effectively. Often used in creative industries. Visit
         the language website at http://www.python.org
 
+    PyPi
+        :term:`Python` package index. The Python Package Index or PyPI is the
+        official third-party software repository for the Python programming
+        language. Visit the website at https://pypi.python.org/pypi
+
     resource identifier
         A string that is stored in ftrack as a reference to a resource (such as
         a file) in a specific location. Used by :term:`accessors <accessor>` to
