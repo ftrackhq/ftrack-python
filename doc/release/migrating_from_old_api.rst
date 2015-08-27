@@ -91,10 +91,9 @@ The new API is open source software and developed in the public at
 `bitbucket <https://bitbucket.org/ftrack/ftrack-python-api>`_. We welcome you 
 to join us in the development and create pull requests and raise issues there.
 
-In the new API, we also follow the standard code style for Python, PEP-8. This
-means that you will now find that methods and variables are written on 
-``snake_case`` instead of ``camelCase``, amongst other things. We suggest you
-do the same in your scripts.
+In the new API, we also follow the standard code style for Python,
+:term:`PEP-8`. This means that you will now find that methods and variables are
+written on  ``snake_case`` instead of ``camelCase``, amongst other things.
 
 Package name
 ============

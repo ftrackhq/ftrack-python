@@ -36,6 +36,10 @@ Glossary
         have two components containing the high and low resolution files, with
         the component names as 'hires' and 'lowres' respectively.
 
+    PEP-8
+        Style guide for :term:`Python` code. Read the guide at 
+        https://www.python.org/dev/peps/pep-0008/
+
     python
         A programming language that lets you work more quickly and integrate
         your systems more effectively. Often used in creative industries. Visit
