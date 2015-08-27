@@ -1,12 +1,52 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import os
+import tempfile
+import functools
+import uuid
+import textwrap
+
 import pytest
 import mock
 
+import ftrack_api
+import ftrack_api.cache
 import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.exception
+
+
+@pytest.fixture(params=['memory', 'persisted'])
+def cache(request):
+    '''Return cache.'''
+    if request.param == 'memory':
+        cache = None  # There is already a default Memory cache present.
+    elif request.param == 'persisted':
+        cache_path = os.path.join(
+            tempfile.gettempdir(), '{0}.dbm'.format(uuid.uuid4().hex)
+        )
+
+        cache = lambda session: ftrack_api.cache.SerialisedCache(
+            ftrack_api.cache.FileCache(cache_path),
+            encode=functools.partial(
+                session.encode, entity_attribute_strategy='persisted_only'
+            ),
+            decode=session.decode
+        )
+
+        def cleanup():
+            '''Cleanup.'''
+            try:
+                os.remove(cache_path)
+            except OSError:
+                # BSD DB (Mac OSX) implementation of the interface will append
+                # a .db extension.
+                os.remove(cache_path + '.db')
+
+        request.addfinalizer(cleanup)
+
+    return cache
 
 
 def test_get_entity(session, user):
@@ -25,6 +65,92 @@ def test_get_entity_of_invalid_type(session):
     '''Fail to retrieve an entity using an invalid type.'''
     with pytest.raises(KeyError):
         session.get('InvalidType', 'id')
+
+
+def test_create(session):
+    '''Create entity.'''
+    user = session.create('User', {'username': 'martin'})
+    with session.auto_populating(False):
+        assert user['id'] is not ftrack_api.symbol.NOT_SET
+        assert user['username'] == 'martin'
+        assert user['email'] is ftrack_api.symbol.NOT_SET
+
+
+def test_create_using_only_defaults(session):
+    '''Create entity using defaults only.'''
+    user = session.create('User')
+    with session.auto_populating(False):
+        assert user['id'] is not ftrack_api.symbol.NOT_SET
+        assert user['username'] is ftrack_api.symbol.NOT_SET
+
+
+def test_create_using_server_side_defaults(session):
+    '''Create entity using server side defaults.'''
+    user = session.create('User')
+    with session.auto_populating(False):
+        assert user['id'] is not ftrack_api.symbol.NOT_SET
+        assert user['username'] is ftrack_api.symbol.NOT_SET
+
+    session.commit()
+    assert user['username'] is not ftrack_api.symbol.NOT_SET
+
+
+def test_create_overriding_defaults(session):
+    '''Create entity overriding defaults.'''
+    uid = str(uuid.uuid4())
+    user = session.create('User', {'id': uid})
+    with session.auto_populating(False):
+        assert user['id'] == uid
+
+
+def test_create_with_reference(session):
+    '''Create entity with a reference to another.'''
+    status = session.query('TaskStatus')[0]
+    task = session.create('Task', {'status': status})
+    assert task['status'] is status
+
+
+def test_reconstruct_entity(session):
+    '''Reconstruct entity.'''
+    uid = str(uuid.uuid4())
+    data = {
+        'id': uid,
+        'username': 'martin',
+        'email': 'martin@example.com'
+    }
+    user = session.create('User', data, reconstructing=True)
+
+    for attribute in user.attributes:
+        # No local attributes should be set.
+        assert attribute.get_local_value(user) is ftrack_api.symbol.NOT_SET
+
+        # Only remote attributes that had explicit values should be set.
+        value = attribute.get_remote_value(user)
+        if attribute.name in data:
+            assert value == data[attribute.name]
+        else:
+            assert value is ftrack_api.symbol.NOT_SET
+
+
+def test_reconstruct_entity_does_not_apply_defaults(session):
+    '''Reconstruct entity does not apply defaults.'''
+    # Note: Use private method to avoid merge which requires id be set.
+    user = session._create('User', {}, reconstructing=True)
+    with session.auto_populating(False):
+        assert user['id'] is ftrack_api.symbol.NOT_SET
+
+
+def test_reconstruct_empty_entity(session):
+    '''Reconstruct empty entity.'''
+    # Note: Use private method to avoid merge which requires id be set.
+    user = session._create('User', {}, reconstructing=True)
+
+    for attribute in user.attributes:
+        # No local attributes should be set.
+        assert attribute.get_local_value(user) is ftrack_api.symbol.NOT_SET
+
+        # No remote attributes should be set.
+        assert attribute.get_remote_value(user) is ftrack_api.symbol.NOT_SET
 
 
 def test_delete_operation_ordering(session, unique_name):
@@ -284,3 +410,252 @@ def test_check_server_compatibility(
         else:
             with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
                 session.check_server_compatibility()
+
+
+def test_encode_entity_using_all_attributes_strategy(session, new_task):
+    '''Encode entity using "all" entity_attribute_strategy.'''
+    encoded = session.encode(
+        new_task, entity_attribute_strategy='all'
+    )
+
+    assert encoded == textwrap.dedent('''
+        {{"__entity_type__": "Task",
+         "allocations": [],
+         "appointments": [],
+         "assignments": [],
+         "bid": 0.0,
+         "children": [],
+         "context_type": "task",
+         "description": "",
+         "end_date": null,
+         "id": "{0}",
+         "metadata": [],
+         "name": "{1}",
+         "notes": [],
+         "object_type": {{"__entity_type__": "ObjectType",
+         "id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c"}},
+         "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
+         "parent": {{"__entity_type__": "Project", "id":
+         "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
+         "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
+         "priority": {{"__entity_type__": "PriorityType",
+         "id": "9661b320-3a0c-11e2-81c1-0800200c9a66"}},
+         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
+         "project": {{"__entity_type__": "Project",
+         "id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
+         "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
+         "scopes": [],
+         "sort": null,
+         "start_date": null,
+         "status": {{"__entity_type__": "TaskStatus",
+         "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
+         "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
+         "timelogs": [],
+         "type": {{"__entity_type__": "TaskType",
+         "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
+         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
+    '''.format(
+        new_task['id'], new_task['name']
+    )).replace('\n', '')
+
+
+def test_encode_entity_using_only_set_attributes_strategy(
+    session, new_task
+):
+    '''Encode entity using "set_only" entity_attribute_strategy.'''
+    encoded = session.encode(
+        new_task, entity_attribute_strategy='set_only'
+    )
+
+    assert encoded == textwrap.dedent('''
+        {{"__entity_type__": "Task",
+         "bid": 0.0,
+         "context_type": "task",
+         "description": "",
+         "id": "{0}",
+         "name": "{1}",
+         "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
+         "parent": {{"__entity_type__": "Project", "id":
+         "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
+         "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
+         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
+         "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
+         "status": {{"__entity_type__": "TaskStatus",
+         "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
+         "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
+         "type": {{"__entity_type__": "TaskType",
+         "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
+         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
+    '''.format(
+        new_task['id'], new_task['name']
+    )).replace('\n', '')
+
+
+def test_encode_entity_using_only_modified_attributes_strategy(
+    session, new_task
+):
+    '''Encode entity using "modified_only" entity_attribute_strategy.'''
+    new_task['name'] = 'Modified'
+
+    encoded = session.encode(
+        new_task, entity_attribute_strategy='modified_only'
+    )
+
+    assert encoded == textwrap.dedent('''
+        {{"__entity_type__": "Task",
+         "id": "{0}",
+         "name": "Modified"}}
+    '''.format(
+        new_task['id']
+    )).replace('\n', '')
+
+
+def test_encode_entity_using_invalid_strategy(session, new_task):
+    '''Fail to encode entity using invalid strategy.'''
+    with pytest.raises(ValueError):
+        session.encode(new_task, entity_attribute_strategy='invalid')
+
+
+def test_decode_partial_entity(
+    session, new_task
+):
+    '''Decode partially encoded entity.'''
+    encoded = session.encode(
+        new_task, entity_attribute_strategy='set_only'
+    )
+
+    entity = session.decode(encoded)
+
+    assert entity == new_task
+    assert entity is not new_task
+
+
+# Caching
+# ------------------------------------------------------------------------------
+
+
+def test_get_entity_bypassing_cache(session, user, mocker):
+    '''Retrieve an entity by type and id bypassing cache.'''
+    mocker.patch.object(session, '_call', wraps=session._call)
+
+    session.cache.remove(
+        session.cache_key_maker.key(ftrack_api.inspection.identity(user))
+    )
+    session._detach(user)
+
+    matching = session.get(*ftrack_api.inspection.identity(user))
+
+    # Check a different instance returned.
+    assert matching is not user
+
+    # Check instances have the same identity.
+    assert matching == user
+
+    # Check cache was bypassed and server was called.
+    assert session._call.called
+
+
+def test_get_entity_from_cache(cache, task, mocker):
+    '''Retrieve an entity by type and id from cache.'''
+    session = ftrack_api.Session(cache=cache)
+
+    # Prepare cache.
+    session.merge(task)
+
+    # Disable server calls.
+    mocker.patch.object(session, '_call')
+
+    # Retrieve entity from cache.
+    entity = session.get(*ftrack_api.inspection.identity(task))
+
+    assert entity is not None, 'Failed to retrieve entity from cache.'
+    assert entity == task
+    assert entity is not task
+
+    # Check that no call was made to server.
+    assert not session._call.called
+
+
+def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
+    '''Retrieve an entity tree from cache.'''
+    session = ftrack_api.Session(cache=cache)
+
+    # Prepare cache.
+    # TODO: Maybe cache should be prepopulated for a better check here.
+    session.query(
+        'select children, children.children, children.children.children, '
+        'children.children.children.assignments, '
+        'children.children.children.assignments.resource '
+        'from Project where id is "{0}"'
+        .format(new_project_tree['id'])
+    ).one()
+
+    # Disable server calls.
+    mocker.patch.object(session, '_call')
+
+    # Retrieve entity from cache.
+    entity = session.get(*ftrack_api.inspection.identity(new_project_tree))
+
+    assert entity is not None, 'Failed to retrieve entity from cache.'
+    assert entity == new_project_tree
+    assert entity is not new_project_tree
+
+    # Check tree.
+    with session.auto_populating(False):
+        for sequence in entity['children']:
+            for shot in sequence['children']:
+                for task in shot['children']:
+                    assignments = task['assignments']
+                    for assignment in assignments:
+                        resource = assignment['resource']
+
+                        assert resource is not ftrack_api.symbol.NOT_SET
+
+    # Check that no call was made to server.
+    assert not session._call.called
+
+
+def test_get_metadata_from_cache(session, mocker, cache, new_task):
+    '''Retrieve an entity along with its metadata from cache.'''
+    new_task['metadata']['key'] = 'value'
+    session.commit()
+
+    fresh_session = ftrack_api.Session(cache=cache)
+
+    # Prepare cache.
+    fresh_session.query(
+        'select metadata.key, metadata.value from '
+        'Task where id is "{0}"'
+        .format(new_task['id'])
+    ).all()
+
+    # Disable server calls.
+    mocker.patch.object(fresh_session, '_call')
+
+    # Retrieve entity from cache.
+    entity = fresh_session.get(*ftrack_api.inspection.identity(new_task))
+
+    assert entity is not None, 'Failed to retrieve entity from cache.'
+    assert entity == new_task
+    assert entity is not new_task
+
+    # Check metadata cached correctly.
+    with fresh_session.auto_populating(False):
+        metadata = entity['metadata']
+        assert metadata['key'] == 'value'
+
+    assert not fresh_session._call.called
+
+
+def test_merge_circular_reference(cache, temporary_file):
+    '''Merge circular reference into cache.'''
+    session = ftrack_api.Session(cache=cache)
+    # The following will test the condition as a FileComponent will be created
+    # with corresponding ComponentLocation. The server will return the file
+    # component data with the component location embedded. The component
+    # location will in turn have an embedded reference to the file component.
+    # If the merge does not prioritise the primary keys of the instance then
+    # any cache that relies on using the identity of the file component will
+    # fail.
+    component = session.create_component(path=temporary_file)
+    assert component

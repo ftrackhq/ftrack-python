@@ -284,10 +284,13 @@ class AccessorOperationFailedError(AccessorError):
 
     default_message = 'Operation {operation} failed: {error}'
 
-    def __init__(self, operation='', resource_identifier=None, **kw):
+    def __init__(
+        self, operation='', resource_identifier=None, error=None, **kw
+    ):
         kw.setdefault('details', {}).update(dict(
             operation=operation,
-            resource_identifier=resource_identifier
+            resource_identifier=resource_identifier,
+            error=error
         ))
         super(AccessorOperationFailedError, self).__init__(**kw)
 
