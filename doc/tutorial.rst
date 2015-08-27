@@ -36,7 +36,7 @@ with an ftrack server. Create a session that connects to your ftrack server
 Now print a list of the available entity types retrieved from the server::
 
     >>> print session.types.keys()
-    [u'AbstractTask', u'ObjectType', u'Priority', u'Project', u'Sequence',
+    [u'TypedContext', u'ObjectType', u'Priority', u'Project', u'Sequence',
      u'Shot', u'Task', u'Status', u'Type', u'Timelog', u'User']
 
 Now the list of possible entity types is known, :ref:`query <querying>` the
