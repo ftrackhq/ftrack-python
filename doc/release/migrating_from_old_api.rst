@@ -114,11 +114,8 @@ Specifying your credentials
 ===========================
 
 The old API used three environment variables to authenticate with your ftrack
-instance: :envvar:`FTRACK_SERVER`, :envvar:`FTRACK_APIKEY` and :envvar:`LOGNAME`.
-
-In the new API, you have the option to either specify the credentials using
-the new names :envvar:`FTRACK_SERVER`, :envvar:`FTRACK_API_USER` and 
-:envvar:`FTRACK_API_KEY`, or by specifying them when initializing the session::
+instance. While these continue to work as before, you now also have
+the option to specify them when initializing the session::
 
     >>> import ftrack_api
     >>> session = ftrack_api.Session(
@@ -130,7 +127,10 @@ the new names :envvar:`FTRACK_SERVER`, :envvar:`FTRACK_API_USER` and
 In the examples below, will assume that you have imported the package and
 created a session.
 
-.. seealso:: :ref:`tutorial`
+.. seealso:: 
+
+    * :ref:`environment_variables`
+    * :ref:`tutorial`
 
 
 Querying objects
