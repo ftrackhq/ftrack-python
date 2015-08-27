@@ -59,7 +59,7 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
             )
 
     def get_types(self, schema):
-        '''Return statuses for *schema*.'''
+        '''Return types for *schema*.'''
         # Task need to be handled separately.
         if schema == 'Task':
             return self['_task_type_schema']['types'][:]

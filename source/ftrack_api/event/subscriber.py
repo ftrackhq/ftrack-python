@@ -18,7 +18,7 @@ class Subscriber(object):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} metadata={1} subscription={2}>'.format(
+        return '<{0} metadata={1} subscription="{2}">'.format(
             self.__class__.__name__, self.metadata, self.subscription
         )
 
