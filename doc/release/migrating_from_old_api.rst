@@ -98,8 +98,8 @@ written on  ``snake_case`` instead of ``camelCase``, amongst other things.
 Package name
 ============
 
-The new module is named :mod:`ftrack_api`, by using a new module name, 
-you can continue to use the old API side-by-side with the new.
+The new package is named :mod:`ftrack_api`, by using a new package name, you
+can continue to use the old API side-by-side with the new.
 
 Old API::
 
@@ -127,7 +127,8 @@ the new names :envvar:`FTRACK_SERVER`, :envvar:`FTRACK_API_USER` and
     ...     api_user='martin'
     ... )
 
-In the examples below, will assume that you have imported the module and 
+In the examples below, will assume that you have imported the package and
+created a session.
 
 .. seealso:: :ref:`tutorial`
 
