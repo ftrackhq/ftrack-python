@@ -15,7 +15,7 @@ Release Notes
     .. change:: changed
         :tags: server version
 
-        ftrack server version >= 3.2, < 3.3 required.
+        ftrack server version >= 3.2.1, < 3.3 required.
 
     .. change:: new
 
