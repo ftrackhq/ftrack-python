@@ -11,6 +11,23 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+
+        Added lists example.
+
+            .. seealso:: :ref:`example/list`.
+
+    .. change:: new
+
+        Added convenience methods for handling timers
+        :class:`~ftrack_api.entity.user.User.start_timer` and
+        :class:`~ftrack_api.entity.user.User.stop_timer`.
+
+    .. change:: changed
+
+        The dynamic API classes Type, Status, Priority and
+        StatusType have been renamed to Type, Status, Priority and State.
+
     .. change:: changed
 
         :meth:`Session.reset` now also clears the top most level cache (by
