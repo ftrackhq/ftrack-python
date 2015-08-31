@@ -312,7 +312,7 @@ In addition, the old API will continue to be supported for some time, but do
 note that it will not support the new Workflows and will not have new features
 back ported to it.
 
-In the following example, we obtain a task reference using the old API and
+In the first example, we obtain a task reference using the old API and
 then use the new API to assign a user to it::
 
     import os
@@ -340,6 +340,27 @@ then use the new API to assign a user to it::
         'type': 'assignment'
     })
 
+The second example fetches a version using the new API and uploads and sets a
+thumbnail using the old API::
+
+    import arrow
+    import ftrack
+
+    # fetch a version published today
+    version = session.query(
+        'AssetVersion where date >= "{0}"'.format(
+            arrow.now().floor('day')
+        )
+    ).first()
+
+    # Create a thumbnail using the old api.
+    thumbnail_path = '/path/to/thumbnail.jpg'
+    version_old_api = ftrack.AssetVersion(version['id'])
+    thumbnail = version_old_api.createThumbnail(thumbnail_path)
+
+    # Also set the same thumbnail on the task linked to the version.
+    task_old_api = ftrack.Task(version['task_id'])
+    task_old_api.setThumbnail(thumbnail)
 
 Workarounds for missing convenience methods
 ===========================================
