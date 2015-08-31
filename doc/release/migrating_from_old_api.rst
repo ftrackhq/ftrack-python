@@ -469,14 +469,10 @@ Old API::
 
 New API::
 
-    project = session.query(
-        'Project where name is "{0}"'.format('dev_tutorial')
-    )
-    sequence = session.query(
-        'Sequence where parent is "{0}" and name is "{1}"'.format(project, '001')
-    )
     shot = session.query(
-        'Shot where parent is "{0}" and name is "{1}"'.format(sequence, '010')
+        'Shot where project.name is "{0}" and parent.name is "{1}" and name is "{2}"'.format(
+            'dev_tutorial', '001', '010'
+        )
     )
 
 
