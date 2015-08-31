@@ -9,7 +9,30 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.8.0
+    :date: 2015-08-28
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2.1, < 3.3 required.
+
+    .. change:: new
+
+        Added lists example.
+
+            .. seealso:: :ref:`example/list`.
+
+    .. change:: new
+
+        Added convenience methods for handling timers
+        :class:`~ftrack_api.entity.user.User.start_timer` and
+        :class:`~ftrack_api.entity.user.User.stop_timer`.
+
+    .. change:: changed
+
+        The dynamic API classes Type, Status, Priority and
+        StatusType have been renamed to Type, Status, Priority and State.
 
     .. change:: changed
 

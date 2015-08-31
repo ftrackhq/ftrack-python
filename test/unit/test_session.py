@@ -105,7 +105,7 @@ def test_create_overriding_defaults(session):
 
 def test_create_with_reference(session):
     '''Create entity with a reference to another.'''
-    status = session.query('TaskStatus')[0]
+    status = session.query('Status')[0]
     task = session.create('Task', {'status': status})
     assert task['status'] is status
 
@@ -387,10 +387,10 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
 @pytest.mark.parametrize('server_information, compatible', [
     ({}, False),
-    ({'version': '3.2.0'}, True),
     ({'version': '3.2.1'}, True),
+    ({'version': '3.2.2'}, True),
     ({'version': '3.3'}, False),
-    ({'version': '3.1'}, False)
+    ({'version': '3.2'}, False)
 ], ids=[
     'No information',
     'Valid current version',
@@ -429,6 +429,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "description": "",
          "end_date": null,
          "id": "{0}",
+         "lists": [],
          "metadata": [],
          "name": "{1}",
          "notes": [],
@@ -438,7 +439,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "parent": {{"__entity_type__": "Project", "id":
          "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
          "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "priority": {{"__entity_type__": "PriorityType",
+         "priority": {{"__entity_type__": "Priority",
          "id": "9661b320-3a0c-11e2-81c1-0800200c9a66"}},
          "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
          "project": {{"__entity_type__": "Project",
@@ -447,11 +448,11 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "scopes": [],
          "sort": null,
          "start_date": null,
-         "status": {{"__entity_type__": "TaskStatus",
+         "status": {{"__entity_type__": "Status",
          "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
          "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
          "timelogs": [],
-         "type": {{"__entity_type__": "TaskType",
+         "type": {{"__entity_type__": "Type",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
          "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
@@ -480,10 +481,10 @@ def test_encode_entity_using_only_set_attributes_strategy(
          "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
          "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
          "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "status": {{"__entity_type__": "TaskStatus",
+         "status": {{"__entity_type__": "Status",
          "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
          "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
-         "type": {{"__entity_type__": "TaskType",
+         "type": {{"__entity_type__": "Type",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
          "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
