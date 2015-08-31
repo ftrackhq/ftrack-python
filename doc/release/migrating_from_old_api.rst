@@ -362,6 +362,98 @@ thumbnail using the old API::
     task_old_api = ftrack.Task(version['task_id'])
     task_old_api.setThumbnail(thumbnail)
 
+Example: publishing a new version
+=================================
+
+In the following example, we look at migrating a script which publishes a new
+version with two components.
+
+Old API::
+
+    # Query a shot and a task to create the asset against.
+    shot = ftrack.getShot(['dev_tutorial', '001', '010'])
+    task = shot.getTasks()[0]
+
+    # Create new asset.
+    asset = shot.createAsset(name='forest', assetType='geo')
+
+    # Create a new version for the asset.
+    version = asset.createVersion(
+        comment='Added more leaves.',
+        taskid=task.getId()
+    )
+
+    # Get the calculated version number.
+    print version.getVersion()
+
+    # Add some components.
+    previewPath = '/path/to/forest_preview.mov'
+    previewComponent = version.createComponent(path=previewPath)
+
+    modelPath = '/path/to/forest_mode.ma'
+    modelComponent = version.createComponent(name='model', path=modelPath)
+
+    # Publish.
+    asset.publish()
+
+    # Add thumbnail to version.
+    thumbnail = version.createThumbnail('/path/to/forest_thumbnail.jpg')
+
+    # Set thumbnail on other objects without duplicating it.
+    task.setThumbnail(thumbnail)
+
+New API::
+
+    # Query a shot and a task to create the asset against.
+    shot = session.query(
+        'Shot where project.name is "dev_tutorial" and parent.name is "001" and name is "010"'
+    ).one()
+    task = shot['children'][0]
+
+    # Create new asset.
+    asset_type = session.query('AssetType where short is "geo"').first()
+    asset = session.create('Asset', {
+        'parent': shot,
+        'name': 'forest',
+        'type': asset_type
+    })
+
+    # Create a new version for the asset.
+    status = session.query('Status where name is "Pending"').one()
+    version = session.create('AssetVersion', {
+        'asset': asset,
+        'status': status,
+        'comment': 'Added more leaves.',
+        'task': task
+    })
+
+    # In the new API, the version number is not set until we persist the changes
+    print 'Version number before commit: {0}'.format(version['version'])
+    session.commit()
+    print 'Version number after commit: {0}'.format(version['version'])
+
+    # Add some components.
+    preview_path = '/path/to/forest_preview.mov'
+    preview_component = version.create_component(preview_path, location='auto')
+
+    model_path = '/path/to/forest_mode.ma'
+    model_component = version.create_component(model_path, {
+        'name': 'model'
+    }, location='auto')
+
+    # Publish. Newly created version defaults to being published in the new api,
+    # but if set to false you can update it by setting the key on the version.
+    version['is_published'] = True
+
+    # Persist the changes 
+    session.commit()
+
+    # Currently, it is not possible to set thumbnails using new API
+    # See the example above for a workaround using the old API.
+    # thumbnail = version.createThumbnail('/path/to/forest_thumbnail.jpg')
+    # task.setThumbnail(thumbnail)
+
+
 Workarounds for missing convenience methods
 ===========================================
 
