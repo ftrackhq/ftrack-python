@@ -506,7 +506,7 @@ Limitations in the current version of the API
 =============================================
 
 The new API is still quite young and in active development and there are a few
-things which is currently not present.
+limitations currently to keep in mind when using it.
 
 Missing schemas
 ---------------
