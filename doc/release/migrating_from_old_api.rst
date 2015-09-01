@@ -91,8 +91,12 @@ well::
     new_timelog = session.create('Timelog', {...})
     task['timelogs'].append(new_timelog)
 
-
 .. seealso :: :ref:`tutorial`
+
+The new API also makes use of caching in order to provide more efficient
+retrieval of data by reducing the number of calls to the remote server.
+
+.. seealso:: :ref:`caching`
 
 Open source and standard code style
 ===================================
@@ -174,18 +178,7 @@ The above fetches all tasks for “My Project” that are done but have no timel
 It also pre-fetches related information about the tasks parent – all in one
 efficient query.
 
-
 .. seealso:: :ref:`querying`
-
-
-Caching
-=======
-
-The new API makes use of caching in order to provide more efficient retrieval of
-data by reducing the number of calls to the remote server.
-
-.. seealso:: :ref:`caching`
-
 
 Creating objects
 ================
