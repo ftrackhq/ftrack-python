@@ -229,19 +229,19 @@ New API::
 
     # Create sequence
     sequence = session.create('Sequence', {
-        'name': '001'
+        'name': '001',
         'parent': project
     })
 
     # Create five shots with one task each
     for shot_number in xrange(10, 60, 10):
         shot = session.create('Shot', {
-            'name': '{0:03d}'.format(shot_number)
+            'name': '{0:03d}'.format(shot_number),
             'parent': sequence,
             'status': default_shot_status
         })
         session.create('Task', {
-            'name': 'Task name'
+            'name': 'Task name',
             'parent': shot,
             'status': default_task_status,
             'type': default_task_type
