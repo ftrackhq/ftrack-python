@@ -7,6 +7,8 @@
 Migrating from old API
 **********************
 
+.. currentmodule:: ftrack_api.session
+
 Why a new API?
 ==============
 
@@ -185,9 +187,9 @@ In the old API, you create objects using specialized methods, such as
 :meth:`ftrack.createProject`, :meth:`Project.createSequence` and
 :meth:`Task.createShot`.
 
-In the new API, you can create any object using :meth:`session.create`. In 
+In the new API, you can create any object using :meth:`Session.create`. In
 addition, there are a few helper methods to reduce the amount of boilerplate
-necessary to create certain objects. Don't forget to call :meth:`session.commit`
+necessary to create certain objects. Don't forget to call :meth:`Session.commit`
 once you have issued your create statements to commit your changes.
 
 As an example, let's look at populating a project with a few entities.
