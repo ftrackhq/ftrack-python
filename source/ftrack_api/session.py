@@ -476,7 +476,13 @@ class Session(object):
             elif isinstance(
                 value, (arrow.Arrow, datetime.datetime, datetime.date)
             ):
-                value = '"{0}"'.format(value.isoformat())
+                # Server does not store microsecond or timezone currently so
+                # need to strip from query.
+                # TODO: When datetime handling improved, update this logic.
+                value = (
+                    arrow.get(value).naive.replace(microsecond=0).isoformat()
+                )
+                value = '"{0}"'.format(value)
 
             criteria.append('{0} is {1}'.format(identifying_key, value))
 
