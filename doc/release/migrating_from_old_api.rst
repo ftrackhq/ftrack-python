@@ -408,7 +408,8 @@ New API::
 
     # Query a shot and a task to create the asset against.
     shot = session.query(
-        'Shot where project.name is "dev_tutorial" and parent.name is "001" and name is "010"'
+        'Shot where project.name is "dev_tutorial" '
+        'and parent.name is "001" and name is "010"'
     ).one()
     task = shot['children'][0]
 
