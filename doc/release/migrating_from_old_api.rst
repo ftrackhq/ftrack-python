@@ -67,6 +67,12 @@ Session.delete
 Session.commit
     commit all changes in one efficient call.
 
+.. note::
+
+    The new API batches create, update and delete operations by default for
+    efficiency. To synchronise local changes with the server you need to call
+    :meth:`Session.commit`.
+
 In addition all entities in the API now act like simple Python dictionaries,
 with some additional helper methods where appropriate. If you know a little
 Python (or even if you don't) getting up to speed should be a breeze::
