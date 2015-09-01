@@ -166,7 +166,7 @@ powerful and allows you to filter on any field and preload related data::
     tasks = session.query(
         'select name, parent.name from Task '
         'where project.full_name is "My Project" '
-        'and status.type.name is "DONE" '
+        'and status.type.short is "DONE" '
         'and not timelogs any ()'
     ).all()
 
