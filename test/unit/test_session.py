@@ -9,6 +9,7 @@ import textwrap
 
 import pytest
 import mock
+import arrow
 
 import ftrack_api
 import ftrack_api.cache
@@ -108,6 +109,76 @@ def test_create_with_reference(session):
     status = session.query('Status')[0]
     task = session.create('Task', {'status': status})
     assert task['status'] is status
+
+
+def test_ensure_new_entity(session, unique_name):
+    '''Ensure entity, creating first.'''
+    entity = session.ensure('User', {'username': unique_name})
+    assert entity['username'] == unique_name
+
+
+def test_ensure_entity_with_non_string_data_types(session):
+    '''Ensure entity against non-string data types, creating first.'''
+    datetime = arrow.get()
+    first = session.ensure('Timelog', {'start': datetime, 'duration': 10})
+
+    with mock.patch.object(session, 'create') as mocked:
+        session.ensure('Timelog', {'start': datetime, 'duration': 10})
+        assert not mocked.called
+
+    assert first['start'] == datetime
+    assert first['duration'] == 10
+
+
+def test_ensure_entity_with_identifying_keys(session, unique_name):
+    '''Ensure entity, checking using keys subset and then creating.'''
+    entity = session.ensure(
+        'User', {'username': unique_name, 'email': 'test@example.com'},
+        identifying_keys=['username']
+    )
+    assert entity['username'] == unique_name
+
+
+def test_ensure_entity_with_invalid_identifying_keys(session, unique_name):
+    '''Fail to ensure entity when identifying key missing from data.'''
+    with pytest.raises(KeyError):
+        session.ensure(
+            'User', {'username': unique_name, 'email': 'test@example.com'},
+            identifying_keys=['invalid']
+        )
+
+
+def test_ensure_entity_with_missing_identifying_keys(session):
+    '''Fail to ensure entity when no identifying keys determined.'''
+    with pytest.raises(ValueError):
+        session.ensure('User', {})
+
+
+def test_ensure_existing_entity(session, unique_name):
+    '''Ensure existing entity.'''
+    entity = session.ensure('User', {'first_name': unique_name})
+
+    # Second call should not commit any new entity, just retrieve the existing.
+    with mock.patch.object(session, 'create') as mocked:
+        retrieved = session.ensure('User', {'first_name': unique_name})
+        assert not mocked.called
+        assert retrieved == entity
+
+
+def test_ensure_update_existing_entity(session, unique_name):
+    '''Ensure and update existing entity.'''
+    entity = session.ensure(
+        'User', {'first_name': unique_name, 'email': 'anon@example.com'}
+    )
+    assert entity['email'] == 'anon@example.com'
+
+    # Second call should commit updates.
+    retrieved = session.ensure(
+        'User', {'first_name': unique_name, 'email': 'test@example.com'},
+        identifying_keys=['first_name']
+    )
+    assert retrieved == entity
+    assert retrieved['email'] == 'test@example.com'
 
 
 def test_reconstruct_entity(session):
