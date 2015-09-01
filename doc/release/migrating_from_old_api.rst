@@ -261,7 +261,7 @@ Updating objects
 
 Updating objects in the new API works in a similar way to the old API. Instead
 of using the :meth:`set` method on objects, you simply set the key of the 
-entity to the new value, and call :meth:`session.commit` to persist the 
+entity to the new value, and call :meth:`Session.commit` to persist the
 changes to the database.
 
 The following example adjusts the duration and comment of a timelog for a
