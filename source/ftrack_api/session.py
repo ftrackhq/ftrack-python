@@ -458,6 +458,11 @@ class Session(object):
         if not identifying_keys:
             identifying_keys = data.keys()
 
+        self.logger.debug(
+            'Ensuring entity {0!r} with data {1!r} using identifying keys {2!r}'
+            .format(entity_type, data, identifying_keys)
+        )
+
         if not identifying_keys:
             raise ValueError(
                 'Could not determine any identifying data to check against '
@@ -494,11 +499,15 @@ class Session(object):
             entity = self.query(expression).one()
 
         except ftrack_api.exception.NoResultFoundError:
+            self.logger.debug('Creating entity as did not already exist.')
+
             # Create entity.
             entity = self.create(entity_type, data)
             self.commit()
 
         else:
+            self.logger.debug('Retrieved matching existing entity.')
+
             # Update entity if required.
             updated = False
             for key, target_value in data.items():
@@ -507,6 +516,7 @@ class Session(object):
                     updated = True
 
             if updated:
+                self.logger.debug('Updating existing entity to match new data.')
                 self.commit()
 
         return entity
