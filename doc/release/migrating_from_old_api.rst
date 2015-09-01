@@ -56,7 +56,7 @@ session – with consistent methods for interacting with entities in the system:
 
 The session is responsible for loading plugins and communicating with the ftrack
 server and allows you to use multiple simultaneous sessions. You will no longer
-to explicitly call :meth:`ftrack.setup` to load plugins.
+need to explicitly call :meth:`ftrack.setup` to load plugins.
 
 The core methods are straightforward:
 
@@ -97,19 +97,19 @@ well::
 Open source and standard code style
 ===================================
 
-The new API is open source software and developed in the public at 
-`bitbucket <https://bitbucket.org/ftrack/ftrack-python-api>`_. We welcome you 
-to join us in the development and create pull requests and raise issues there.
+The new API is open source software and developed in public at
+`Bitbucket <https://bitbucket.org/ftrack/ftrack-python-api>`_. We welcome you
+to join us in the development and create pull requests there.
 
 In the new API, we also follow the standard code style for Python,
 :term:`PEP-8`. This means that you will now find that methods and variables are
-written on  ``snake_case`` instead of ``camelCase``, amongst other things.
+written using  ``snake_case`` instead of ``camelCase``, amongst other things.
 
 Package name
 ============
 
-The new package is named :mod:`ftrack_api`, by using a new package name, you
-can continue to use the old API side-by-side with the new.
+The new package is named :mod:`ftrack_api`. By using a new package name, we
+enable you to use the old API and the new side-by-side in the same process.
 
 Old API::
 
@@ -118,7 +118,6 @@ Old API::
 New API::
 
     import ftrack_api
-
 
 Specifying your credentials
 ===========================
@@ -162,7 +161,7 @@ New API::
     user = ftrack_api.query('User where username is "jane"').one()
 
 While the new API can be a bit more verbose for simple queries, it is much more
-powerful and allows you filter on any field and preload related data::
+powerful and allows you to filter on any field and preload related data::
 
     tasks = session.query(
         'select name, parent.name from Task '
