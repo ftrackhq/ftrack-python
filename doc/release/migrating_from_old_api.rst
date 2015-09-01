@@ -32,7 +32,9 @@ Installing
 
 Before, you used to download the API package from your ftrack instance. With 
 each release of the new API we make it available on :term:`PyPi`, and 
-installing is super simple.
+installing is super simple:
+
+.. code-block:: none
 
     pip install ftrack-python-api
 
