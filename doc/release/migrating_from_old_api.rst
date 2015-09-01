@@ -473,9 +473,8 @@ Old API::
 New API::
 
     shot = session.query(
-        'Shot where project.name is "{0}" and parent.name is "{1}" and name is "{2}"'.format(
-            'dev_tutorial', '001', '010'
-        )
+        'Shot where project.name is "dev_tutorial" '
+        'and parent.name is "001" and name is "010"'
     )
 
 
