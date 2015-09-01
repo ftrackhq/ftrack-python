@@ -43,7 +43,7 @@ required.
 Overview
 ========
 
-An API needs to be approachable, so we built the ftrack 3.2 API to feel
+An API needs to be approachable, so we built the new API to feel
 intuitive and familiar. We bundle all the core functionality into one place – a
 session – with consistent methods for interacting with entities in the system::
 
