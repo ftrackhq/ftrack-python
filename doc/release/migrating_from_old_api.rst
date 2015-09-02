@@ -299,6 +299,35 @@ New API::
 .. seealso:: :ref:`working_with_entities/updating`
 
 
+Date and datetime attributes
+============================
+
+In the old API, date and datetime attributes where represented using a standard
+:mod:`datetime` object. In the new API we have opted to use the :term:`arrow` 
+library instead.
+
+Old API::
+
+    >>> import datetime
+
+    >>> task_old_api = ftrack.Task(task_id)
+    >>> task_old_api.get('startdate')
+    datetime.datetime(2015, 9, 2, 0, 0)
+
+    >>> # Updating a datetime attribute
+    >>> task_old_api.set('startdate', datetime.date.today())
+
+New API::
+
+    >>> import arrow
+    >>> task_new_api = session.get('Task', task_id)
+    >>> task_new_api.get('start_date')
+    <Arrow [2015-09-02T00:00:00+00:00]>
+
+    >>> # In the new API, utilize the arrow library when updating a datetime.
+    >>> task_new_api['start_date'] = arrow.utcnow().floor('day')
+    >>> session.commit()
+
 Using both APIs side-by-side
 ============================
 

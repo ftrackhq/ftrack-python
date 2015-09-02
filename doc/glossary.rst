@@ -16,6 +16,11 @@ Glossary
     api
         Application programming interface.
 
+    arrow
+        A Python library that offers a sensible, human-friendly approach to 
+        creating, manipulating, formatting and converting dates, times, and
+        timestamps. Read more at http://crsmithdev.com/arrow/
+
     asset
         A container for :term:`asset versions <asset version>`, typically
         representing the output from an artist. For example, 'geometry'
