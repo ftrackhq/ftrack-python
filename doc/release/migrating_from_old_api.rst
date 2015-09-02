@@ -535,8 +535,8 @@ functionality is planned for the near future.
 
 Publish components for review
 -----------------------------
-It is currently possible to create web reviewable versions using the new API. 
-The functionality is planned for the near future.
+It is currently not possible to create web reviewable versions using the new
+API. The functionality is planned for the near future.
 
 Action base class
 -----------------
