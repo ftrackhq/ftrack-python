@@ -202,7 +202,7 @@ Old API::
     taskType = project.getTaskTypes()[0]
     taskStatus = project.getTaskStatuses(taskType)[0]
 
-    sequence = ftrack.createSequence('001')
+    sequence = project.createSequence('001')
 
     # Create five shots with one task each
     for shot_number in xrange(10, 60, 10):
@@ -222,10 +222,11 @@ New API::
 
     # Get default task type and status from project schema
     project_schema = project['project_schema']
-    default_task_type = project_schema.get_types('Task').first()
+    default_shot_status = project_schema.get_statuses('Shot')[0]
+    default_task_type = project_schema.get_types('Task')[0]
     default_task_status = project_schema.get_statuses(
         'Task', default_task_type['id']
-    ).first()
+    )[0]
 
     # Create sequence
     sequence = session.create('Sequence', {
