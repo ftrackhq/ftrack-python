@@ -318,25 +318,20 @@ back ported to it.
 In the first example, we obtain a task reference using the old API and
 then use the new API to assign a user to it::
 
-    import os
-
     import ftrack
     import ftrack_api
 
-    # Create session using envvars used by old API.
-    session = ftrack_api.Session(
-        server_url=os.environ['FTRACK_SERVER'],
-        api_key=os.environ['FTRACK_APIKEY'],
-        api_user=os.environ['LOGNAME']
-    )
+    # Create session for new API, authenticating using envvars.
+    session = ftrack_api.Session()
 
     # Obtain task id using old API
-    task = ftrack.getTask(['migration_test', '001', '010', 'Task name'])
+    shot = ftrack.getShot(['migration_test', '001', '010'])
+    task = shot.getTasks()[0]
     task_id = task.getId()
 
     user = session.query(
         'User where username is "{0}"'.format(session.api_user)
-    )
+    ).one()
     session.create('Appointment', {
         'resource': user,
         'context_id': task_id,
