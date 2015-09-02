@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session
+
+        :meth:`Session.ensure` not implemented.
+
 .. release:: 0.8.0
     :date: 2015-08-28
 
