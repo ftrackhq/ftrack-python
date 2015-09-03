@@ -304,7 +304,8 @@ Date and datetime attributes
 
 In the old API, date and datetime attributes where represented using a standard
 :mod:`datetime` object. In the new API we have opted to use the :term:`arrow` 
-library instead.
+library instead. Datetime attributes are represented in the server timezone,
+but with the timezone information stripped.
 
 Old API::
 
@@ -321,7 +322,7 @@ New API::
 
     >>> import arrow
     >>> task_new_api = session.get('Task', task_id)
-    >>> task_new_api.get('start_date')
+    >>> task_new_api['start_date']
     <Arrow [2015-09-02T00:00:00+00:00]>
 
     >>> # In the new API, utilize the arrow library when updating a datetime.
