@@ -390,6 +390,22 @@ thumbnail using the old API::
     task_old_api = ftrack.Task(version['task_id'])
     task_old_api.setThumbnail(thumbnail)
 
+Plugin registration
+-------------------
+
+To make event and location plugin register functions work with both old and new
+API the function should be updated to validate the input arguments. For old
+plugins the register method should validate that the first input is of type
+``ftrack.Registry``, and for the new API it should be of type 
+``ftrack_api.Session``.
+
+If the input parameter is not validated, a plugin might be mistakenly
+registered twice, since both the new and old API will look for plugins the
+same directories.
+
+.. seealso:: :ref:`ftrack:release/migration/3.0.29/developer_notes/register_function`
+
+
 Example: publishing a new version
 =================================
 
