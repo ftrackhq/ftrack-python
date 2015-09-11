@@ -23,7 +23,7 @@ def mixin(instance, mixin_class, name=None):
         return
 
     instance.__class__ = type(
-        name,
+        str(name),
         (
             mixin_class,
             instance.__class__
