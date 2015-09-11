@@ -490,6 +490,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
         new_task, entity_attribute_strategy='all'
     )
 
+    #: TODO: Fix this test properly and remove the replace.
     assert encoded == textwrap.dedent('''
         {{"__entity_type__": "Task",
          "allocations": [],
@@ -529,7 +530,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
         new_task['id'], new_task['name']
-    )).replace('\n', '')
+    )).replace('\n', '').replace(u'ö', '\\u00f6')
 
 
 def test_encode_entity_using_only_set_attributes_strategy(
@@ -561,7 +562,7 @@ def test_encode_entity_using_only_set_attributes_strategy(
          "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
         new_task['id'], new_task['name']
-    )).replace('\n', '')
+    )).replace('\n', '').replace('\n', '').replace(u'ö', '\\u00f6')
 
 
 def test_encode_entity_using_only_modified_attributes_strategy(

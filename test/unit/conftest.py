@@ -98,6 +98,11 @@ def session():
 @pytest.fixture()
 def unique_name():
     '''Return a unique name.'''
+    return u'test-ö-{0}'.format(uuid.uuid4())
+
+@pytest.fixture()
+def unique_ascii_name():
+    '''Return a unique name.'''
     return 'test-{0}'.format(uuid.uuid4())
 
 
@@ -119,9 +124,9 @@ def temporary_path(request):
 
 
 @pytest.fixture()
-def new_user(request, session, unique_name):
+def new_user(request, session, unique_ascii_name):
     '''Return a newly created unique user.'''
-    entity = session.create('User', {'username': unique_name})
+    entity = session.create('User', {'username': unique_ascii_name})
     session.commit()
 
     def cleanup():

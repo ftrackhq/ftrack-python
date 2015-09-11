@@ -94,6 +94,12 @@ def test_get(cache):
     assert cache.get('key') == 'value'
 
 
+def test_get_unicode(cache):
+    '''Retrieve unicode item from cache.'''
+    cache.set(u'key-ö', u'value-öö')
+    assert cache.get(u'key-ö') == u'value-öö'
+
+
 def test_get_missing_key(cache):
     '''Fail to retrieve missing item from cache.'''
     with pytest.raises(KeyError):

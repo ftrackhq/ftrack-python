@@ -67,7 +67,7 @@ def test_discover_valid_plugin(valid_plugin, capsys):
     '''Discover valid plugin.'''
     ftrack_api.plugin.discover([valid_plugin], (1, 2), {'3': 4})
     output, error = capsys.readouterr()
-    assert 'Registered (1, 2) {\'3\': 4}' in output
+    assert 'Registered (1, 2) {u\'3\': 4}' in output
 
 
 def test_discover_python_non_plugin(python_non_plugin, capsys):
