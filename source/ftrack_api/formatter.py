@@ -77,7 +77,7 @@ def format(
     if _seen is None:
         _seen = set()
 
-    identifier = str(ftrack_api.inspection.identity(entity))
+    identifier = unicode(ftrack_api.inspection.identity(entity))
     if identifier in _seen:
         return (
             first_line_spacer +

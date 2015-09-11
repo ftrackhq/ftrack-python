@@ -40,7 +40,7 @@ class Error(Exception):
                 value = value.encode(sys.getfilesystemencoding())
             keys[key] = value
 
-        return str(self.message.format(**keys))
+        return unicode(self.message.format(**keys))
 
 
 class AuthenticationError(Error):
@@ -252,7 +252,7 @@ class ComponentNotInLocationError(LocationError):
             components = [components]
 
         kw.setdefault('details', {}).update(dict(
-            components=', '.join([str(component) for component in components]),
+            components=', '.join([unicode(component) for component in components]),
             location=location
         ))
         super(ComponentNotInLocationError, self).__init__(**kw)

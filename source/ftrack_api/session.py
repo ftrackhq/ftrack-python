@@ -595,7 +595,7 @@ class Session(object):
         # Check cache for existing entity emulating
         # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
-            (str(entity_type), map(str, entity_key))
+            (unicode(entity_type), map(unicode, entity_key))
         )
         self.logger.debug(
             'Checking cache for entity with key {0}'.format(cache_key)
@@ -660,7 +660,7 @@ class Session(object):
 
     def _attach(self, entity):
         '''Attach *entity* to session if not already.'''
-        key = str(ftrack_api.inspection.identity(entity))
+        key = unicode(ftrack_api.inspection.identity(entity))
         current = self._attached.get(key)
 
         if current is None:
@@ -674,7 +674,7 @@ class Session(object):
 
     def _detach(self, entity):
         '''Detach *entity* from session.'''
-        key = str(ftrack_api.inspection.identity(entity))
+        key = unicode(ftrack_api.inspection.identity(entity))
         del self._attached[key]
 
     def merge(self, value, merged=None):
@@ -936,12 +936,12 @@ class Session(object):
                     query = '{0} where {1} in ({2})'.format(
                         query, primary_key,
                         ','.join([
-                            str(entity_key[0]) for entity_key in entity_keys
+                            unicode(entity_key[0]) for entity_key in entity_keys
                         ])
                     )
                 else:
                     query = '{0} where {1} is {2}'.format(
-                        query, primary_key, str(entity_keys[0][0])
+                        query, primary_key, unicode(entity_keys[0][0])
                     )
 
             result = self.query(query)
@@ -1027,12 +1027,12 @@ class Session(object):
         for payload in batch:
             if payload['action'] == 'create':
                 created.add(
-                    (payload['entity_type'], str(payload['entity_key']))
+                    (payload['entity_type'], unicode(payload['entity_key']))
                 )
 
             elif payload['action'] == 'delete':
                 deleted.add(
-                    (payload['entity_type'], str(payload['entity_key']))
+                    (payload['entity_type'], unicode(payload['entity_key']))
                 )
 
         created_then_deleted = deleted.intersection(created)
@@ -1040,7 +1040,7 @@ class Session(object):
             optimised_batch = []
             for payload in batch:
                 entity_type = payload.get('entity_type')
-                entity_key = str(payload.get('entity_key'))
+                entity_key = unicode(payload.get('entity_key'))
 
                 if (entity_type, entity_key) in created_then_deleted:
                     continue
@@ -1059,7 +1059,7 @@ class Session(object):
                         continue
 
                     identity = (
-                        payload['entity_type'], str(payload['entity_key']), key
+                        payload['entity_type'], unicode(payload['entity_key']), key
                     )
                     if identity in updates_map:
                         del payload['entity_data'][key]

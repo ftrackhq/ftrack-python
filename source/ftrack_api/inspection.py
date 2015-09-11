@@ -11,7 +11,7 @@ import ftrack_api.operation
 def identity(entity):
     '''Return unique identity of *entity*.'''
     return (
-        str(entity.entity_type),
+        unicode(entity.entity_type),
         primary_key(entity).values()
     )
 
@@ -32,8 +32,8 @@ def primary_key(entity):
                 'Missing required value for primary key attribute "{0}" on '
                 'entity {1!r}.'.format(name, entity)
             )
-
-        primary_key[str(name)] = str(value)
+            
+        primary_key[unicode(name)] = unicode(value)
 
     return primary_key
 
@@ -112,7 +112,7 @@ def states(entities):
 
     entities_by_identity = collections.OrderedDict()
     for entity in entities:
-        key = (entity.entity_type, str(primary_key(entity).values()))
+        key = (entity.entity_type, unicode(primary_key(entity).values()))
         entities_by_identity[key] = ftrack_api.symbol.NOT_SET
 
     for operation in session.recorded_operations:
@@ -126,7 +126,7 @@ def states(entities):
                 )
             )
         ):
-            key = (operation.entity_type, str(operation.entity_key.values()))
+            key = (operation.entity_type, unicode(operation.entity_key.values()))
             if key not in entities_by_identity:
                 continue
 

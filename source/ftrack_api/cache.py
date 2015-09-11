@@ -382,7 +382,7 @@ class StringKeyMaker(KeyMaker):
 
     def _key(self, obj):
         '''Return key for *obj*.'''
-        return str(obj)
+        return unicode(obj)
 
 
 class ObjectKeyMaker(KeyMaker):

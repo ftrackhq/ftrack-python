@@ -53,7 +53,7 @@ class Factory(object):
 
             default = fragment.get('default', ftrack_api.symbol.NOT_SET)
             if default == '{uid}':
-                default = lambda instance: str(uuid.uuid4())
+                default = lambda instance: unicode(uuid.uuid4())
 
             data_type = fragment.get('type', ftrack_api.symbol.NOT_SET)
 
@@ -178,9 +178,9 @@ class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
             entity = obj.get('entity')
             if entity is not None:
                 # Key by session only.
-                return str(id(entity.session))
+                return unicode(id(entity.session))
 
-        return str(obj)
+        return unicode(obj)
 
 
 #: Memoiser for use with default callables that should only be called once per

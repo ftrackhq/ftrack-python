@@ -427,7 +427,7 @@ class EventHub(object):
             topic='ftrack.meta.subscribe',
             data=dict(
                 subscriber=subscriber.metadata,
-                subscription=str(subscriber.subscription)
+                subscription=unicode(subscriber.subscription)
             )
         )
 
@@ -811,7 +811,7 @@ class EventHub(object):
     def _acknowledge_packet(self, packet_identifier, *args):
         '''Send acknowledgement of packet with *packet_identifier*.'''
         packet_identifier = packet_identifier.rstrip('+')
-        data = str(packet_identifier)
+        data = unicode(packet_identifier)
         if args:
             data += '+{1}'.format(self._encode(args))
 
@@ -823,7 +823,7 @@ class EventHub(object):
         packet_identifier = (
             self._add_packet_callback(callback) if callback else ''
         )
-        packet_parts = (str(code), packet_identifier, path, data)
+        packet_parts = (unicode(code), packet_identifier, path, data)
         packet = ':'.join(packet_parts)
 
         try:
