@@ -275,11 +275,20 @@ class FileCache(Cache):
         Raise :exc:`KeyError` if *key* not found.
 
         '''
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
+
         with self._database() as cache:
-            return cache[key]
+            return cache[key].decode('utf-8')
 
     def set(self, key, value):
         '''Set *value* for *key*.'''
+        if isinstance(value, unicode):
+            value = value.encode('utf-8')
+
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
+
         with self._database() as cache:
             cache[key] = value
 
@@ -289,6 +298,9 @@ class FileCache(Cache):
         Raise :exc:`KeyError` if *key* not found.
 
         '''
+        if isinstance(key, unicode):
+            key = key.encode('utf-8')
+
         with self._database() as cache:
             del cache[key]
 
@@ -301,7 +313,12 @@ class FileCache(Cache):
 
         '''
         with self._database() as cache:
-            return cache.keys()
+            keys = []
+            for key in cache.keys():
+                keys.append(
+                    key.decode('utf-8')
+                )
+            return keys
 
 
 class SerialisedCache(ProxyCache):
