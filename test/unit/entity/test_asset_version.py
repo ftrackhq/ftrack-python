@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from __future__ import unicode_literals
+
 
 def test_create_component(new_asset_version, temporary_file):
     '''Create component on asset version.'''

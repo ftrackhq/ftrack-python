@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from __future__ import unicode_literals
 import os
 from abc import ABCMeta, abstractmethod
 try:

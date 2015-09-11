@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from __future__ import unicode_literals
+
 
 def test_get_availability(new_component):
     '''Retrieve availability in locations.'''

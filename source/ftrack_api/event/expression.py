@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import unicode_literals
 from operator import eq, ne, ge, le, gt, lt
 
 from pyparsing import (ParserElement, Group, Word, CaselessKeyword, Forward,

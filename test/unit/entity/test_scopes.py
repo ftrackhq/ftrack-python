@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from __future__ import unicode_literals
+
 
 def test_add_remove_and_query_scopes_for_tasks(session, new_task, new_scope):
     '''Add, remove and query scopes for task.'''
