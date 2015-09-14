@@ -63,8 +63,8 @@ accessing a particular attribute by key:
 
     >>> # Single reference
     >>> print task['status']
-    <TaskStatus(e610b180-4e64-11e1-a500-f23c91df25eb)>
-    >>> new_status = session.query('TaskStatus').first()
+    <Status(e610b180-4e64-11e1-a500-f23c91df25eb)>
+    >>> new_status = session.query('Status').first()
     >>> task['status'] = new_status
 
     >>> # Collection

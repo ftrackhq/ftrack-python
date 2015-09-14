@@ -13,6 +13,7 @@ import ftrack_api.entity.asset_version
 import ftrack_api.entity.project_schema
 import ftrack_api.entity.note
 import ftrack_api.entity.job
+import ftrack_api.entity.user
 import ftrack_api.symbol
 import ftrack_api.cache
 
@@ -190,12 +191,6 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
 )
 
 
-@memoise_defaults
-def default_task_priority(entity):
-    '''Return default task priority entity for *entity*.'''
-    return entity.session.query('PriorityType').first()
-
-
 class StandardFactory(Factory):
     '''Standard entity class factory.'''
 
@@ -223,6 +218,9 @@ class StandardFactory(Factory):
 
         elif schema['id'] == 'Job':
             bases = [ftrack_api.entity.job.Job]
+
+        elif schema['id'] == 'User':
+            bases = [ftrack_api.entity.user.User]
 
         # If bases does not contain any items, add the base entity class.
         if not bases:

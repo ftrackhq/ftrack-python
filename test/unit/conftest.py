@@ -3,11 +3,31 @@
 
 import uuid
 import tempfile
+import shutil
 import os
 
 import pytest
+import clique
 
 import ftrack_api
+import ftrack_api.symbol
+
+
+def pytest_generate_tests(metafunc):
+    '''Parametrize tests dynamically.
+
+    If a test function has a corresponding parametrize function then call it
+    passing along the *metafunc*. For example, for a "test_foo" function, look
+    for and call "parametrize_test_foo" if it exists.
+
+    This is useful when more complex dynamic parametrization is needed than the
+    standard pytest.mark.parametrize decorator can provide.
+
+    '''
+    generator_name = 'parametrize_{}'.format(metafunc.function.__name__)
+    generator = getattr(metafunc.module, generator_name, None)
+    if callable(generator):
+        generator(metafunc)
 
 
 @pytest.fixture()
@@ -29,6 +49,46 @@ def temporary_file(request):
 
 
 @pytest.fixture()
+def temporary_directory(request):
+    '''Return temporary directory.'''
+    path = tempfile.mkdtemp()
+
+    def cleanup():
+        '''Remove temporary directory.'''
+        shutil.rmtree(path)
+
+    request.addfinalizer(cleanup)
+
+    return path
+
+
+@pytest.fixture()
+def temporary_sequence(temporary_directory):
+    '''Return temporary sequence of three files.
+
+    Return the path using the `clique
+    <http://clique.readthedocs.org/en/latest/>`_ format, for example::
+
+        /tmp/asfjsfjoj3/%04d.jpg [1-3]
+
+    '''
+    items = []
+    for index in range(3):
+        item_path = os.path.join(
+            temporary_directory, '{0:04d}.jpg'.format(index)
+        )
+        with open(item_path, 'w') as file_descriptor:
+            file_descriptor.close()
+
+        items.append(item_path)
+
+    collections, _ = clique.assemble(items)
+    sequence_path = collections[0].format()
+
+    return sequence_path
+
+
+@pytest.fixture()
 def session():
     '''Return session instance.'''
     return ftrack_api.Session()
@@ -38,6 +98,23 @@ def session():
 def unique_name():
     '''Return a unique name.'''
     return 'test-{0}'.format(uuid.uuid4())
+
+
+@pytest.fixture()
+def temporary_path(request):
+    '''Return temporary path.'''
+    path = tempfile.mkdtemp()
+
+    def cleanup():
+        '''Remove created path.'''
+        try:
+            shutil.rmtree(path)
+        except OSError:
+            pass
+
+    request.addfinalizer(cleanup)
+
+    return path
 
 
 @pytest.fixture()
@@ -63,6 +140,17 @@ def user(session):
     entity = session.get('User', 'd07ae5d0-66e1-11e1-b5e9-f23c91df25eb')
     assert entity is not None
 
+    return entity
+
+
+@pytest.fixture()
+def project_schema(session):
+    '''Return project schema.'''
+    # VFX Scheme
+    entity = session.get(
+        'ProjectSchema', '69cb7f92-4dbf-11e1-9902-f23c91df25eb'
+    )
+    assert entity is not None
     return entity
 
 
@@ -237,10 +325,8 @@ def new_job(request, session, unique_name, user):
 
 @pytest.fixture()
 def new_note(request, session, unique_name, new_task, user):
-    '''Return a new note.'''
-
+    '''Return a new note attached to a task.'''
     note = new_task.create_note(unique_name, user)
-
     session.commit()
 
     def cleanup():
@@ -251,3 +337,77 @@ def new_note(request, session, unique_name, new_task, user):
     request.addfinalizer(cleanup)
 
     return note
+
+
+@pytest.fixture()
+def new_asset_version(request, session):
+    '''Return a new asset version.'''
+    asset_version = session.create('AssetVersion')
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(asset_version)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return asset_version
+
+
+@pytest.fixture()
+def new_component(request, session, temporary_file):
+    '''Return a new component not in any location except origin.'''
+    component = session.create_component(temporary_file, location=None)
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(component)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return component
+
+
+@pytest.fixture()
+def new_container_component(request, session, temporary_directory):
+    '''Return a new container component not in any location except origin.'''
+    component = session.create('ContainerComponent')
+
+    # Add to special origin location so that it is possible to add to other
+    # locations.
+    origin_location = session.get(
+        'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
+    )
+    origin_location.add_component(
+        component, temporary_directory, recursive=False
+    )
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(component)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return component
+
+
+@pytest.fixture()
+def new_sequence_component(request, session, temporary_sequence):
+    '''Return a new sequence component not in any location except origin.'''
+    component = session.create_component(temporary_sequence, location=None)
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(component)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return component

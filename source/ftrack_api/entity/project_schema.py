@@ -10,8 +10,8 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
     def get_statuses(self, schema, type_id=None):
         '''Return statuses for *schema* and optional *type_id*.
 
-        *type_id* is the id of the TaskType for a Task and can be used to get
-        statuses where the workflow has been overridden.
+        *type_id* is the id of the Type for a TypedContext and can be used to
+        get statuses where the workflow has been overridden.
 
         '''
         # Task has overrides and need to be handled separately.
@@ -59,7 +59,7 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
             )
 
     def get_types(self, schema):
-        '''Return statuses for *schema*.'''
+        '''Return types for *schema*.'''
         # Task need to be handled separately.
         if schema == 'Task':
             return self['_task_type_schema']['types'][:]

@@ -253,7 +253,7 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            server_version_range = ('3.2', '3.3')
+            server_version_range = ('3.2.1', '3.3')
             if not (
                 distutils.version.LooseVersion(server_version_range[0])
                 <= distutils.version.LooseVersion(server_version)
@@ -269,11 +269,25 @@ class Session(object):
                 )
 
     def reset(self):
-        '''Reset session clearing all locally stored data.'''
+        '''Reset session clearing all locally stored data.
+
+        If the cache used by the session is a
+        :class:`~ftrack_api.cache.LayeredCache` then only clear top level cache.
+        Otherwise, clear the entire cache.
+
+        '''
         if self.recorded_operations:
             self.logger.warning(
                 'Resetting session with pending operations not persisted.'
             )
+
+        if isinstance(self.cache, ftrack_api.cache.LayeredCache):
+            try:
+                self.cache.caches[0].clear()
+            except IndexError:
+                pass
+        elif isinstance(self.cache, ftrack_api.cache.Cache):
+            self.cache.clear()
 
         self._attached.clear()
         self.recorded_operations.clear()
@@ -389,8 +403,123 @@ class Session(object):
 
         return EntityTypeClass(self, data=data, reconstructing=reconstructing)
 
-    def ensure(self, entity_type, data):
-        '''Ensure entity of *entity_type* with *data* exists.'''
+    def ensure(self, entity_type, data, identifying_keys=None):
+        '''Retrieve entity of *entity_type* with *data*, creating if necessary.
+
+        *data* should be a dictionary of the same form passed to :meth:`create`.
+
+        By default, check for an entity that has matching *data*. If
+        *identifying_keys* is specified as a list of keys then only consider the
+        values from *data* for those keys when searching for existing entity. If
+        *data* is missing an identifying key then raise :exc:`KeyError`.
+
+        If no *identifying_keys* specified then use all of the keys from the
+        passed *data*. Raise :exc:`ValueError` if no *identifying_keys* can be
+        determined.
+
+        Each key should be a string.
+
+        .. note::
+
+            Currently only top level scalars supported. To ensure an entity by
+            looking at relationships, manually issue the :meth:`query` and
+            :meth:`create` calls.
+
+        If more than one entity matches the determined filter criteria then
+        raise :exc:`~ftrack_api.exception.MultipleResultsFoundError`.
+
+        If no matching entity found then create entity using supplied *data*.
+
+        If a matching entity is found, then update it if necessary with *data*.
+
+        .. note::
+
+            If entity created or updated then a :meth:`commit` will be issued
+            automatically. If this behaviour is undesired, perform the
+            :meth:`query` and :meth:`create` calls manually.
+
+        Return retrieved or created entity.
+
+        Example::
+
+            # First time, a new entity with `username=martin` is created.
+            entity = session.ensure('User', {'username': 'martin'})
+
+            # After that, the existing entity is retrieved.
+            entity = session.ensure('User', {'username': 'martin'})
+
+            # When existing entity retrieved, entity may also be updated to
+            # match supplied data.
+            entity = session.ensure(
+                'User', {'username': 'martin', 'email': 'martin@example.com'}
+            )
+
+        '''
+        if not identifying_keys:
+            identifying_keys = data.keys()
+
+        self.logger.debug(
+            'Ensuring entity {0!r} with data {1!r} using identifying keys {2!r}'
+            .format(entity_type, data, identifying_keys)
+        )
+
+        if not identifying_keys:
+            raise ValueError(
+                'Could not determine any identifying data to check against '
+                'when ensuring {0!r} with data {1!r}. Identifying keys: {2!r}'
+                .format(entity_type, data, identifying_keys)
+            )
+
+        expression = '{0} where'.format(entity_type)
+        criteria = []
+        for identifying_key in identifying_keys:
+            value = data[identifying_key]
+
+            if isinstance(value, basestring):
+                value = '"{0}"'.format(value)
+
+            elif isinstance(
+                value, (arrow.Arrow, datetime.datetime, datetime.date)
+            ):
+                # Server does not store microsecond or timezone currently so
+                # need to strip from query.
+                # TODO: When datetime handling improved, update this logic.
+                value = (
+                    arrow.get(value).naive.replace(microsecond=0).isoformat()
+                )
+                value = '"{0}"'.format(value)
+
+            criteria.append('{0} is {1}'.format(identifying_key, value))
+
+        expression = '{0} {1}'.format(
+            expression, ' and '.join(criteria)
+        )
+
+        try:
+            entity = self.query(expression).one()
+
+        except ftrack_api.exception.NoResultFoundError:
+            self.logger.debug('Creating entity as did not already exist.')
+
+            # Create entity.
+            entity = self.create(entity_type, data)
+            self.commit()
+
+        else:
+            self.logger.debug('Retrieved matching existing entity.')
+
+            # Update entity if required.
+            updated = False
+            for key, target_value in data.items():
+                if entity[key] != target_value:
+                    entity[key] = target_value
+                    updated = True
+
+            if updated:
+                self.logger.debug('Updating existing entity to match new data.')
+                self.commit()
+
+        return entity
 
     def delete(self, entity):
         '''Mark *entity* for deletion.'''
@@ -724,11 +853,8 @@ class Session(object):
                 if merged_remote_value is not remote_value:
                     attribute.set_remote_value(entity, merged_remote_value)
 
-    def populate(self, entities, projections, background=False):
+    def populate(self, entities, projections):
         '''Populate *entities* with attributes specified by *projections*.
-
-        if *background* is True make request without blocking and populate
-        entities when result received.
 
         Any locally set values included in the *projections* will not be
         overwritten with the retrieved remote value. If this 'synchronise'
@@ -1513,9 +1639,9 @@ class Session(object):
             # Create member components for sequence.
             for member_path in collection:
                 member_data = {
-                    'name': collection.match(item).group('index'),
+                    'name': collection.match(member_path).group('index'),
                     'container': container,
-                    'size': member_sizes[item],
+                    'size': member_sizes[member_path],
                     'file_type': os.path.splitext(member_path)[-1]
                 }
 

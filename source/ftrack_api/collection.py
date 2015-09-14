@@ -20,15 +20,22 @@ class Collection(collections.MutableSequence):
         '''Initialise collection.'''
         self.entity = entity
         self.attribute = attribute
-        self.mutable = mutable
         self._data = []
 
         # Set initial dataset.
-        if data is None:
-            data = []
+        # Note: For initialisation, immutability is deferred till after initial
+        # population as otherwise there would be no public way to initialise an
+        # immutable collection. The reason self._data is not just set directly
+        # is to ensure other logic can be applied without special handling.
+        self.mutable = True
+        try:
+            if data is None:
+                data = []
 
-        with self.entity.session.operation_recording(False):
-            self.extend(data)
+            with self.entity.session.operation_recording(False):
+                self.extend(data)
+        finally:
+            self.mutable = mutable
 
     def __copy__(self):
         '''Return shallow copy.
