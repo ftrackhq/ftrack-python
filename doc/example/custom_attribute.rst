@@ -38,6 +38,18 @@ any existing ``custom_attributes``::
         'my_text_field': 'bar'
     }
 
+To query for tasks with a custom attribute, ``my_text_field``, you can use the
+configration relation::
+    
+    for task in session.query(
+        'Task where custom_attributes any '
+        '(configuration.key is "my_text_field" and value is "bar")'
+    ):
+        print task['name']
+
+This will only include tasks where the custom attribute has been changed from
+the default value.
+
 Limitations
 ===========
 
