@@ -270,7 +270,6 @@ user using the old and new API, respectively.
 
 Old API::
 
-    import datetime
     import ftrack
 
     user = ftrack.User('john')
