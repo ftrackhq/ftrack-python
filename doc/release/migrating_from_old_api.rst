@@ -309,6 +309,7 @@ Old API::
 New API::
 
     >>> import arrow
+
     >>> task_new_api = session.get('Task', task_id)
     >>> task_new_api['start_date']
     <Arrow [2015-09-02T00:00:00+00:00]>
