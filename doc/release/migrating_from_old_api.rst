@@ -274,26 +274,15 @@ Old API::
     import ftrack
 
     user = ftrack.User('john')
-
-    today = datetime.date.today()
-    timelog = user.getTimelogs(start=today, end=today)[0]
-    timelog.set('comment', 'Migrating to the new ftrack API')
-    timelog.set('duration', 8*60*60)
+    user.set('email', 'john@example.com')
 
 New API::
 
-    import arrow
     import ftrack_api
     session = ftrack_api.Session()
 
     user = session.query('User where username is "john"').one()
-    timelog = session.query(
-        'Timelog where user is {0} and start >= "{1}"'.format(
-            user, arrow.now().floor('day')
-        )
-    )
-    timelog['comment'] = 'Migrating to the new ftrack API'
-    timelog['duration'] = 8 * 60 * 60
+    user['email'] = 'john@example.com'
     session.commit()
 
 .. seealso:: :ref:`working_with_entities/updating`
