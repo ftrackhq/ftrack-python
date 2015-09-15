@@ -331,8 +331,9 @@ the new API capable of coexisting in the same process as the old API::
     import ftrack_api
 
 In addition, the old API will continue to be supported for some time, but do
-note that it will not support the new Workflows and will not have new features
-back ported to it.
+note that it will not support the new `Workflows
+<https://www.ftrack.com/workflows>`_ and will not have new features back ported
+to it.
 
 In the first example, we obtain a task reference using the old API and
 then use the new API to assign a user to it::
@@ -386,13 +387,15 @@ To make event and location plugin register functions work with both old and new
 API the function should be updated to validate the input arguments. For old
 plugins the register method should validate that the first input is of type
 ``ftrack.Registry``, and for the new API it should be of type 
-``ftrack_api.Session``.
+:class:`ftrack_api.session.Session`.
 
 If the input parameter is not validated, a plugin might be mistakenly
 registered twice, since both the new and old API will look for plugins the
 same directories.
 
-.. seealso:: :ref:`ftrack:release/migration/3.0.29/developer_notes/register_function`
+.. seealso::
+
+    :ref:`ftrack:release/migration/3.0.29/developer_notes/register_function`
 
 
 Example: publishing a new version
