@@ -16,6 +16,11 @@ Glossary
     api
         Application programming interface.
 
+    arrow
+        A Python library that offers a sensible, human-friendly approach to 
+        creating, manipulating, formatting and converting dates, times, and
+        timestamps. Read more at http://crsmithdev.com/arrow/
+
     asset
         A container for :term:`asset versions <asset version>`, typically
         representing the output from an artist. For example, 'geometry'
@@ -36,10 +41,19 @@ Glossary
         have two components containing the high and low resolution files, with
         the component names as 'hires' and 'lowres' respectively.
 
+    PEP-8
+        Style guide for :term:`Python` code. Read the guide at 
+        https://www.python.org/dev/peps/pep-0008/
+
     python
         A programming language that lets you work more quickly and integrate
         your systems more effectively. Often used in creative industries. Visit
         the language website at http://www.python.org
+
+    PyPi
+        :term:`Python` package index. The Python Package Index or PyPI is the
+        official third-party software repository for the Python programming
+        language. Visit the website at https://pypi.python.org/pypi
 
     resource identifier
         A string that is stored in ftrack as a reference to a resource (such as
