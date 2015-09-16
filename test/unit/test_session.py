@@ -731,3 +731,11 @@ def test_merge_circular_reference(cache, temporary_file):
     # fail.
     component = session.create_component(path=temporary_file)
     assert component
+
+
+def test_correct_file_type_on_sequence_component(session):
+    '''Create sequence component with correct file type.'''
+    path = '/path/to/image/sequence.%04d.dpx [1-10]'
+    sequence_component = session.create_component(path)
+
+    assert sequence_component['file_type'] == '.dpx'

@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session
+
+        Wrong file type set on component when publishing image sequence using
+        :meth:`Session.create_component`.
+
 .. release:: 0.8.1
     :date: 2015-09-08
 
