@@ -14,6 +14,12 @@ Release Notes
     .. change:: fixed
         :tags: session
 
+        Wrong file type set on component when publishing image sequence using
+        :meth:`Session.create_component`.
+
+    .. change:: fixed
+        :tags: session
+
         :meth:`Session.ensure` not implemented.
 
 .. release:: 0.8.0

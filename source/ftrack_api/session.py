@@ -1630,7 +1630,7 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', os.path.splitext(path)[-1])
+            data.setdefault('file_type', os.path.splitext(container_path)[-1])
 
             container = self._create_component(
                 'SequenceComponent', container_path, data, location
