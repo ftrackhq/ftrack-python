@@ -5,14 +5,11 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name, expected_value',
+    'entity_type, entity_model_name, custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber', '213'),
-        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'fstart', '8'),
-        (
-            'AssetVersion', 'e80fd79c-c5ea-11e1-94af-f23c91df25eb',
-            'NumberField', '-5'
-        )
+        ('Task', 'task', 'customNumber'),
+        ('Shot', 'task', 'fstart'),
+        ('AssetVersion', 'assetversion', 'NumberField')
     ],
     ids=[
         'task',
@@ -21,40 +18,63 @@ import pytest
     ]
 )
 def test_read_set_custom_attribute(
-    session, entity_type, entity_id, custom_attribute_name, expected_value
+    session, entity_type, entity_model_name, custom_attribute_name
 ):
     '''Retrieve custom attribute value set on instance.'''
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from {entity_type} where '
+        'custom_attributes.configuration.key is {custom_attribute_name}'.format(
+            entity_type=entity_type,
+            custom_attribute_name=custom_attribute_name
+        )
+    ).first()
+
+    custom_attribute_value = session.query(
+        'CustomAttributeValue where entity_id is {entity_id} and '
+        'configuration.key is {custom_attribute_name}'.format(
+            entity_id=entity['id'],
+            custom_attribute_name=custom_attribute_name
         )
     ).first()
 
     assert entity['id'] == entity['custom_attributes'].collection.entity['id']
     assert entity is entity['custom_attributes'].collection.entity
-    assert entity['custom_attributes'][custom_attribute_name] == expected_value
+    assert (
+        entity['custom_attributes'][custom_attribute_name] ==
+        custom_attribute_value['value']
+    )
 
     assert custom_attribute_name in entity['custom_attributes'].keys()
 
 
 @pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name, expected_value',
+    'entity_type, entity_model_name, custom_attribute_name',
     [
-        ('Task', '33d56bee-9812-11e1-b87a-f23c91df25eb', 'customNumber', '123')
+        ('Shot', 'task', 'fstart'),
+        ('AssetVersion', 'assetversion', 'versiontest')
     ],
     ids=[
-        'task'
+        'shot',
+        'asset_version'
     ]
 )
 def test_read_unset_custom_attribute(
-    session, entity_type, entity_id, custom_attribute_name, expected_value
+    session, entity_type, entity_model_name, custom_attribute_name
 ):
     '''Retrieve custom attribute default value when not set on instance.'''
+    configuration = session.query(
+        'select default from CustomAttributeConfiguration where key is '
+        '{custom_attribute_name}'.format(
+            custom_attribute_name=custom_attribute_name
+        )
+    ).first()
+    expected_value = configuration['default']
+
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from {entity_type} where '
+        'not custom_attributes any ()'.format(
+            entity_type=entity_type,
+            custom_attribute_name=custom_attribute_name
         )
     ).first()
 
@@ -66,13 +86,12 @@ def test_read_unset_custom_attribute(
 
 
 @pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name',
+    'entity_type, custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber'),
-        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'fstart'),
+        ('Task', 'customNumber'),
+        ('Shot', 'fstart'),
         (
-            'AssetVersion', 'e80fd79c-c5ea-11e1-94af-f23c91df25eb',
-            'NumberField'
+            'AssetVersion', 'NumberField'
         )
     ],
     ids=[
@@ -82,13 +101,14 @@ def test_read_unset_custom_attribute(
     ]
 )
 def test_write_set_custom_attribute_value(
-    session, entity_type, entity_id, custom_attribute_name
+    session, entity_type, custom_attribute_name
 ):
     '''Overwrite existing instance level custom attribute value.'''
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from {entity_type} where '
+        'custom_attributes.configuration.key is {custom_attribute_name}'.format(
+            entity_type=entity_type,
+            custom_attribute_name=custom_attribute_name
         )
     ).first()
 
@@ -96,24 +116,29 @@ def test_write_set_custom_attribute_value(
 
     assert entity['custom_attributes'][custom_attribute_name] == 'FOO'
 
+    session.commit()
+
 
 @pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name',
+    'entity_type, entity_model_name, custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customDate')
+        ('Shot', 'task', 'fstart'),
+        ('AssetVersion', 'assetversion', 'versiontest')
     ],
     ids=[
-        'task'
+        'shot',
+        'asset_version'
     ]
 )
 def test_write_unset_custom_attribute_value(
-    session, entity_type, entity_id, custom_attribute_name
+    session, entity_type, entity_model_name, custom_attribute_name
 ):
     '''Set instance level custom attribute value for first time.'''
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from {entity_type} where '
+        'not custom_attributes any ()'.format(
+            entity_type=entity_type,
+            custom_attribute_name=custom_attribute_name
         )
     ).first()
 
@@ -121,16 +146,15 @@ def test_write_unset_custom_attribute_value(
 
     assert entity['custom_attributes'][custom_attribute_name] == 'FOO'
 
+    session.commit()
+
 
 @pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name',
+    'entity_type, custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'fstart'),
-        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'Not existing'),
-        (
-            'AssetVersion', 'e80fd79c-c5ea-11e1-94af-f23c91df25eb',
-            'fstart'
-        )
+        ('Task', 'fstart'),
+        ('Shot', 'Not existing'),
+        ('AssetVersion', 'fstart')
     ],
     ids=[
         'task',
@@ -139,13 +163,12 @@ def test_write_unset_custom_attribute_value(
     ]
 )
 def test_read_custom_attribute_that_does_not_exist(
-    session, entity_type, entity_id, custom_attribute_name
+    session, entity_type, custom_attribute_name
 ):
     '''Fail to read value from a custom attribute that does not exist.'''
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from {entity_type}'.format(
+            entity_type=entity_type
         )
     ).first()
 
@@ -154,14 +177,11 @@ def test_read_custom_attribute_that_does_not_exist(
 
 
 @pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name',
+    'entity_type, custom_attribute_name',
     [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'fstart'),
-        ('Shot', 'cb4bb98e-9811-11e1-b32d-f23c91df25eb', 'Not existing'),
-        (
-            'AssetVersion', 'e80fd79c-c5ea-11e1-94af-f23c91df25eb',
-            'fstart'
-        )
+        ('Task', 'fstart'),
+        ('Shot', 'Not existing'),
+        ('AssetVersion', 'fstart')
     ],
     ids=[
         'task',
@@ -170,13 +190,12 @@ def test_read_custom_attribute_that_does_not_exist(
     ]
 )
 def test_write_custom_attribute_that_does_not_exist(
-    session, entity_type, entity_id, custom_attribute_name
+    session, entity_type, custom_attribute_name
 ):
     '''Fail to write a value to a custom attribute that does not exist.'''
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from {entity_type}'.format(
+            entity_type=entity_type
         )
     ).first()
 
@@ -184,54 +203,55 @@ def test_write_custom_attribute_that_does_not_exist(
         entity['custom_attributes'][custom_attribute_name] = 'FOO'
 
 
-@pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name',
-    [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customNumber'),
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'customDate')
-    ],
-    ids=[
-        'task_with_set_custom_attribute',
-        'task_with_unset_custom_attribute'
-    ]
-)
-def test_update_custom_attributes_with_dictionary(
-    session, entity_type, entity_id, custom_attribute_name
-):
-    '''Batch set custom attribute values.'''
+def test_update_custom_attributes_with_dictionary_when_set(session):
+    '''Batch set custom attribute values when not set instance'''
+    configuration = session.query(
+        'CustomAttributeConfiguration where key is customNumber'
+    ).first()
+
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
+        'select custom_attributes from Task where '
+        'custom_attributes.configuration.key is customNumber and '
+        'project_id is {project_id}'.format(
+            project_id=configuration['project_id']
         )
     ).first()
 
     entity['custom_attributes'] = {
-        custom_attribute_name: 'Foo'
+        'customNumber': 'Foo'
     }
 
+    session.commit()
 
-@pytest.mark.parametrize(
-    'entity_type, entity_id, custom_attribute_name',
-    [
-        ('Task', '33cab460-9812-11e1-b87a-f23c91df25eb', 'Bar')
-    ],
-    ids=[
-        'task_with_set_custom_attribute'
-    ]
-)
-def test_write_non_existing_custom_attributes_with_dictionary(
-    session, entity_type, entity_id, custom_attribute_name
-):
+
+def test_update_custom_attributes_with_dictionary_when_unset(session):
+    '''Batch set custom attribute values when not set on instance.'''
+    configuration = session.query(
+        'CustomAttributeConfiguration where key is test_number'
+    ).first()
+
+    entity = session.query(
+        'select custom_attributes from Task where '
+        'not custom_attributes any () and '
+        'project_id is {project_id}'.format(
+            project_id=configuration['project_id']
+        )
+    ).first()
+
+    entity['custom_attributes'] = {
+        'test_number': 'Foo'
+    }
+
+    session.commit()
+
+
+def test_write_non_existing_custom_attributes_with_dictionary(session):
     '''Fail to batch set values for missing custom attribute.'''
     entity = session.query(
-        'select custom_attributes from {entity_type} where id is'
-        ' "{entity_id}"'.format(
-            entity_type=entity_type, entity_id=entity_id
-        )
+        'select custom_attributes from Shot'
     ).first()
 
     with pytest.raises(KeyError):
         entity['custom_attributes'] = {
-            custom_attribute_name: 'Foo'
+            'BAZ': 'Foo'
         }
