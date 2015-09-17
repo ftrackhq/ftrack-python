@@ -278,7 +278,7 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
 
 
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
-    '''Generate key for defaults.'''
+    '''Generate key for session.'''
 
     def _key(self, obj):
         '''Return key for *obj*.'''
