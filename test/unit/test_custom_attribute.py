@@ -204,7 +204,7 @@ def test_write_custom_attribute_that_does_not_exist(
 
 
 def test_update_custom_attributes_with_dictionary_when_set(session):
-    '''Batch set custom attribute values when not set instance'''
+    '''Batch set custom attribute values when set on instance'''
     configuration = session.query(
         'CustomAttributeConfiguration where key is customNumber'
     ).first()
