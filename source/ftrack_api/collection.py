@@ -300,8 +300,13 @@ memoise_session = ftrack_api.cache.memoise_decorator(
 
 
 @memoise_session
-def get_custom_attribute_configurations(session):
-    '''Return configurations.'''
+def _get_custom_attribute_configurations(session):
+    '''Return list of custom attribute configurations.
+
+    The configuration objects will have key, project_id, id and object_type_id
+    populated.
+
+    '''
     return session.query(
         'select key, project_id, id, object_type_id from '
         'CustomAttributeConfiguration'
@@ -348,7 +353,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             )
 
         configurations = []
-        for configuration in get_custom_attribute_configurations(
+        for configuration in _get_custom_attribute_configurations(
             entity.session
         ):
             if (
