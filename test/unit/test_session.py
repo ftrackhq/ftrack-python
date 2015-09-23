@@ -522,6 +522,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "status": {{"__entity_type__": "Status",
          "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
          "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
+         "thumbnail_id": null,
          "timelogs": [],
          "type": {{"__entity_type__": "Type",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
