@@ -1,13 +1,14 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-import sys
 import collections
+import copy
 
 import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.collection
 import ftrack_api.inspection
+import ftrack_api.operation
 
 
 class Attributes(object):
@@ -36,7 +37,11 @@ class Attributes(object):
         self._data.pop(attribute.name)
 
     def get(self, name):
-        '''Return attribute by name.'''
+        '''Return attribute by *name*.
+
+        If no attribute matches *name* then return None.
+
+        '''
         return self._data.get(name, None)
 
     def keys(self):
@@ -167,12 +172,22 @@ class Attribute(object):
         ):
             raise ftrack_api.exception.ImmutableAttributeError(self)
 
+        old_value = self.get_local_value(entity)
+
         storage = self.get_entity_storage(entity)
         storage[self.name][self._local_key] = value
 
-        # Transition state.
-        if self.is_modified(entity):
-            entity.state = ftrack_api.symbol.MODIFIED
+        # Record operation.
+        if entity.session.record_operations:
+            entity.session.recorded_operations.push(
+                ftrack_api.operation.UpdateEntityOperation(
+                    entity.entity_type,
+                    ftrack_api.inspection.primary_key(entity),
+                    self.name,
+                    old_value,
+                    value
+                )
+            )
 
     def set_remote_value(self, entity, value):
         '''Set remote *value*.
@@ -276,8 +291,11 @@ class ReferenceAttribute(Attribute):
         return False
 
 
-class CollectionAttribute(Attribute):
-    '''Represent a collection of other entities.'''
+class AbstractCollectionAttribute(Attribute):
+    '''Base class for collection attributes.'''
+
+    #: Collection class used by attribute.
+    collection_class = None
 
     def get_value(self, entity):
         '''Return current value for *entity*.
@@ -293,7 +311,7 @@ class CollectionAttribute(Attribute):
             set.
 
         '''
-        super(CollectionAttribute, self).get_value(entity)
+        super(AbstractCollectionAttribute, self).get_value(entity)
 
         # Conditionally, copy remote value into local value so that it can be
         # mutated without side effects.
@@ -301,10 +319,30 @@ class CollectionAttribute(Attribute):
         remote_value = self.get_remote_value(entity)
         if (
             local_value is ftrack_api.symbol.NOT_SET
-            and isinstance(remote_value, ftrack_api.collection.Collection)
+            and isinstance(remote_value, self.collection_class)
         ):
             try:
-                self.set_local_value(entity, remote_value[:])
+                with entity.session.operation_recording(False):
+                    self.set_local_value(entity, copy.copy(remote_value))
+            except ftrack_api.exception.ImmutableAttributeError:
+                pass
+
+        value = self.get_local_value(entity)
+
+        # If the local value is still not set then attempt to set it with a
+        # suitable placeholder collection so that the caller can interact with
+        # the collection using its normal interface. This is required for a
+        # newly created entity for example. It *could* be done as a simple
+        # default value, but that would incur cost for every collection even
+        # when they are not modified before commit.
+        if value is ftrack_api.symbol.NOT_SET:
+            try:
+                with entity.session.operation_recording(False):
+                    self.set_local_value(
+                        entity,
+                        # None should be treated as empty collection.
+                        self._adapt_to_collection(entity, None)
+                    )
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
 
@@ -316,7 +354,7 @@ class CollectionAttribute(Attribute):
             value = self._adapt_to_collection(entity, value)
             value.mutable = self.mutable
 
-        super(CollectionAttribute, self).set_local_value(entity, value)
+        super(AbstractCollectionAttribute, self).set_local_value(entity, value)
 
     def set_remote_value(self, entity, value):
         '''Set remote *value*.
@@ -330,14 +368,45 @@ class CollectionAttribute(Attribute):
             value = self._adapt_to_collection(entity, value)
             value.mutable = False
 
-        super(CollectionAttribute, self).set_remote_value(entity, value)
+        super(AbstractCollectionAttribute, self).set_remote_value(entity, value)
+
+    def _adapt_to_collection(self, entity, value):
+        '''Adapt *value* to appropriate collection instance for *entity*.
+
+        .. note::
+
+            If *value* is None then return a suitable empty collection.
+
+        '''
+        raise NotImplementedError()
+
+
+class CollectionAttribute(AbstractCollectionAttribute):
+    '''Represent a collection of other entities.'''
+
+    #: Collection class used by attribute.
+    collection_class = ftrack_api.collection.Collection
 
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to a Collection instance on *entity*.'''
+
         if not isinstance(value, ftrack_api.collection.Collection):
-            value = ftrack_api.collection.Collection(entity, self, data=value)
+
+            if value is None:
+                value = ftrack_api.collection.Collection(entity, self)
+
+            elif isinstance(value, list):
+                value = ftrack_api.collection.Collection(
+                    entity, self, data=value
+                )
+
+            else:
+                raise NotImplementedError(
+                    'Cannot convert {0!r} to collection.'.format(value)
+                )
+
         else:
-            if not value.attribute is self:
+            if value.attribute is not self:
                 raise ftrack_api.exception.AttributeError(
                     'Collection already bound to a different attribute'
                 )
@@ -345,139 +414,105 @@ class CollectionAttribute(Attribute):
         return value
 
 
-class DictionaryAttributeCollection(object):
-    '''Class representing a dictionary collection.'''
+class MappedCollectionAttribute(AbstractCollectionAttribute):
+    '''Represent a mapped collection of entities.'''
 
-    def __init__(self, entity, name, schema):
-        '''Initialise collection from *entity*, *name* and *schema*.'''
-        self._entity = entity
-        self._name = name
-        self._store = {}
-        self._is_store_loaded = False
+    #: Collection class used by attribute.
+    collection_class = ftrack_api.collection.MappedCollectionProxy
 
-        self._schema = schema
-        keys = self._schema.get('keys', {})
-        self._key_property = keys.get('key', 'key')
-        self._value_property = keys.get('value', 'value')
-        self._foreign_key_property = keys.get('parent_id', 'parent_id')
-        self._class = self._schema.get('items').get('$ref')
+    def __init__(
+        self, name, creator, key_attribute, value_attribute, **kw
+    ):
+        '''Initialise attribute with *name*.
 
-    def _get_store(self):
-        '''Return the store loaded with data.'''
-        self._load_store()
-        return self._store
+        *creator* should be a function that accepts a dictionary of data and
+        is used by the referenced collection to create new entities in the
+        collection.
 
-    def _load_store(self):
-        '''Populate store with all remote values.'''
-        if self._is_store_loaded:
-            return
+        *key_attribute* should be the name of the attribute on an entity in
+        the collection that represents the value for 'key' of the dictionary.
 
-        results = self._entity.session.query(
-            '{0} where {1} = {2}'.format(
-                self._class,
-                self._foreign_key_property,
-                self._entity['id']
-            )
-        )
+        *value_attribute* should be the name of the attribute on an entity in
+        the collection that represents the value for 'value' of the dictionary.
 
-        for key_value_object in results:
-            key = key_value_object[self._key_property]
-            if key not in self._store:
-                self._store[key] = key_value_object
+        '''
+        self.creator = creator
+        self.key_attribute = key_attribute
+        self.value_attribute = value_attribute
 
-        self._is_store_loaded = True
+        super(MappedCollectionAttribute, self).__init__(name, **kw)
 
-    def _get(self, key):
-        '''Return object by *key* or raise KeyError.'''
-        try:
-            return self._get_store()[key]
+    def _adapt_to_collection(self, entity, value):
+        '''Adapt *value* to a MappedCollectionProxy instance on *entity*.'''
+        if not isinstance(value, ftrack_api.collection.MappedCollectionProxy):
 
-        except KeyError:
-            raise KeyError(
-                '{0} key {1} was not found for {2}'.format(
-                    self._name, key, self._entity
+            if value is None:
+                value = ftrack_api.collection.MappedCollectionProxy(
+                    ftrack_api.collection.Collection(entity, self),
+                    self.creator, self.key_attribute,
+                    self.value_attribute
                 )
-            )
 
-    def __getitem__(self, key):
-        '''Return value for *key*.'''
-        return self._get(key)[self._value_property]
+            elif isinstance(value, (list, ftrack_api.collection.Collection)):
 
-    def __setitem__(self, key, value):
-        '''Set *value* for *key*.'''
-        try:
-            key_value_object = self._get(key)
+                if isinstance(value, list):
+                    value = ftrack_api.collection.Collection(
+                        entity, self, data=value
+                    )
 
-        except KeyError:
-            data = {
-                self._foreign_key_property: self._entity['id'],
-                self._key_property: key,
-                self._value_property: value
-            }
-            data.update(self._schema.get('defaults', {}))
-            key_value_object = self._entity.session.create(self._class, data)
-            self._store[key] = key_value_object
+                value = ftrack_api.collection.MappedCollectionProxy(
+                    value, self.creator, self.key_attribute,
+                    self.value_attribute
+                )
 
+            elif isinstance(value, collections.Mapping):
+                # Convert mapping.
+                # TODO: When backend model improves, revisit this logic.
+                # First get existing value and delete all references. This is
+                # needed because otherwise they will not be automatically
+                # removed server side.
+                # The following should not cause recursion as the internal
+                # values should be mapped collections already.
+                current_value = self.get_value(entity)
+                if not isinstance(
+                    current_value, ftrack_api.collection.MappedCollectionProxy
+                ):
+                    raise NotImplementedError(
+                        'Cannot adapt mapping to collection as current value '
+                        'type is not a MappedCollectionProxy.'
+                    )
+
+                # Create the new collection using the existing collection as
+                # basis. Then update through proxy interface to ensure all
+                # internal operations called consistently (such as entity
+                # deletion for key removal).
+                collection = ftrack_api.collection.Collection(
+                    entity, self, data=current_value.collection[:]
+                )
+                collection_proxy = ftrack_api.collection.MappedCollectionProxy(
+                    collection, self.creator,
+                    self.key_attribute, self.value_attribute
+                )
+
+                # Remove expired keys from collection.
+                expired_keys = set(current_value.keys()) - set(value.keys())
+                for key in expired_keys:
+                    del collection_proxy[key]
+
+                # Set new values for existing keys / add new keys.
+                for key, value in value.items():
+                    collection_proxy[key] = value
+
+                value = collection_proxy
+
+            else:
+                raise NotImplementedError(
+                    'Cannot convert {0!r} to collection.'.format(value)
+                )
         else:
-            key_value_object[self._value_property] = value
+            if value.attribute is not self:
+                raise ftrack_api.exception.AttributeError(
+                    'Collection already bound to a different attribute.'
+                )
 
-    def __delitem__(self, key):
-        '''Delete *key*.'''
-        self._entity.session.delete(self._get(key))
-        self._get_store().pop(key)
-
-    def keys(self):
-        '''Return keys for all objects in collection.'''
-        return self._get_store().keys()
-
-    def items(self):
-        '''Return list of tuples.'''
-        result = []
-        for index, key_value_object in self._get_store().items():
-            result.append((index, key_value_object[self._value_property]))
-
-        return result
-
-    def replace(self, data):
-        '''Replace collection with *data*.'''
-        # Delete.
-        for key in self._get_store().keys():
-            if key not in data:
-                del self[key]
-
-        for key, value in data.items():
-            self[key] = value
-
-
-class DictionaryAttribute(Attribute):
-    '''Represent a dictionary attribute.'''
-
-    def __init__(self, name, schema, **kw):
-        '''Initialise property.'''
-        super(DictionaryAttribute, self).__init__(name, **kw)
-        self._collections = {}
-        self._schema = schema
-
-    def _getCollection(self, entity):
-        '''Return collection for *entity*.'''
-        primary_key = tuple(ftrack_api.inspection.primary_key(entity).values())
-        if primary_key not in self._collections:
-            key_value_collection = DictionaryAttributeCollection(
-                entity=entity,
-                name=self._name,
-                schema=self._schema
-            )
-            self._collections[primary_key] = key_value_collection
-
-        return self._collections[primary_key]
-
-    def get_value(self, entity):
-        '''Return collection for *entity*.'''
-        return self._getCollection(entity)
-
-    def set_local_value(self, entity, value):
-        '''Update collection for *entity* with *value*.'''
-        if value == ftrack_api.symbol.NOT_SET:
-            return
-
-        self._getCollection(entity).replace(value)
+        return value

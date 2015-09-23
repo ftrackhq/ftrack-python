@@ -7,6 +7,11 @@
 Migration notes
 ***************
 
+.. note::
+
+    Migrating from the old ftrack API? Read the dedicated :ref:`guide
+    <release/migrating_from_old_api>`.
+
 Migrate to 0.2.0
 ================
 

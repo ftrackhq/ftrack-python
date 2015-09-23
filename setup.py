@@ -3,7 +3,6 @@
 
 import os
 import re
-import glob
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
@@ -69,21 +68,12 @@ setup(
         'websocket-client == 0.12'
     ],
     tests_require=[
-        'pytest >= 2.3.5, < 3',
-        'pytest-mock >= 0.4, < 1'
+        'pytest >= 2.7, < 3',
+        'pytest-mock >= 0.4, < 1',
+        'pytest-catchlog >= 1, <=2'
     ],
     cmdclass={
         'test': PyTest
     },
-    dependency_links=[
-        'https://bitbucket.org/ftrack/lowdown/get/0.1.0.zip'
-        '#egg=lowdown-0.1.0'
-    ],
-    data_files=[
-        (
-            'ftrack_default_plugins',
-            glob.glob(os.path.join(RESOURCE_PATH, 'plugin', '*.py'))
-        )
-    ],
     zip_safe=False
 )

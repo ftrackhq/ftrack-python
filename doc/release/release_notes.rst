@@ -9,6 +9,333 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: 0.8.2
+    :date: 2015-09-16
+
+    .. change:: fixed
+        :tags: session
+
+        Wrong file type set on component when publishing image sequence using
+        :meth:`Session.create_component`.
+
+.. release:: 0.8.1
+    :date: 2015-09-08
+
+    .. change:: fixed
+        :tags: session
+
+        :meth:`Session.ensure` not implemented.
+
+.. release:: 0.8.0
+    :date: 2015-08-28
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2.1, < 3.3 required.
+
+    .. change:: new
+
+        Added lists example.
+
+            .. seealso:: :ref:`example/list`.
+
+    .. change:: new
+
+        Added convenience methods for handling timers
+        :class:`~ftrack_api.entity.user.User.start_timer` and
+        :class:`~ftrack_api.entity.user.User.stop_timer`.
+
+    .. change:: changed
+
+        The dynamic API classes Type, Status, Priority and
+        StatusType have been renamed to Type, Status, Priority and State.
+
+    .. change:: changed
+
+        :meth:`Session.reset` now also clears the top most level cache (by
+        default a :class:`~ftrack_api.cache.MemoryCache`).
+
+    .. change:: fixed
+
+        Some invalid server url formats not detected.
+
+    .. change:: fixed
+
+        Reply events not encoded correctly causing them to be misinterpreted by
+        the server.
+
+.. release:: 0.7.0
+    :date: 2015-08-24
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2, < 3.3 required.
+
+    .. change:: changed
+
+        Removed automatic set of default statusid, priorityid and typeid on
+        objects as that is now either not mandatory or handled on server.
+
+    .. change:: changed
+
+        Updated :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_statuses`
+        and :meth:`~ftrack_api.entity.project_schema.ProjectSchema.get_types` to
+        handle custom objects.
+
+.. release:: 0.6.0
+    :date: 2015-08-19
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.1.8, < 3.2 required.
+
+    .. change:: changed
+        :tags: querying, documentation
+
+        Updated documentation with details on new operators ``has`` and ``any``
+        for querying relationships.
+
+        .. seealso:: :ref:`querying/criteria/operators`
+
+.. release:: 0.5.2
+    :date: 2015-07-29
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version 3.1.5 or greater required.
+
+    .. change:: changed
+
+        Server reported errors are now more readable and are no longer sometimes
+        presented as an HTML page.
+
+.. release:: 0.5.1
+    :date: 2015-07-06
+
+    .. change:: changed
+
+        Defaults computed by :class:`~ftrack_api.entity.factory.StandardFactory`
+        are now memoised per session to improve performance.
+
+    .. change:: changed
+
+        :class:`~ftrack_api.cache.Memoiser` now supports a *return_copies*
+        parameter to control whether deep copies should be returned when a value
+        was retrieved from the cache.
+
+.. release:: 0.5.0
+    :date: 2015-07-02
+
+    .. change:: changed
+
+        Now checks for server compatibility and requires an ftrack server
+        version of 3.1 or greater.
+
+    .. change:: new
+
+        Added convenience methods to :class:`~ftrack_api.query.QueryResult` to
+        fetch :meth:`~ftrack_api.query.QueryResult.first` or exactly
+        :meth:`~ftrack_api.query.QueryResult.one` result.
+
+    .. change:: new
+        :tags: notes
+
+        Added support for handling notes.
+
+        .. seealso:: :ref:`example/note`.
+
+    .. change:: changed
+
+        Collection attributes generate empty collection on first access when no
+        remote value available. This allows interacting with a collection on a
+        newly created entity before committing.
+
+    .. change:: fixed
+        :tags: session
+
+        Ambiguous error raised when :class:`Session` is started with an invalid
+        user or key.
+
+    .. change:: fixed
+        :tags: caching, session
+
+        :meth:`Session.merge` fails against
+        :class:`~ftrack_api.cache.SerialisedCache` when circular reference
+        encountered due to entity identity not being prioritised in merge.
+
+.. release:: 0.4.3
+    :date: 2015-06-29
+
+    .. change:: fixed
+        :tags: plugins, session, entity types
+
+        Entity types not constructed following standard install.
+
+        This is because the discovery of the default plugins is unreliable
+        across Python installation processes (pip, wheel etc). Instead, the
+        default plugins have been added as templates to the :ref:`event_list`
+        documentation and the
+        :class:`~ftrack_api.entity.factory.StandardFactory` used to create any
+        missing classes on :class:`Session` startup.
+
+.. release:: 0.4.2
+    :date: 2015-06-26
+
+    .. change:: fixed
+        :tags: metadata
+
+        Setting exact same metadata twice can cause
+        :exc:`~ftrack_api.exception.ImmutableAttributeError` to be incorrectly
+        raised.
+
+    .. change:: fixed
+        :tags: session
+
+        Calling :meth:`Session.commit` does not clear locally set attribute
+        values leading to immutability checks being bypassed in certain cases.
+
+.. release:: 0.4.1
+    :date: 2015-06-25
+
+    .. change:: fixed
+        :tags: metadata
+
+        Setting metadata twice in one session causes `KeyError`.
+
+.. release:: 0.4.0
+    :date: 2015-06-22
+
+    .. change:: changed
+        :tags: documentation
+
+        Documentation extensively updated.
+
+    .. change:: new
+        :tags: Client review
+        
+        Added support for handling review sessions.
+
+        .. seealso:: :ref:`Usage guide <example/review_session>`.
+
+    .. change:: fixed
+
+        Metadata property not working in line with rest of system, particularly
+        the caching framework.
+
+    .. change:: new
+        :tags: collection
+
+        Added :class:`ftrack_api.collection.MappedCollectionProxy` class for
+        providing a dictionary interface to a standard
+        :class:`ftrack_api.collection.Collection`.
+
+    .. change:: new
+        :tags: collection, attribute
+
+        Added :class:`ftrack_api.attribute.MappedCollectionAttribute` class for
+        describing an attribute that should use the
+        :class:`ftrack_api.collection.MappedCollectionProxy`.
+
+    .. change:: new
+
+        Entities that use composite primary keys are now fully supported in the
+        session, including for :meth:`Session.get` and :meth:`Session.populate`.
+
+    .. change:: change
+
+        Base :class:`ftrack_api.entity.factory.Factory` refactored to separate
+        out attribute instantiation into dedicated methods to make extending
+        simpler.
+
+    .. change:: change
+        :tags: collection, attribute
+
+        :class:`ftrack_api.attribute.DictionaryAttribute` and
+        :class:`ftrack_api.attribute.DictionaryAttributeCollection` removed.
+        They have been replaced by the new
+        :class:`ftrack_api.attribute.MappedCollectionAttribute` and
+        :class:`ftrack_api.collection.MappedCollectionProxy` respectively.
+
+    .. change:: new
+        :tags: events
+
+        :class:`Session` now supports an *auto_connect_event_hub* argument to
+        control whether the built in event hub should connect to the server on
+        session initialisation. This is useful for when only local events should
+        be supported or when the connection should be manually controlled.
+
+.. release:: 0.3.0
+    :date: 2015-06-14
+
+    .. change:: fixed
+
+        Session operations may be applied server side in invalid order resulting
+        in unexpected error.
+
+    .. change:: fixed
+
+        Creating and deleting an entity in single commit causes error as create
+        operation never persisted to server.
+
+        Now all operations for the entity are ignored on commit when this case
+        is detected.
+
+    .. change:: changed
+
+        Internally moved from differential state to operation tracking for
+        determining session changes when persisting.
+
+    .. change:: new
+
+        ``Session.recorded_operations`` attribute for examining current
+        pending operations on a :class:`Session`.
+
+    .. change:: new
+
+        :meth:`Session.operation_recording` context manager for suspending
+        recording operations temporarily. Can also manually control
+        ``Session.record_operations`` boolean.
+
+    .. change:: new
+
+        Operation classes to track individual operations occurring in session.
+
+    .. change:: new
+
+        Public :meth:`Session.merge` method for merging arbitrary values into
+        the session manually.
+
+    .. change:: changed
+
+        An entity's state is now computed from the operations performed on it
+        and is no longer manually settable.
+
+    .. change:: changed
+
+        ``Entity.state`` attribute removed. Instead use the new inspection
+        :func:`ftrack_api.inspection.state`.
+
+        Previously::
+
+            print entity.state
+
+        Now::
+
+            import ftrack_api.inspection
+            print ftrack_api.inspection.state(entity)
+
+        There is also an optimised inspection,
+        :func:`ftrack_api.inspection.states`. for determining state of many
+        entities at once.
+
+    .. change:: changed
+
+        Shallow copying a :class:`ftrack_api.symbol.Symbol` instance now
+        returns same instance.
 
 .. release:: 0.2.0
     :date: 2015-06-04
@@ -17,7 +344,7 @@ Release Notes
 
         Changed name of API from `ftrack` to `ftrack_api`.
 
-        .. seealso:: :ref:`release/migration/next/new_api_name`.
+        .. seealso:: :ref:`release/migration/0.2.0/new_api_name`.
 
     .. change:: new
         :tags: caching

@@ -1,7 +1,6 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
-import os
 import collections
 import urlparse
 import threading
@@ -39,23 +38,16 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
-class _EventHubEncoder(json.JSONEncoder):
-    '''Custom JSON encoder.'''
-
-    def encode(self, data):
-        '''Encode *data*.'''
-        if isinstance(data, collections.Mapping):
-            if 'in_reply_to_event' in data:
-                data['inReplyToEvent'] = data.pop('in_reply_to_event')
-
-        return super(_EventHubEncoder, self).encode(data)
-
-
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server=None):
-        '''Initialise hub, connecting to ftrack *server*.'''
+    def __init__(self, server_url, api_user, api_key):
+        '''Initialise hub, connecting to ftrack *server_url*.
+
+        *api_user* is the user to authenticate as and *api_key* is the API key
+        to authenticate with.
+
+        '''
         super(EventHub, self).__init__()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
@@ -97,26 +89,36 @@ class EventHub(object):
             dict((name, code) for code, name in self._code_name_mapping.items())
         )
 
+        self._server_url = server_url
+        self._api_user = api_user
+        self._api_key = api_key
+
         # Parse server URL and store server details.
-        if server is None:
-            server = os.environ.get('FTRACK_SERVER')
+        url_parse_result = urlparse.urlparse(self._server_url)
+        if not url_parse_result.scheme:
+            raise ValueError('Could not determine scheme from server url.')
 
-        if not server:
-            raise TypeError(
-                'Required "server" not specified. Pass as argument or set '
-                'in environment variable FTRACK_SERVER.'
-            )
+        if not url_parse_result.hostname:
+            raise ValueError('Could not determine hostname from server url.')
 
-        url_parse_result = urlparse.urlparse(server)
         self.server = ServerDetails(
             url_parse_result.scheme,
             url_parse_result.hostname,
-            8002
+            url_parse_result.port
         )
 
     def get_server_url(self):
         '''Return URL to server.'''
-        return '{0}://{1}:{2}'.format(*self.server)
+        return '{0}://{1}'.format(
+            self.server.scheme, self.get_network_location()
+        )
+
+    def get_network_location(self):
+        '''Return network location part of url (hostname with optional port).'''
+        if self.server.port:
+            return '{0}:{1}'.format(self.server.hostname, self.server.port)
+        else:
+            return self.server.hostname
 
     @property
     def secure(self):
@@ -148,8 +150,8 @@ class EventHub(object):
                 )
 
             scheme = 'wss' if self.secure else 'ws'
-            url = '{0}://{1}:{2}/socket.io/1/websocket/{3}'.format(
-                scheme, self.server.hostname, self.server.port, session.id
+            url = '{0}://{1}/socket.io/1/websocket/{2}'.format(
+                scheme, self.get_network_location(), session.id
             )
             self._connection = websocket.create_connection(url)
 
@@ -622,6 +624,9 @@ class EventHub(object):
 
         except Exception:
             # Failure to send event should not cause caller to fail.
+            # TODO: This behaviour is inconsistent with the failing earlier on
+            # lack of connection and also with the error handling parameter of
+            # EventHub.publish. Consider refactoring.
             self.logger.exception('Error sending event {0}.'.format(event))
 
     def _on_published(self, event, response):
@@ -734,10 +739,18 @@ class EventHub(object):
 
     def _get_socket_io_session(self):
         '''Connect to server and retrieve session information.'''
-        socket_io_url = '{0}://{1}:{2}/socket.io/1/'.format(*self.server)
+        socket_io_url = (
+            '{0}://{1}/socket.io/1/?api_user={2}&api_key={3}'
+        ).format(
+            self.server.scheme,
+            self.get_network_location(),
+            self._api_user,
+            self._api_key
+        )
         try:
             response = requests.get(
                 socket_io_url,
+                timeout=10, # 10 seconds timeout to recieve errors faster.
                 verify=False  # Allow self-signed SSL.
             )
         except requests.exceptions.Timeout as error:
@@ -785,10 +798,10 @@ class EventHub(object):
         '''Pop and return callback for *packet_identifier*.'''
         return self._packet_callbacks.pop(packet_identifier)
 
-    def _emit_event_packet(self, event, args, callback):
-        '''Send event packet.'''
+    def _emit_event_packet(self, namespace, event, callback):
+        '''Send *event* packet under *namespace*.'''
         data = self._encode(
-            dict(name=event, args=[args])
+            dict(name=namespace, args=[event])
         )
         self._send_packet(
             self._code_name_mapping['event'], data=data, callback=callback
@@ -933,9 +946,23 @@ class EventHub(object):
         '''Return *data* encoded as JSON formatted string.'''
         return json.dumps(
             data,
-            cls=_EventHubEncoder,
+            default=self._encode_object_hook,
             ensure_ascii=False
         )
+
+    def _encode_object_hook(self, item):
+        '''Return *item* transformed for encoding.'''
+        if isinstance(item, ftrack_api.event.base.Event):
+            # Convert to dictionary for encoding.
+            item = dict(**item)
+
+            if 'in_reply_to_event' in item:
+                # Convert keys to server convention.
+                item['inReplyToEvent'] = item.pop('in_reply_to_event')
+
+            return item
+
+        raise TypeError('{0!r} is not JSON serializable'.format(item))
 
     def _decode(self, string):
         '''Return decoded JSON *string* as Python object.'''

@@ -49,7 +49,9 @@ You can retrieve existing locations using the standard session
     location_by_id = session.get('Location', 'unique-id')
 
     # Retrieve location by name.
-    location_by_name = session.query('Location where name is "my.location"')[0]
+    location_by_name = session.query(
+        'Location where name is "my.location"'
+    ).one()
 
 To retrieve all existing locations use a standard query::
 
@@ -118,7 +120,9 @@ location by calling :meth:`Location.add_component
 <ftrack_api.entity.location.Location.add_component>` and passing the location to
 use as the *source* location::
 
-    origin_location = session.query('Location where name is "ftrack.origin"')[0]
+    origin_location = session.query(
+        'Location where name is "ftrack.origin"'
+    ).one()
     location.add_component(component_c, origin_location)
 
 To remove a component from a location use :meth:`Location.remove_component
@@ -185,5 +189,5 @@ Location events
 If you want to receive event notifications when components are added to or 
 removed from locations, you can subscribe to the topics published,
 :data:`ftrack_api.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC` or
-:data:`ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback you
-want to be run.
+:data:`ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC` and the callback
+you want to be run.

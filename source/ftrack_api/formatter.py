@@ -1,7 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-from termcolor import colored
+import termcolor
 
 import ftrack_api.entity.base
 import ftrack_api.collection
@@ -55,10 +55,14 @@ def format(
         formatters = dict()
 
     formatters.setdefault(
-        'header', lambda text: colored(text, 'white', 'on_blue', attrs=['bold'])
+        'header', lambda text: termcolor.colored(
+            text, 'white', 'on_blue', attrs=['bold']
+        )
     )
     formatters.setdefault(
-        'label', lambda text: colored(text, 'blue', attrs=['bold'])
+        'label', lambda text: termcolor.colored(
+            text, 'blue', attrs=['bold']
+        )
     )
 
     # Determine indents.
@@ -72,7 +76,7 @@ def format(
     if _seen is None:
         _seen = set()
 
-    identifier = ftrack_api.inspection.identity(entity)
+    identifier = str(ftrack_api.inspection.identity(entity))
     if identifier in _seen:
         return (
             first_line_spacer +

@@ -9,6 +9,7 @@ import ftrack_api.symbol
 import ftrack_api.attribute
 import ftrack_api.inspection
 import ftrack_api.exception
+import ftrack_api.operation
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -52,7 +53,6 @@ class Entity(collections.MutableMapping):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._state = ftrack_api.symbol.NOT_SET
         self.session = session
 
         if data is None:
@@ -72,105 +72,36 @@ class Entity(collections.MutableMapping):
         else:
             self._reconstruct(data)
 
-    @property
-    def state(self):
-        '''Return current state.'''
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        '''Transition from current state to new state *value*.
-
-        Raise :exc:`ftrack_api.exception.InvalidStateError` if new state is 
-        invalid.
-
-        .. note::
-
-            Transitioning from 'created' or 'deleted' to 'modified' is not an
-            error, but will not change state.
-
-        Valid state values are:
-
-            * :attr:`ftrack_api.symbol.NOT_SET`
-            * :attr:`ftrack_api.symbol.CREATED`
-            * :attr:`ftrack_api.symbol.MODIFIED`
-            * :attr:`ftrack_api.symbol.DELETED`
-
-        '''
-        valid_states = (
-            ftrack_api.symbol.NOT_SET,
-            ftrack_api.symbol.CREATED,
-            ftrack_api.symbol.MODIFIED,
-            ftrack_api.symbol.DELETED
-        )
-        if value not in valid_states:
-            raise ValueError(
-                'Target state {0!r} was not a valid state. Must be one of {1}'
-                .format(value, ', '.join(valid_states))
-            )
-
-        current_state = self.state
-        if current_state is value:
-            return
-
-        if current_state in (
-            ftrack_api.symbol.CREATED, ftrack_api.symbol.DELETED
-        ):
-            if value == ftrack_api.symbol.MODIFIED:
-                # Not an error, but no point marking as modified.
-                return
-
-        if (
-            current_state is ftrack_api.symbol.DELETED
-            and value is not ftrack_api.symbol.NOT_SET
-        ):
-            raise ftrack_api.exception.InvalidStateTransitionError(
-                current_state, value, self
-            )
-
-        if (
-            current_state is ftrack_api.symbol.MODIFIED
-            and value not in (
-                ftrack_api.symbol.DELETED, ftrack_api.symbol.NOT_SET
-            )
-        ):
-            raise ftrack_api.exception.InvalidStateTransitionError(
-                current_state, value, self
-            )
-
-        self._state = value
-
     def _construct(self, data):
         '''Construct from *data*.'''
-        # Mark as newly created for later commit.
-        # Done here so that entity has correct state, otherwise would
-        # receive a state of "modified" following setting of attribute
-        # values from *data*.
-        self.state = ftrack_api.symbol.CREATED
+        # Suspend operation recording so that all modifications can be applied
+        # in single create operation. In addition, recording a modification
+        # operation requires a primary key which may not be available yet.
+        with self.session.operation_recording(False):
 
-        # Data represents locally set values.
-        for key, value in data.items():
-            if key in self._ignore_data_keys:
-                continue
+            # Data represents locally set values.
+            for key, value in data.items():
+                if key in self._ignore_data_keys:
+                    continue
 
-            attribute = self.__class__.attributes.get(key)
-            if attribute is None:
-                self.logger.debug(
-                    'Cannot populate {0!r} attribute as no such attribute '
-                    'found on entity {1!r}.'.format(key, self)
-                )
-                continue
+                attribute = self.__class__.attributes.get(key)
+                if attribute is None:
+                    self.logger.debug(
+                        'Cannot populate {0!r} attribute as no such attribute '
+                        'found on entity {1!r}.'.format(key, self)
+                    )
+                    continue
 
-            attribute.set_local_value(self, value)
+                attribute.set_local_value(self, value)
 
-        # Set defaults for any unset local attributes.
-        for attribute in self.__class__.attributes:
-            if attribute.name not in data:
-                default_value = attribute.default_value
-                if callable(default_value):
-                    default_value = default_value(self)
+            # Set defaults for any unset local attributes.
+            for attribute in self.__class__.attributes:
+                if attribute.name not in data:
+                    default_value = attribute.default_value
+                    if callable(default_value):
+                        default_value = default_value(self)
 
-                attribute.set_local_value(self, default_value)
+                    attribute.set_local_value(self, default_value)
 
     def _reconstruct(self, data):
         '''Reconstruct from *data*.'''
@@ -313,24 +244,20 @@ class Entity(collections.MutableMapping):
         log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
         changes = []
 
-        # State.
-        state = self.state
-        other_state = entity.state
-        if (
-            other_state is not ftrack_api.symbol.NOT_SET
-            and state is not other_state
-        ):
-            self.state = other_state
-            changes.append({
-                'type': 'property',
-                'name': 'state',
-                'old_value': state,
-                'new_value': other_state
-            })
-            self.logger.debug(log_message.format(**changes[-1]))
-
         # Attributes.
-        for other_attribute in entity.attributes:
+
+        # Prioritise by type so that scalar values are set first. This should
+        # guarantee that the attributes making up the identity of the entity
+        # are merged before merging any collections that may have references to
+        # this entity.
+        attributes = collections.deque()
+        for attribute in entity.attributes:
+            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+                attributes.appendleft(attribute)
+            else:
+                attributes.append(attribute)
+
+        for other_attribute in attributes:
             attribute = self.attributes.get(other_attribute.name)
 
             # Local attributes.
@@ -338,7 +265,7 @@ class Entity(collections.MutableMapping):
             if other_local_value is not ftrack_api.symbol.NOT_SET:
                 local_value = attribute.get_local_value(self)
                 if local_value != other_local_value:
-                    merged_local_value = self.session._merge(
+                    merged_local_value = self.session.merge(
                         other_local_value, merged=merged
                     )
 
@@ -356,7 +283,7 @@ class Entity(collections.MutableMapping):
             if other_remote_value is not ftrack_api.symbol.NOT_SET:
                 remote_value = attribute.get_remote_value(self)
                 if remote_value != other_remote_value:
-                    merged_remote_value = self.session._merge(
+                    merged_remote_value = self.session.merge(
                         other_remote_value, merged=merged
                     )
 

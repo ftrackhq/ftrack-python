@@ -1,13 +1,16 @@
 ..
     :copyright: Copyright (c) 2014 ftrack
 
-.. currentmodule:: ftrack_api.session
-
 .. _tutorial:
 
 ********
 Tutorial
 ********
+
+.. currentmodule:: ftrack_api.session
+
+This tutorial provides a quick dive into using the API and the broad stroke
+concepts involved.
 
 First make sure the ftrack Python API is :ref:`installed <installing>`.
 
@@ -15,20 +18,9 @@ Then start a Python session and import the ftrack API::
 
     >>> import ftrack_api
 
-Before continuing, execute the following code to create a helper function for
-printing entities in a more human readable format.::
-
-    >>> import ftrack_api.formatter
-    >>>
-    >>> def print_entity(entity):
-    ...     '''Pretty print *entity* without fetching unset attribute values.'''
-    ...     with session.auto_populating(False):
-    ...         print ftrack_api.formatter.format(entity)
-
-
-The API uses :ref:`sessions <using_sessions>` to manage communication with an
-ftrack server. Create a session that connects to your ftrack server (changing
-the passed values as appropriate)::
+The API uses :ref:`sessions <understanding_sessions>` to manage communication
+with an ftrack server. Create a session that connects to your ftrack server
+(changing the passed values as appropriate)::
 
     >>> session = ftrack_api.Session(
     ...     server_url='http://mycompany.ftrackapp.com',
@@ -39,24 +31,24 @@ the passed values as appropriate)::
 .. note::
 
     A session can use :ref:`environment variables
-    <using_sessions/configuring_with_environment_variables>` to configure
-    itself.
+    <understanding_sessions/connection>` to configure itself.
 
 Now print a list of the available entity types retrieved from the server::
 
     >>> print session.types.keys()
-    [u'AbstractTask', u'ObjectType', u'PriorityType', u'Project', u'Sequence',
-     u'Shot', u'Task', u'TaskStatus', u'TaskType', u'Timelog', u'User']
+    [u'TypedContext', u'ObjectType', u'Priority', u'Project', u'Sequence',
+     u'Shot', u'Task', u'Status', u'Type', u'Timelog', u'User']
 
-Now the list of possible entity types is known, query the server to retrieve
-entities of a particular type by using the :meth:`Session.query` method::
+Now the list of possible entity types is known, :ref:`query <querying>` the
+server to retrieve entities of a particular type by using the
+:meth:`Session.query` method::
 
     >>> projects = session.query('Project')
 
 Each project retrieved will be an :ref:`entity <working_with_entities>` instance
 that behaves much like a standard Python dictionary. For example, to find out
-the available keys for an entity, call the :meth:`~ftrack_api.entity.Entity.keys`
-method::
+the available keys for an entity, call the
+:meth:`~ftrack_api.entity.Entity.keys` method::
 
     >>> print projects[0].keys()
     [u'status', u'is_global', u'name', u'end_date', u'context_type',
@@ -77,10 +69,13 @@ Now, iterate over the retrieved entities and print each ones name::
 
     Many attributes for retrieved entities are loaded on demand when the
     attribute is first accessed. Doing this lots of times in a script can be
-    inefficient, so there is also an easy way to :ref:`optimise queries
-    <querying/optimising_queries>`.
+    inefficient, so it is worth using :ref:`projections <querying/projections>`
+    in queries or :ref:`pre-populating <working_with_entities/populating>`
+    entities where appropriate. You can also :ref:`customise default projections
+    <working_with_entities/entity_types/default_projections>` to help others
+    pre-load common attributes.
 
-To narrow a search, add :ref:`criteria <querying/using_criteria>` to the query::
+To narrow a search, add :ref:`criteria <querying/criteria>` to the query::
 
     >>> active_projects = session.query('Project where status is active')
 
@@ -97,7 +92,7 @@ Some attributes on an entity will refer to another entity or collection of
 entities, such as *children* on a *Project* being a collection of *Context*
 entities that have the project as their parent::
 
-    >>> project = session.query('Project')[0]
+    >>> project = session.query('Project').first()
     >>> print project['children']
     <ftrack_api.collection.Collection object at 0x00000000045B1438>
 
@@ -139,118 +134,6 @@ When ready, persist to the server using :meth:`Session.commit`::
 
     >>> session.commit()
 
-Creating a project
-==================
-
-A project with sequences, shots and tasks can be created in one single
-transaction. Tasks need to have a type and status set on creation based on the
-project schema:
-
-    >>> name = 'projectname_{0}'.format(uuid.uuid1().hex)
-    ... project_schema = session.query('ProjectSchema')[0]
-    ... default_shot_status = project_schema.get_statuses('Shot')[0]
-    ... default_task_type = project_schema.get_types('Task')[0]
-    ... default_task_status = project_schema.get_statuses(
-    ...     'Task', default_task_type['id']
-    ... )[0]
-    ... 
-    ... project = session.create('Project', {
-    ...     'name': name,
-    ...     'full_name': name + '_full',
-    ...     'project_schema': project_schema
-    ... })
-    ... 
-    ... for sequence_number in range(1, 5):
-    ...     sequence = session.create('Sequence', {
-    ...         'name': 'seq_{0}'.format(sequence_number),
-    ...         'parent': project
-    ...     })
-    ... 
-    ...     for shot_number in range(1, 5):
-    ...         shot = session.create('Shot', {
-    ...             'name': '{0}0'.format(shot_number).zfill(3),
-    ...             'parent': sequence,
-    ...             'status': default_shot_status
-    ...         })
-    ... 
-    ...         for task_number in range(1, 5):
-    ...             session.create('Task', {
-    ...                 'name': 'task_{0}'.format(task_number),
-    ...                 'parent': shot,
-    ...                 'status': default_task_status,
-    ...                 'type': default_task_type
-    ...             })
-    ... 
-    ... session.commit()
-
-Components
-==========
-
-Components can be created manually or using the provide helper methods on a
-:meth:`session <ftrack_api.session.Session.create_component>` or existing
-:meth:`asset version
-<ftrack_api.entity.asset_version.AssetVersion.create_component>`::
-
-    >>> component = version.create_component('/path/to/file_or_sequence.jpg')
-    >>> session.commit()
-
-When a component is created using the helpers it is automatically added to a
-location.
-
-.. seealso:: :ref:`Locations tutorial <locations/tutorial>`
-
-Metadata
-========
-
-Key/value metadata can be written to entities using the metadata property and
-also used to query entities.
-
-The matadata property has a similar interface as a dictionary and keys can be
-printed using the keys method::
-
-    >>> print new_sequence['metadata'].keys()
-    ['frame_padding', 'focal_length']
-
-or items::
-
-    >>> print new_sequence['metadata'].items()
-    [('frame_padding': '4'), ('focal_length': '70')]
-
-Read existing metadata::
-
-    >>> print new_sequence['metadata']['frame_padding']
-    '4'
-
-Setting metadata can be done in a few ways where that later one will replace
-any existing metadata::
-
-    >>> new_sequence['metadata']['frame_padding'] = '5'
-    ... new_sequence['metadata'] = {
-    ...     'frame_padding': '4'
-    ... }
-
-Entities can also be queried using metadata::
-
-    >>> session.query(
-    ...     'Sequence where metadata.key is "frame_padding" and metadata.value is "4"'
-    ... )
-
-Scopes
-======
-
-Entities can be queried based on their scopes::
-
-    >>> tasks = session.query(
-    ...     'Task where scopes.name is "London"'
-    ... )
-
-Scopes can be read and modified for entities::
-
-    >>> scope = session.query(
-    ...     'Scope where name is "London"'
-    ... )[0]
-    ... 
-    ... if scope in task['scopes']:
-    ...     task['scopes'].remove(scope)
-    ... else:
-    ...     task['scopes'].append(scope)
+Continue to the next section to start learning more about the API in greater
+depth or jump over to the :ref:`usage examples <example>` if you prefer to learn
+by example.
