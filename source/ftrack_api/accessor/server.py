@@ -108,7 +108,7 @@ class ServerFile(String):
 
         try:
             metadata = json.loads(response.text)
-        except ValueError:
+        except ValueError as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 'Failed to decode put metadata response: {0}.'.format(error)
             )
