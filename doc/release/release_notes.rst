@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+    
+    .. change:: fixed
+
+        :meth:`ftrack_api.entity.factory.StandardFactory.create` not respecting
+        *bases* argument.
+
 .. release:: 0.8.2
     :date: 2015-09-16
 

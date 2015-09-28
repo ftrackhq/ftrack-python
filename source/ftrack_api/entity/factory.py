@@ -196,31 +196,33 @@ class StandardFactory(Factory):
 
     def create(self, schema, bases=None):
         '''Create and return entity class from *schema*.'''
-
         if not bases:
             bases = []
 
+        extra_bases = []
         # Customise classes.
         if schema['id'] == 'ProjectSchema':
-            bases = [ftrack_api.entity.project_schema.ProjectSchema]
+            extra_bases = [ftrack_api.entity.project_schema.ProjectSchema]
 
         elif schema['id'] == 'Location':
-            bases = [ftrack_api.entity.location.Location]
+            extra_bases = [ftrack_api.entity.location.Location]
 
         elif schema['id'] == 'AssetVersion':
-            bases = [ftrack_api.entity.asset_version.AssetVersion]
+            extra_bases = [ftrack_api.entity.asset_version.AssetVersion]
 
         elif schema['id'].endswith('Component'):
-            bases = [ftrack_api.entity.component.Component]
+            extra_bases = [ftrack_api.entity.component.Component]
 
         elif schema['id'] == 'Note':
-            bases = [ftrack_api.entity.note.Note]
+            extra_bases = [ftrack_api.entity.note.Note]
 
         elif schema['id'] == 'Job':
-            bases = [ftrack_api.entity.job.Job]
+            extra_bases = [ftrack_api.entity.job.Job]
 
         elif schema['id'] == 'User':
-            bases = [ftrack_api.entity.user.User]
+            extra_bases = [ftrack_api.entity.user.User]
+
+        bases = extra_bases + bases
 
         # If bases does not contain any items, add the base entity class.
         if not bases:
