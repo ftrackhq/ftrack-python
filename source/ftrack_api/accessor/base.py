@@ -109,3 +109,16 @@ class Accessor(object):
         raise ftrack_api.exception.AccessorUnsupportedOperationError(
             'get_filesystem_path', resource_identifier=resource_identifier
         )
+
+    def get_url(self, resource_identifier):
+        '''Return URL for *resource_identifier*.
+
+        Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if
+        URL could not be determined from *resource_identifier* or
+        :exc:`~ftrack_api.exception.AccessorUnsupportedOperationError` if
+        retrieving URL is not supported by this accessor.
+
+        '''
+        raise ftrack_api.exception.AccessorUnsupportedOperationError(
+            'get_url', resource_identifier=resource_identifier
+        )
