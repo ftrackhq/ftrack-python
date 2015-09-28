@@ -122,12 +122,10 @@ def test_write_set_custom_attribute_value(
 @pytest.mark.parametrize(
     'entity_type, entity_model_name, custom_attribute_name',
     [
-        ('Shot', 'task', 'fstart'),
-        ('AssetVersion', 'assetversion', 'versiontest')
+        ('Shot', 'task', 'fstart')
     ],
     ids=[
-        'shot',
-        'asset_version'
+        'shot'
     ]
 )
 def test_write_unset_custom_attribute_value(
