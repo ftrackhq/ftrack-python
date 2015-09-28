@@ -10,7 +10,12 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 .. release:: Upcoming
-    
+
+    .. change:: changed
+
+        Updated *ftrack.server* location implementation. A server version of 3.3
+        or higher is required for it to function properly.
+
     .. change:: fixed
 
         :meth:`ftrack_api.entity.factory.StandardFactory.create` not respecting
