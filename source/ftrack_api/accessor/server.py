@@ -10,7 +10,7 @@ import requests
 
 from .base import Accessor
 from ..data import String
-from ftrack_api.exception import AccessorOperationFailedError
+import ftrack_api.exception
 
 
 class ServerFile(String):
@@ -45,6 +45,14 @@ class ServerFile(String):
                     'apiKey': self._session.api_key
                 }
             )
+
+            try:
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as error:
+                raise ftrack_api.exception.AccessorOperationFailedError(
+                    'Failed to read data: {0}.'.format(error)
+                )
+
             self.wrapped_file.write(response.content)
             self.seek(position)
 
@@ -64,7 +72,7 @@ class ServerFile(String):
         # Retrieve component from cache to construct a filename.
         component = self._session.get('FileComponent', self.resource_identifier)
         if not component:
-            raise AccessorOperationFailedError(
+            raise ftrack_api.exception.AccessorOperationFailedError(
                 'Unable to retrieve component with id: {0}.'.format(
                     self.resource_identifier
                 )
@@ -94,12 +102,18 @@ class ServerFile(String):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
-            raise AccessorOperationFailedError(
+            raise ftrack_api.exception.AccessorOperationFailedError(
                 'Failed to get put metadata: {0}.'.format(error)
             )
 
-        metadata = json.loads(response.text)
+        try:
+            metadata = json.loads(response.text)
+        except ValueError:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                'Failed to decode put metadata response: {0}.'.format(error)
+            )
 
+        # Ensure at beginning of file before put.
         self.seek(0)
 
         # Put the file based on the metadata.
@@ -112,7 +126,7 @@ class ServerFile(String):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as error:
-            raise AccessorOperationFailedError(
+            raise ftrack_api.exception.AccessorOperationFailedError(
                 'Failed to put file to server: {0}.'.format(error)
             )
 
@@ -170,7 +184,7 @@ class _ServerAccessor(Accessor):
             }
         )
         if response.status_code != 200:
-            raise AccessorOperationFailedError(
+            raise ftrack_api.exception.AccessorOperationFailedError(
                 'Failed to remove file.'
             )
 
