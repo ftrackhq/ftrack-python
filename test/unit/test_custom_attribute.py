@@ -112,9 +112,9 @@ def test_write_set_custom_attribute_value(
         )
     ).first()
 
-    entity['custom_attributes'][custom_attribute_name] = 123
+    entity['custom_attributes'][custom_attribute_name] = 42
 
-    assert entity['custom_attributes'][custom_attribute_name] == 123
+    assert entity['custom_attributes'][custom_attribute_name] == 42
 
     session.commit()
 
@@ -140,9 +140,9 @@ def test_write_unset_custom_attribute_value(
         )
     ).first()
 
-    entity['custom_attributes'][custom_attribute_name] = 123
+    entity['custom_attributes'][custom_attribute_name] = 42
 
-    assert entity['custom_attributes'][custom_attribute_name] == 123
+    assert entity['custom_attributes'][custom_attribute_name] == 42
 
     session.commit()
 
@@ -198,7 +198,7 @@ def test_write_custom_attribute_that_does_not_exist(
     ).first()
 
     with pytest.raises(KeyError):
-        entity['custom_attributes'][custom_attribute_name] = 'FOO'
+        entity['custom_attributes'][custom_attribute_name] = 42
 
 
 def test_update_custom_attributes_with_dictionary_when_set(session):
@@ -216,7 +216,7 @@ def test_update_custom_attributes_with_dictionary_when_set(session):
     ).first()
 
     entity['custom_attributes'] = {
-        'customNumber': 321
+        'customNumber': 42
     }
 
     session.commit()
@@ -237,7 +237,7 @@ def test_update_custom_attributes_with_dictionary_when_unset(session):
     ).first()
 
     entity['custom_attributes'] = {
-        'test_number': 321
+        'test_number': 42
     }
 
     session.commit()

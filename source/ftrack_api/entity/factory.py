@@ -59,7 +59,7 @@ class Factory(object):
             if data_type is not ftrack_api.symbol.NOT_SET:
 
                 if data_type in (
-                    'string', 'boolean', 'integer', 'number'
+                    'string', 'boolean', 'integer', 'number', 'variable'
                 ):
                     # Basic scalar attribute.
                     if data_type == 'number':
