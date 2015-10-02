@@ -153,7 +153,14 @@ class EventHub(object):
             url = '{0}://{1}/socket.io/1/websocket/{2}'.format(
                 scheme, self.get_network_location(), session.id
             )
-            self._connection = websocket.create_connection(url)
+
+            # timeout is set to 60 seconds to avoid the issue where the socket
+            # ends up in a bad state where it is reported as connected but the
+            # connection has been closed. The issue happens often when connected
+            # to a secure socket and the computer goes to sleep.
+            # More information on how the timeout works can be found here:
+            # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
+            self._connection = websocket.create_connection(url, timeout=60)
 
         except Exception:
             self.logger.debug(

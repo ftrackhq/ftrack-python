@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: events
+
+        The event hub does not always reconnect after computer has come back
+        from sleep.
+
 .. release:: 0.8.3
     :date: 2015-09-28
 
