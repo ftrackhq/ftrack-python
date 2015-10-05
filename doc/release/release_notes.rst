@@ -9,6 +9,36 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: events
+
+        The event hub does not always reconnect after computer has come back
+        from sleep.
+
+.. release:: 0.8.3
+    :date: 2015-09-28
+
+    .. change:: changed
+
+        Updated *ftrack.server* location implementation. A server version of 3.3
+        or higher is required for it to function properly.
+
+    .. change:: fixed
+
+        :meth:`ftrack_api.entity.factory.StandardFactory.create` not respecting
+        *bases* argument.
+
+.. release:: 0.8.2
+    :date: 2015-09-16
+
+    .. change:: fixed
+        :tags: session
+
+        Wrong file type set on component when publishing image sequence using
+        :meth:`Session.create_component`.
+
 .. release:: 0.8.1
     :date: 2015-09-08
 

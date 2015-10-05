@@ -460,8 +460,8 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
     ({}, False),
     ({'version': '3.2.1'}, True),
     ({'version': '3.2.2'}, True),
-    ({'version': '3.3'}, False),
-    ({'version': '3.2'}, False)
+    ({'version': '3.2'}, False),
+    ({'version': '3.4'}, False)
 ], ids=[
     'No information',
     'Valid current version',
@@ -523,6 +523,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "status": {{"__entity_type__": "Status",
          "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
          "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
+         "thumbnail_id": null,
          "timelogs": [],
          "type": {{"__entity_type__": "Type",
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
@@ -732,3 +733,11 @@ def test_merge_circular_reference(cache, temporary_file):
     # fail.
     component = session.create_component(path=temporary_file)
     assert component
+
+
+def test_correct_file_type_on_sequence_component(session):
+    '''Create sequence component with correct file type.'''
+    path = '/path/to/image/sequence.%04d.dpx [1-10]'
+    sequence_component = session.create_component(path)
+
+    assert sequence_component['file_type'] == '.dpx'

@@ -15,3 +15,4 @@ migration notes to be aware of when switching to a new version.
 
     release_notes
     migration
+    migrating_from_old_api

@@ -253,7 +253,7 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            server_version_range = ('3.2.1', '3.3')
+            server_version_range = ('3.2.1', '3.4')
             if not (
                 distutils.version.LooseVersion(server_version_range[0])
                 <= distutils.version.LooseVersion(server_version)
@@ -1630,7 +1630,7 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', os.path.splitext(path)[-1])
+            data.setdefault('file_type', os.path.splitext(container_path)[-1])
 
             container = self._create_component(
                 'SequenceComponent', container_path, data, location
