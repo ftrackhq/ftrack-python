@@ -11,6 +11,37 @@ Release Notes
 
 .. release:: Upcoming
 
+
+    .. change:: new
+
+        Added initial support for custom attributes.
+
+        .. seealso:: :ref:`example/custom_attribute`.
+
+    .. change:: new
+        :tags: collection, attribute
+
+        Added :class:`ftrack_api.collection.CustomAttributeCollectionProxy` and
+        :class:`ftrack_api.attribute.CustomAttributeCollectionAttribute` to
+        handle custom attributes.
+
+    .. change:: changed
+        :tags: collection, attribute
+
+        ``ftrack_api.attribute.MappedCollectionAttribute`` renamed to
+        :class:`ftrack_api.attribute.KeyValueMappedCollectionAttribute` to more
+        closely reflect purpose.
+
+    .. change:: changed
+        :tags: collection
+
+        :class:`ftrack_api.collection.MappedCollectionProxy` has been refactored
+        as a generic base class with key, value specialisation handled in new
+        dedicated class
+        :class:`ftrack_api.collection.KeyValueMappedCollectionProxy`. This is
+        done to avoid confusion following introduction of new
+        :class:`ftrack_api.collection.CustomAttributeCollectionProxy` class.
+
     .. change:: fixed
         :tags: events
 
@@ -80,36 +111,6 @@ Release Notes
     .. change:: fixed
 
         Some invalid server url formats not detected.
-
-    .. change:: new
-
-        Added initial support for custom attributes.
-
-        .. seealso:: :ref:`example/custom_attribute`.
-
-    .. change:: new
-        :tags: collection, attribute
-
-        Added :class:`ftrack_api.collection.CustomAttributeCollectionProxy` and
-        :class:`ftrack_api.attribute.CustomAttributeCollectionAttribute` to
-        handle custom attributes.
-
-    .. change:: changed
-        :tags: collection, attribute
-
-        ``ftrack_api.attribute.MappedCollectionAttribute`` renamed to
-        :class:`ftrack_api.attribute.KeyValueMappedCollectionAttribute` to more
-        closely reflect purpose.
-
-    .. change:: changed
-        :tags: collection
-
-        :class:`ftrack_api.collection.MappedCollectionProxy` has been refactored
-        as a generic base class with key, value specialisation handled in new
-        dedicated class
-        :class:`ftrack_api.collection.KeyValueMappedCollectionProxy`. This is
-        done to avoid confusion following introduction of new
-        :class:`ftrack_api.collection.CustomAttributeCollectionProxy` class.
 
     .. change:: fixed
 
