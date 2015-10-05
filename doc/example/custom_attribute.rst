@@ -65,6 +65,13 @@ Hierarchical attributes
 Hierarchical attributes are not yet supported and can not be read or updated
 using the API.
 
+Filtering
+---------
+
+Custom attribute values are saved sparsely when changed from the default value.
+Filtering on custom attributes will not account for default values which may
+lead to confusing behaviour.
+
 Validation
 ==========
 
