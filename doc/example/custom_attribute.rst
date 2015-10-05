@@ -65,13 +65,6 @@ Hierarchical attributes
 Hierarchical attributes are not yet supported and can not be read or updated
 using the API.
 
-Type conversion
----------------
-
-Custom attributes will always be returned as unicode strings from the API, 
-even though configured as e.g. a boolean and will need to be converted
-manually.
-
 Validation
 ==========
 
