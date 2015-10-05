@@ -72,6 +72,13 @@ Custom attribute values are saved sparsely when changed from the default value.
 Filtering on custom attributes will not account for default values which may
 lead to confusing behaviour.
 
+Available custom attributes
+---------------------------
+
+The custom attributes available on entities are cached on the
+:class:`~ftrack_api.session.Session`. If a new custom attribute configuration
+is added from the web UI a new session must be instantiated.
+
 Validation
 ==========
 
