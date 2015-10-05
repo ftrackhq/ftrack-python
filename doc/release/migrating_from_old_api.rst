@@ -318,6 +318,38 @@ New API::
     >>> task_new_api['start_date'] = arrow.utcnow().floor('day')
     >>> session.commit()
 
+Custom attributes
+=================
+
+In the old API, custom attributes could be retrieved from an entity by using
+the methods :meth:`get` and :meth:`set`, like standard attributes. In the new 
+API, custom attributes can be written and read from entities using the 
+``custom_attributes`` property, which provides a dictionary-like interface.
+
+Old API::
+
+    >>> task_old_api = ftrack.Task(task_id)
+    >>> task_old_api.get('my_custom_attribute')
+
+    >>> task_old_api.set('my_custom_attribute', 'My new value')
+
+
+New API::
+
+    >>> task_new_api = session.get('Task', task_id)
+    >>> task_new_api['custom_attributes']['my_custom_attribute']
+
+
+    >>> task_new_api['custom_attributes']['my_custom_attribute'] = 'My new value'
+
+For more information on working with custom attributes and existing
+limitations, please see:
+
+.. seealso::
+
+    :ref:`example/custom_attribute`
+
+
 Using both APIs side-by-side
 ============================
 
@@ -560,11 +592,6 @@ in the new API. Let us know if you depend on any of them.
     * Task template
     * Temp data
     * Version link
-
-Custom attributes
------------------
-Custom attributes in the new API are not yet available, but will be added
-shortly.
 
 Attachments and Thumbnails
 --------------------------
