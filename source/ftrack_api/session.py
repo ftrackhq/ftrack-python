@@ -1141,7 +1141,12 @@ class Session(object):
                     pass
 
     def rollback(self):
-        '''Clear all recorded operations and local state.'''
+        '''Clear all recorded operations and local state.
+
+        Typically this would be used following a failed :meth:`commit` in order
+        to revert the session to a known good state.
+
+        '''
         with self.operation_recording(False):
             for entity in self._attached.values():
                 entity.clear()
