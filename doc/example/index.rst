@@ -31,6 +31,7 @@ already constructed a :class:`Session`::
     component
     review_session
     metadata
+    custom_attribute
     scope
     job
     note

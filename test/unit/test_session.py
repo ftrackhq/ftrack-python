@@ -497,6 +497,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "bid": 0.0,
          "children": [],
          "context_type": "task",
+         "custom_attributes": [],
          "description": "",
          "end_date": null,
          "id": "{0}",
