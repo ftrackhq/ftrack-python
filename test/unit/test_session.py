@@ -603,6 +603,34 @@ def test_decode_partial_entity(
     assert entity is not new_task
 
 
+def test_reset(mocker):
+    '''Reset session.'''
+    plugin_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'fixture', 'plugin')
+    )
+    session = ftrack_api.Session(plugin_paths=[plugin_path])
+
+    assert hasattr(session.types.get('User'), 'stub')
+    location = session.query('Location where name is "test.location"').one()
+    assert location.accessor is not ftrack_api.symbol.NOT_SET
+
+    mocked_close = mocker.patch.object(session._request, 'close')
+    mocked_fetch = mocker.patch.object(session, '_fetch_schemas')
+
+    session.reset()
+
+    # Assert custom entity type maintained.
+    assert hasattr(session.types.get('User'), 'stub')
+
+    # Assert location plugin re-configured.
+    location = session.query('Location where name is "test.location"').one()
+    assert location.accessor is not ftrack_api.symbol.NOT_SET
+
+    # Assert connection not closed and no schema fetch issued.
+    assert not mocked_close.called
+    assert not mocked_fetch.called
+
+
 def test_rollback_scalar_attribute_change(session, new_user):
     '''Rollback scalar attribute change via session.'''
     assert not session.recorded_operations
