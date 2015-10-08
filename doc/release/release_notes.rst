@@ -25,6 +25,12 @@ Release Notes
         dependant, such as location plugins.
 
     .. change:: fixed
+        :tags: factory
+
+        Debug logging messages using incorrect index for formatting leading to
+        misleading exception.
+
+    .. change:: fixed
         :tags: events
 
         The event hub does not always reconnect after computer has come back

@@ -163,7 +163,7 @@ class Factory(object):
         '''Return appropriate mapped collection attribute instance.'''
         self.logger.debug(
             'Skipping {0}.{1} mapped_array attribute that has '
-            'no implementation defined for reference {3}.'
+            'no implementation defined for reference {2}.'
             .format(class_name, name, reference)
         )
 
@@ -267,7 +267,7 @@ class StandardFactory(Factory):
         if creator is None:
             self.logger.debug(
                 'Skipping {0}.{1} mapped_array attribute that has '
-                'no creator defined for reference {3}.'
+                'no creator defined for reference {2}.'
                 .format(class_name, name, reference)
             )
             return
@@ -275,7 +275,7 @@ class StandardFactory(Factory):
         if key_attribute is None:
             self.logger.debug(
                 'Skipping {0}.{1} mapped_array attribute that has '
-                'no key_attribute defined for reference {3}.'
+                'no key_attribute defined for reference {2}.'
                 .format(class_name, name, reference)
             )
             return
@@ -283,7 +283,7 @@ class StandardFactory(Factory):
         if value_attribute is None:
             self.logger.debug(
                 'Skipping {0}.{1} mapped_array attribute that has '
-                'no value_attribute defined for reference {3}.'
+                'no value_attribute defined for reference {2}.'
                 .format(class_name, name, reference)
             )
             return
