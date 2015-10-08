@@ -603,6 +603,67 @@ def test_decode_partial_entity(
     assert entity is not new_task
 
 
+def test_rollback_scalar_attribute_change(session, new_user):
+    '''Rollback scalar attribute change via session.'''
+    assert not session.recorded_operations
+    current_first_name = new_user['first_name']
+
+    new_user['first_name'] = 'NewName'
+    assert new_user['first_name'] == 'NewName'
+    assert session.recorded_operations
+
+    session.rollback()
+
+    assert not session.recorded_operations
+    assert new_user['first_name'] == current_first_name
+
+
+def test_rollback_collection_attribute_change(session, new_user):
+    '''Rollback collection attribute change via session.'''
+    assert not session.recorded_operations
+    current_timelogs = new_user['timelogs']
+    assert list(current_timelogs) == []
+
+    timelog = session.create('Timelog', {})
+    new_user['timelogs'].append(timelog)
+    assert list(new_user['timelogs']) == [timelog]
+    assert session.recorded_operations
+
+    session.rollback()
+
+    assert not session.recorded_operations
+    assert list(new_user['timelogs']) == []
+
+
+def test_rollback_entity_creation(session):
+    '''Rollback entity creation via session.'''
+    assert not session.recorded_operations
+
+    new_user = session.create('User')
+    assert session.recorded_operations
+    assert new_user in session.created
+
+    session.rollback()
+
+    assert not session.recorded_operations
+    assert new_user not in session.created
+    assert new_user not in session._attached.values()
+
+
+def test_rollback_entity_deletion(session, new_user):
+    '''Rollback entity deletion via session.'''
+    assert not session.recorded_operations
+
+    session.delete(new_user)
+    assert session.recorded_operations
+    assert new_user in session.deleted
+
+    session.rollback()
+    assert not session.recorded_operations
+    assert new_user not in session.deleted
+    assert new_user in session._attached.values()
+
+
 # Caching
 # ------------------------------------------------------------------------------
 
