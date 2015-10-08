@@ -1146,10 +1146,28 @@ class Session(object):
         Typically this would be used following a failed :meth:`commit` in order
         to revert the session to a known good state.
 
+        Newly created entities not yet persisted will be detached from the
+        session and no longer contribute, but the actual objects are not deleted
+        from memory.
+
         '''
-        with self.operation_recording(False):
-            for entity in self._attached.values():
-                entity.clear()
+        with self.auto_populating(False):
+            with self.operation_recording(False):
+
+                # Detach all newly created entities.
+                for operation in self.recorded_operations:
+                    if isinstance(
+                        operation, ftrack_api.operation.CreateEntityOperation
+                    ):
+                        entity_key = str((
+                            str(operation.entity_type),
+                            operation.entity_key.values()
+                        ))
+                        self._attached.pop(entity_key, None)
+
+                # Clear locally stored modifications on remaining entities.
+                for entity in self._attached.values():
+                    entity.clear()
 
         self.recorded_operations.clear()
 
