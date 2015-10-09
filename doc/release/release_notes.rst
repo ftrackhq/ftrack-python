@@ -9,6 +9,27 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: session
+
+        :meth:`Session.rollback` has been added to support cleanly reverting
+        session state to last good state following a failed commit.
+
+    .. change:: changed
+        :tags: session
+
+        :meth:`Session.reset` no longer resets the connection. It also clears
+        all local state and re-configures certain aspects that are cache
+        dependant, such as location plugins.
+
+    .. change:: fixed
+        :tags: factory
+
+        Debug logging messages using incorrect index for formatting leading to
+        misleading exception.
+
 .. release:: 0.8.4
     :date: 2015-10-08
 
@@ -41,25 +62,6 @@ Release Notes
         :class:`ftrack_api.collection.KeyValueMappedCollectionProxy`. This is
         done to avoid confusion following introduction of new
         :class:`ftrack_api.collection.CustomAttributeCollectionProxy` class.
-
-    .. change:: new
-        :tags: session
-
-        :meth:`Session.rollback` has been added to support cleanly reverting
-        session state to last good state following a failed commit.
-
-    .. change:: changed
-        :tags: session
-
-        :meth:`Session.reset` no longer resets the connection. It also clears
-        all local state and re-configures certain aspects that are cache
-        dependant, such as location plugins.
-
-    .. change:: fixed
-        :tags: factory
-
-        Debug logging messages using incorrect index for formatting leading to
-        misleading exception.
 
     .. change:: fixed
         :tags: events
