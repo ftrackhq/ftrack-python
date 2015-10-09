@@ -163,7 +163,7 @@ class Factory(object):
         '''Return appropriate mapped collection attribute instance.'''
         self.logger.debug(
             'Skipping {0}.{1} mapped_array attribute that has '
-            'no implementation defined for reference {3}.'
+            'no implementation defined for reference {2}.'
             .format(class_name, name, reference)
         )
 

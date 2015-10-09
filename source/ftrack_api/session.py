@@ -269,11 +269,18 @@ class Session(object):
                 )
 
     def reset(self):
-        '''Reset session clearing all locally stored data.
+        '''Reset session clearing local state.
 
-        If the cache used by the session is a
+        Clear all pending operations and local changes (effectively a
+        :meth:`rollback`).
+
+        Also clear the local cache. If the cache used by the session is a
         :class:`~ftrack_api.cache.LayeredCache` then only clear top level cache.
         Otherwise, clear the entire cache.
+
+        Plugins are not rediscovered or reinitialised, but certain plugin events
+        are re-emitted to properly configure session aspects that are dependant
+        on cache (such as location plugins).
 
         '''
         if self.recorded_operations:
@@ -281,6 +288,10 @@ class Session(object):
                 'Resetting session with pending operations not persisted.'
             )
 
+        # Clear local changes and pending operations.
+        self.rollback()
+
+        # Clear cache and attached entities.
         if isinstance(self.cache, ftrack_api.cache.LayeredCache):
             try:
                 self.cache.caches[0].clear()
@@ -290,8 +301,9 @@ class Session(object):
             self.cache.clear()
 
         self._attached.clear()
-        self.recorded_operations.clear()
-        self._request.close()
+
+        # Re-configure certain session aspects that may be dependant on cache.
+        self._configure_locations()
 
     def auto_populating(self, auto_populate):
         '''Temporarily set auto populate to *auto_populate*.
@@ -1113,23 +1125,8 @@ class Session(object):
 
             # Clear all local values for committed attributes before proceeding
             # with merge. Otherwise it is possible for an immutable attribute
-            # error to be bypassed.
-            with self.operation_recording(False):
-                for payload in batch:
-                    if payload['action'] in ('create', 'update'):
-                        # Retrieve entity from cache.
-                        entity = self._get(
-                            payload['entity_type'], payload['entity_key']
-                        )
-
-                        for key in payload['entity_data'].keys():
-                            if key in ('__entity_type__', ):
-                                continue
-
-                            attribute = entity.attributes.get(key)
-                            attribute.set_local_value(
-                                entity, ftrack_api.symbol.NOT_SET
-                            )
+            # error to be bypassed. Also clear recorded operations.
+            self.rollback()
 
             # Process results merging into cache relevant data.
             for entry in result:
@@ -1143,8 +1140,36 @@ class Session(object):
                     # TODO: Expunge entity from cache.
                     pass
 
-            # Clear operations.
-            self.recorded_operations.clear()
+    def rollback(self):
+        '''Clear all recorded operations and local state.
+
+        Typically this would be used following a failed :meth:`commit` in order
+        to revert the session to a known good state.
+
+        Newly created entities not yet persisted will be detached from the
+        session and no longer contribute, but the actual objects are not deleted
+        from memory.
+
+        '''
+        with self.auto_populating(False):
+            with self.operation_recording(False):
+
+                # Detach all newly created entities.
+                for operation in self.recorded_operations:
+                    if isinstance(
+                        operation, ftrack_api.operation.CreateEntityOperation
+                    ):
+                        entity_key = str((
+                            str(operation.entity_type),
+                            operation.entity_key.values()
+                        ))
+                        self._attached.pop(entity_key, None)
+
+                # Clear locally stored modifications on remaining entities.
+                for entity in self._attached.values():
+                    entity.clear()
+
+        self.recorded_operations.clear()
 
     def _fetch_server_information(self):
         '''Return server information.'''
