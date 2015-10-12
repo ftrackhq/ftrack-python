@@ -110,20 +110,23 @@ class Location(ftrack_api.entity.base.Entity):
                 details=dict(location=self)
             )
 
-        # Add each component.
-        for index, component in enumerate(components):
-            # Preemptively check that component has not already been added.
-            try:
-                self.get_resource_identifier(component)
-            except ftrack_api.exception.ComponentNotInLocationError:
-                # Component does not already exist in location so it is fine to
-                # continue to add it.
-                pass
-            else:
-                raise ftrack_api.exception.ComponentInLocationError(
-                    component, self
-                )
+        # Preemptively check that components has not already been added.
+        try:
+            self.get_resource_identifiers(components)
+        except ftrack_api.exception.ComponentNotInLocationError:
+            # Component does not already exist in location so it is fine to
+            # continue to add it.
+            pass
+        else:
+            raise ftrack_api.exception.ComponentInLocationError(
+                components, self
+            )
 
+        transfer = []
+        encoded_resource_identifiers = []
+
+        # Register each component to it's location.
+        for index, component in enumerate(components):
             # Determine appropriate source.
             if sources_count == 1:
                 source = sources[0]
@@ -133,9 +136,11 @@ class Location(ftrack_api.entity.base.Entity):
             # Add members first for container components.
             is_container = 'members' in component.keys()
             if is_container and recursive:
-                self.add_components(
-                    component['members'], source, recursive=recursive
-                )
+                members = list(component['members'])
+                if members:
+                    self.add_components(
+                        members, source, recursive=recursive
+                    )
 
             # Add component to this location.
             context = self._get_context(component, source)
@@ -143,20 +148,32 @@ class Location(ftrack_api.entity.base.Entity):
                 component, context
             )
 
-            # Manage data transfer.
-            self._add_data(component, resource_identifier, source)
-
+            encoded_resource_identifier = resource_identifier
             # Optionally encode resource identifier before storing.
             if self.resource_identifier_transformer:
-                resource_identifier = (
+                encoded_resource_identifier = (
                     self.resource_identifier_transformer.encode(
                         resource_identifier,
                         context={'component': component}
                     )
                 )
 
-            # Store component in location information.
-            self._register_component_in_location(component, resource_identifier)
+            transfer.append(
+                (component, resource_identifier, source)
+            )
+            encoded_resource_identifiers.append(
+                encoded_resource_identifier
+            )
+
+        # Store component in location information.
+        self._register_components_in_location(
+            components, encoded_resource_identifiers
+        )
+
+        # Transfer each component from it's source to this location.
+        for component, resource_identifier, source in transfer:
+            # Manage data transfer.
+            self._add_data(component, resource_identifier, source)
 
             # Publish event.
             component_id = ftrack_api.inspection.primary_key(
@@ -270,7 +287,14 @@ class Location(ftrack_api.entity.base.Entity):
             )
         )
 
-        # TODO: Should auto-commit here be optional?
+    def _register_components_in_location(
+        self, components, resource_identifiers
+    ):
+        for component, resource_identifier in zip(
+            components, resource_identifiers
+        ):
+            self._register_component_in_location(component, resource_identifier)
+
         self.session.commit()
 
     def remove_component(self, component, recursive=True):
@@ -480,6 +504,14 @@ class MemoryLocationMixin(object):
         '''Register *component* in location with *resource_identifier*.'''
         component_id = ftrack_api.inspection.primary_key(component).values()[0]
         self._cache[component_id] = resource_identifier
+
+    def _register_components_in_location(
+        self, components, resource_identifiers
+    ):
+        for component, resource_identifier in zip(
+            components, resource_identifiers
+        ):
+            self._register_component_in_location(component, resource_identifier)
 
     def _deregister_component_in_location(self, component):
         '''Deregister *component* in location.'''
