@@ -254,6 +254,9 @@ class ComponentNotInLocationError(LocationError):
             components=', '.join([str(component) for component in components]),
             location=location
         ))
+
+        self.missing = components
+
         super(ComponentNotInLocationError, self).__init__(**kw)
 
 

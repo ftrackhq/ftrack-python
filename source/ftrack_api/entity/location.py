@@ -113,11 +113,24 @@ class Location(ftrack_api.entity.base.Entity):
         # Preemptively check that components has not already been added.
         try:
             self.get_resource_identifiers(components)
-        except ftrack_api.exception.ComponentNotInLocationError:
-            # Component does not already exist in location so it is fine to
-            # continue to add it.
-            pass
+        except ftrack_api.exception.ComponentNotInLocationError as error:
+            # At least one component does not already exist in location. Make
+            # sure that all components are missing.
+            missing_ids = [
+                missing_component['id'] for missing_component in error.missing
+            ]
+            components_not_missing = []
+            for component in components:
+                if component['id'] not in missing_ids:
+                    components_not_missing.append(component)
+
+            if components_not_missing:
+                # Some components are already in the location.
+                raise ftrack_api.exception.ComponentInLocationError(
+                    components_not_missing, self
+                )
         else:
+            # None of the components are in the location.
             raise ftrack_api.exception.ComponentInLocationError(
                 components, self
             )
