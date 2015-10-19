@@ -29,6 +29,7 @@ Welcome to the ftrack :term:`Python` :term:`API` documentation.
     api_reference/index
     event_list
     environment_variables
+    security_and_authentication
     release/index
     glossary
 
