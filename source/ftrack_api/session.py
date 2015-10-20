@@ -10,7 +10,6 @@ import getpass
 import functools
 import itertools
 import distutils.version
-import time
 
 import requests
 import requests.auth
@@ -115,8 +114,6 @@ class Session(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-
-        self.usage = collections.defaultdict(float)
 
         if server_url is None:
             server_url = os.environ.get('FTRACK_SERVER')
@@ -650,14 +647,8 @@ class Session(object):
             'expression': expression
         }]
 
-        self.usage['query'] += 1
-
-        before_call = time.time()
-
         # TODO: When should this execute? How to handle background=True?
         results = self._call(batch)
-
-        self.usage['query_time'] += time.time() - before_call
 
         # Merge entities into local cache and return merged entities.
         data = []
@@ -1118,12 +1109,7 @@ class Session(object):
 
         # Process batch.
         if batch:
-            self.usage['commit'] += 1
-
-            before_call = time.time()
             result = self._call(batch)
-
-            self.usage['commit_time'] += time.time() - before_call
 
             # Clear all local values for committed attributes before proceeding
             # with merge. Otherwise it is possible for an immutable attribute
@@ -1145,7 +1131,6 @@ class Session(object):
                                 entity, ftrack_api.symbol.NOT_SET
                             )
 
-            before_merge = time.time()
             # Process results merging into cache relevant data.
             for entry in result:
 
@@ -1158,7 +1143,6 @@ class Session(object):
                     # TODO: Expunge entity from cache.
                     pass
 
-            self.usage['merge_time'] += time.time() - before_merge
             # Clear operations.
             self.recorded_operations.clear()
 
