@@ -18,6 +18,13 @@ Release Notes
         session state to last good state following a failed commit.
 
     .. change:: changed
+        :tags: events
+
+        Event hub will no longer allow unverified SSL connections.
+
+        .. seealso:: :ref:`security_and_authentication`.
+
+    .. change:: changed
         :tags: session
 
         :meth:`Session.reset` no longer resets the connection. It also clears
