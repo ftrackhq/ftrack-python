@@ -778,9 +778,9 @@ class Session(object):
             self.logger.debug(
                 'Checking for entity in cache with key {0}'.format(entity_key)
             )
-
             try:
                 attached_entity = self.cache.get(entity_key)
+                from_cache = True
                 self.logger.debug(
                     'Retrieved existing entity from cache: {0} at {1}'
                     .format(attached_entity, id(attached_entity))
@@ -791,6 +791,7 @@ class Session(object):
                 attached_entity = self._create(
                     entity.entity_type, {}, reconstructing=True
                 )
+                from_cache = False
                 self.logger.debug(
                     'Entity not present in cache. Constructed new instance: '
                     '{0} at {1}'.format(attached_entity, id(attached_entity))
@@ -799,12 +800,25 @@ class Session(object):
             # Mark entity as seen to avoid infinite loops.
             merged[entity_key] = attached_entity
 
-            # Expand references. This is required as a serialised cache might
-            # have returned just a plain entity object with the rest of the data
-            # stored separately. The reason this is done here rather in the
-            # specific cache is so that any higher level cache can be taken
-            # advantage of when fetching data.
-            self._merge_references(attached_entity, merged=merged)
+            # Expand references when entity instance retrieved from cache.
+            # This is required as a serialised cache might have returned an
+            # entity instance that has references to other entities not yet
+            # merged. The reason this is done here rather in the specific cache
+            # is so that any higher level cache can be taken advantage of when
+            # fetching data for referenced entities.
+            if from_cache:
+                # As optimisation, try to determine whether entity contains
+                # references that need inflating. Use the fact that an entity
+                # that is attached to the session will already have been
+                # inflated. As such, if entity retrieved from cache is same
+                # (memory address) as attached entity then skip inflating.
+                # TODO: Consider refactor API encoding to explicitly mark
+                # references as such, perhaps by a private attribute
+                # __is_reference__ in order to make expansion of references
+                # easier to determine and on a per-reference basis.
+                attached = self._attached.get(entity_key) is attached_entity
+                if not attached:
+                    self._merge_references(attached_entity, merged=merged)
 
             # Merge new entity data into cache entity. If this causes the cache
             # entity to change then persist those changes back to the cache.
