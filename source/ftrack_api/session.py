@@ -1147,14 +1147,19 @@ class Session(object):
         to revert the session to a known good state.
 
         Newly created entities not yet persisted will be detached from the
-        session and no longer contribute, but the actual objects are not deleted
-        from memory.
+        session / purged from cache and no longer contribute, but the actual
+        objects are not deleted from memory.
 
         '''
         with self.auto_populating(False):
             with self.operation_recording(False):
 
-                # Detach all newly created entities.
+                # Detach all newly created entities and remove from cache. This
+                # is done because simply clearing the local values of newly
+                # created entities would result in entities with no identity as
+                # primary key was local while not persisted. In addition, it
+                # makes no sense for failed created entities to exist in session
+                # or cache.
                 for operation in self.recorded_operations:
                     if isinstance(
                         operation, ftrack_api.operation.CreateEntityOperation
@@ -1164,6 +1169,10 @@ class Session(object):
                             operation.entity_key.values()
                         ))
                         self._attached.pop(entity_key, None)
+                        try:
+                            self.cache.remove(entity_key)
+                        except KeyError:
+                            pass
 
                 # Clear locally stored modifications on remaining entities.
                 for entity in self._attached.values():
