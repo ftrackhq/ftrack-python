@@ -341,7 +341,7 @@ class AbstractCollectionAttribute(Attribute):
                     self.set_local_value(
                         entity,
                         # None should be treated as empty collection.
-                        self._adapt_to_collection(entity, None)
+                        None
                     )
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
