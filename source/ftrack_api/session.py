@@ -829,25 +829,23 @@ class Session(object):
 
     def _merge_references(self, entity, merged=None):
         '''Recursively merge entity references in *entity*.'''
-        # As optimisation, try to determine whether entity contains references
-        # that need inflating. Use the fact that an entity that is attached to
-        # the session will already have been inflated. As such, if *entity* is
-        # same (memory address) as attached entity then skip inflating.
+        # As optimisation, mark inflated entities and avoid inflating more than
+        # once. This is possible because *entity* should always be the same
+        # entity instance retrieved from the top level memory cache.
         # TODO: Consider refactor API encoding to explicitly mark references
         # as such, perhaps by a private attribute __is_reference__ in order to
         # make expansion of references easier to determine and on a
         # per-reference basis.
-        with self.auto_populating(False):
-            entity_key = self.cache_key_maker.key(
-                ftrack_api.inspection.identity(entity)
-            )
-        attached = self._attached.get(entity_key) is entity
-        if attached:
+        is_inflated = getattr(entity, '_inflated', False)
+        if is_inflated:
             self.logger.debug(
                 'Skipping merging references as entity appears to already have '
                 'been inflated.'
             )
             return
+
+        else:
+            entity._inflated = True
 
         self.logger.debug('Merging references.')
 
