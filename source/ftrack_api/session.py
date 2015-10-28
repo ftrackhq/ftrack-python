@@ -807,18 +807,7 @@ class Session(object):
             # is so that any higher level cache can be taken advantage of when
             # fetching data for referenced entities.
             if from_cache:
-                # As optimisation, try to determine whether entity contains
-                # references that need inflating. Use the fact that an entity
-                # that is attached to the session will already have been
-                # inflated. As such, if entity retrieved from cache is same
-                # (memory address) as attached entity then skip inflating.
-                # TODO: Consider refactor API encoding to explicitly mark
-                # references as such, perhaps by a private attribute
-                # __is_reference__ in order to make expansion of references
-                # easier to determine and on a per-reference basis.
-                attached = self._attached.get(entity_key) is attached_entity
-                if not attached:
-                    self._merge_references(attached_entity, merged=merged)
+                self._merge_references(attached_entity, merged=merged)
 
             # Merge new entity data into cache entity. If this causes the cache
             # entity to change then persist those changes back to the cache.
@@ -840,6 +829,26 @@ class Session(object):
 
     def _merge_references(self, entity, merged=None):
         '''Recursively merge entity references in *entity*.'''
+        # As optimisation, try to determine whether entity contains references
+        # that need inflating. Use the fact that an entity that is attached to
+        # the session will already have been inflated. As such, if *entity* is
+        # same (memory address) as attached entity then skip inflating.
+        # TODO: Consider refactor API encoding to explicitly mark references
+        # as such, perhaps by a private attribute __is_reference__ in order to
+        # make expansion of references easier to determine and on a
+        # per-reference basis.
+        with self.auto_populating(False):
+            entity_key = self.cache_key_maker.key(
+                ftrack_api.inspection.identity(entity)
+            )
+        attached = self._attached.get(entity_key) is entity
+        if attached:
+            self.logger.debug(
+                'Skipping merging references as entity appears to already have '
+                'been inflated.'
+            )
+            return
+
         self.logger.debug('Merging references.')
 
         if merged is None:
