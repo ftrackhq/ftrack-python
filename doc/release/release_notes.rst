@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: session, caching
+
+        :meth:`Session.merge` redundantly attempts to expand entity references
+        that have already been expanded causing performance degradation.
+
     .. change:: new
         :tags: session
 
