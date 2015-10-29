@@ -1178,7 +1178,8 @@ class Session(object):
 
         Newly created entities not yet persisted will be detached from the
         session / purged from cache and no longer contribute, but the actual
-        objects are not deleted from memory.
+        objects are not deleted from memory. They should no longer be used and
+        doing so could cause errors.
 
         '''
         with self.auto_populating(False):
