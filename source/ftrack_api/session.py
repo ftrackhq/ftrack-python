@@ -243,6 +243,11 @@ class Session(object):
         '''Return event hub.'''
         return self._event_hub
 
+    @property
+    def _local_cache(self):
+        '''Return top level memory cache.'''
+        return self.cache.caches[0]
+
     def check_server_compatibility(self):
         '''Check compatibility with connected server.'''
         server_version = self.server_information.get('version')
@@ -296,7 +301,7 @@ class Session(object):
         self.recorded_operations.clear()
 
         # Clear top level cache (expected to be enforced memory cache).
-        self.cache.caches[0].clear()
+        self._local_cache.clear()
 
         # Detach entities.
         self._attached.clear()
