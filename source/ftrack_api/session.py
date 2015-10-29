@@ -178,8 +178,6 @@ class Session(object):
 
             self.cache.caches.append(cache)
 
-        self._attached = collections.OrderedDict()
-
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
@@ -303,9 +301,6 @@ class Session(object):
         # Clear top level cache (expected to be enforced memory cache).
         self._local_cache.clear()
 
-        # Detach entities.
-        self._attached.clear()
-
         # Re-configure certain session aspects that may be dependant on cache.
         self._configure_locations()
 
@@ -338,7 +333,7 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
-        entities = self._attached.values()
+        entities = self._local_cache.values()
         states = ftrack_api.inspection.states(entities)
 
         return [
@@ -349,7 +344,7 @@ class Session(object):
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
-        entities = self._attached.values()
+        entities = self._local_cache.values()
         states = ftrack_api.inspection.states(entities)
 
         return [
@@ -360,7 +355,7 @@ class Session(object):
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
-        entities = self._attached.values()
+        entities = self._local_cache.values()
         states = ftrack_api.inspection.states(entities)
 
         return [
@@ -673,25 +668,6 @@ class Session(object):
 
         return data
 
-    def _attach(self, entity):
-        '''Attach *entity* to session if not already.'''
-        key = str(ftrack_api.inspection.identity(entity))
-        current = self._attached.get(key)
-
-        if current is None:
-            self._attached[key] = entity
-
-        elif current is not entity:
-            raise ValueError(
-                'Cannot attach {0!r}. A different instance {1!r} of that '
-                'entity is already attached.'.format(entity, current)
-            )
-
-    def _detach(self, entity):
-        '''Detach *entity* from session.'''
-        key = str(ftrack_api.inspection.identity(entity))
-        del self._attached[key]
-
     def merge(self, value, merged=None):
         '''Merge *value* into session and return merged value.
 
@@ -825,9 +801,6 @@ class Session(object):
                     'Cache not updated with merged entity as no differences '
                     'detected.'
                 )
-
-            # Ensure this instance is now attached to the session.
-            self._attach(attached_entity)
 
         return attached_entity
 
@@ -1161,7 +1134,7 @@ class Session(object):
             # remain as needed for cache retrieval on new entities.
             with self.auto_populating(False):
                 with self.operation_recording(False):
-                    for entity in self._attached.values():
+                    for entity in self._local_cache.values():
                         for attribute in entity:
                             if attribute not in entity.primary_key_attributes:
                                 del entity[attribute]
@@ -1182,7 +1155,7 @@ class Session(object):
             # keys on entities that were merged.
             with self.auto_populating(False):
                 with self.operation_recording(False):
-                    for entity in self._attached.values():
+                    for entity in self._local_cache.values():
                         entity.clear()
 
     def rollback(self):
@@ -1214,14 +1187,13 @@ class Session(object):
                             str(operation.entity_type),
                             operation.entity_key.values()
                         ))
-                        self._attached.pop(entity_key, None)
                         try:
                             self.cache.remove(entity_key)
                         except KeyError:
                             pass
 
                 # Clear locally stored modifications on remaining entities.
-                for entity in self._attached.values():
+                for entity in self._local_cache.values():
                     entity.clear()
 
         self.recorded_operations.clear()
