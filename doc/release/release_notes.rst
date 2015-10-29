@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: caching
+
+        Added :meth:`ftrack_api.cache.Cache.values` as helper for retrieving
+        all values in cache.
+
     .. change:: fixed
         :tags: session, caching
 
