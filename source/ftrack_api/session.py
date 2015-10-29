@@ -178,8 +178,6 @@ class Session(object):
 
             self.cache.caches.append(cache)
 
-        self._attached = collections.OrderedDict()
-
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
@@ -243,6 +241,11 @@ class Session(object):
         '''Return event hub.'''
         return self._event_hub
 
+    @property
+    def _local_cache(self):
+        '''Return top level memory cache.'''
+        return self.cache.caches[0]
+
     def check_server_compatibility(self):
         '''Check compatibility with connected server.'''
         server_version = self.server_information.get('version')
@@ -271,8 +274,7 @@ class Session(object):
     def reset(self):
         '''Reset session clearing local state.
 
-        Clear all pending operations and local changes (effectively a
-        :meth:`rollback`).
+        Clear all pending operations and expunge all entities from session.
 
         Also clear the local cache. If the cache used by the session is a
         :class:`~ftrack_api.cache.LayeredCache` then only clear top level cache.
@@ -282,25 +284,22 @@ class Session(object):
         are re-emitted to properly configure session aspects that are dependant
         on cache (such as location plugins).
 
+        .. warning::
+
+            Previously attached entities are not reset in memory and will retain
+            their state, but should not be used. Doing so will cause errors.
+
         '''
         if self.recorded_operations:
             self.logger.warning(
                 'Resetting session with pending operations not persisted.'
             )
 
-        # Clear local changes and pending operations.
-        self.rollback()
+        # Clear pending operations.
+        self.recorded_operations.clear()
 
-        # Clear cache and attached entities.
-        if isinstance(self.cache, ftrack_api.cache.LayeredCache):
-            try:
-                self.cache.caches[0].clear()
-            except IndexError:
-                pass
-        elif isinstance(self.cache, ftrack_api.cache.Cache):
-            self.cache.clear()
-
-        self._attached.clear()
+        # Clear top level cache (expected to be enforced memory cache).
+        self._local_cache.clear()
 
         # Re-configure certain session aspects that may be dependant on cache.
         self._configure_locations()
@@ -334,7 +333,7 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
-        entities = self._attached.values()
+        entities = self._local_cache.values()
         states = ftrack_api.inspection.states(entities)
 
         return [
@@ -345,7 +344,7 @@ class Session(object):
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
-        entities = self._attached.values()
+        entities = self._local_cache.values()
         states = ftrack_api.inspection.states(entities)
 
         return [
@@ -356,7 +355,7 @@ class Session(object):
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
-        entities = self._attached.values()
+        entities = self._local_cache.values()
         states = ftrack_api.inspection.states(entities)
 
         return [
@@ -669,25 +668,6 @@ class Session(object):
 
         return data
 
-    def _attach(self, entity):
-        '''Attach *entity* to session if not already.'''
-        key = str(ftrack_api.inspection.identity(entity))
-        current = self._attached.get(key)
-
-        if current is None:
-            self._attached[key] = entity
-
-        elif current is not entity:
-            raise ValueError(
-                'Cannot attach {0!r}. A different instance {1!r} of that '
-                'entity is already attached.'.format(entity, current)
-            )
-
-    def _detach(self, entity):
-        '''Detach *entity* from session.'''
-        key = str(ftrack_api.inspection.identity(entity))
-        del self._attached[key]
-
     def merge(self, value, merged=None):
         '''Merge *value* into session and return merged value.
 
@@ -768,14 +748,19 @@ class Session(object):
                     .format(entity_key, attached_entity, id(attached_entity))
                 )
                 return attached_entity
+            else:
+                self.logger.debug(
+                    'Entity not already processed for key {0}. Keys: {1}'
+                    .format(entity_key, sorted(merged.keys()))
+                )
 
             # Check for existing instance of entity in cache.
             self.logger.debug(
                 'Checking for entity in cache with key {0}'.format(entity_key)
             )
-
             try:
                 attached_entity = self.cache.get(entity_key)
+                from_cache = True
                 self.logger.debug(
                     'Retrieved existing entity from cache: {0} at {1}'
                     .format(attached_entity, id(attached_entity))
@@ -786,6 +771,7 @@ class Session(object):
                 attached_entity = self._create(
                     entity.entity_type, {}, reconstructing=True
                 )
+                from_cache = False
                 self.logger.debug(
                     'Entity not present in cache. Constructed new instance: '
                     '{0} at {1}'.format(attached_entity, id(attached_entity))
@@ -794,12 +780,14 @@ class Session(object):
             # Mark entity as seen to avoid infinite loops.
             merged[entity_key] = attached_entity
 
-            # Expand references. This is required as a serialised cache might
-            # have returned just a plain entity object with the rest of the data
-            # stored separately. The reason this is done here rather in the
-            # specific cache is so that any higher level cache can be taken
-            # advantage of when fetching data.
-            self._merge_references(attached_entity, merged=merged)
+            # Expand references when entity instance retrieved from cache.
+            # This is required as a serialised cache might have returned an
+            # entity instance that has references to other entities not yet
+            # merged. The reason this is done here rather in the specific cache
+            # is so that any higher level cache can be taken advantage of when
+            # fetching data for referenced entities.
+            if from_cache:
+                self._merge_references(attached_entity, merged=merged)
 
             # Merge new entity data into cache entity. If this causes the cache
             # entity to change then persist those changes back to the cache.
@@ -814,13 +802,28 @@ class Session(object):
                     'detected.'
                 )
 
-            # Ensure this instance is now attached to the session.
-            self._attach(attached_entity)
-
         return attached_entity
 
     def _merge_references(self, entity, merged=None):
         '''Recursively merge entity references in *entity*.'''
+        # As optimisation, mark inflated entities and avoid inflating more than
+        # once. This is possible because *entity* should always be the same
+        # entity instance retrieved from the top level memory cache.
+        # TODO: Consider refactor API encoding to explicitly mark references
+        # as such, perhaps by a private attribute __is_reference__ in order to
+        # make expansion of references easier to determine and on a
+        # per-reference basis.
+        is_inflated = getattr(entity, '_inflated', False)
+        if is_inflated:
+            self.logger.debug(
+                'Skipping merging references as entity appears to already have '
+                'been inflated.'
+            )
+            return
+
+        else:
+            entity._inflated = True
+
         self.logger.debug('Merging references.')
 
         if merged is None:
@@ -1123,10 +1126,18 @@ class Session(object):
         if batch:
             result = self._call(batch)
 
-            # Clear all local values for committed attributes before proceeding
-            # with merge. Otherwise it is possible for an immutable attribute
-            # error to be bypassed. Also clear recorded operations.
-            self.rollback()
+            # Clear recorded operations.
+            self.recorded_operations.clear()
+
+            # As optimisation, clear local values which are not primary keys to
+            # avoid redundant merges when merging references. Note: primary keys
+            # remain as needed for cache retrieval on new entities.
+            with self.auto_populating(False):
+                with self.operation_recording(False):
+                    for entity in self._local_cache.values():
+                        for attribute in entity:
+                            if attribute not in entity.primary_key_attributes:
+                                del entity[attribute]
 
             # Process results merging into cache relevant data.
             for entry in result:
@@ -1140,6 +1151,13 @@ class Session(object):
                     # TODO: Expunge entity from cache.
                     pass
 
+            # Clear remaining local state, including local values for primary
+            # keys on entities that were merged.
+            with self.auto_populating(False):
+                with self.operation_recording(False):
+                    for entity in self._local_cache.values():
+                        entity.clear()
+
     def rollback(self):
         '''Clear all recorded operations and local state.
 
@@ -1147,14 +1165,20 @@ class Session(object):
         to revert the session to a known good state.
 
         Newly created entities not yet persisted will be detached from the
-        session and no longer contribute, but the actual objects are not deleted
-        from memory.
+        session / purged from cache and no longer contribute, but the actual
+        objects are not deleted from memory. They should no longer be used and
+        doing so could cause errors.
 
         '''
         with self.auto_populating(False):
             with self.operation_recording(False):
 
-                # Detach all newly created entities.
+                # Detach all newly created entities and remove from cache. This
+                # is done because simply clearing the local values of newly
+                # created entities would result in entities with no identity as
+                # primary key was local while not persisted. In addition, it
+                # makes no sense for failed created entities to exist in session
+                # or cache.
                 for operation in self.recorded_operations:
                     if isinstance(
                         operation, ftrack_api.operation.CreateEntityOperation
@@ -1163,10 +1187,13 @@ class Session(object):
                             str(operation.entity_type),
                             operation.entity_key.values()
                         ))
-                        self._attached.pop(entity_key, None)
+                        try:
+                            self.cache.remove(entity_key)
+                        except KeyError:
+                            pass
 
                 # Clear locally stored modifications on remaining entities.
-                for entity in self._attached.values():
+                for entity in self._local_cache.values():
                     entity.clear()
 
         self.recorded_operations.clear()

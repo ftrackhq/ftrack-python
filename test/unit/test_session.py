@@ -676,7 +676,7 @@ def test_rollback_entity_creation(session):
 
     assert not session.recorded_operations
     assert new_user not in session.created
-    assert new_user not in session._attached.values()
+    assert new_user not in session._local_cache.values()
 
 
 def test_rollback_entity_deletion(session, new_user):
@@ -690,7 +690,7 @@ def test_rollback_entity_deletion(session, new_user):
     session.rollback()
     assert not session.recorded_operations
     assert new_user not in session.deleted
-    assert new_user in session._attached.values()
+    assert new_user in session._local_cache.values()
 
 
 # Caching
@@ -704,7 +704,6 @@ def test_get_entity_bypassing_cache(session, user, mocker):
     session.cache.remove(
         session.cache_key_maker.key(ftrack_api.inspection.identity(user))
     )
-    session._detach(user)
 
     matching = session.get(*ftrack_api.inspection.identity(user))
 
