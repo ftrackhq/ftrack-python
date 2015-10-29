@@ -1153,10 +1153,18 @@ class Session(object):
         if batch:
             result = self._call(batch)
 
-            # Clear all local values for committed attributes before proceeding
-            # with merge. Otherwise it is possible for an immutable attribute
-            # error to be bypassed. Also clear recorded operations.
-            self.rollback()
+            # Clear recorded operations.
+            self.recorded_operations.clear()
+
+            # As optimisation, clear local values which are not primary keys to
+            # avoid redundant merges when merging references. Note: primary keys
+            # remain as needed for cache retrieval on new entities.
+            with self.auto_populating(False):
+                with self.operation_recording(False):
+                    for entity in self._attached.values():
+                        for attribute in entity:
+                            if attribute not in entity.primary_key_attributes:
+                                del entity[attribute]
 
             # Process results merging into cache relevant data.
             for entry in result:
@@ -1169,6 +1177,13 @@ class Session(object):
                     # TODO: Detach entity - need identity returned?
                     # TODO: Expunge entity from cache.
                     pass
+
+            # Clear remaining local state, including local values for primary
+            # keys on entities that were merged.
+            with self.auto_populating(False):
+                with self.operation_recording(False):
+                    for entity in self._attached.values():
+                        entity.clear()
 
     def rollback(self):
         '''Clear all recorded operations and local state.
