@@ -295,15 +295,10 @@ class Session(object):
         # Clear pending operations.
         self.recorded_operations.clear()
 
-        # Clear cache and attached entities.
-        if isinstance(self.cache, ftrack_api.cache.LayeredCache):
-            try:
-                self.cache.caches[0].clear()
-            except IndexError:
-                pass
-        elif isinstance(self.cache, ftrack_api.cache.Cache):
-            self.cache.clear()
+        # Clear top level cache (expected to be enforced memory cache).
+        self.cache.caches[0].clear()
 
+        # Detach entities.
         self._attached.clear()
 
         # Re-configure certain session aspects that may be dependant on cache.
