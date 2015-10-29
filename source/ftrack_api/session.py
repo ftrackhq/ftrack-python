@@ -271,8 +271,7 @@ class Session(object):
     def reset(self):
         '''Reset session clearing local state.
 
-        Clear all pending operations and local changes (effectively a
-        :meth:`rollback`).
+        Clear all pending operations and expunge all entities from session.
 
         Also clear the local cache. If the cache used by the session is a
         :class:`~ftrack_api.cache.LayeredCache` then only clear top level cache.
@@ -282,14 +281,19 @@ class Session(object):
         are re-emitted to properly configure session aspects that are dependant
         on cache (such as location plugins).
 
+        .. warning::
+
+            Previously attached entities are not reset in memory and will retain
+            their state, but should not be used. Doing so will cause errors.
+
         '''
         if self.recorded_operations:
             self.logger.warning(
                 'Resetting session with pending operations not persisted.'
             )
 
-        # Clear local changes and pending operations.
-        self.rollback()
+        # Clear pending operations.
+        self.recorded_operations.clear()
 
         # Clear cache and attached entities.
         if isinstance(self.cache, ftrack_api.cache.LayeredCache):
