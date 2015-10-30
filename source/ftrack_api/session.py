@@ -1657,7 +1657,7 @@ class Session(object):
             data.setdefault('file_type', os.path.splitext(path)[-1])
 
             return self._create_component(
-                'FileComponent', path, data, location
+                'FileComponent', path, data, location=location
             )
 
         else:
@@ -1685,7 +1685,7 @@ class Session(object):
             data.setdefault('file_type', os.path.splitext(container_path)[-1])
 
             container = self._create_component(
-                'SequenceComponent', container_path, data
+                'SequenceComponent', container_path, data, location=None
             )
 
             # Create member components for sequence.
@@ -1697,7 +1697,7 @@ class Session(object):
                 }
 
                 component = self._create_component(
-                    'FileComponent', member_path, member_data
+                    'FileComponent', member_path, member_data, location=None
                 )
                 container['members'].append(component)
 
@@ -1711,7 +1711,7 @@ class Session(object):
 
             return container
 
-    def _create_component(self, entity_type, path, data, location=None):
+    def _create_component(self, entity_type, path, data, location):
         '''Create and return component.
 
         See public function :py:func:`createComponent` for argument details.
