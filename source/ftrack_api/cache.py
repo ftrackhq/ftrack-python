@@ -73,6 +73,19 @@ class Cache(object):
         '''
         raise NotImplementedError()  # pragma: no cover
 
+    def values(self):
+        '''Return values for current keys.'''
+        values = []
+        for key in self.keys():
+            try:
+                value = self.get(key)
+            except KeyError:
+                continue
+            else:
+                values.append(value)
+
+        return values
+
     def clear(self, pattern=None):
         '''Remove all keys matching *pattern*.
 

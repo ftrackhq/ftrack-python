@@ -12,10 +12,29 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: caching
+
+        Added :meth:`ftrack_api.cache.Cache.values` as helper for retrieving
+        all values in cache.
+
+    .. change:: fixed
+        :tags: session, caching
+
+        :meth:`Session.merge` redundantly attempts to expand entity references
+        that have already been expanded causing performance degradation.
+
+    .. change:: new
         :tags: session
 
         :meth:`Session.rollback` has been added to support cleanly reverting
         session state to last good state following a failed commit.
+
+    .. change:: changed
+        :tags: events
+
+        Event hub will no longer allow unverified SSL connections.
+
+        .. seealso:: :ref:`security_and_authentication`.
 
     .. change:: changed
         :tags: session
