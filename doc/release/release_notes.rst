@@ -11,6 +11,13 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: session, component, locations, performance
+
+        Improved performance for
+        :meth:`ftrack_api.session.Session.create_component` when creating
+        sequence components.
+
     .. change:: new
         :tags: caching
 
