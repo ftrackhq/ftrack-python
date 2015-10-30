@@ -17,7 +17,7 @@ Documentation
 *************
 
 Full documentation, including installation and setup guides, can be found at
-http://ftrack-python-api.rtd.ftrack.com/en/latest/
+http://ftrack-python-api.rtd.ftrack.com/en/stable/
 
 *********************
 Copyright and license
