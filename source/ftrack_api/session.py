@@ -1693,6 +1693,7 @@ class Session(object):
                 member_data = {
                     'name': collection.match(member_path).group('index'),
                     'size': member_sizes[member_path],
+                    'container': container,
                     'file_type': os.path.splitext(member_path)[-1]
                 }
 
