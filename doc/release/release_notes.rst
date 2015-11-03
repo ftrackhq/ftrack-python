@@ -11,7 +11,7 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: fixed
+    .. change:: improved
         :tags: session, component, locations, performance
 
         Improved performance for
