@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: new
+        :tags: querying, performance
+
+        Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
+        :meth:`~ftrack_api.query.QueryResult.one` by using new `limit` syntax.
+
 .. release:: 0.9.0
     :date: 2015-10-30
 

@@ -1,9 +1,12 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+import re
 import collections
 
 import ftrack_api.exception
+
+LIMIT_EXPRESSION = '(?P<limit>limit \d+)'
 
 
 class QueryResult(collections.Sequence):
@@ -53,7 +56,23 @@ class QueryResult(collections.Sequence):
             catch only one error type.
 
         '''
-        results = self.all()
+        if self._results:
+            results = self._results
+        else:
+            expression = self._expression
+
+            # See if a limit is already apply. If so temporary replace it with
+            # `limit 2` and fetch results. We use `limit 2` to be able to raise
+            # an exception if result contains multiple entities.
+            match = re.search(LIMIT_EXPRESSION, expression)
+            if match:
+                value = match.groupdict().get('limit')
+                expression.replace(value, 'limit 2')
+            else:
+                expression += ' limit 2'
+
+            results = self._session._query(expression)
+
         if not results:
             raise ftrack_api.exception.NoResultFoundError()
 
@@ -68,9 +87,22 @@ class QueryResult(collections.Sequence):
         If no results retrieved then return None.
 
         '''
-        # TODO: Optimise by creating a new query injecting a limit of 1 if
-        # results not yet retrieved.
-        results = self.all()
+        # Return first item in results if results already has been fetched.
+        if self._results:
+            return self._results[0]
+
+        expression = self._expression
+
+        # See if a limit is already apply. If so temporary replace it with
+        # `limit 1` and fetch results.
+        match = re.search(LIMIT_EXPRESSION, expression)
+        if match:
+            value = match.groupdict().get('limit')
+            expression.replace(value, 'limit 1')
+        else:
+            expression += ' limit 1'
+
+        results = self._session._query(expression)
         if results:
             return results[0]
 
