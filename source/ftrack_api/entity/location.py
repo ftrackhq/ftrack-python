@@ -108,11 +108,6 @@ class Location(ftrack_api.entity.base.Entity):
             issues and any transferred data under the 'transferred' detail key.
 
         '''
-        if not components:
-            # Optimisation: Return early when no components to process, such as
-            # when called recursively on an empty sequence component.
-            return
-
         if (
             isinstance(sources, basestring)
             or not isinstance(sources, collections.Sequence)
@@ -131,6 +126,11 @@ class Location(ftrack_api.entity.base.Entity):
                 'No structure defined for location {location}.',
                 details=dict(location=self)
             )
+
+        if not components:
+            # Optimisation: Return early when no components to process, such as
+            # when called recursively on an empty sequence component.
+            return
 
         # Check that components not already added to location.
         existing_components = []
