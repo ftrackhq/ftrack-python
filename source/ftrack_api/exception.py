@@ -242,7 +242,7 @@ class ComponentNotInLocationError(LocationError):
     '''Raise when component(s) not in location.'''
 
     default_message = (
-        'Component(s) {components} not found in location {location}.'
+        'Component(s) {formatted_components} not found in location {location}.'
     )
 
     def __init__(self, components, location, **kw):
@@ -251,11 +251,12 @@ class ComponentNotInLocationError(LocationError):
             components = [components]
 
         kw.setdefault('details', {}).update(dict(
-            components=', '.join([str(component) for component in components]),
+            components=components,
+            formatted_components=', '.join(
+                [str(component) for component in components]
+            ),
             location=location
         ))
-
-        self.missing = components
 
         super(ComponentNotInLocationError, self).__init__(**kw)
 

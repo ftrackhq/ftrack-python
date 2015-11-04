@@ -114,10 +114,10 @@ class Location(ftrack_api.entity.base.Entity):
         try:
             self.get_resource_identifiers(components)
         except ftrack_api.exception.ComponentNotInLocationError as error:
-            # At least one component does not already exist in location. Make
-            # sure that all components are missing.
+            # At least one component does not already exist in location.
             missing_ids = [
-                missing_component['id'] for missing_component in error.missing
+                missing_component['id']
+                for missing_component in error.details.get('components', [])
             ]
             components_not_missing = []
             for component in components:
