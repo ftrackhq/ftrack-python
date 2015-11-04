@@ -1657,7 +1657,7 @@ class Session(object):
             data.setdefault('file_type', os.path.splitext(path)[-1])
 
             return self._create_component(
-                'FileComponent', path, data, location=location
+                'FileComponent', path, data, location
             )
 
         else:
