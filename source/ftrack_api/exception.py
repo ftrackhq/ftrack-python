@@ -262,18 +262,26 @@ class ComponentNotInLocationError(LocationError):
 
 
 class ComponentInLocationError(LocationError):
-    '''Raise when component already exists in location.'''
+    '''Raise when component(s) already exists in location.'''
 
     default_message = (
-        'Component {component} already exists in location {location}.'
+        'Component(s) {formatted_components} already exist in location '
+        '{location}.'
     )
 
-    def __init__(self, component, location, **kw):
-        '''Initialise with *component* and *location*.'''
+    def __init__(self, components, location, **kw):
+        '''Initialise with *components* and *location*.'''
+        if isinstance(components, ftrack_api.entity.base.Entity):
+            components = [components]
+
         kw.setdefault('details', {}).update(dict(
-            component=component,
+            components=components,
+            formatted_components=', '.join(
+                [str(component) for component in components]
+            ),
             location=location
         ))
+
         super(ComponentInLocationError, self).__init__(**kw)
 
 
