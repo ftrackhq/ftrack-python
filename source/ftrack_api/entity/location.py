@@ -581,6 +581,11 @@ class MemoryLocationMixin(object):
     def _register_components_in_location(
         self, components, resource_identifiers
     ):
+        '''Register *components* in location against *resource_identifiers*.
+
+        Indices of *components* and *resource_identifiers* should align.
+
+        '''
         for component, resource_identifier in zip(
             components, resource_identifiers
         ):
