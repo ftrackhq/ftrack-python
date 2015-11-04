@@ -11,12 +11,20 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: improved
+    .. change:: changed
         :tags: session, component, locations, performance
 
-        Improved performance for
-        :meth:`ftrack_api.session.Session.create_component` when creating
-        sequence components.
+        Improved performance of
+        :meth:`ftrack_api.entity.location.Location.add_components` by batching
+        database operations.
+
+        As a result it is no longer possible to determine progress of transfer
+        for container components in realtime as events will be emitted in batch
+        at end of operation.
+
+        In addition, it is now the callers responsibility to clean up any
+        transferred data should an error occur during either data transfer or
+        database registration.
 
     .. change:: new
         :tags: caching

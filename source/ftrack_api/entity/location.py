@@ -91,7 +91,28 @@ class Location(ftrack_api.entity.base.Entity):
         the write so if another process creates data at the same target during
         that period it will be overwritten.
 
+        .. important::
+
+            If this location manages data then the *components* data is first
+            transferred to the target prescribed by the structure plugin, using
+            the configured accessor. If any component fails to transfer then
+            :exc:`ftrack_api.LocationError` is raised and none of the components
+            are registered with the database. In this case it is left up to the
+            caller to decide and act on manually cleaning up any transferred
+            data.
+
+            Likewise, after transfer, all components are registered with the
+            database in a batch call. If any component causes an error then all
+            components will remain unregistered and
+            :exc:`ftrack_api.LocationError` detailing issues and any transferred
+            data.
+
         '''
+        if not components:
+            # Optimisation: Return early when no components to process, such as
+            # when called recursively on an empty sequence component.
+            return
+
         if (
             isinstance(sources, basestring)
             or not isinstance(sources, collections.Sequence)
@@ -134,60 +155,87 @@ class Location(ftrack_api.entity.base.Entity):
                 existing_components, self
             )
 
-        transfer = []
-        encoded_resource_identifiers = []
+        # Attempt to transfer each component's data to this location.
+        transferred = []
 
-        # Register each component to it's location.
         for index, component in enumerate(components):
-            # Determine appropriate source.
-            if sources_count == 1:
-                source = sources[0]
-            else:
-                source = sources[index]
+            try:
+                # Determine appropriate source.
+                if sources_count == 1:
+                    source = sources[0]
+                else:
+                    source = sources[index]
 
-            # Add members first for container components.
-            is_container = 'members' in component.keys()
-            if is_container and recursive:
-                members = list(component['members'])
-                if members:
+                # Add members first for container components.
+                is_container = 'members' in component.keys()
+                if is_container and recursive:
                     self.add_components(
-                        members, source, recursive=recursive
+                        component['members'], source, recursive=recursive
                     )
 
-            # Add component to this location.
-            context = self._get_context(component, source)
-            resource_identifier = self.structure.get_resource_identifier(
-                component, context
-            )
+                # Add component to this location.
+                context = self._get_context(component, source)
+                resource_identifier = self.structure.get_resource_identifier(
+                    component, context
+                )
 
-            encoded_resource_identifier = resource_identifier
-            # Optionally encode resource identifier before storing.
-            if self.resource_identifier_transformer:
-                encoded_resource_identifier = (
-                    self.resource_identifier_transformer.encode(
-                        resource_identifier,
-                        context={'component': component}
+                # Manage data transfer.
+                self._add_data(component, resource_identifier, source)
+
+            except Exception as error:
+                raise ftrack_api.exception.LocationError(
+                    'Failed to transfer component {component} data to location '
+                    '{location} due to error {error}. Transferred component '
+                    'data that may require cleanup: {transferred}',
+                    details=dict(
+                        component=component,
+                        location=self,
+                        error=error,
+                        transferred=transferred
                     )
                 )
 
-            transfer.append(
-                (component, resource_identifier, source)
+            else:
+                transferred.append((component, resource_identifier))
+
+        # Register all successfully transferred components.
+        components_to_register = []
+        component_resource_identifiers = []
+
+        try:
+            for component, resource_identifier in transferred:
+                if self.resource_identifier_transformer:
+                    # Optionally encode resource identifier before storing.
+                    resource_identifier = (
+                        self.resource_identifier_transformer.encode(
+                            resource_identifier,
+                            context={'component': component}
+                        )
+                    )
+
+                components_to_register.append(component)
+                component_resource_identifiers.append(resource_identifier)
+
+            # Store component in location information.
+            self._register_components_in_location(
+                components, component_resource_identifiers
             )
-            encoded_resource_identifiers.append(
-                encoded_resource_identifier
+
+        except Exception as error:
+            raise ftrack_api.exception.LocationError(
+                'Failed to register components with location {location} due to '
+                'error {error}. Transferred component data that may require '
+                'cleanup: {transferred}',
+                details=dict(
+                    location=self,
+                    error=error,
+                    transferred=transferred
+                )
             )
 
-        # Store component in location information.
-        self._register_components_in_location(
-            components, encoded_resource_identifiers
-        )
+        # Publish events.
+        for component in components_to_register:
 
-        # Transfer each component from it's source to this location.
-        for component, resource_identifier, source in transfer:
-            # Manage data transfer.
-            self._add_data(component, resource_identifier, source)
-
-            # Publish event.
             component_id = ftrack_api.inspection.primary_key(
                 component
             ).values()[0]
@@ -228,6 +276,12 @@ class Location(ftrack_api.entity.base.Entity):
         locations accessor.
 
         '''
+        self.logger.debug(
+            'Adding data for component {0!r} from source {1!r} to location '
+            '{2!r} using resource identifier {3!r}.'.format(
+                component, resource_identifier, source, self
+            )
+        )
         # Read data from source and write to this location.
         if not source.accessor:
             raise ftrack_api.exception.LocationError(
@@ -290,22 +344,29 @@ class Location(ftrack_api.entity.base.Entity):
             source_data.close()
 
     def _register_component_in_location(self, component, resource_identifier):
-        '''Register *component* in location with *resource_identifier*.'''
-        self.session.create(
-            'ComponentLocation', data=dict(
-                component=component,
-                location=self,
-                resource_identifier=resource_identifier
-            )
+        '''Register *component* in location against *resource_identifier*.'''
+        return self._register_components_in_location(
+            [component], [resource_identifier]
         )
 
     def _register_components_in_location(
         self, components, resource_identifiers
     ):
+        '''Register *components* in location against *resource_identifiers*.
+
+        Indices of *components* and *resource_identifiers* should align.
+
+        '''
         for component, resource_identifier in zip(
             components, resource_identifiers
         ):
-            self._register_component_in_location(component, resource_identifier)
+            self.session.create(
+                'ComponentLocation', data=dict(
+                    component=component,
+                    location=self,
+                    resource_identifier=resource_identifier
+                )
+            )
 
         self.session.commit()
 
