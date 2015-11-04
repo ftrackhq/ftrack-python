@@ -77,35 +77,35 @@ class Location(ftrack_api.entity.base.Entity):
         *components* should be a list of component instances.
 
         *sources* may be either a single source or a list of sources. If a list
-        *then each corresponding index in *sources* will be used for each
+        then each corresponding index in *sources* will be used for each
         *component*. A source should be an instance of another location.
 
-        Raise :exc:`ftrack_api.ComponentInLocationError` if any component in
-        *components* already exists in this location. In this case, no changes
-        will be made and no data transferred.
+        Raise :exc:`ftrack_api.exception.ComponentInLocationError` if any
+        component in *components* already exists in this location. In this case,
+        no changes will be made and no data transferred.
 
-        Raise :exc:`ftrack_api.LocationError` if managing data and the generated
-        target structure for the component already exists according to the
-        accessor. This helps prevent potential data loss by avoiding overwriting
-        existing data. Note that there is a race condition between the check and
-        the write so if another process creates data at the same target during
-        that period it will be overwritten.
+        Raise :exc:`ftrack_api.exception.LocationError` if managing data and the
+        generated target structure for the component already exists according to
+        the accessor. This helps prevent potential data loss by avoiding
+        overwriting existing data. Note that there is a race condition between
+        the check and the write so if another process creates data at the same
+        target during that period it will be overwritten.
 
         .. important::
 
             If this location manages data then the *components* data is first
             transferred to the target prescribed by the structure plugin, using
             the configured accessor. If any component fails to transfer then
-            :exc:`ftrack_api.LocationError` is raised and none of the components
-            are registered with the database. In this case it is left up to the
-            caller to decide and act on manually cleaning up any transferred
-            data.
+            :exc:`ftrack_api.exception.LocationError` is raised and none of the
+            components are registered with the database. In this case it is left
+            up to the caller to decide and act on manually cleaning up any
+            transferred data using the 'transferred' detail in the raised error.
 
             Likewise, after transfer, all components are registered with the
             database in a batch call. If any component causes an error then all
             components will remain unregistered and
-            :exc:`ftrack_api.LocationError` detailing issues and any transferred
-            data.
+            :exc:`ftrack_api.exception.LocationError` will be raised detailing
+            issues and any transferred data under the 'transferred' detail key.
 
         '''
         if not components:
