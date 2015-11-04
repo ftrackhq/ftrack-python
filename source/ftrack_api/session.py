@@ -1692,8 +1692,8 @@ class Session(object):
             for member_path in collection:
                 member_data = {
                     'name': collection.match(member_path).group('index'),
-                    'size': member_sizes[member_path],
                     'container': container,
+                    'size': member_sizes[member_path],
                     'file_type': os.path.splitext(member_path)[-1]
                 }
 
