@@ -80,8 +80,9 @@ class Location(ftrack_api.entity.base.Entity):
         *then each corresponding index in *sources* will be used for each
         *component*. A source should be an instance of another location.
 
-        Raise :exc:`ftrack_api.ComponentInLocationError` if the *component*
-        already exists in this location.
+        Raise :exc:`ftrack_api.ComponentInLocationError` if any component in
+        *components* already exists in this location. In this case, no changes
+        will be made and no data transferred.
 
         Raise :exc:`ftrack_api.LocationError` if managing data and the generated
         target structure for the component already exists according to the
@@ -110,7 +111,7 @@ class Location(ftrack_api.entity.base.Entity):
                 details=dict(location=self)
             )
 
-        # Preemptively check that components has not already been added.
+        # Check that components not already added to location.
         try:
             self.get_resource_identifiers(components)
         except ftrack_api.exception.ComponentNotInLocationError as error:
