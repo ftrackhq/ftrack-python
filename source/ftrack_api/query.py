@@ -6,11 +6,11 @@ import collections
 
 import ftrack_api.exception
 
-LIMIT_EXPRESSION = '(?P<limit>limit \d+)'
-
 
 class QueryResult(collections.Sequence):
     '''Results from a query.'''
+
+    LIMIT_EXPRESSION = re.compile('(?P<limit> limit \d+)')
 
     def __init__(self, session, expression):
         '''Initialise result set.'''
@@ -55,6 +55,12 @@ class QueryResult(collections.Sequence):
             :exc:`~ftrack_api.exception.IncorrectResultError` if you want to
             catch only one error type.
 
+        The method temporarily applies a new limit or replaces any already
+        applied limit before executing the query.
+
+        Therefore running `one` followed by `all` on the same query will
+        not affect each other.
+
         '''
         if self._results:
             results = self._results
@@ -64,12 +70,12 @@ class QueryResult(collections.Sequence):
             # See if a limit is already apply. If so temporary replace it with
             # `limit 2` and fetch results. We use `limit 2` to be able to raise
             # an exception if result contains multiple entities.
-            match = re.search(LIMIT_EXPRESSION, expression)
-            if match:
-                value = match.groupdict().get('limit')
-                expression.replace(value, 'limit 2')
-            else:
-                expression += ' limit 2'
+            limiter = ' limit 2'
+            expression, matched = re.subn(
+                self.LIMIT_EXPRESSION, limiter, expression
+            )
+            if not matched:
+                expression += limiter
 
             results = self._session._query(expression)
 
@@ -84,7 +90,17 @@ class QueryResult(collections.Sequence):
     def first(self):
         '''Return first matching result from query.
 
-        If no results retrieved then return None.
+        The method temporarily applies a new limit or replaces any already
+        applied limit before executing the query.
+
+        Therefore running `first` followed by `all` on the same query will
+        not affect each other, for example::
+
+            query = session.query('Task where status.name is "In Progress" limit 10')
+            query.first()  # Return first task in progress
+            query.all()  # Return first 10 matching tasks
+
+        If not result match None is returned.
 
         '''
         # Return first item in results if results already has been fetched.
@@ -95,12 +111,12 @@ class QueryResult(collections.Sequence):
 
         # See if a limit is already apply. If so temporary replace it with
         # `limit 1` and fetch results.
-        match = re.search(LIMIT_EXPRESSION, expression)
-        if match:
-            value = match.groupdict().get('limit')
-            expression.replace(value, 'limit 1')
-        else:
-            expression += ' limit 1'
+        limiter = ' limit 1'
+        expression, matched = re.subn(
+            self.LIMIT_EXPRESSION, limiter, expression
+        )
+        if not matched:
+            expression += limiter
 
         results = self._session._query(expression)
         if results:
