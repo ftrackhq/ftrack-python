@@ -66,6 +66,11 @@ class Location(ftrack_api.entity.base.Entity):
         the write so if another process creates data at the same target during
         that period it will be overwritten.
 
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the component registration.
+
         '''
         return self.add_components(
             [component], sources=source, recursive=recursive
@@ -90,6 +95,11 @@ class Location(ftrack_api.entity.base.Entity):
         overwriting existing data. Note that there is a race condition between
         the check and the write so if another process creates data at the same
         target during that period it will be overwritten.
+
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components registration.
 
         .. important::
 
@@ -371,11 +381,25 @@ class Location(ftrack_api.entity.base.Entity):
         self.session.commit()
 
     def remove_component(self, component, recursive=True):
-        '''Remove *component* from location.'''
+        '''Remove *component* from location.
+
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the component deregistration.
+
+        '''
         return self.remove_components([component], recursive=recursive)
 
     def remove_components(self, components, recursive=True):
-        '''Remove *components* from location.'''
+        '''Remove *components* from location.
+
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components deregistration.
+
+        '''
         for component in components:
             # Check component is in this location
             self.get_resource_identifier(component)
