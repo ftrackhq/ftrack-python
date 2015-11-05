@@ -42,7 +42,10 @@ class QueryResult(collections.Sequence):
         return list(self)
 
     def one(self):
-        '''Return exactly one single result from query.
+        '''Return exactly one single result from query by applying a limit.
+
+        Raise :exc:`ValueError` if an existing limit is already present in the
+        expression.
 
         Raise :exc:`~ftrack_api.exception.MultipleResultsFoundError` if more
         than one result was available or
@@ -55,30 +58,20 @@ class QueryResult(collections.Sequence):
             :exc:`~ftrack_api.exception.IncorrectResultError` if you want to
             catch only one error type.
 
-        This method applies a new limit temporarily overriding any existing
-        limit in the expression. Therefore it is safe to call this method
-        without affecting the behaviour of other methods like :meth:`first`.
-
         '''
-        if self._results is not None:
-            # Reuse results that have already been fetched rather than issuing
-            # a new query.
-            results = self._results
-        else:
-            expression = self._expression
+        expression = self._expression
 
-            # Apply custom limit as optimisation, temporarily replacing any
-            # existing limit in the expression. A limit of 2 is used rather than
-            # 1 so that it is possible to test for multiple matching entries
-            # case.
-            limiter = ' limit 2'
-            expression, matched = re.subn(
-                self.LIMIT_EXPRESSION, limiter, expression
+        if self.LIMIT_EXPRESSION.search(expression):
+            raise ValueError(
+                'Expression already contains a limit clause.'
             )
-            if not matched:
-                expression += limiter
 
-            results = self._session._query(expression)
+        # Apply custom limit as optimisation. A limit of 2 is used rather than
+        # 1 so that it is possible to test for multiple matching entries
+        # case.
+        expression += ' limit 2'
+
+        results = self._session._query(expression)
 
         if not results:
             raise ftrack_api.exception.NoResultFoundError()
@@ -89,38 +82,25 @@ class QueryResult(collections.Sequence):
         return results[0]
 
     def first(self):
-        '''Return first matching result from query.
+        '''Return first matching result from query by applying a limit.
 
-        This method applies a new limit temporarily overriding any existing
-        limit in the expression. Therefore it is safe to call this method
-        without affecting the behaviour of other methods like :meth:`all`::
-
-            query = session.query(
-                'Task where status.name is "In Progress" limit 10'
-            )
-            query.first()  # Return first task in progress
-            query.all()  # Return first 10 matching tasks
+        Raise :exc:`ValueError` if an existing limit is already present in the
+        expression.
 
         If no matching result available return None.
 
         '''
-        if self._results is not None:
-            # Reuse results that have already been fetched rather than issuing
-            # a new query.
-            results = self._results
-        else:
-            expression = self._expression
+        expression = self._expression
 
-            # Apply custom limit as optimisation, temporarily replacing any
-            # existing limit in the expression.
-            limiter = ' limit 1'
-            expression, matched = re.subn(
-                self.LIMIT_EXPRESSION, limiter, expression
+        if self.LIMIT_EXPRESSION.search(expression):
+            raise ValueError(
+                'Expression already contains a limit clause.'
             )
-            if not matched:
-                expression += limiter
 
-            results = self._session._query(expression)
+        # Apply custom limit as optimisation.
+        expression += ' limit 1'
+
+        results = self._session._query(expression)
 
         if results:
             return results[0]

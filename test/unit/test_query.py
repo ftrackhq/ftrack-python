@@ -45,14 +45,14 @@ def test_one_fails_for_multiple_results(session):
 
 
 def test_one_with_existing_limit(session):
-    '''Return single result overriding existing limit in expression.'''
-    user = session.query('User where username is jenkins limit 0').one()
-    assert user['username'] == 'jenkins'
+    '''Fail to return single result when existing limit in expression.'''
+    with pytest.raises(ValueError):
+        session.query('User where username is jenkins limit 0').one()
 
 
 def test_one_with_prefetched_data(session):
     '''Return single result ignoring prefetched data.'''
-    query = session.query('User where username is jenkins limit 0')
+    query = session.query('User where username is jenkins')
     query.all()
 
     user = query.one()
@@ -74,14 +74,14 @@ def test_first_returns_none_when_no_results(session):
 
 
 def test_first_with_existing_limit(session):
-    '''Return first result overriding existing limit in expression.'''
-    user = session.query('User where username is jenkins limit 0').first()
-    assert user['username'] == 'jenkins'
+    '''Fail to return first result when existing limit in expression.'''
+    with pytest.raises(ValueError):
+        session.query('User where username is jenkins limit 0').first()
 
 
 def test_first_with_prefetched_data(session):
     '''Return first result ignoring prefetched data.'''
-    query = session.query('User where username is jenkins limit 0')
+    query = session.query('User where username is jenkins')
     query.all()
 
     user = query.first()
