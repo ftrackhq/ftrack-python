@@ -55,11 +55,9 @@ class QueryResult(collections.Sequence):
             :exc:`~ftrack_api.exception.IncorrectResultError` if you want to
             catch only one error type.
 
-        The method temporarily applies a new limit or replaces any already
-        applied limit before executing the query.
-
-        Therefore running `one` followed by `all` on the same query will
-        not affect each other.
+        This method applies a new limit temporarily overriding any existing
+        limit in the expression. Therefore it is safe to call this method
+        without affecting the behaviour of other methods like :meth:`first`.
 
         '''
         if self._results is not None:
@@ -90,17 +88,17 @@ class QueryResult(collections.Sequence):
     def first(self):
         '''Return first matching result from query.
 
-        The method temporarily applies a new limit or replaces any already
-        applied limit before executing the query.
+        This method applies a new limit temporarily overriding any existing
+        limit in the expression. Therefore it is safe to call this method
+        without affecting the behaviour of other methods like :meth:`all`::
 
-        Therefore running `first` followed by `all` on the same query will
-        not affect each other, for example::
-
-            query = session.query('Task where status.name is "In Progress" limit 10')
+            query = session.query(
+                'Task where status.name is "In Progress" limit 10'
+            )
             query.first()  # Return first task in progress
             query.all()  # Return first 10 matching tasks
 
-        If not result match None is returned.
+        If no matching result available return None.
 
         '''
         # Return first item in results if results already has been fetched.
