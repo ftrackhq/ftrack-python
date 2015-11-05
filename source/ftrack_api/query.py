@@ -65,9 +65,10 @@ class QueryResult(collections.Sequence):
         else:
             expression = self._expression
 
-            # See if a limit is already apply. If so temporary replace it with
-            # `limit 2` and fetch results. We use `limit 2` to be able to raise
-            # an exception if result contains multiple entities.
+            # Apply custom limit as optimisation, temporarily replacing any
+            # existing limit in the expression. A limit of 2 is used rather than
+            # 1 so that it is possible to test for multiple matching entries
+            # case.
             limiter = ' limit 2'
             expression, matched = re.subn(
                 self.LIMIT_EXPRESSION, limiter, expression
@@ -107,8 +108,8 @@ class QueryResult(collections.Sequence):
 
         expression = self._expression
 
-        # See if a limit is already apply. If so temporary replace it with
-        # `limit 1` and fetch results.
+        # Apply custom limit as optimisation, temporarily replacing any
+        # existing limit in the expression.
         limiter = ' limit 1'
         expression, matched = re.subn(
             self.LIMIT_EXPRESSION, limiter, expression
