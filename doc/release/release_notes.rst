@@ -26,6 +26,13 @@ Release Notes
         transferred data should an error occur during either data transfer or
         database registration.
 
+    .. change:: changed
+        :tags: exception, locations
+
+        :exc:`ftrack_api.exception.ComponentInLocationError` now accepts either
+        a single component or multiple components and makes them available as
+        *components* in its *details* parameter.
+
     .. change:: new
         :tags: caching
 
