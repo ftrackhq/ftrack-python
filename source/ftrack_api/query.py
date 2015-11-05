@@ -62,7 +62,7 @@ class QueryResult(collections.Sequence):
         not affect each other.
 
         '''
-        if self._results:
+        if self._results is not None:
             results = self._results
         else:
             expression = self._expression
