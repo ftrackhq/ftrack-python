@@ -61,6 +61,8 @@ class QueryResult(collections.Sequence):
 
         '''
         if self._results is not None:
+            # Reuse results that have already been fetched rather than issuing
+            # a new query.
             results = self._results
         else:
             expression = self._expression
@@ -102,22 +104,24 @@ class QueryResult(collections.Sequence):
         If no matching result available return None.
 
         '''
-        # Return first item in results if results already has been fetched.
-        if self._results:
-            return self._results[0]
+        if self._results is not None:
+            # Reuse results that have already been fetched rather than issuing
+            # a new query.
+            results = self._results
+        else:
+            expression = self._expression
 
-        expression = self._expression
+            # Apply custom limit as optimisation, temporarily replacing any
+            # existing limit in the expression.
+            limiter = ' limit 1'
+            expression, matched = re.subn(
+                self.LIMIT_EXPRESSION, limiter, expression
+            )
+            if not matched:
+                expression += limiter
 
-        # Apply custom limit as optimisation, temporarily replacing any
-        # existing limit in the expression.
-        limiter = ' limit 1'
-        expression, matched = re.subn(
-            self.LIMIT_EXPRESSION, limiter, expression
-        )
-        if not matched:
-            expression += limiter
+            results = self._session._query(expression)
 
-        results = self._session._query(expression)
         if results:
             return results[0]
 
