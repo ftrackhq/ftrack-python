@@ -76,7 +76,7 @@ class Location(ftrack_api.entity.base.Entity):
             [component], sources=source, recursive=recursive
         )
 
-    def add_components(self, components, sources, recursive=True):
+    def add_components(self, components, sources, recursive=True, _depth=0):
         '''Add *components* to location.
 
         *components* should be a list of component instances.
@@ -142,6 +142,8 @@ class Location(ftrack_api.entity.base.Entity):
             # when called recursively on an empty sequence component.
             return
 
+        indent = '    ' * (_depth + 1)
+
         # Check that components not already added to location.
         existing_components = []
         try:
@@ -180,7 +182,8 @@ class Location(ftrack_api.entity.base.Entity):
                 is_container = 'members' in component.keys()
                 if is_container and recursive:
                     self.add_components(
-                        component['members'], source, recursive=recursive
+                        component['members'], source, recursive=recursive,
+                        _depth=(_depth + 1)
                     )
 
                 # Add component to this location.
@@ -195,9 +198,11 @@ class Location(ftrack_api.entity.base.Entity):
             except Exception as error:
                 raise ftrack_api.exception.LocationError(
                     'Failed to transfer component {component} data to location '
-                    '{location} due to error {error}. Transferred component '
-                    'data that may require cleanup: {transferred}',
+                    '{location} due to error:\n{indent}{error}\n{indent}'
+                    'Transferred component data that may require cleanup: '
+                    '{transferred}',
                     details=dict(
+                        indent=indent,
                         component=component,
                         location=self,
                         error=error,
@@ -234,9 +239,10 @@ class Location(ftrack_api.entity.base.Entity):
         except Exception as error:
             raise ftrack_api.exception.LocationError(
                 'Failed to register components with location {location} due to '
-                'error {error}. Transferred component data that may require '
-                'cleanup: {transferred}',
+                'error:\n{indent}{error}\n{indent}Transferred component data '
+                'that may require cleanup: {transferred}',
                 details=dict(
+                    indent=indent,
                     location=self,
                     error=error,
                     transferred=transferred
