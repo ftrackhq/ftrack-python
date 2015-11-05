@@ -44,6 +44,21 @@ def test_one_fails_for_multiple_results(session):
         session.query('User').one()
 
 
+def test_one_with_existing_limit(session):
+    '''Return single result overriding existing limit in expression.'''
+    user = session.query('User where username is jenkins limit 0').one()
+    assert user['username'] == 'jenkins'
+
+
+def test_one_with_prefetched_data(session):
+    '''Return single result ignoring prefetched data.'''
+    query = session.query('User where username is jenkins limit 0')
+    query.all()
+
+    user = query.one()
+    assert user['username'] == 'jenkins'
+
+
 def test_first(session):
     '''Return first result using convenience method.'''
     users = session.query('User').all()
@@ -57,3 +72,17 @@ def test_first_returns_none_when_no_results(session):
     user = session.query('User where username is does_not_exist').first()
     assert user is None
 
+
+def test_first_with_existing_limit(session):
+    '''Return first result overriding existing limit in expression.'''
+    user = session.query('User where username is jenkins limit 0').first()
+    assert user['username'] == 'jenkins'
+
+
+def test_first_with_prefetched_data(session):
+    '''Return first result ignoring prefetched data.'''
+    query = session.query('User where username is jenkins limit 0')
+    query.all()
+
+    user = query.first()
+    assert user['username'] == 'jenkins'
