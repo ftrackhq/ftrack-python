@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+import re
 import collections
 
 import ftrack_api.exception
@@ -8,6 +9,8 @@ import ftrack_api.exception
 
 class QueryResult(collections.Sequence):
     '''Results from a query.'''
+
+    LIMIT_EXPRESSION = re.compile('(?P<limit> limit \d+)')
 
     def __init__(self, session, expression):
         '''Initialise result set.'''
@@ -39,7 +42,10 @@ class QueryResult(collections.Sequence):
         return list(self)
 
     def one(self):
-        '''Return exactly one single result from query.
+        '''Return exactly one single result from query by applying a limit.
+
+        Raise :exc:`ValueError` if an existing limit is already present in the
+        expression.
 
         Raise :exc:`~ftrack_api.exception.MultipleResultsFoundError` if more
         than one result was available or
@@ -53,7 +59,20 @@ class QueryResult(collections.Sequence):
             catch only one error type.
 
         '''
-        results = self.all()
+        expression = self._expression
+
+        if self.LIMIT_EXPRESSION.search(expression):
+            raise ValueError(
+                'Expression already contains a limit clause.'
+            )
+
+        # Apply custom limit as optimisation. A limit of 2 is used rather than
+        # 1 so that it is possible to test for multiple matching entries
+        # case.
+        expression += ' limit 2'
+
+        results = self._session._query(expression)
+
         if not results:
             raise ftrack_api.exception.NoResultFoundError()
 
@@ -63,14 +82,26 @@ class QueryResult(collections.Sequence):
         return results[0]
 
     def first(self):
-        '''Return first matching result from query.
+        '''Return first matching result from query by applying a limit.
 
-        If no results retrieved then return None.
+        Raise :exc:`ValueError` if an existing limit is already present in the
+        expression.
+
+        If no matching result available return None.
 
         '''
-        # TODO: Optimise by creating a new query injecting a limit of 1 if
-        # results not yet retrieved.
-        results = self.all()
+        expression = self._expression
+
+        if self.LIMIT_EXPRESSION.search(expression):
+            raise ValueError(
+                'Expression already contains a limit clause.'
+            )
+
+        # Apply custom limit as optimisation.
+        expression += ' limit 1'
+
+        results = self._session._query(expression)
+
         if results:
             return results[0]
 
