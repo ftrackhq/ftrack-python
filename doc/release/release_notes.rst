@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: tests
+
+        Update session test to not fail on the new private link attribute.
+
 .. release:: 0.9.0
     :date: 2015-10-30
 
