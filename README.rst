@@ -6,15 +6,18 @@ Python API for ftrack.
 
 .. important::
 
-    This new Python API for ftrack is currently in beta. As such, there may be
-    missing features and/or bugs and it should not be used in production.
+    This is the new Python client for the ftrack API. It can be
+    considered relatively stable and ready for production use though there may
+    be missing features and a few bugs left to deal with as it approaches the
+    1.0.0 release. If you are migrating from the old client then please read
+    the dedicated `migration guide <http://ftrack-python-api.rtd.ftrack.com/en/stable/release/migrating_from_old_api.html>`_.
 
 *************
 Documentation
 *************
 
 Full documentation, including installation and setup guides, can be found at
-http://ftrack-python-api.rtd.ftrack.com/en/latest/
+http://ftrack-python-api.rtd.ftrack.com/en/stable/
 
 *********************
 Copyright and license
