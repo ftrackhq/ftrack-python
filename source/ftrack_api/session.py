@@ -1685,7 +1685,7 @@ class Session(object):
             data.setdefault('file_type', os.path.splitext(container_path)[-1])
 
             container = self._create_component(
-                'SequenceComponent', container_path, data, location
+                'SequenceComponent', container_path, data, location=None
             )
 
             # Create member components for sequence.
@@ -1697,8 +1697,17 @@ class Session(object):
                     'file_type': os.path.splitext(member_path)[-1]
                 }
 
-                self._create_component(
-                    'FileComponent', member_path, member_data, location
+                component = self._create_component(
+                    'FileComponent', member_path, member_data, location=None
+                )
+                container['members'].append(component)
+
+            if location:
+                origin_location = self.get(
+                    'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
+                )
+                location.add_component(
+                    container, origin_location, recursive=True
                 )
 
             return container
