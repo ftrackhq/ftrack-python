@@ -491,6 +491,9 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
 
     assert encoded == textwrap.dedent('''
         {{"__entity_type__": "Task",
+         "_link": [{{"id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
+         "name": "Tests (do not delete)", "type": "Project"}},
+         {{"id": "{task_id}", "name": "{task_name}", "type": "TypedContext"}}],
          "allocations": [],
          "appointments": [],
          "assignments": [],
@@ -500,10 +503,10 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "custom_attributes": [],
          "description": "",
          "end_date": null,
-         "id": "{0}",
+         "id": "{task_id}",
          "lists": [],
          "metadata": [],
-         "name": "{1}",
+         "name": "{task_name}",
          "notes": [],
          "object_type": {{"__entity_type__": "ObjectType",
          "id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c"}},
@@ -529,7 +532,7 @@ def test_encode_entity_using_all_attributes_strategy(session, new_task):
          "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
          "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
     '''.format(
-        new_task['id'], new_task['name']
+        task_id=new_task['id'], task_name=new_task['name']
     )).replace('\n', '')
 
 
