@@ -12,9 +12,31 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: session, component, locations, performance
+
+        Improved performance of
+        :meth:`ftrack_api.entity.location.Location.add_components` by batching
+        database operations.
+
+        As a result it is no longer possible to determine progress of transfer
+        for container components in realtime as events will be emitted in batch
+        at end of operation.
+
+        In addition, it is now the callers responsibility to clean up any
+        transferred data should an error occur during either data transfer or
+        database registration.
+
+    .. change:: changed
+        :tags: exception, locations
+
+        :exc:`ftrack_api.exception.ComponentInLocationError` now accepts either
+        a single component or multiple components and makes them available as
+        *components* in its *details* parameter.
+
+    .. change:: changed
         :tags: tests
 
-        Update session test to not fail on the new private link attribute.
+        Updated session test to not fail on the new private link attribute.
 
 .. release:: 0.9.0
     :date: 2015-10-30

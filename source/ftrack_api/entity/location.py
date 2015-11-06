@@ -66,29 +66,56 @@ class Location(ftrack_api.entity.base.Entity):
         the write so if another process creates data at the same target during
         that period it will be overwritten.
 
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the component registration.
+
         '''
         return self.add_components(
             [component], sources=source, recursive=recursive
         )
 
-    def add_components(self, components, sources, recursive=True):
+    def add_components(self, components, sources, recursive=True, _depth=0):
         '''Add *components* to location.
 
         *components* should be a list of component instances.
 
         *sources* may be either a single source or a list of sources. If a list
-        *then each corresponding index in *sources* will be used for each
+        then each corresponding index in *sources* will be used for each
         *component*. A source should be an instance of another location.
 
-        Raise :exc:`ftrack_api.ComponentInLocationError` if the *component*
-        already exists in this location.
+        Raise :exc:`ftrack_api.exception.ComponentInLocationError` if any
+        component in *components* already exists in this location. In this case,
+        no changes will be made and no data transferred.
 
-        Raise :exc:`ftrack_api.LocationError` if managing data and the generated
-        target structure for the component already exists according to the
-        accessor. This helps prevent potential data loss by avoiding overwriting
-        existing data. Note that there is a race condition between the check and
-        the write so if another process creates data at the same target during
-        that period it will be overwritten.
+        Raise :exc:`ftrack_api.exception.LocationError` if managing data and the
+        generated target structure for the component already exists according to
+        the accessor. This helps prevent potential data loss by avoiding
+        overwriting existing data. Note that there is a race condition between
+        the check and the write so if another process creates data at the same
+        target during that period it will be overwritten.
+
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components registration.
+
+        .. important::
+
+            If this location manages data then the *components* data is first
+            transferred to the target prescribed by the structure plugin, using
+            the configured accessor. If any component fails to transfer then
+            :exc:`ftrack_api.exception.LocationError` is raised and none of the
+            components are registered with the database. In this case it is left
+            up to the caller to decide and act on manually cleaning up any
+            transferred data using the 'transferred' detail in the raised error.
+
+            Likewise, after transfer, all components are registered with the
+            database in a batch call. If any component causes an error then all
+            components will remain unregistered and
+            :exc:`ftrack_api.exception.LocationError` will be raised detailing
+            issues and any transferred data under the 'transferred' detail key.
 
         '''
         if (
@@ -110,55 +137,121 @@ class Location(ftrack_api.entity.base.Entity):
                 details=dict(location=self)
             )
 
-        # Add each component.
-        for index, component in enumerate(components):
-            # Preemptively check that component has not already been added.
-            try:
-                self.get_resource_identifier(component)
-            except ftrack_api.exception.ComponentNotInLocationError:
-                # Component does not already exist in location so it is fine to
-                # continue to add it.
-                pass
-            else:
-                raise ftrack_api.exception.ComponentInLocationError(
-                    component, self
-                )
+        if not components:
+            # Optimisation: Return early when no components to process, such as
+            # when called recursively on an empty sequence component.
+            return
 
-            # Determine appropriate source.
-            if sources_count == 1:
-                source = sources[0]
-            else:
-                source = sources[index]
+        indent = '    ' * (_depth + 1)
 
-            # Add members first for container components.
-            is_container = 'members' in component.keys()
-            if is_container and recursive:
-                self.add_components(
-                    component['members'], source, recursive=recursive
-                )
+        # Check that components not already added to location.
+        existing_components = []
+        try:
+            self.get_resource_identifiers(components)
 
-            # Add component to this location.
-            context = self._get_context(component, source)
-            resource_identifier = self.structure.get_resource_identifier(
-                component, context
+        except ftrack_api.exception.ComponentNotInLocationError as error:
+            missing_component_ids = [
+                missing_component['id']
+                for missing_component in error.details['components']
+            ]
+            for component in components:
+                if component['id'] not in missing_component_ids:
+                    existing_components.append(component)
+
+        else:
+            existing_components.extend(components)
+
+        if existing_components:
+            # Some of the components already present in location.
+            raise ftrack_api.exception.ComponentInLocationError(
+                existing_components, self
             )
 
-            # Manage data transfer.
-            self._add_data(component, resource_identifier, source)
+        # Attempt to transfer each component's data to this location.
+        transferred = []
 
-            # Optionally encode resource identifier before storing.
-            if self.resource_identifier_transformer:
-                resource_identifier = (
-                    self.resource_identifier_transformer.encode(
-                        resource_identifier,
-                        context={'component': component}
+        for index, component in enumerate(components):
+            try:
+                # Determine appropriate source.
+                if sources_count == 1:
+                    source = sources[0]
+                else:
+                    source = sources[index]
+
+                # Add members first for container components.
+                is_container = 'members' in component.keys()
+                if is_container and recursive:
+                    self.add_components(
+                        component['members'], source, recursive=recursive,
+                        _depth=(_depth + 1)
+                    )
+
+                # Add component to this location.
+                context = self._get_context(component, source)
+                resource_identifier = self.structure.get_resource_identifier(
+                    component, context
+                )
+
+                # Manage data transfer.
+                self._add_data(component, resource_identifier, source)
+
+            except Exception as error:
+                raise ftrack_api.exception.LocationError(
+                    'Failed to transfer component {component} data to location '
+                    '{location} due to error:\n{indent}{error}\n{indent}'
+                    'Transferred component data that may require cleanup: '
+                    '{transferred}',
+                    details=dict(
+                        indent=indent,
+                        component=component,
+                        location=self,
+                        error=error,
+                        transferred=transferred
                     )
                 )
 
-            # Store component in location information.
-            self._register_component_in_location(component, resource_identifier)
+            else:
+                transferred.append((component, resource_identifier))
 
-            # Publish event.
+        # Register all successfully transferred components.
+        components_to_register = []
+        component_resource_identifiers = []
+
+        try:
+            for component, resource_identifier in transferred:
+                if self.resource_identifier_transformer:
+                    # Optionally encode resource identifier before storing.
+                    resource_identifier = (
+                        self.resource_identifier_transformer.encode(
+                            resource_identifier,
+                            context={'component': component}
+                        )
+                    )
+
+                components_to_register.append(component)
+                component_resource_identifiers.append(resource_identifier)
+
+            # Store component in location information.
+            self._register_components_in_location(
+                components, component_resource_identifiers
+            )
+
+        except Exception as error:
+            raise ftrack_api.exception.LocationError(
+                'Failed to register components with location {location} due to '
+                'error:\n{indent}{error}\n{indent}Transferred component data '
+                'that may require cleanup: {transferred}',
+                details=dict(
+                    indent=indent,
+                    location=self,
+                    error=error,
+                    transferred=transferred
+                )
+            )
+
+        # Publish events.
+        for component in components_to_register:
+
             component_id = ftrack_api.inspection.primary_key(
                 component
             ).values()[0]
@@ -199,6 +292,12 @@ class Location(ftrack_api.entity.base.Entity):
         locations accessor.
 
         '''
+        self.logger.debug(
+            'Adding data for component {0!r} from source {1!r} to location '
+            '{2!r} using resource identifier {3!r}.'.format(
+                component, resource_identifier, source, self
+            )
+        )
         # Read data from source and write to this location.
         if not source.accessor:
             raise ftrack_api.exception.LocationError(
@@ -261,24 +360,52 @@ class Location(ftrack_api.entity.base.Entity):
             source_data.close()
 
     def _register_component_in_location(self, component, resource_identifier):
-        '''Register *component* in location with *resource_identifier*.'''
-        self.session.create(
-            'ComponentLocation', data=dict(
-                component=component,
-                location=self,
-                resource_identifier=resource_identifier
-            )
+        '''Register *component* in location against *resource_identifier*.'''
+        return self._register_components_in_location(
+            [component], [resource_identifier]
         )
 
-        # TODO: Should auto-commit here be optional?
+    def _register_components_in_location(
+        self, components, resource_identifiers
+    ):
+        '''Register *components* in location against *resource_identifiers*.
+
+        Indices of *components* and *resource_identifiers* should align.
+
+        '''
+        for component, resource_identifier in zip(
+            components, resource_identifiers
+        ):
+            self.session.create(
+                'ComponentLocation', data=dict(
+                    component=component,
+                    location=self,
+                    resource_identifier=resource_identifier
+                )
+            )
+
         self.session.commit()
 
     def remove_component(self, component, recursive=True):
-        '''Remove *component* from location.'''
+        '''Remove *component* from location.
+
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the component deregistration.
+
+        '''
         return self.remove_components([component], recursive=recursive)
 
     def remove_components(self, components, recursive=True):
-        '''Remove *components* from location.'''
+        '''Remove *components* from location.
+
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components deregistration.
+
+        '''
         for component in components:
             # Check component is in this location
             self.get_resource_identifier(component)
@@ -480,6 +607,19 @@ class MemoryLocationMixin(object):
         '''Register *component* in location with *resource_identifier*.'''
         component_id = ftrack_api.inspection.primary_key(component).values()[0]
         self._cache[component_id] = resource_identifier
+
+    def _register_components_in_location(
+        self, components, resource_identifiers
+    ):
+        '''Register *components* in location against *resource_identifiers*.
+
+        Indices of *components* and *resource_identifiers* should align.
+
+        '''
+        for component, resource_identifier in zip(
+            components, resource_identifiers
+        ):
+            self._register_component_in_location(component, resource_identifier)
 
     def _deregister_component_in_location(self, component):
         '''Deregister *component* in location.'''
