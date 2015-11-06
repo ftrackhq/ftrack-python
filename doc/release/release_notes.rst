@@ -33,6 +33,11 @@ Release Notes
         a single component or multiple components and makes them available as
         *components* in its *details* parameter.
 
+    .. change:: changed
+        :tags: tests
+
+        Updated session test to not fail on the new private link attribute.
+
 .. release:: 0.9.0
     :date: 2015-10-30
 
