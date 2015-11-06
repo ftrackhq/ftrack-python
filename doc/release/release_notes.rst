@@ -9,8 +9,7 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: 0.9.0
-    :date: 2015-10-30
+.. release:: Upcoming
 
     .. change:: changed
         :tags: session, component, locations, performance
@@ -33,6 +32,9 @@ Release Notes
         :exc:`ftrack_api.exception.ComponentInLocationError` now accepts either
         a single component or multiple components and makes them available as
         *components* in its *details* parameter.
+
+.. release:: 0.9.0
+    :date: 2015-10-30
 
     .. change:: new
         :tags: caching
