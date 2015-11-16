@@ -53,15 +53,24 @@ With a copy of the source it is also possible to run the unit tests::
 Dependencies
 ============
 
-* `Python <http://python.org>`_ >= 2.6, < 3
+* `Python <http://python.org>`_ >= 2.7, < 3
+* `Requests <http://docs.python-requests.org>`_ >= 2, <3,
+* `Arrow <http://crsmithdev.com/arrow/>`_ >= 0.4.4, < 1,
+* `termcolor <https://pypi.python.org/pypi/termcolor>`_ >= 1.1.0, < 2,
+* `pyparsing <http://pyparsing.wikispaces.com/>`_ >= 2.0, < 3,
+* `Clique <http://clique.readthedocs.org/>`_ >= 1.2.0, < 2,
+* `websocket-client <https://pypi.python.org/pypi/websocket-client>`_ == 0.12
 
 Additional For building
 -----------------------
 
 * `Sphinx <http://sphinx-doc.org/>`_ >= 1.2.2, < 2
 * `sphinx_rtd_theme <https://github.com/snide/sphinx_rtd_theme>`_ >= 0.1.6, < 1
+* `Lowdown <http://lowdown.rtd.ftrack.com/en/stable/>`_ >= 0.1.0, < 2
 
 Additional For testing
 ----------------------
 
 * `Pytest <http://pytest.org>`_  >= 2.3.5, < 3
+* `pytest-mock <https://pypi.python.org/pypi/pytest-mock/>`_ >= 0.4, < 1,
+* `pytest-catchlog <https://pypi.python.org/pypi/pytest-catchlog/>`_ >= 1, <=2
