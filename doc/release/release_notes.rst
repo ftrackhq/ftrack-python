@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+
+        Documentation specifies Python 2.6 instead of Python 2.7 as minimum
+        interpreter version.
+
     .. change:: changed
         :tags: session, component, locations, performance
 

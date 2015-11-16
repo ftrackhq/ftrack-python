@@ -53,7 +53,7 @@ With a copy of the source it is also possible to run the unit tests::
 Dependencies
 ============
 
-* `Python <http://python.org>`_ >= 2.6, < 3
+* `Python <http://python.org>`_ >= 2.7, < 3
 
 Additional For building
 -----------------------
