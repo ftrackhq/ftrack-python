@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import math
+
 import pytest
 
 import ftrack_api
@@ -86,3 +88,50 @@ def test_first_with_prefetched_data(session):
 
     user = query.first()
     assert user['username'] == 'jenkins'
+
+
+def test_paging(session, mocker):
+    '''Page through results.'''
+    mocker.patch.object(session, '_call', wraps=session._call)
+
+    page_size = 5
+    query = session.query('User', page_size=page_size)
+    records = query.all()
+
+    assert session._call.call_count == (
+        math.ceil(len(records) / float(page_size))
+    )
+
+
+def test_paging_respecting_offset_and_limit(session, mocker):
+    '''Page through results respecting offset and limit.'''
+    users = session.query('User').all()
+
+    mocker.patch.object(session, '_call', wraps=session._call)
+
+    page_size = 6
+    query = session.query('User offset 2 limit 8', page_size=page_size)
+    records = query.all()
+
+    assert session._call.call_count == 2
+    assert len(records) == 8
+    assert records == users[1:9]
+
+
+def test_paging_respecting_limit_smaller_than_page_size(session, mocker):
+    '''Use initial limit when less than page size.'''
+    mocker.patch.object(session, '_call', wraps=session._call)
+
+    page_size = 100
+    query = session.query('User limit 10', page_size=page_size)
+    records = query.all()
+
+    assert session._call.call_count == 1
+    session._call.assert_called_once_with(
+        [{
+            'action': 'query',
+            'expression': 'select id from User limit 10'
+        }]
+    )
+
+    assert len(records) == 10
