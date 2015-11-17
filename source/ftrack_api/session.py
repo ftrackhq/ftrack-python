@@ -655,7 +655,12 @@ class Session(object):
         return query_result
 
     def _query(self, expression):
-        '''Execute *query*.'''
+        '''Execute *query* and return (records, metadata).
+
+        Records will be a list of entities retrieved via the query and metadata
+        a dictionary of accompanying information about the result set.
+
+        '''
         # TODO: Actually support batching several queries together.
         # TODO: Should batches have unique ids to match them up later.
         batch = [{

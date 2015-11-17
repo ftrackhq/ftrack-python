@@ -152,7 +152,7 @@ class QueryResult(collections.Sequence):
         # case.
         expression += ' limit 2'
 
-        results = self._session._query(expression)
+        results, metadata = self._session._query(expression)
 
         if not results:
             raise ftrack_api.exception.NoResultFoundError()
@@ -181,7 +181,7 @@ class QueryResult(collections.Sequence):
         # Apply custom limit as optimisation.
         expression += ' limit 1'
 
-        results = self._session._query(expression)
+        results, metadata = self._session._query(expression)
 
         if results:
             return results[0]
