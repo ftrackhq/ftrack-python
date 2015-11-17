@@ -21,10 +21,12 @@ class QueryResult(collections.Sequence):
 
         *page_size* should be an integer specifying the maximum number of
         records to fetch in one request allowing the results to be fetched
-        incrementally in a transparent manner for optimal performance. The page
-        size will override any limit present in the expression, but any
-        embedded offset and limit will still be honoured in terms of the overall
-        result.
+        incrementally in a transparent manner for optimal performance. Any
+        offset or limit specified in *expression* are honoured for final result
+        set, but intermediate queries may be issued with different offsets and
+        limits in order to fetch pages. When an embedded limit is smaller than
+        the given *page_size* it will be used instead and no paging will take
+        place.
 
         .. warning::
 
@@ -43,6 +45,11 @@ class QueryResult(collections.Sequence):
         ) = self._extract_offset_and_limit(expression)
 
         self._page_size = page_size
+        if self._limit is not None and self._limit < self._page_size:
+            # Optimise case where embedded limit is less than fetching a
+            # single page.
+            self._page_size = self._limit
+
         self._next_offset = self._offset
 
     def _extract_offset_and_limit(self, expression):
