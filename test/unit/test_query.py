@@ -103,7 +103,7 @@ def test_paging(session, mocker):
     )
 
 
-def test_paging_respecting_offset_and_limit(session, mocker):
+def test_paging_respects_offset_and_limit(session, mocker):
     '''Page through results respecting offset and limit.'''
     users = session.query('User').all()
 
@@ -118,7 +118,7 @@ def test_paging_respecting_offset_and_limit(session, mocker):
     assert records == users[2:10]
 
 
-def test_paging_respecting_limit_smaller_than_page_size(session, mocker):
+def test_paging_respects_limit_smaller_than_page_size(session, mocker):
     '''Use initial limit when less than page size.'''
     mocker.patch.object(session, '_call', wraps=session._call)
 
