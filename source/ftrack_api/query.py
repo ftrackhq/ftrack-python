@@ -10,32 +10,97 @@ import ftrack_api.exception
 class QueryResult(collections.Sequence):
     '''Results from a query.'''
 
-    LIMIT_EXPRESSION = re.compile('(?P<limit> limit \d+)')
+    OFFSET_EXPRESSION = re.compile('(?P<offset>offset (?P<value>\d+))')
+    LIMIT_EXPRESSION = re.compile('(?P<limit>limit (?P<value>\d+))')
 
-    def __init__(self, session, expression):
-        '''Initialise result set.'''
+    def __init__(self, session, expression, page_size=500):
+        '''Initialise result set.
+
+        *session* should be an instance of :class:`ftrack_api.session.Session`
+        that will be used for executing the query *expression*.
+
+        *page_size* should be an integer specifying the maximum number of
+        records to fetch in one request allowing the results to be fetched
+        incrementally in a transparent manner for optimal performance. The page
+        size will override any limit present in the expression, but any
+        embedded offset and limit will still be honoured in terms of the overall
+        result.
+
+        .. warning::
+
+            Setting *page_size* to a very large amount may negatively impact
+            performance of not only the caller, but the server in general.
+
+        '''
         super(QueryResult, self).__init__()
         self._session = session
-        self._expression = expression
-        self._results = None
+        self._results = []
+
+        (
+            self._expression,
+            self._offset,
+            self._limit
+        ) = self._extract_offset_and_limit(expression)
+
+        self._page_size = page_size
+        self._next_offset = self._offset
+
+    def _extract_offset_and_limit(self, expression):
+        '''Process *expression* extracting offset and limit.
+
+        Return (expression, offset, limit).
+
+        '''
+        offset = 0
+        match = self.OFFSET_EXPRESSION.search(expression)
+        if match:
+            offset = int(match.group('value'))
+            expression = (
+                expression[:match.start('offset')] +
+                expression[match.end('offset'):]
+            )
+
+        limit = None
+        match = self.LIMIT_EXPRESSION.search(expression)
+        if match:
+            limit = int(match.group('value'))
+            expression = (
+                expression[:match.start('limit')] +
+                expression[match.end('limit'):]
+            )
+
+        return expression, offset, limit
 
     def __getitem__(self, index):
         '''Return value at *index*.'''
-        if self._results is None:
-            self._fetch_results()
+        while self._can_fetch_more() and index < len(self._results):
+            self._fetch_more()
 
         return self._results[index]
 
     def __len__(self):
         '''Return number of items.'''
-        if self._results is None:
-            self._fetch_results()
+        while self._can_fetch_more():
+            self._fetch_more()
 
         return len(self._results)
 
-    def _fetch_results(self):
-        '''Fetch and store results.'''
-        self._results = self._session._query(self._expression)
+    def _can_fetch_more(self):
+        '''Return whether more results are available to fetch.'''
+        return self._next_offset is not None
+
+    def _fetch_more(self):
+        '''Fetch next page of results if available.'''
+        if not self._can_fetch_more():
+            return
+
+        expression = '{0} offset {1} limit {2}'.format(
+            self._expression, self._next_offset, self._page_size
+        )
+        records, metadata = self._session._query(expression)
+        self._results.extend(records)
+
+        self._next_offset = metadata.get('next', {}).get('offset', None)
 
     def all(self):
         '''Fetch and return all data.'''
