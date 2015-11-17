@@ -100,7 +100,13 @@ class QueryResult(collections.Sequence):
         records, metadata = self._session._query(expression)
         self._results.extend(records)
 
-        self._next_offset = metadata.get('next', {}).get('offset', None)
+        if self._limit is not None and (len(self._results) >= self._limit):
+            # Original limit reached.
+            self._next_offset = None
+            del self._results[self._limit:]
+        else:
+            # Retrieve next page offset from returned metadata.
+            self._next_offset = metadata.get('next', {}).get('offset', None)
 
     def all(self):
         '''Fetch and return all data.'''
