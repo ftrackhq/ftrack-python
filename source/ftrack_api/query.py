@@ -76,7 +76,7 @@ class QueryResult(collections.Sequence):
                 expression[match.end('limit'):]
             )
 
-        return expression, offset, limit
+        return expression.strip(), offset, limit
 
     def __getitem__(self, index):
         '''Return value at *index*.'''
