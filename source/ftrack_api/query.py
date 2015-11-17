@@ -51,6 +51,9 @@ class QueryResult(collections.Sequence):
             self._page_size = self._limit
 
         self._next_offset = self._offset
+        if self._next_offset is None:
+            # Initialise with zero offset.
+            self._next_offset = 0
 
     def _extract_offset_and_limit(self, expression):
         '''Process *expression* extracting offset and limit.
