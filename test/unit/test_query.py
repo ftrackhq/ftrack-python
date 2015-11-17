@@ -115,7 +115,7 @@ def test_paging_respecting_offset_and_limit(session, mocker):
 
     assert session._call.call_count == 2
     assert len(records) == 8
-    assert records == users[1:9]
+    assert records == users[2:10]
 
 
 def test_paging_respecting_limit_smaller_than_page_size(session, mocker):
