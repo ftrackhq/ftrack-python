@@ -142,7 +142,7 @@ class QueryResult(collections.Sequence):
         '''
         expression = self._expression
 
-        if self.LIMIT_EXPRESSION.search(expression):
+        if self._limit is not None:
             raise ValueError(
                 'Expression already contains a limit clause.'
             )
@@ -173,7 +173,7 @@ class QueryResult(collections.Sequence):
         '''
         expression = self._expression
 
-        if self.LIMIT_EXPRESSION.search(expression):
+        if self._limit is not None:
             raise ValueError(
                 'Expression already contains a limit clause.'
             )
