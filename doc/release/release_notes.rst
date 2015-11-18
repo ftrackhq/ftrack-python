@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: tests
+
+        Updated session test to use mocked schemas for encoding tests.
+
     .. change:: fixed
 
         Documentation specifies Python 2.6 instead of Python 2.7 as minimum
