@@ -483,108 +483,95 @@ def test_check_server_compatibility(
                 session.check_server_compatibility()
 
 
-def test_encode_entity_using_all_attributes_strategy(session, new_task):
+def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
     '''Encode entity using "all" entity_attribute_strategy.'''
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='all'
+    new_bar = mocked_schema_session.create(
+        'Bar',
+        {
+            'name': 'myBar',
+            'id': 'bar_unique_id'
+        }
+    )
+
+    new_foo = mocked_schema_session.create(
+        'Foo',
+        {
+            'id': 'a_unique_id',
+            'string': 'abc',
+            'integer': 42,
+            'number': 12345678.9,
+            'boolean': False,
+            'date': arrow.get('2015-11-18 15:24:09'),
+            'bars': [new_bar]
+        }
+    )
+
+    encoded = mocked_schema_session.encode(
+        new_foo, entity_attribute_strategy='all'
     )
 
     assert encoded == textwrap.dedent('''
-        {{"__entity_type__": "Task",
-         "_link": [{{"id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "name": "Tests (do not delete)", "type": "Project"}},
-         {{"id": "{task_id}", "name": "{task_name}", "type": "TypedContext"}}],
-         "allocations": [],
-         "appointments": [],
-         "assignments": [],
-         "bid": 0.0,
-         "children": [],
-         "context_type": "task",
-         "custom_attributes": [],
-         "description": "",
-         "end_date": null,
-         "id": "{task_id}",
-         "lists": [],
-         "metadata": [],
-         "name": "{task_name}",
-         "notes": [],
-         "object_type": {{"__entity_type__": "ObjectType",
-         "id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c"}},
-         "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
-         "parent": {{"__entity_type__": "Project", "id":
-         "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
-         "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "priority": {{"__entity_type__": "Priority",
-         "id": "9661b320-3a0c-11e2-81c1-0800200c9a66"}},
-         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
-         "project": {{"__entity_type__": "Project",
-         "id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
-         "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "scopes": [],
-         "sort": null,
-         "start_date": null,
-         "status": {{"__entity_type__": "Status",
-         "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
-         "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
-         "thumbnail_id": null,
-         "timelogs": [],
-         "type": {{"__entity_type__": "Type",
-         "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
-    '''.format(
-        task_id=new_task['id'], task_name=new_task['name']
-    )).replace('\n', '')
+        {"__entity_type__": "Foo",
+         "bars": [{"__entity_type__": "Bar", "id": "bar_unique_id"}],
+         "boolean": false,
+         "date": {"__type__": "datetime", "value": "2015-11-18T15:24:09+00:00"},
+         "id": "a_unique_id",
+         "integer": 42,
+         "number": 12345678.9,
+         "string": "abc"}
+    ''').replace('\n', '')
 
 
 def test_encode_entity_using_only_set_attributes_strategy(
-    session, new_task
+    mocked_schema_session
 ):
     '''Encode entity using "set_only" entity_attribute_strategy.'''
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='set_only'
+    new_foo = mocked_schema_session.create(
+        'Foo',
+        {
+            'id': 'a_unique_id',
+            'string': 'abc',
+            'integer': 42
+        }
+    )
+
+    encoded = mocked_schema_session.encode(
+        new_foo, entity_attribute_strategy='set_only'
     )
 
     assert encoded == textwrap.dedent('''
-        {{"__entity_type__": "Task",
-         "bid": 0.0,
-         "context_type": "task",
-         "description": "",
-         "id": "{0}",
-         "name": "{1}",
-         "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
-         "parent": {{"__entity_type__": "Project", "id":
-         "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
-         "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
-         "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "status": {{"__entity_type__": "Status",
-         "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
-         "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
-         "type": {{"__entity_type__": "Type",
-         "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
-    '''.format(
-        new_task['id'], new_task['name']
-    )).replace('\n', '')
+        {"__entity_type__": "Foo",
+         "id": "a_unique_id",
+         "integer": 42,
+         "string": "abc"}
+    ''').replace('\n', '')
 
 
 def test_encode_entity_using_only_modified_attributes_strategy(
-    session, new_task
+    mocked_schema_session
 ):
     '''Encode entity using "modified_only" entity_attribute_strategy.'''
-    new_task['name'] = 'Modified'
+    new_foo = mocked_schema_session._create(
+        'Foo',
+        {
+            'id': 'a_unique_id',
+            'string': 'abc',
+            'integer': 42
+        },
+        reconstructing=True
+    )
 
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='modified_only'
+    new_foo['string'] = 'Modified'
+
+    encoded = mocked_schema_session.encode(
+        new_foo, entity_attribute_strategy='modified_only'
     )
 
     assert encoded == textwrap.dedent('''
-        {{"__entity_type__": "Task",
-         "id": "{0}",
-         "name": "Modified"}}
-    '''.format(
-        new_task['id']
-    )).replace('\n', '')
+        {"__entity_type__": "Foo",
+         "id": "a_unique_id",
+         "string": "Modified"}
+    ''').replace('\n', '')
 
 
 def test_encode_entity_using_invalid_strategy(session, new_task):
