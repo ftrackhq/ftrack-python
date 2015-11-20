@@ -11,6 +11,14 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: caching, schemas, performance
+
+        Caching of schemas for increased performance.
+        :meth:`ftrack_api.session.Session` now accepts `schema_cache` argument
+        to specify location of schema cache. If not set it will use a 
+        temporary folder.
+
     .. change:: fixed
 
         Documentation specifies Python 2.6 instead of Python 2.7 as minimum
