@@ -15,8 +15,8 @@ Release Notes
         :tags: caching, schemas, performance
 
         Caching of schemas for increased performance.
-        :meth:`ftrack_api.session.Session` now accepts `schema_cache` argument
-        to specify location of schema cache. If not set it will use a 
+        :meth:`ftrack_api.session.Session` now accepts `schema_cache_path`
+        argument to specify location of schema cache. If not set it will use a 
         temporary folder.
 
     .. change:: fixed
@@ -54,6 +54,13 @@ Release Notes
         :tags: tests
 
         Updated session test to not fail on the new private link attribute.
+
+    .. change:: changed
+        :tags: session
+
+        Internal method :py:meth:`_fetch_schemas` has beed renamed to
+        :py:meth:`Session._load_schemas` and now requires a `schema_cache_path`
+        argument.
 
 .. release:: 0.9.0
     :date: 2015-10-30

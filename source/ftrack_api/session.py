@@ -63,7 +63,7 @@ class Session(object):
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=True, schema_cache=None
+        auto_connect_event_hub=True, schema_cache_path=None
     ):
         '''Initialise session.
 
@@ -111,9 +111,10 @@ class Session(object):
         manually connected using :meth:`EventHub.connect
         <ftrack_api.event.hub.EventHub.connect>`.
 
-        Enable schema caching by setting *schema_cache* to a folder path.
-        If not set :envvar:`FTRACK_API_SCHEME_CACHE` will be used determine
-        path to store cache in. If not specified will use temporary directory.
+        Enable schema caching by setting *schema_cache_path* to a folder path.
+        If not set :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used determine
+        path to store cache in. If not specified will use temporary directory
+        and set to `False` to disable schema caching.
 
         '''
         super(Session, self).__init__()
@@ -217,17 +218,17 @@ class Session(object):
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?
-        self._scheme_cache_path = schema_cache
-        if self._scheme_cache_path is None:
-            self._scheme_cache_path = os.environ.get(
-                'FTRACK_API_SCHEME_CACHE', tempfile.gettempdir()
+        if schema_cache_path is not False:
+            if schema_cache_path is None:
+                schema_cache_path = os.environ.get(
+                    'FTRACK_API_SCHEMA_CACHE_PATH', tempfile.gettempdir()
+                )
+
+            schema_cache_path = os.path.join(
+                schema_cache_path, 'ftrack_api_schema_cache.json'
             )
 
-        self._scheme_cache_path = os.path.join(
-            self._scheme_cache_path, 'ftrack_api_scheme_cache.json'
-        )
-
-        self.schemas = self._fetch_schemas()
+        self.schemas = self._load_schemas(schema_cache_path)
         self.types = self._build_entity_type_classes(self.schemas)
 
         self._configure_locations()
@@ -1235,51 +1236,72 @@ class Session(object):
         '''
         ftrack_api.plugin.discover(self._plugin_paths, [self])
 
-    def _read_schemas_from_file(self):
-        '''Return schemas and schema hash from locally cached file.
+    def _read_schemas_from_cache(self, schema_cache_path):
+        '''Return schemas and schema hash from *schema_cache_path*.
 
-        If schemas fail to load (`None`, `None`) will be returned.
+        Return (`None`, `None`) if schemas cannot be loaded.
 
         '''
-        schemas = _hash = None
+        schemas = hash_ = None
         try:
-            with open(self._scheme_cache_path, 'r') as schema_file:
+            with open(schema_cache_path, 'r') as schema_file:
                 schemas = json.load(schema_file)
-                _hash = hashlib.md5(
+                hash_ = hashlib.md5(
                     json.dumps(schemas, sort_keys=True)
                 ).hexdigest()
         except IOError:
             self.logger.debug('Local schema cache file not found.')
 
-        return (schemas, _hash)
+        return (schemas, hash_)
 
-    def _write_schemas_to_file(self, schemas):
-        '''Write *schemas* to local schema cache.'''
+    def _write_schemas_to_cache(self, schemas, schema_cache_path):
+        '''Write *schemas* to local *schema_cache_path*.'''
         self.logger.debug(
             'Updating local schema cache with new schemas.'
         )
 
-        with open(self._scheme_cache_path, 'w') as local_cache_file:
+        with open(schema_cache_path, 'w') as local_cache_file:
             json.dump(schemas, local_cache_file, indent=4)
 
-    def _fetch_schemas(self):
-        '''Return schemas fetched from server.'''
-        schemas, local_schema_hash = self._read_schemas_from_file()
+    def _load_schemas(self, schema_cache_path):
+        '''Load schemas from *schema_cache_path*.
 
-        # Using `dictionary.get` to retrieve hash to support older version of
+        Load schemas from cache, if no cache is found the schemas will be
+        loaded from server.
+
+        If *schema_cache_path* is set to `False` schemas will always
+        be loaded from server.
+
+        '''
+        local_schema_hash = None
+        schemas = []
+
+        if schema_cache_path:
+            schemas, local_schema_hash = self._read_schemas_from_cache(
+                schema_cache_path
+            )
+
+        # Use `dictionary.get` to retrieve hash to support older version of
         # ftrack server not returning a schema hash.
-        if local_schema_hash != self._server_information.get(
+        server_hash = self._server_information.get(
             'schema_hash', False
-        ):
+        )
+        if local_schema_hash != server_hash:
             self.logger.debug(
                 'Loading schemas from server due to hash not matching.'
+                'Local: {0!r} != Server: {1!r}'.format(
+                    local_schema_hash, server_hash
+                )
             )
             schemas = self._call([{'action': 'query_schemas'}])[0]
-            self._write_schemas_to_file(schemas)
+
+            if schema_cache_path:
+                self._write_schemas_to_cache(schemas, schema_cache_path)
+
         else:
             self.logger.debug(
                 'Using locally cached schemas stored in:\n{0}'.format(
-                    self._scheme_cache_path
+                    schema_cache_path
                 )
             )
 
