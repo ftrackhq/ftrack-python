@@ -619,7 +619,7 @@ def test_reset(mocker):
     assert location.accessor is not ftrack_api.symbol.NOT_SET
 
     mocked_close = mocker.patch.object(session._request, 'close')
-    mocked_fetch = mocker.patch.object(session, '_fetch_schemas')
+    mocked_fetch = mocker.patch.object(session, '_load_schemas')
 
     session.reset()
 
