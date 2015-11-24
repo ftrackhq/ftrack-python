@@ -136,6 +136,11 @@ Release Notes
     :date: 2015-09-28
 
     .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2.1, < 3.4 required.
+
+    .. change:: changed
 
         Updated *ftrack.server* location implementation. A server version of 3.3
         or higher is required for it to function properly.
