@@ -112,9 +112,10 @@ class Session(object):
         <ftrack_api.event.hub.EventHub.connect>`.
 
         Enable schema caching by setting *schema_cache_path* to a folder path.
-        If not set :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used determine
-        path to store cache in. If not specified will use temporary directory
-        and set to `False` to disable schema caching.
+        If not set :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
+        determine the path to store cache in. If not specified will use
+        temporary directory and if set to `False` schema caching will be
+        disabled.
 
         '''
         super(Session, self).__init__()
@@ -1242,6 +1243,9 @@ class Session(object):
         Return (`None`, `None`) if schemas cannot be loaded.
 
         '''
+        self.logger.debug(
+            'Reading schemas from cache.'
+        )
         schemas = hash_ = None
         try:
             with open(schema_cache_path, 'r') as schema_file:
@@ -1249,8 +1253,11 @@ class Session(object):
                 hash_ = hashlib.md5(
                     json.dumps(schemas, sort_keys=True)
                 ).hexdigest()
-        except IOError:
-            self.logger.debug('Local schema cache file not found.')
+        except (IOError, TypeError, AttributeError, ValueError):
+
+            # Catch any known exceptions when trying to read the local schema
+            # cache to prevent API from being unusable.
+            self.logger.exception('Local schema cache could not be loaded.')
 
         return (schemas, hash_)
 
@@ -1260,8 +1267,11 @@ class Session(object):
             'Updating local schema cache with new schemas.'
         )
 
-        with open(schema_cache_path, 'w') as local_cache_file:
-            json.dump(schemas, local_cache_file, indent=4)
+        try:
+            with open(schema_cache_path, 'w') as local_cache_file:
+                json.dump(schemas, local_cache_file, indent=4)
+        except (IOError, TypeError):
+            self.logger.exception('Failed to update local schema cache.')
 
     def _load_schemas(self, schema_cache_path):
         '''Load schemas from *schema_cache_path*.
