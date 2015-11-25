@@ -954,6 +954,33 @@ def test_load_schemas_from_server_when_cache_outdated(
     assert mocked.called
 
 
+def test_load_schemas_from_server_not_reporting_schema_hash(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas from server when server does not report schema hash.'''
+    mocked_write = mocker.patch.object(
+        session, '_write_schemas_to_cache',
+        wraps=session._write_schemas_to_cache
+    )
+
+    server_information = session._server_information.copy()
+    server_information.pop('schema_hash')
+    mocker.patch.object(
+        session, '_server_information', new=server_information
+    )
+
+    session._load_schemas(temporary_valid_schema_cache)
+
+    # Cache still written even if hash not reported.
+    assert mocked_write.called
+
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    session._load_schemas(temporary_valid_schema_cache)
+
+    # No hash reported by server so cache should have been bypassed.
+    assert mocked.called
+
+
 def test_load_schemas_bypassing_cache(
     mocker, session, temporary_valid_schema_cache
 ):
