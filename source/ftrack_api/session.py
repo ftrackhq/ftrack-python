@@ -1240,38 +1240,36 @@ class Session(object):
     def _read_schemas_from_cache(self, schema_cache_path):
         '''Return schemas and schema hash from *schema_cache_path*.
 
-        Return (`None`, `None`) if schemas cannot be loaded.
+        *schema_cache_path* should be the path to the file containing the
+        schemas in JSON format.
 
         '''
         self.logger.debug(
-            'Reading schemas from cache.'
+            'Reading schemas from cache {0!r}'.format(schema_cache_path)
         )
-        schemas = hash_ = None
-        try:
-            with open(schema_cache_path, 'r') as schema_file:
-                schemas = json.load(schema_file)
-                hash_ = hashlib.md5(
-                    json.dumps(schemas, sort_keys=True)
-                ).hexdigest()
-        except (IOError, TypeError, AttributeError, ValueError):
 
-            # Catch any known exceptions when trying to read the local schema
-            # cache to prevent API from being unusable.
-            self.logger.exception('Local schema cache could not be loaded.')
+        with open(schema_cache_path, 'r') as schema_file:
+            schemas = json.load(schema_file)
+            hash_ = hashlib.md5(
+                json.dumps(schemas, sort_keys=True)
+            ).hexdigest()
 
-        return (schemas, hash_)
+        return schemas, hash_
 
     def _write_schemas_to_cache(self, schemas, schema_cache_path):
-        '''Write *schemas* to local *schema_cache_path*.'''
+        '''Write *schemas* to *schema_cache_path*.
+
+        *schema_cache_path* should be a path to a file that the schemas can be
+        written to in JSON format.
+
+        '''
         self.logger.debug(
-            'Updating local schema cache with new schemas.'
+            'Updating schema cache {0!r} with new schemas.'
+            .format(schema_cache_path)
         )
 
-        try:
-            with open(schema_cache_path, 'w') as local_cache_file:
-                json.dump(schemas, local_cache_file, indent=4)
-        except (IOError, TypeError):
-            self.logger.exception('Failed to update local schema cache.')
+        with open(schema_cache_path, 'w') as local_cache_file:
+            json.dump(schemas, local_cache_file, indent=4)
 
     def _load_schemas(self, schema_cache_path):
         '''Load schemas from *schema_cache_path*.
@@ -1287,9 +1285,17 @@ class Session(object):
         schemas = []
 
         if schema_cache_path:
-            schemas, local_schema_hash = self._read_schemas_from_cache(
-                schema_cache_path
-            )
+            try:
+                schemas, local_schema_hash = self._read_schemas_from_cache(
+                    schema_cache_path
+                )
+            except (IOError, TypeError, AttributeError, ValueError):
+                # Catch any known exceptions when trying to read the local
+                # schema cache to prevent API from being unusable.
+                self.logger.exception(
+                    'Schema cache could not be loaded from {0!r}'
+                    .format(schema_cache_path)
+                )
 
         # Use `dictionary.get` to retrieve hash to support older version of
         # ftrack server not returning a schema hash.
@@ -1306,13 +1312,17 @@ class Session(object):
             schemas = self._call([{'action': 'query_schemas'}])[0]
 
             if schema_cache_path:
-                self._write_schemas_to_cache(schemas, schema_cache_path)
+                try:
+                    self._write_schemas_to_cache(schemas, schema_cache_path)
+                except (IOError, TypeError):
+                    self.logger.exception(
+                        'Failed to update schema cache {0!r}.'
+                        .format(schema_cache_path)
+                    )
 
         else:
             self.logger.debug(
-                'Using locally cached schemas stored in:\n{0}'.format(
-                    schema_cache_path
-                )
+                'Using cached schemas from {0!r}'.format(schema_cache_path)
             )
 
         return schemas
