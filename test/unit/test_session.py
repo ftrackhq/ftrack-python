@@ -863,17 +863,10 @@ def test_correct_file_type_on_sequence_component(session):
     assert sequence_component['file_type'] == '.dpx'
 
 
-def test_fail_to_update_schema_cache(session, temporary_valid_schema_cache):
-    '''Fail to update local schema cache.'''
-    session._write_schemas_to_cache(
-        datetime.datetime.now(), temporary_valid_schema_cache
-    )
-
-
-def test_successfully_read_from_schema_cache(
+def test_read_schemas_from_cache(
     session, temporary_valid_schema_cache
 ):
-    '''Successfully read from schema cache.'''
+    '''Read valid content from schema cache.'''
     expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
 
     schemas, hash_ = session._read_schemas_from_cache(
@@ -883,24 +876,91 @@ def test_successfully_read_from_schema_cache(
     assert expected_hash == hash_
 
 
-def test_successfully_handle_broken_schema_cache(
-    mocker, session, temporary_invalid_schema_cache
+def test_fail_to_read_schemas_from_invalid_cache(
+    session, temporary_invalid_schema_cache
 ):
-    '''Successfully handle broken schema from cache.'''
-    mocked = mocker.patch.object(session, '_call')
+    '''Fail to read invalid content from schema cache.'''
+    with pytest.raises(ValueError):
+        session._read_schemas_from_cache(
+            temporary_invalid_schema_cache
+        )
 
-    session._load_schemas(
-        temporary_invalid_schema_cache
+
+def test_write_schemas_to_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Write valid content to schema cache.'''
+    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+    schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
+
+    session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
+
+    schemas, hash_ = session._read_schemas_from_cache(
+        temporary_valid_schema_cache
     )
 
-    assert not mocked._call.called
+    assert expected_hash == hash_
 
 
-def test_successfully_disable_schema_cache(mocker, session):
-    '''Successfully disable schema cache.'''
+def test_fail_to_write_invalid_schemas_to_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Fail to write invalid content to schema cache.'''
+    # Datetime not serialisable by default.
+    invalid_content = datetime.datetime.now()
+
+    with pytest.raises(TypeError):
+        session._write_schemas_to_cache(
+            invalid_content, temporary_valid_schema_cache
+        )
+
+
+def test_load_schemas_from_valid_cache(
+    mocker, session, temporary_valid_schema_cache, mocked_schemas
+):
+    '''Load schemas from cache.'''
+    expected_schemas = session._load_schemas(temporary_valid_schema_cache)
+
+    mocked = mocker.patch.object(session, '_call')
+    schemas = session._load_schemas(temporary_valid_schema_cache)
+
+    assert schemas == expected_schemas
+    assert not mocked.called
+
+
+def test_load_schemas_from_server_when_cache_invalid(
+    mocker, session, temporary_invalid_schema_cache
+):
+    '''Load schemas from server when cache invalid.'''
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+
+    session._load_schemas(temporary_invalid_schema_cache)
+    assert mocked.called
+
+
+def test_load_schemas_from_server_when_cache_outdated(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas from server when cache outdated.'''
+    schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
+    schemas.append({
+        'id': 'NewTest'
+    })
+    session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
+
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    session._load_schemas(temporary_valid_schema_cache)
+
+    assert mocked.called
+
+
+def test_load_schemas_bypassing_cache(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas bypassing cache when set to False.'''
     with mocker.patch.object(session, '_call'):
 
-        session._load_schemas(False)
+        session._load_schemas(temporary_valid_schema_cache)
         assert session._call.call_count == 1
 
         session._load_schemas(False)
