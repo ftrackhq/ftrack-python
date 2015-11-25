@@ -985,7 +985,7 @@ def test_load_schemas_bypassing_cache(
     mocker, session, temporary_valid_schema_cache
 ):
     '''Load schemas bypassing cache when set to False.'''
-    with mocker.patch.object(session, '_call'):
+    with mocker.patch.object(session, '_call', wraps=session._call):
 
         session._load_schemas(temporary_valid_schema_cache)
         assert session._call.call_count == 1
