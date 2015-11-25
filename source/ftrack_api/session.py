@@ -1272,13 +1272,14 @@ class Session(object):
             json.dump(schemas, local_cache_file, indent=4)
 
     def _load_schemas(self, schema_cache_path):
-        '''Load schemas from *schema_cache_path*.
+        '''Load schemas.
 
-        Load schemas from cache, if no cache is found the schemas will be
-        loaded from server.
+        First try to load schemas from cache at *schema_cache_path*. If the
+        cache is not available or the cache appears outdated then load schemas
+        from server and store fresh copy in cache.
 
-        If *schema_cache_path* is set to `False` schemas will always
-        be loaded from server.
+        If *schema_cache_path* is set to `False`, always load schemas from
+        server bypassing cache.
 
         '''
         local_schema_hash = None
