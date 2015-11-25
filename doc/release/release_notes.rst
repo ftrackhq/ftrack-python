@@ -9,7 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.10.0
+    :date: 2015-11-24
+
+    .. change:: changed
+        :tags: tests
+
+        Updated session test to use mocked schemas for encoding tests.
 
     .. change:: new
         :tags: caching, schemas, performance
@@ -144,6 +150,11 @@ Release Notes
 
 .. release:: 0.8.3
     :date: 2015-09-28
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2.1, < 3.4 required.
 
     .. change:: changed
 
