@@ -6,6 +6,8 @@ import tempfile
 import functools
 import uuid
 import textwrap
+import datetime
+import json
 
 import pytest
 import mock
@@ -48,6 +50,46 @@ def cache(request):
         request.addfinalizer(cleanup)
 
     return cache
+
+
+@pytest.fixture()
+def temporary_invalid_schema_cache(request):
+    '''Return schema cache path to invalid schema cache file.'''
+    schema_cache_path = os.path.join(
+        tempfile.gettempdir(),
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+    )
+
+    with open(schema_cache_path, 'w') as file_:
+        file_.write('${invalid json}')
+
+    def cleanup():
+        '''Cleanup.'''
+        os.remove(schema_cache_path)
+
+    request.addfinalizer(cleanup)
+
+    return schema_cache_path
+
+
+@pytest.fixture()
+def temporary_valid_schema_cache(request, mocked_schemas):
+    '''Return schema cache path to valid schema cache file.'''
+    schema_cache_path = os.path.join(
+        tempfile.gettempdir(),
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+    )
+
+    with open(schema_cache_path, 'w') as file_:
+        json.dump(mocked_schemas, file_, indent=4)
+
+    def cleanup():
+        '''Cleanup.'''
+        os.remove(schema_cache_path)
+
+    request.addfinalizer(cleanup)
+
+    return schema_cache_path
 
 
 def test_get_entity(session, user):
@@ -367,7 +409,7 @@ def test_get_entity_with_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -386,7 +428,7 @@ def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -435,7 +477,7 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -819,3 +861,47 @@ def test_correct_file_type_on_sequence_component(session):
     sequence_component = session.create_component(path)
 
     assert sequence_component['file_type'] == '.dpx'
+
+
+def test_fail_to_update_schema_cache(session, temporary_valid_schema_cache):
+    '''Fail to update local schema cache.'''
+    session._write_schemas_to_cache(
+        datetime.datetime.now(), temporary_valid_schema_cache
+    )
+
+
+def test_successfully_read_from_schema_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Successfully read from schema cache.'''
+    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+
+    schemas, hash_ = session._read_schemas_from_cache(
+        temporary_valid_schema_cache
+    )
+
+    assert expected_hash == hash_
+
+
+def test_successfully_handle_broken_schema_cache(
+    mocker, session, temporary_invalid_schema_cache
+):
+    '''Successfully handle broken schema from cache.'''
+    mocked = mocker.patch.object(session, '_call')
+
+    session._load_schemas(
+        temporary_invalid_schema_cache
+    )
+
+    assert not mocked._call.called
+
+
+def test_successfully_disable_schema_cache(mocker, session):
+    '''Successfully disable schema cache.'''
+    with mocker.patch.object(session, '_call'):
+
+        session._load_schemas(False)
+        assert session._call.call_count == 1
+
+        session._load_schemas(False)
+        assert session._call.call_count == 2
