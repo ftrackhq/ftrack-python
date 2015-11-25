@@ -112,10 +112,10 @@ class Session(object):
         <ftrack_api.event.hub.EventHub.connect>`.
 
         Enable schema caching by setting *schema_cache_path* to a folder path.
-        If not set :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
-        determine the path to store cache in. If not specified will use
-        temporary directory and if set to `False` schema caching will be
-        disabled.
+        If not set, :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
+        determine the path to store cache in. If the environment variable is
+        also not specified then a temporary directory will be used. Set to
+        `False` to disable schema caching entirely.
 
         '''
         super(Session, self).__init__()
