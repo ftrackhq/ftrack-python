@@ -1250,7 +1250,7 @@ class Session(object):
 
         if not os.path.exists(schema_cache_path):
             self.logger.info(
-                'Cache file not found at {0!r}, will be created.'.format(
+                'Cache file not found at {0!r}.'.format(
                     schema_cache_path
                 )
             )
