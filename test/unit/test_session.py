@@ -6,6 +6,8 @@ import tempfile
 import functools
 import uuid
 import textwrap
+import datetime
+import json
 
 import pytest
 import mock
@@ -48,6 +50,46 @@ def cache(request):
         request.addfinalizer(cleanup)
 
     return cache
+
+
+@pytest.fixture()
+def temporary_invalid_schema_cache(request):
+    '''Return schema cache path to invalid schema cache file.'''
+    schema_cache_path = os.path.join(
+        tempfile.gettempdir(),
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+    )
+
+    with open(schema_cache_path, 'w') as file_:
+        file_.write('${invalid json}')
+
+    def cleanup():
+        '''Cleanup.'''
+        os.remove(schema_cache_path)
+
+    request.addfinalizer(cleanup)
+
+    return schema_cache_path
+
+
+@pytest.fixture()
+def temporary_valid_schema_cache(request, mocked_schemas):
+    '''Return schema cache path to valid schema cache file.'''
+    schema_cache_path = os.path.join(
+        tempfile.gettempdir(),
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+    )
+
+    with open(schema_cache_path, 'w') as file_:
+        json.dump(mocked_schemas, file_, indent=4)
+
+    def cleanup():
+        '''Cleanup.'''
+        os.remove(schema_cache_path)
+
+    request.addfinalizer(cleanup)
+
+    return schema_cache_path
 
 
 def test_get_entity(session, user):
@@ -367,7 +409,7 @@ def test_get_entity_with_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -386,7 +428,7 @@ def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -435,7 +477,7 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -606,7 +648,7 @@ def test_reset(mocker):
     assert location.accessor is not ftrack_api.symbol.NOT_SET
 
     mocked_close = mocker.patch.object(session._request, 'close')
-    mocked_fetch = mocker.patch.object(session, '_fetch_schemas')
+    mocked_fetch = mocker.patch.object(session, '_load_schemas')
 
     session.reset()
 
@@ -819,3 +861,134 @@ def test_correct_file_type_on_sequence_component(session):
     sequence_component = session.create_component(path)
 
     assert sequence_component['file_type'] == '.dpx'
+
+
+def test_read_schemas_from_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Read valid content from schema cache.'''
+    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+
+    schemas, hash_ = session._read_schemas_from_cache(
+        temporary_valid_schema_cache
+    )
+
+    assert expected_hash == hash_
+
+
+def test_fail_to_read_schemas_from_invalid_cache(
+    session, temporary_invalid_schema_cache
+):
+    '''Fail to read invalid content from schema cache.'''
+    with pytest.raises(ValueError):
+        session._read_schemas_from_cache(
+            temporary_invalid_schema_cache
+        )
+
+
+def test_write_schemas_to_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Write valid content to schema cache.'''
+    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+    schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
+
+    session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
+
+    schemas, hash_ = session._read_schemas_from_cache(
+        temporary_valid_schema_cache
+    )
+
+    assert expected_hash == hash_
+
+
+def test_fail_to_write_invalid_schemas_to_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Fail to write invalid content to schema cache.'''
+    # Datetime not serialisable by default.
+    invalid_content = datetime.datetime.now()
+
+    with pytest.raises(TypeError):
+        session._write_schemas_to_cache(
+            invalid_content, temporary_valid_schema_cache
+        )
+
+
+def test_load_schemas_from_valid_cache(
+    mocker, session, temporary_valid_schema_cache, mocked_schemas
+):
+    '''Load schemas from cache.'''
+    expected_schemas = session._load_schemas(temporary_valid_schema_cache)
+
+    mocked = mocker.patch.object(session, '_call')
+    schemas = session._load_schemas(temporary_valid_schema_cache)
+
+    assert schemas == expected_schemas
+    assert not mocked.called
+
+
+def test_load_schemas_from_server_when_cache_invalid(
+    mocker, session, temporary_invalid_schema_cache
+):
+    '''Load schemas from server when cache invalid.'''
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+
+    session._load_schemas(temporary_invalid_schema_cache)
+    assert mocked.called
+
+
+def test_load_schemas_from_server_when_cache_outdated(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas from server when cache outdated.'''
+    schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
+    schemas.append({
+        'id': 'NewTest'
+    })
+    session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
+
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    session._load_schemas(temporary_valid_schema_cache)
+
+    assert mocked.called
+
+
+def test_load_schemas_from_server_not_reporting_schema_hash(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas from server when server does not report schema hash.'''
+    mocked_write = mocker.patch.object(
+        session, '_write_schemas_to_cache',
+        wraps=session._write_schemas_to_cache
+    )
+
+    server_information = session._server_information.copy()
+    server_information.pop('schema_hash')
+    mocker.patch.object(
+        session, '_server_information', new=server_information
+    )
+
+    session._load_schemas(temporary_valid_schema_cache)
+
+    # Cache still written even if hash not reported.
+    assert mocked_write.called
+
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    session._load_schemas(temporary_valid_schema_cache)
+
+    # No hash reported by server so cache should have been bypassed.
+    assert mocked.called
+
+
+def test_load_schemas_bypassing_cache(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas bypassing cache when set to False.'''
+    with mocker.patch.object(session, '_call', wraps=session._call):
+
+        session._load_schemas(temporary_valid_schema_cache)
+        assert session._call.call_count == 1
+
+        session._load_schemas(False)
+        assert session._call.call_count == 2

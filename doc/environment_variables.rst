@@ -41,3 +41,8 @@ can reference:
     Paths to search recursively for plugins to load and use in a session.
     Multiple paths can be specified by separating with the value of
     :attr:`os.pathsep` (e.g. ':' or ';').
+
+.. envvar:: FTRACK_API_SCHEMA_CACHE_PATH
+
+    Path to a directory that will be used for storing and retrieving a cache of
+    the entity schemas fetched from the server.
