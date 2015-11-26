@@ -1248,6 +1248,15 @@ class Session(object):
             'Reading schemas from cache {0!r}'.format(schema_cache_path)
         )
 
+        if not os.path.exists(schema_cache_path):
+            self.logger.info(
+                'Cache file not found at {0!r}, will be created.'.format(
+                    schema_cache_path
+                )
+            )
+
+            return [], None
+
         with open(schema_cache_path, 'r') as schema_file:
             schemas = json.load(schema_file)
             hash_ = hashlib.md5(
