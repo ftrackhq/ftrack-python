@@ -489,7 +489,7 @@ def mocked_schema_session(mocker, mocked_schemas):
     '''Return a session instance with mocked schemas.'''
     with mocker.patch.object(
         ftrack_api.Session,
-        '_fetch_schemas',
+        '_load_schemas',
         return_value=mocked_schemas
     ):
         # Mock _configure_locations since it will fail if no location schemas

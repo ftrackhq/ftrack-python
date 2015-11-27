@@ -12,7 +12,7 @@ def test_extend_standard_factory_with_bases(session):
     '''Successfully add extra bases to standard factory.'''
     standard_factory = ftrack_api.entity.factory.StandardFactory()
 
-    schemas = session._fetch_schemas()
+    schemas = session._load_schemas(False)
     user_schema = [
         schema for schema in schemas if schema['id'] == 'User'
     ].pop()
