@@ -567,6 +567,23 @@ New API::
             break
         parents.append(item)
 
+In some situations it may be enough to get a list of ids and names of the
+parents. To do this you can use the `link` attribute::
+
+    task = session.query(
+        'select link from Task where name is "myTask"'
+    ).first()
+    print task['link']
+
+The `link` attribute will be an ordered list of dictionaries containting data
+of the parents. Each dictionary contains the following entries:
+
+    * id - the id of the object and can be used to do a :meth:`Session.get`.
+    * name - the name of the object.
+    * type - the schema id of the object.
+
+The `link` attribute is available on all classes inheriting TypedContext,
+Project and AssetVersion.
 
 Limitations in the current version of the API
 =============================================
@@ -584,7 +601,6 @@ in the new API. Let us know if you depend on any of them.
     * Booking
     * Calendar and Calendar Type
     * Dependency
-    * Disk
     * Manager and Manager Type
     * Phase
     * Role
