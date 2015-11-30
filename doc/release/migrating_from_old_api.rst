@@ -597,17 +597,14 @@ Missing schemas
 The following entities are as of the time of writing not currently available
 in the new API. Let us know if you depend on any of them.
 
-    * Attachment
     * Booking
     * Calendar and Calendar Type
     * Dependency
     * Manager and Manager Type
     * Phase
     * Role
-    * Social Event and Social Feed
     * Task template
     * Temp data
-    * Version link
 
 Attachments and Thumbnails
 --------------------------
