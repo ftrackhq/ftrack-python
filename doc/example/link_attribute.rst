@@ -22,9 +22,12 @@ You can use the `link` attribute on any entity inheriting from a
 The `link` attribute is an ordered list of dictionaries containting data
 of the parents. Each dictionary contains the following entries:
 
-    * id - the id of the object and can be used to do a :meth:`Session.get`.
-    * name - the name of the object.
-    * type - the schema id of the object.
+    id
+        The id of the object and can be used to do a :meth:`Session.get`.
+    name
+        The name of the object.
+    type
+        The schema id of the object.
 
 A more advanced use-case is to get the parent names and ids of all timelogs for
 a user::
