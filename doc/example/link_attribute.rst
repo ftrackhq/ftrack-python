@@ -40,8 +40,8 @@ a user::
 
 The attribute is also availabe from the `AssetVersion` asset relation::
 
-    for asset_version in session.query(
-        'select asset.parent.link from AssetVersion '
-        'where user.username is "john.doe"'
-    ):
-        print asset_version['asset']['parent']['link']
+for asset_version in session.query(
+    'select link from AssetVersion '
+    'where user.username is "john.doe"'
+):
+    print asset_version['link']
