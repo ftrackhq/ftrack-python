@@ -559,10 +559,11 @@ Old API::
 New API::
 
     parents = []
-    for item in task['link']:
+    for item in task['link'][:-1]:
         parents.append(session.get(item['type'], item['id']))
 
-To learn more about the `link` attribute, see
+Note that link includes the task itself so `[:-1]` is used to only retreive the
+parents. To learn more about the `link` attribute, see
 :ref:`Using link attributes example<example/link_attribute>`.
 
 Limitations in the current version of the API
