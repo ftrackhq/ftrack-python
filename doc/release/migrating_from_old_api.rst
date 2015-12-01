@@ -586,7 +586,6 @@ in the new API. Let us know if you depend on any of them.
     * Role
     * Task template
     * Temp data
-    * Version link
 
 Attachments and Thumbnails
 --------------------------
