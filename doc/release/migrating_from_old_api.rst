@@ -558,17 +558,11 @@ Old API::
 
 New API::
 
-    item = task
     parents = []
+    for item in task['link']:
+        parents.append(session.get(item['type'], item['id']))
 
-    while True:
-        item = item['parent']
-        if not item:
-            break
-        parents.append(item)
-
-In some situations it may be enough to get a list of ids and names of the
-parents. To do this you can use the `link` attribute, see
+To learn more about the `link` attribute, see
 :ref:`Using link attributes example<example/link_attribute>`.
 
 Limitations in the current version of the API
