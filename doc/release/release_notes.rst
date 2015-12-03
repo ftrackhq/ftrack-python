@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: documentation
+
+        Updated :ref:`release/migrating_from_old_api` with new link attribute
+        and added a :ref:`usage example <example/link_attribute>`.
+
+    .. change:: new
         :tags: caching, schemas, performance
 
         Caching of schemas for increased performance.
