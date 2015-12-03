@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: documentation
+
+        Updated :ref:`release/migrating_from_old_api` with new link attribute
+        and added a :ref:`usage example <example/link_attribute>`.
+
 .. release:: 0.10.0
     :date: 2015-11-24
 
