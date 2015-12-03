@@ -17,14 +17,6 @@ Release Notes
         Updated :ref:`release/migrating_from_old_api` with new link attribute
         and added a :ref:`usage example <example/link_attribute>`.
 
-.. release:: 0.10.0
-    :date: 2015-11-24
-
-    .. change:: changed
-        :tags: tests
-
-        Updated session test to use mocked schemas for encoding tests.
-
     .. change:: new
         :tags: caching, schemas, performance
 
