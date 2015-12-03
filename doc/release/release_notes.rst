@@ -9,6 +9,16 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: caching, schemas, performance
+
+        Caching of schemas for increased performance.
+        :meth:`ftrack_api.session.Session` now accepts `schema_cache_path`
+        argument to specify location of schema cache. If not set it will use a
+        temporary folder.
+
 .. release:: 0.10.0
     :date: 2015-11-24
 
@@ -16,14 +26,6 @@ Release Notes
         :tags: tests
 
         Updated session test to use mocked schemas for encoding tests.
-
-    .. change:: new
-        :tags: caching, schemas, performance
-
-        Caching of schemas for increased performance.
-        :meth:`ftrack_api.session.Session` now accepts `schema_cache_path`
-        argument to specify location of schema cache. If not set it will use a 
-        temporary folder.
 
     .. change:: fixed
 
