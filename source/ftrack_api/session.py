@@ -1949,9 +1949,9 @@ class Session(object):
         after 6 minutes.
 
         *widget_name* is be the name of the widget to return. Should be one of
-        'info', 'tasks' or 'tasks_browser'.
+        info, tasks or tasks_browser.
 
-        Certain widgets require an entity to be specified, if so set it should
+        Certain widgets require an entity to be specified, if so it should
         be specified as *entity*.
 
         *theme* sets the theme of the widget and can be either light or dark
