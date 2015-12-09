@@ -1940,6 +1940,39 @@ class Session(object):
 
         return availabilities
 
+    def get_widget_url(
+        self, widget_name, entity=None, widget_theme=None, absolute_url=False
+    ):
+        '''Return an authenticated URL to *widget_name* for given options.
+
+        The returned URL will be authenticated using a token which will expire
+        after 6 minutes.
+
+        *widget_name* is be the name of the widget to return. Should be one of
+        'info', 'tasks' or 'tasks_browser'.
+
+        Certain widgets require an entity to be specified, if so set it should
+        be specified as *entity*.
+
+        *theme* sets the theme of the widget and can be either light or dark
+        and defaults to dark.
+
+        If *absolute_url* is set, returns an absolute URL including host.
+
+        '''
+        operation = {
+            'action': 'get_widget_url',
+            'widget_name': widget_name,
+            'widget_theme': widget_theme,
+            'absolute_url': absolute_url
+        }
+        if entity:
+            operation['entity_type'] = entity.entity_type
+            operation['entity_key'] = ftrack_api.inspection.primary_key(entity)
+
+        result = self._call([operation])
+        return result[0]['widget_url']
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''

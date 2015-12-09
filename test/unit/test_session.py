@@ -12,6 +12,7 @@ import json
 import pytest
 import mock
 import arrow
+import requests
 
 import ftrack_api
 import ftrack_api.cache
@@ -992,3 +993,19 @@ def test_load_schemas_bypassing_cache(
 
         session._load_schemas(False)
         assert session._call.call_count == 2
+
+
+def test_get_tasks_widget_url(session):
+    '''Tasks widget URL returns valid HTTP status.'''
+    url = session.get_widget_url('tasks', absolute_url=True)
+    response = requests.get(url)
+    response.raise_for_status()
+
+
+def test_get_info_widget_url(session, task):
+    '''Info widget URL for *task* returns valid HTTP status.'''
+    url = session.get_widget_url(
+        'info', entity=task, theme='light', absolute_url=True
+    )
+    response = requests.get(url)
+    response.raise_for_status()
