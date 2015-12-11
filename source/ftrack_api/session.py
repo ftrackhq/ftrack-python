@@ -1974,8 +1974,8 @@ class Session(object):
             # Raise informative error if the action is not supported.
             if 'Invalid action u\'get_widget_url\'' in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {0!r} does not support '
-                    'get_widget_url.'.format(
+                    'Server version {0!r} does not support "get_widget_url", '
+                    'please update server and try again.'.format(
                         self.server_information.get('version')
                     )
                 )
