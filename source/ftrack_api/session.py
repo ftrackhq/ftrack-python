@@ -1963,7 +1963,9 @@ class Session(object):
         }
         if entity:
             operation['entity_type'] = entity.entity_type
-            operation['entity_key'] = ftrack_api.inspection.primary_key(entity).values()
+            operation['entity_key'] = (
+                ftrack_api.inspection.primary_key(entity).values()
+            )
 
         try:
             result = self._call([operation])
