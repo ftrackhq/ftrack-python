@@ -1967,8 +1967,21 @@ class Session(object):
             operation['entity_type'] = entity.entity_type
             operation['entity_key'] = ftrack_api.inspection.primary_key(entity).values()
 
-        result = self._call([operation])
-        return result[0]['widget_url']
+        try:
+            result = self._call([operation])
+            return result[0]['widget_url']
+        except ftrack_api.exception.ServerError as error:
+
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'get_widget_url\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    'get_widget_url.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
 
 
 class AutoPopulatingContext(object):
