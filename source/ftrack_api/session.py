@@ -1950,7 +1950,7 @@ class Session(object):
         'info', 'tasks' or 'tasks_browser'.
 
         Certain widgets require an entity to be specified. If so, specify it by
-        setting *entity_type* and *entity_key*.
+        setting *entity* to a valid entity instance.
 
         *theme* sets the theme of the widget and can be either 'light' or 'dark'
         (defaulting to 'dark' if an invalid option given).
