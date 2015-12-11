@@ -1941,7 +1941,7 @@ class Session(object):
         return availabilities
 
     def get_widget_url(
-        self, widget_name, entity=None, widget_theme=None, absolute_url=False
+        self, widget_name, entity=None, widget_theme=None
     ):
         '''Return an authenticated URL to *widget_name* for given options.
 
@@ -1957,14 +1957,11 @@ class Session(object):
         *theme* sets the theme of the widget and can be either light or dark
         and defaults to dark.
 
-        If *absolute_url* is set, returns an absolute URL including host.
-
         '''
         operation = {
             'action': 'get_widget_url',
             'widget_name': widget_name,
-            'widget_theme': widget_theme,
-            'absolute_url': absolute_url
+            'widget_theme': widget_theme
         }
         if entity:
             operation['entity_type'] = entity.entity_type

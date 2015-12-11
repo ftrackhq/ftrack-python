@@ -997,7 +997,7 @@ def test_load_schemas_bypassing_cache(
 
 def test_get_tasks_widget_url(session):
     '''Tasks widget URL returns valid HTTP status.'''
-    url = session.get_widget_url('tasks', absolute_url=True)
+    url = session.get_widget_url('tasks')
     response = requests.get(url)
     response.raise_for_status()
 
@@ -1005,7 +1005,7 @@ def test_get_tasks_widget_url(session):
 def test_get_info_widget_url(session, task):
     '''Info widget URL for *task* returns valid HTTP status.'''
     url = session.get_widget_url(
-        'info', entity=task, widget_theme='light', absolute_url=True
+        'info', entity=task, widget_theme='light'
     )
     response = requests.get(url)
     response.raise_for_status()
