@@ -1004,8 +1004,6 @@ def test_get_tasks_widget_url(session):
 
 def test_get_info_widget_url(session, task):
     '''Info widget URL for *task* returns valid HTTP status.'''
-    url = session.get_widget_url(
-        'info', entity=task, widget_theme='light'
-    )
+    url = session.get_widget_url('info', entity=task, theme='light')
     response = requests.get(url)
     response.raise_for_status()

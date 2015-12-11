@@ -1940,28 +1940,26 @@ class Session(object):
 
         return availabilities
 
-    def get_widget_url(
-        self, widget_name, entity=None, widget_theme=None
-    ):
-        '''Return an authenticated URL to *widget_name* for given options.
+    def get_widget_url(self, name, entity=None, theme=None):
+        '''Return an authenticated URL for widget with *name* and given options.
 
         The returned URL will be authenticated using a token which will expire
         after 6 minutes.
 
-        *widget_name* is be the name of the widget to return. Should be one of
-        info, tasks or tasks_browser.
+        *name* should be the name of the widget to return and should be one of
+        'info', 'tasks' or 'tasks_browser'.
 
-        Certain widgets require an entity to be specified, if so it should
-        be specified as *entity*.
+        Certain widgets require an entity to be specified. If so, specify it by
+        setting *entity_type* and *entity_key*.
 
-        *theme* sets the theme of the widget and can be either light or dark
-        and defaults to dark.
+        *theme* sets the theme of the widget and can be either 'light' or 'dark'
+        (defaulting to 'dark' if an invalid option given).
 
         '''
         operation = {
             'action': 'get_widget_url',
-            'widget_name': widget_name,
-            'widget_theme': widget_theme
+            'name': name,
+            'theme': theme
         }
         if entity:
             operation['entity_type'] = entity.entity_type
@@ -1969,9 +1967,8 @@ class Session(object):
 
         try:
             result = self._call([operation])
-            return result[0]['widget_url']
-        except ftrack_api.exception.ServerError as error:
 
+        except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
             if 'Invalid action u\'get_widget_url\'' in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
@@ -1982,6 +1979,9 @@ class Session(object):
                 )
             else:
                 raise
+
+        else:
+            return result[0]['widget_url']
 
 
 class AutoPopulatingContext(object):
