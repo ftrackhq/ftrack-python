@@ -40,10 +40,12 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         my_project/folder_a/folder_b/asset_name/v003/bar/baz.pdf
 
-    If set *project_versions_prefix* will be added used for versions published
-    directly under the projcet::
+    Add *project_versions_prefix* for versions published directly under the
+    project if set::
 
         my_project/**project_versions_prefix*/v001/foo.jpg
+
+    Replace illegal characters with *replace_illegal_chracters* if not None.
 
     .. note::
 
@@ -51,10 +53,13 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
     '''
 
-    def __init__(self, project_versions_prefix=None):
+    def __init__(
+        self, project_versions_prefix=None, replace_illegal_chracters='_'
+    ):
         '''Instantiate structure with *project_versions_prefix*.'''
         super(StandardStructure, self).__init__()
         self.project_versions_prefix = project_versions_prefix
+        self.replace_illegal_chracters = replace_illegal_chracters
 
     def _get_parts(self, entity):
         '''Return resource identifier parts from *entity*.'''
@@ -92,13 +97,24 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return [self.slugify(part) for part in parts]
 
     def slugify(self, value):
-        '''Replace illegal file system characters in *value* with `_`.'''
+        '''Replace illegal file system characters in *value*.
+
+        Illegal characters will be replaced with the *replace_illegal_chracters*
+        argument used when instantiating the structure.
+
+        Illegal characters will not be replaced if StandardStructure is
+        configured with a replace_illegal_chracters equal to None.
+
+        '''
+        if self.replace_illegal_chracters is None:
+            return value
+
         if isinstance(value, str):
             value = value.decode('utf-8')
 
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-        value = unicode(re.sub('[^\w\s\.-]', '_', value).strip().lower())
-        return re.sub('[-\s]+', '-', value)
+        value = re.sub('[^\w\.-]', self.replace_illegal_chracters, value)
+        return unicode(value.strip().lower())
 
     def get_resource_identifier(self, entity, context=None):
         '''Return a resource identifier for supplied *entity*.
