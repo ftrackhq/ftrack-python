@@ -2,6 +2,8 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import os
+import re
+import unicodedata
 
 import ftrack_api.structure.base
 
@@ -80,7 +82,16 @@ class ClassicStructure(ftrack_api.structure.base.Structure):
         parts.append(asset['name'])
         parts.append(version_number)
 
-        return parts
+        return [self.slugify(part) for part in parts]
+
+    def slugify(self, value):
+        '''Replace illegal file system characters in *value* with `_`.'''
+        if isinstance(value, str):
+            value = value.decode('utf-8')
+
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+        value = unicode(re.sub('[^\w\s\.-]', '_', value).strip().lower())
+        return re.sub('[-\s]+', '-', value)
 
     def get_resource_identifier(self, entity, context=None):
         '''Return a resource identifier for supplied *entity*.
@@ -99,32 +110,33 @@ class ClassicStructure(ftrack_api.structure.base.Structure):
                         container['name'], entity['name'], entity['file_type']
                     )
                     parts = [
-                        os.path.dirname(container_path), name
+                        os.path.dirname(container_path), self.slugify(name)
                     ]
 
                 else:
                     name = entity['name'] + entity['file_type']
                     parts = [
-                        container_path, name
+                        container_path, self.slugify(name)
                     ]
 
             else:
                 parts = self._get_parts(entity)
                 name = entity['name'] + entity['file_type']
-                parts.append(name)
+                parts.append(self.slugify(name))
 
         elif entity.entity_type in ('SequenceComponent',):
             parts = self._get_parts(entity)
             sequence_expression = self._get_sequence_expression(entity)
             parts.append(
                 '{}.{}{}'.format(
-                    entity['name'], sequence_expression,
-                    entity['file_type']
+                    self.slugify(entity['name']), sequence_expression,
+                    self.slugify(entity['file_type'])
                 )
             )
 
         elif entity.entity_type in ('ContainerComponent',):
             parts = self._get_parts(entity)
+            parts.append(self.slugify(entity['name']))
 
         else:
             raise NotImplementedError(
@@ -132,8 +144,6 @@ class ClassicStructure(ftrack_api.structure.base.Structure):
                 'entity {0!r}'.format(entity)
             )
 
-        resource_identifier = self.path_separator.join(
+        return self.path_separator.join(
             parts
-        ).replace(' ', '_').lower()
-
-        return resource_identifier
+        )
