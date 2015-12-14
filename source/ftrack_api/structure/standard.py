@@ -8,7 +8,7 @@ import unicodedata
 import ftrack_api.structure.base
 
 
-class ClassicStructure(ftrack_api.structure.base.Structure):
+class StandardStructure(ftrack_api.structure.base.Structure):
     '''Project hierarchy based structure that only supports Components.
 
     The resource identifier is generated from the project code, the name
@@ -53,7 +53,7 @@ class ClassicStructure(ftrack_api.structure.base.Structure):
 
     def __init__(self, project_versions_prefix=None):
         '''Instantiate structure with *project_versions_prefix*.'''
-        super(ClassicStructure, self).__init__()
+        super(StandardStructure, self).__init__()
         self.project_versions_prefix = project_versions_prefix
 
     def _get_parts(self, entity):
