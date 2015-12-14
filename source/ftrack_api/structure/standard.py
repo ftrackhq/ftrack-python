@@ -78,7 +78,14 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         parts = []
         parts.append(project['name'])
-        parts.extend(structure_names)
+
+        if structure_names:
+            parts.extend(structure_names)
+        elif self.project_versions_prefix:
+            # Add *project_versions_prefix* if configured and the version is
+            # published directly under the project.
+            parts.append(self.project_versions_prefix)
+
         parts.append(asset['name'])
         parts.append(version_number)
 
