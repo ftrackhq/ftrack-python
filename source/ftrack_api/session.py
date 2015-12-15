@@ -12,6 +12,7 @@ import itertools
 import distutils.version
 import hashlib
 import tempfile
+import sys
 
 import requests
 import requests.auth
@@ -36,6 +37,7 @@ import ftrack_api.operation
 import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
+import ftrack_api.structure.id
 import ftrack_api.accessor.server
 
 
@@ -1450,12 +1452,65 @@ class Session(object):
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
+        # Master location based on server scenario.
+        master_location = None
+        location_scenario = self.server_information.get('location_scenario')
+        if (
+            location_scenario and
+            location_scenario.get('scenario') == 'ftrack.centralized-storage'
+        ):
+            try:
+                location_data = location_scenario['data']
+                location_name = location_data['location_name']
+                location_id = location_data['location_id']
+                mount_points = location_data['accessor']['mount_points']
+
+            except KeyError:
+                error_message = (
+                    'Unable to read location scenario data.'
+                )
+                self.logger.error(error_message)
+                raise ftrack_api.exception.LocationError(
+                    'Unable to configure location based on scenario.'
+                )
+
+            else:
+                master_location = self.create(
+                    'Location',
+                    data=dict(
+                        name=location_name,
+                        id=location_id
+                    ),
+                    reconstructing=True
+                )
+
+                if sys.platform == 'darwin':
+                    prefix = mount_points['osx']
+                elif sys.platform == 'linux2':
+                    prefix = mount_points['linux']
+                elif sys.platform == 'windows':
+                    prefix = mount_points['windows']
+                else:
+                    raise ftrack_api.exception.LocationError(
+                        (
+                            'Unable to find accessor prefix for platform {0}.'
+                        ).format(sys.platform)
+                    )
+
+                master_location.accessor = ftrack_api.accessor.disk.DiskAccessor(
+                    prefix=prefix
+                )
+                # TODO: Replace this with the new structure.
+                master_location.structure = ftrack_api.structure.id.IdStructure()
+                master_location.priority = 1
+
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
                 topic='ftrack.api.session.configure-location',
                 data=dict(
-                    session=self
+                    session=self,
+                    master_location=master_location
                 )
             ),
             synchronous=True
