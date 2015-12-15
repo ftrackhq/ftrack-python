@@ -17,6 +17,12 @@ Release Notes
         Added :class:`ftrack_api.structure.standard.StandardStructure` with
         hierarchy based resource identifier generation.
 
+    .. change:: new
+        :tags: session, widget url
+
+        Added :meth:`ftrack_api.session.Session.get_widget_url` to retrieve an
+        authenticated URL to info or tasks widgets.
+
 .. release:: 0.11.0
     :date: 2015-12-04
 
