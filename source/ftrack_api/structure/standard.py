@@ -64,22 +64,17 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     def _get_parts(self, entity):
         '''Return resource identifier parts from *entity*.'''
         session = entity.session
-        component = session.query(
-            'Component where id is "{0}"'.format(
-                entity['id']
-            )
-        ).one()
 
         structure_names = [
             item['name']
-            for item in component['version']['link'][1:-1]
+            for item in entity['version']['link'][1:-1]
         ]
 
-        project_id = component['version']['link'][0]['id']
+        project_id = entity['version']['link'][0]['id']
         project = session.get('Project', project_id)
-        asset = component['version']['asset']
+        asset = entity['version']['asset']
 
-        version_number = 'v{0:03d}'.format(component['version']['version'])
+        version_number = 'v{0:03d}'.format(entity['version']['version'])
 
         parts = []
         parts.append(project['name'])
