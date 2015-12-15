@@ -1940,6 +1940,51 @@ class Session(object):
 
         return availabilities
 
+    def get_widget_url(self, name, entity=None, theme=None):
+        '''Return an authenticated URL for widget with *name* and given options.
+
+        The returned URL will be authenticated using a token which will expire
+        after 6 minutes.
+
+        *name* should be the name of the widget to return and should be one of
+        'info', 'tasks' or 'tasks_browser'.
+
+        Certain widgets require an entity to be specified. If so, specify it by
+        setting *entity* to a valid entity instance.
+
+        *theme* sets the theme of the widget and can be either 'light' or 'dark'
+        (defaulting to 'dark' if an invalid option given).
+
+        '''
+        operation = {
+            'action': 'get_widget_url',
+            'name': name,
+            'theme': theme
+        }
+        if entity:
+            operation['entity_type'] = entity.entity_type
+            operation['entity_key'] = (
+                ftrack_api.inspection.primary_key(entity).values()
+            )
+
+        try:
+            result = self._call([operation])
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'get_widget_url\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support "get_widget_url", '
+                    'please update server and try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
+        else:
+            return result[0]['widget_url']
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''
