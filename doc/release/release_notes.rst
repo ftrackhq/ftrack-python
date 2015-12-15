@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: structure
+
+        Added :class:`ftrack_api.structure.standard.StandardStructure` with
+        hierarchy based resource identifier generation.
+
 .. release:: 0.11.0
     :date: 2015-12-04
 
