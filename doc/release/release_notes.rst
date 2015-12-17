@@ -10,7 +10,8 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
-.. release:: Upcoming
+.. release:: 0.12.0
+    :date: 2015-12-17
 
     .. change:: new
         :tags: session, widget url
