@@ -6,10 +6,13 @@ import tempfile
 import functools
 import uuid
 import textwrap
+import datetime
+import json
 
 import pytest
 import mock
 import arrow
+import requests
 
 import ftrack_api
 import ftrack_api.cache
@@ -48,6 +51,46 @@ def cache(request):
         request.addfinalizer(cleanup)
 
     return cache
+
+
+@pytest.fixture()
+def temporary_invalid_schema_cache(request):
+    '''Return schema cache path to invalid schema cache file.'''
+    schema_cache_path = os.path.join(
+        tempfile.gettempdir(),
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+    )
+
+    with open(schema_cache_path, 'w') as file_:
+        file_.write('${invalid json}')
+
+    def cleanup():
+        '''Cleanup.'''
+        os.remove(schema_cache_path)
+
+    request.addfinalizer(cleanup)
+
+    return schema_cache_path
+
+
+@pytest.fixture()
+def temporary_valid_schema_cache(request, mocked_schemas):
+    '''Return schema cache path to valid schema cache file.'''
+    schema_cache_path = os.path.join(
+        tempfile.gettempdir(),
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+    )
+
+    with open(schema_cache_path, 'w') as file_:
+        json.dump(mocked_schemas, file_, indent=4)
+
+    def cleanup():
+        '''Cleanup.'''
+        os.remove(schema_cache_path)
+
+    request.addfinalizer(cleanup)
+
+    return schema_cache_path
 
 
 def test_get_entity(session, user):
@@ -367,7 +410,7 @@ def test_get_entity_with_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -386,7 +429,7 @@ def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -435,7 +478,7 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
     entity = session.create('Metadata', {
         'key': 'key', 'value': 'value',
         'parent_type': new_project.entity_type,
-        'parent_id':  new_project['id']
+        'parent_id': new_project['id']
     })
 
     session.commit()
@@ -483,108 +526,95 @@ def test_check_server_compatibility(
                 session.check_server_compatibility()
 
 
-def test_encode_entity_using_all_attributes_strategy(session, new_task):
+def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
     '''Encode entity using "all" entity_attribute_strategy.'''
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='all'
+    new_bar = mocked_schema_session.create(
+        'Bar',
+        {
+            'name': 'myBar',
+            'id': 'bar_unique_id'
+        }
+    )
+
+    new_foo = mocked_schema_session.create(
+        'Foo',
+        {
+            'id': 'a_unique_id',
+            'string': 'abc',
+            'integer': 42,
+            'number': 12345678.9,
+            'boolean': False,
+            'date': arrow.get('2015-11-18 15:24:09'),
+            'bars': [new_bar]
+        }
+    )
+
+    encoded = mocked_schema_session.encode(
+        new_foo, entity_attribute_strategy='all'
     )
 
     assert encoded == textwrap.dedent('''
-        {{"__entity_type__": "Task",
-         "_link": [{{"id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "name": "Tests (do not delete)", "type": "Project"}},
-         {{"id": "{task_id}", "name": "{task_name}", "type": "TypedContext"}}],
-         "allocations": [],
-         "appointments": [],
-         "assignments": [],
-         "bid": 0.0,
-         "children": [],
-         "context_type": "task",
-         "custom_attributes": [],
-         "description": "",
-         "end_date": null,
-         "id": "{task_id}",
-         "lists": [],
-         "metadata": [],
-         "name": "{task_name}",
-         "notes": [],
-         "object_type": {{"__entity_type__": "ObjectType",
-         "id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c"}},
-         "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
-         "parent": {{"__entity_type__": "Project", "id":
-         "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
-         "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "priority": {{"__entity_type__": "Priority",
-         "id": "9661b320-3a0c-11e2-81c1-0800200c9a66"}},
-         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
-         "project": {{"__entity_type__": "Project",
-         "id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
-         "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "scopes": [],
-         "sort": null,
-         "start_date": null,
-         "status": {{"__entity_type__": "Status",
-         "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
-         "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
-         "thumbnail_id": null,
-         "timelogs": [],
-         "type": {{"__entity_type__": "Type",
-         "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
-    '''.format(
-        task_id=new_task['id'], task_name=new_task['name']
-    )).replace('\n', '')
+        {"__entity_type__": "Foo",
+         "bars": [{"__entity_type__": "Bar", "id": "bar_unique_id"}],
+         "boolean": false,
+         "date": {"__type__": "datetime", "value": "2015-11-18T15:24:09+00:00"},
+         "id": "a_unique_id",
+         "integer": 42,
+         "number": 12345678.9,
+         "string": "abc"}
+    ''').replace('\n', '')
 
 
 def test_encode_entity_using_only_set_attributes_strategy(
-    session, new_task
+    mocked_schema_session
 ):
     '''Encode entity using "set_only" entity_attribute_strategy.'''
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='set_only'
+    new_foo = mocked_schema_session.create(
+        'Foo',
+        {
+            'id': 'a_unique_id',
+            'string': 'abc',
+            'integer': 42
+        }
+    )
+
+    encoded = mocked_schema_session.encode(
+        new_foo, entity_attribute_strategy='set_only'
     )
 
     assert encoded == textwrap.dedent('''
-        {{"__entity_type__": "Task",
-         "bid": 0.0,
-         "context_type": "task",
-         "description": "",
-         "id": "{0}",
-         "name": "{1}",
-         "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
-         "parent": {{"__entity_type__": "Project", "id":
-         "5671dcb0-66de-11e1-8e6e-f23c91df25eb"}},
-         "parent_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "priority_id": "9661b320-3a0c-11e2-81c1-0800200c9a66",
-         "project_id": "5671dcb0-66de-11e1-8e6e-f23c91df25eb",
-         "status": {{"__entity_type__": "Status",
-         "id": "44dd9fb2-4164-11df-9218-0019bb4983d8"}},
-         "status_id": "44dd9fb2-4164-11df-9218-0019bb4983d8",
-         "type": {{"__entity_type__": "Type",
-         "id": "44dbfca2-4164-11df-9218-0019bb4983d8"}},
-         "type_id": "44dbfca2-4164-11df-9218-0019bb4983d8"}}
-    '''.format(
-        new_task['id'], new_task['name']
-    )).replace('\n', '')
+        {"__entity_type__": "Foo",
+         "id": "a_unique_id",
+         "integer": 42,
+         "string": "abc"}
+    ''').replace('\n', '')
 
 
 def test_encode_entity_using_only_modified_attributes_strategy(
-    session, new_task
+    mocked_schema_session
 ):
     '''Encode entity using "modified_only" entity_attribute_strategy.'''
-    new_task['name'] = 'Modified'
+    new_foo = mocked_schema_session._create(
+        'Foo',
+        {
+            'id': 'a_unique_id',
+            'string': 'abc',
+            'integer': 42
+        },
+        reconstructing=True
+    )
 
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='modified_only'
+    new_foo['string'] = 'Modified'
+
+    encoded = mocked_schema_session.encode(
+        new_foo, entity_attribute_strategy='modified_only'
     )
 
     assert encoded == textwrap.dedent('''
-        {{"__entity_type__": "Task",
-         "id": "{0}",
-         "name": "Modified"}}
-    '''.format(
-        new_task['id']
-    )).replace('\n', '')
+        {"__entity_type__": "Foo",
+         "id": "a_unique_id",
+         "string": "Modified"}
+    ''').replace('\n', '')
 
 
 def test_encode_entity_using_invalid_strategy(session, new_task):
@@ -619,7 +649,7 @@ def test_reset(mocker):
     assert location.accessor is not ftrack_api.symbol.NOT_SET
 
     mocked_close = mocker.patch.object(session._request, 'close')
-    mocked_fetch = mocker.patch.object(session, '_fetch_schemas')
+    mocked_fetch = mocker.patch.object(session, '_load_schemas')
 
     session.reset()
 
@@ -832,3 +862,148 @@ def test_correct_file_type_on_sequence_component(session):
     sequence_component = session.create_component(path)
 
     assert sequence_component['file_type'] == '.dpx'
+
+
+def test_read_schemas_from_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Read valid content from schema cache.'''
+    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+
+    schemas, hash_ = session._read_schemas_from_cache(
+        temporary_valid_schema_cache
+    )
+
+    assert expected_hash == hash_
+
+
+def test_fail_to_read_schemas_from_invalid_cache(
+    session, temporary_invalid_schema_cache
+):
+    '''Fail to read invalid content from schema cache.'''
+    with pytest.raises(ValueError):
+        session._read_schemas_from_cache(
+            temporary_invalid_schema_cache
+        )
+
+
+def test_write_schemas_to_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Write valid content to schema cache.'''
+    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+    schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
+
+    session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
+
+    schemas, hash_ = session._read_schemas_from_cache(
+        temporary_valid_schema_cache
+    )
+
+    assert expected_hash == hash_
+
+
+def test_fail_to_write_invalid_schemas_to_cache(
+    session, temporary_valid_schema_cache
+):
+    '''Fail to write invalid content to schema cache.'''
+    # Datetime not serialisable by default.
+    invalid_content = datetime.datetime.now()
+
+    with pytest.raises(TypeError):
+        session._write_schemas_to_cache(
+            invalid_content, temporary_valid_schema_cache
+        )
+
+
+def test_load_schemas_from_valid_cache(
+    mocker, session, temporary_valid_schema_cache, mocked_schemas
+):
+    '''Load schemas from cache.'''
+    expected_schemas = session._load_schemas(temporary_valid_schema_cache)
+
+    mocked = mocker.patch.object(session, '_call')
+    schemas = session._load_schemas(temporary_valid_schema_cache)
+
+    assert schemas == expected_schemas
+    assert not mocked.called
+
+
+def test_load_schemas_from_server_when_cache_invalid(
+    mocker, session, temporary_invalid_schema_cache
+):
+    '''Load schemas from server when cache invalid.'''
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+
+    session._load_schemas(temporary_invalid_schema_cache)
+    assert mocked.called
+
+
+def test_load_schemas_from_server_when_cache_outdated(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas from server when cache outdated.'''
+    schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
+    schemas.append({
+        'id': 'NewTest'
+    })
+    session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
+
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    session._load_schemas(temporary_valid_schema_cache)
+
+    assert mocked.called
+
+
+def test_load_schemas_from_server_not_reporting_schema_hash(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas from server when server does not report schema hash.'''
+    mocked_write = mocker.patch.object(
+        session, '_write_schemas_to_cache',
+        wraps=session._write_schemas_to_cache
+    )
+
+    server_information = session._server_information.copy()
+    server_information.pop('schema_hash')
+    mocker.patch.object(
+        session, '_server_information', new=server_information
+    )
+
+    session._load_schemas(temporary_valid_schema_cache)
+
+    # Cache still written even if hash not reported.
+    assert mocked_write.called
+
+    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    session._load_schemas(temporary_valid_schema_cache)
+
+    # No hash reported by server so cache should have been bypassed.
+    assert mocked.called
+
+
+def test_load_schemas_bypassing_cache(
+    mocker, session, temporary_valid_schema_cache
+):
+    '''Load schemas bypassing cache when set to False.'''
+    with mocker.patch.object(session, '_call', wraps=session._call):
+
+        session._load_schemas(temporary_valid_schema_cache)
+        assert session._call.call_count == 1
+
+        session._load_schemas(False)
+        assert session._call.call_count == 2
+
+
+def test_get_tasks_widget_url(session):
+    '''Tasks widget URL returns valid HTTP status.'''
+    url = session.get_widget_url('tasks')
+    response = requests.get(url)
+    response.raise_for_status()
+
+
+def test_get_info_widget_url(session, task):
+    '''Info widget URL for *task* returns valid HTTP status.'''
+    url = session.get_widget_url('info', entity=task, theme='light')
+    response = requests.get(url)
+    response.raise_for_status()

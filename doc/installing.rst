@@ -53,6 +53,7 @@ With a copy of the source it is also possible to run the unit tests::
 Dependencies
 ============
 
+* `ftrack server <http://ftrack.rtd.ftrack.com/en/stable/>`_ >= 3.2.1, < 3.4
 * `Python <http://python.org>`_ >= 2.7, < 3
 * `Requests <http://docs.python-requests.org>`_ >= 2, <3,
 * `Arrow <http://crsmithdev.com/arrow/>`_ >= 0.4.4, < 1,

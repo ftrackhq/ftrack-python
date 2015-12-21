@@ -9,7 +9,40 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+
+.. release:: 0.12.0
+    :date: 2015-12-17
+
+    .. change:: new
+        :tags: session, widget url
+
+        Added :meth:`ftrack_api.session.Session.get_widget_url` to retrieve an
+        authenticated URL to info or tasks widgets.
+
+.. release:: 0.11.0
+    :date: 2015-12-04
+
+    .. change:: new
+        :tags: documentation
+
+        Updated :ref:`release/migrating_from_old_api` with new link attribute
+        and added a :ref:`usage example <example/link_attribute>`.
+
+    .. change:: new
+        :tags: caching, schemas, performance
+
+        Caching of schemas for increased performance.
+        :meth:`ftrack_api.session.Session` now accepts `schema_cache_path`
+        argument to specify location of schema cache. If not set it will use a
+        temporary folder.
+
+.. release:: 0.10.0
+    :date: 2015-11-24
+
+    .. change:: changed
+        :tags: tests
+
+        Updated session test to use mocked schemas for encoding tests.
 
     .. change:: changed
         :tags: querying, performance
@@ -60,6 +93,13 @@ Release Notes
         :tags: tests
 
         Updated session test to not fail on the new private link attribute.
+
+    .. change:: changed
+        :tags: session
+
+        Internal method :py:meth:`_fetch_schemas` has beed renamed to
+        :py:meth:`Session._load_schemas` and now requires a `schema_cache_path`
+        argument.
 
 .. release:: 0.9.0
     :date: 2015-10-30
@@ -143,6 +183,11 @@ Release Notes
 
 .. release:: 0.8.3
     :date: 2015-09-28
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.2.1, < 3.4 required.
 
     .. change:: changed
 
