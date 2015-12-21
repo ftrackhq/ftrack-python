@@ -40,23 +40,26 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         my_project/folder_a/folder_b/asset_name/v003/bar/baz.pdf
 
-    Add *project_versions_prefix* for versions published directly under the
-    project if set::
-
-        my_project/**project_versions_prefix*/v001/foo.jpg
-
-    Replace illegal characters with *replace_illegal_characters* if not None.
-
-    .. note::
-
-        Nested component containers/sequences are not supported.
-
     '''
 
     def __init__(
         self, project_versions_prefix=None, replace_illegal_characters='_'
     ):
-        '''Instantiate structure with *project_versions_prefix*.'''
+        '''Instantiate structure.
+
+        Add *project_versions_prefix* for versions published directly under the
+        project if set::
+
+            my_project/**project_versions_prefix*/v001/foo.jpg
+
+        Replace illegal characters with *replace_illegal_characters* if not
+        None.
+
+        .. note::
+
+            Nested component containers/sequences are not supported.
+
+        '''
         super(StandardStructure, self).__init__()
         self.project_versions_prefix = project_versions_prefix
         self.replace_illegal_characters = replace_illegal_characters
