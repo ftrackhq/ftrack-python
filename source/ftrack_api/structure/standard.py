@@ -16,17 +16,17 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         my_project/folder_a/folder_b/asset_name/v003
 
-    If the component is a `FileComponent` the name of the component and the
+    If the component is a `FileComponent` then the name of the component and the
     file type are used as filename in the resource_identifier::
 
         my_project/folder_a/folder_b/asset_name/v003/foo.jpg
 
-    If the component is a `SequenceComponent` a sequence expression, `%04d`, is
-    used. E.g. a component with the name `foo` yields::
+    If the component is a `SequenceComponent` then a sequence expression,
+    `%04d`, is used. E.g. a component with the name `foo` yields::
 
         my_project/folder_a/folder_b/asset_name/v003/foo.%04d.jpg
 
-    For the member components their index in the sequence are used::
+    For the member components their index in the sequence is used::
 
         my_project/folder_a/folder_b/asset_name/v003/foo.0042.jpg
 
@@ -36,7 +36,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         my_project/folder_a/folder_b/asset_name/v003/bar
 
-    For a member the file name is based on the component name and file type::
+    For a member of that container the file name is based on the component name
+    and file type::
 
         my_project/folder_a/folder_b/asset_name/v003/bar/baz.pdf
 
@@ -45,15 +46,15 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     def __init__(
         self, project_versions_prefix=None, illegal_character_substitute='_'
     ):
-        '''Instantiate structure.
+        '''Initialise structure.
 
-        Add *project_versions_prefix* for versions published directly under the
-        project if set::
+        If *project_versions_prefix* is defined, insert after the project code
+        for versions published directly under the project::
 
-            my_project/**project_versions_prefix*/v001/foo.jpg
+            my_project/<project_versions_prefix>/v001/foo.jpg
 
-        Replace illegal characters with *illegal_character_substitute* if not
-        None.
+        Replace illegal characters with *illegal_character_substitute* if
+        defined.
 
         .. note::
 
@@ -95,22 +96,18 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return [self.sanitise_for_filesystem(part) for part in parts]
 
     def _format_version(self, number):
-        '''Return a string to represent version number from *number*.
-
-        The return string is as part of the resource identifier.
-
-        '''
+        '''Return a formatted string representing version *number*.'''
         return 'v{0:03d}'.format(number)
 
     def sanitise_for_filesystem(self, value):
-        '''Replace illegal file system characters in *value*.
+        '''Return *value* with illegal filesystem characters replaced.
 
-        Illegal characters will be replaced with the
-        *illegal_character_substitute* argument used when instantiating the
-        structure.
-
-        Illegal characters will not be replaced if StandardStructure is
-        configured with a illegal_character_substitute equal to None.
+        An illegal character is one that is not typically valid for filesystem
+        usage, such as non ascii characters, or can be awkward to use in a
+        filesystem, such as spaces. Replace these characters with
+        the character specified by *illegal_character_substitute* on
+        initialisation. If no character was specified as substitute then return
+        *value* unmodified.
 
         '''
         if self.illegal_character_substitute is None:
@@ -126,7 +123,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     def get_resource_identifier(self, entity, context=None):
         '''Return a resource identifier for supplied *entity*.
 
-        *context* can be a mapping that supplies additional information.
+        *context* can be a mapping that supplies additional information, but
+        is unused in this implementation.
 
         '''
         if entity.entity_type in ('FileComponent',):
