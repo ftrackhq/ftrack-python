@@ -132,7 +132,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         if entity.entity_type in ('FileComponent',):
             container = entity['container']
 
-            if container and container is not ftrack_api.symbol.NOT_SET:
+            if container:
                 container_path = self.get_resource_identifier(container)
 
                 if container.entity_type in ('SequenceComponent',):
