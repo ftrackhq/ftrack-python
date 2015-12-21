@@ -12,7 +12,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     '''Project hierarchy based structure that only supports Components.
 
     The resource identifier is generated from the project code, the name
-    objects in the project structure, asset name and version number::
+    of objects in the project structure, asset name and version number::
 
         my_project/folder_a/folder_b/asset_name/v003
 
