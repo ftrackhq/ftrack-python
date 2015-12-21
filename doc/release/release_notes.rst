@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: querying, performance
+
+        Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
+        :meth:`~ftrack_api.query.QueryResult.one` by using new `limit` syntax.
 
 .. release:: 0.12.0
     :date: 2015-12-17
@@ -43,12 +50,6 @@ Release Notes
         :tags: tests
 
         Updated session test to use mocked schemas for encoding tests.
-
-    .. change:: new
-        :tags: querying, performance
-
-        Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
-        :meth:`~ftrack_api.query.QueryResult.one` by using new `limit` syntax.
 
     .. change:: fixed
 
