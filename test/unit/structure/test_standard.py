@@ -108,14 +108,14 @@ sequence_component = new_sequence_component()
             'my_new_asset'
         ),
         (
-            new_sequence_component(),
+            sequence_component,
             ['baz2', 'bar'],
             '{project_name}/baz2/bar/my_new_asset/v001/baz.%04d.jpg',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            new_sequence_component()['members'][3],
+            sequence_component['members'][3],
             ['baz3', 'bar'],
             '{project_name}/baz3/bar/my_new_asset/v001/baz.0004.jpg',
             ftrack_api.structure.standard.StandardStructure(),
