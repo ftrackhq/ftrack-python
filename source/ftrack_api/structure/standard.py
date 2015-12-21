@@ -77,7 +77,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         project = session.get('Project', project_id)
         asset = entity['version']['asset']
 
-        version_number = 'v{0:03d}'.format(entity['version']['version'])
+        version_number = self._format_version(entity['version']['version'])
 
         parts = []
         parts.append(project['name'])
@@ -93,6 +93,14 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         parts.append(version_number)
 
         return [self.slugify(part) for part in parts]
+
+    def _format_version(self, number):
+        '''Return a string to represent version number from *number*.
+
+        The return string is as part of the resource identifier.
+
+        '''
+        return 'v{0:03d}'.format(number)
 
     def slugify(self, value):
         '''Replace illegal file system characters in *value*.
