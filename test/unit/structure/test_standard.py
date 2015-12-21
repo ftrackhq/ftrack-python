@@ -250,7 +250,7 @@ def test_get_resource_identifier(
 
 
 def test_unsupported_entity(user):
-    '''Fail to get resource identifer for unsupported entity.'''
+    '''Fail to get resource identifier for unsupported entity.'''
     structure = ftrack_api.structure.standard.StandardStructure()
     with pytest.raises(NotImplementedError):
             structure.get_resource_identifier(user)
