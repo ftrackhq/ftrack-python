@@ -133,9 +133,13 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             container = entity['container']
 
             if container:
+                # Get resource identifier for container.
                 container_path = self.get_resource_identifier(container)
 
                 if container.entity_type in ('SequenceComponent',):
+                    # Strip the sequence component expression from the parent
+                    # container and back the correct filename, i.e.
+                    # /sequence/component/sequence_component_name.0012.exr.
                     name = '{0}.{1}{2}'.format(
                         container['name'], entity['name'], entity['file_type']
                     )
@@ -144,17 +148,23 @@ class StandardStructure(ftrack_api.structure.base.Structure):
                     ]
 
                 else:
+                    # Container is not a sequence component so add it as a
+                    # normal component inside the container.
                     name = entity['name'] + entity['file_type']
                     parts = [
                         container_path, self.slugify(name)
                     ]
 
             else:
+                # File component does not have a container, construct name from
+                # component name and file type.
                 parts = self._get_parts(entity)
                 name = entity['name'] + entity['file_type']
                 parts.append(self.slugify(name))
 
         elif entity.entity_type in ('SequenceComponent',):
+            # Create sequence expression for the sequence component and add it
+            # to the parts.
             parts = self._get_parts(entity)
             sequence_expression = self._get_sequence_expression(entity)
             parts.append(
@@ -165,6 +175,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             )
 
         elif entity.entity_type in ('ContainerComponent',):
+            # Add the name of the container to the resource identifier parts.
             parts = self._get_parts(entity)
             parts.append(self.slugify(entity['name']))
 
@@ -174,6 +185,4 @@ class StandardStructure(ftrack_api.structure.base.Structure):
                 'entity {0!r}'.format(entity)
             )
 
-        return self.path_separator.join(
-            parts
-        )
+        return self.path_separator.join(parts)
