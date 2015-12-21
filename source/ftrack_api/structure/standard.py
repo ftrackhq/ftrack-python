@@ -92,7 +92,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         parts.append(asset['name'])
         parts.append(version_number)
 
-        return [self.slugify(part) for part in parts]
+        return [self.sanitise_for_filesystem(part) for part in parts]
 
     def _format_version(self, number):
         '''Return a string to represent version number from *number*.
@@ -102,7 +102,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         '''
         return 'v{0:03d}'.format(number)
 
-    def slugify(self, value):
+    def sanitise_for_filesystem(self, value):
         '''Replace illegal file system characters in *value*.
 
         Illegal characters will be replaced with the
@@ -144,7 +144,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
                         container['name'], entity['name'], entity['file_type']
                     )
                     parts = [
-                        os.path.dirname(container_path), self.slugify(name)
+                        os.path.dirname(container_path),
+                        self.sanitise_for_filesystem(name)
                     ]
 
                 else:
@@ -152,7 +153,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
                     # normal component inside the container.
                     name = entity['name'] + entity['file_type']
                     parts = [
-                        container_path, self.slugify(name)
+                        container_path, self.sanitise_for_filesystem(name)
                     ]
 
             else:
@@ -160,7 +161,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
                 # component name and file type.
                 parts = self._get_parts(entity)
                 name = entity['name'] + entity['file_type']
-                parts.append(self.slugify(name))
+                parts.append(self.sanitise_for_filesystem(name))
 
         elif entity.entity_type in ('SequenceComponent',):
             # Create sequence expression for the sequence component and add it
@@ -169,15 +170,16 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             sequence_expression = self._get_sequence_expression(entity)
             parts.append(
                 '{0}.{1}{2}'.format(
-                    self.slugify(entity['name']), sequence_expression,
-                    self.slugify(entity['file_type'])
+                    self.sanitise_for_filesystem(entity['name']),
+                    sequence_expression,
+                    self.sanitise_for_filesystem(entity['file_type'])
                 )
             )
 
         elif entity.entity_type in ('ContainerComponent',):
             # Add the name of the container to the resource identifier parts.
             parts = self._get_parts(entity)
-            parts.append(self.slugify(entity['name']))
+            parts.append(self.sanitise_for_filesystem(entity['name']))
 
         else:
             raise NotImplementedError(
