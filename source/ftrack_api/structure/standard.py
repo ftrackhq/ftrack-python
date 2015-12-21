@@ -168,7 +168,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             parts = self._get_parts(entity)
             sequence_expression = self._get_sequence_expression(entity)
             parts.append(
-                '{}.{}{}'.format(
+                '{0}.{1}{2}'.format(
                     self.slugify(entity['name']), sequence_expression,
                     self.slugify(entity['file_type'])
                 )
