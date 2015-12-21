@@ -149,7 +149,7 @@ def container_component():
             [u'björn'],
             u'{project_name}/björn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
-                replace_illegal_characters=None
+                illegal_character_substitute=None
             ),
             'my_new_asset'
         ),
@@ -158,7 +158,7 @@ def container_component():
             [u'bj!rn'],
             '{project_name}/bj^rn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
-                replace_illegal_characters='^'
+                illegal_character_substitute='^'
             ),
             'my_new_asset'
         )
@@ -176,7 +176,7 @@ def container_component():
         'slugify_illegal_component_name',
         'slugify_non_ascii_asset_name',
         'slugify_illegal_asset_name',
-        'slutify_none',
+        'slugify_none',
         'slugify_other_character'
     ]
 )
