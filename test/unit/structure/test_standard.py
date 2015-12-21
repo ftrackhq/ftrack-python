@@ -9,7 +9,7 @@ import ftrack_api
 import ftrack_api.structure.standard
 
 
-def new_file_component(name='foo', container=None, scope='session'):
+def new_file_component(name='foo', container=None):
     '''Return file component with *name* and *container*.'''
     if container:
         session = container.session
