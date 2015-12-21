@@ -411,3 +411,92 @@ def new_sequence_component(request, session, temporary_sequence):
     request.addfinalizer(cleanup)
 
     return component
+
+
+@pytest.fixture
+def mocked_schemas():
+    '''Return a list of mocked schemas.'''
+    return [{
+        'id': 'Foo',
+        'type': 'object',
+        'properties': {
+            'id': {
+                'type': 'string'
+            },
+            'string': {
+                'type': 'string'
+            },
+            'integer': {
+                'type': 'integer'
+            },
+            'number': {
+                'type': 'number'
+            },
+            'boolean': {
+                'type': 'boolean'
+            },
+            'bars': {
+                'type': 'array',
+                'items': {
+                    'ref': '$Bar'
+                }
+            },
+            'date': {
+                'type': 'string',
+                'format': 'date-time'
+            }
+        },
+        'immutable': [
+            'id'
+        ],
+        'primary_key': [
+            'id'
+        ],
+        'required': [
+            'id'
+        ],
+        'default_projections': [
+            'id'
+        ]
+    }, {
+        'id': 'Bar',
+        'type': 'object',
+        'properties': {
+            'id': {
+                'type': 'string'
+            },
+            'name': {
+                'type': 'string'
+            }
+        },
+        'immutable': [
+            'id'
+        ],
+        'primary_key': [
+            'id'
+        ],
+        'required': [
+            'id'
+        ],
+        'default_projections': [
+            'id'
+        ]
+    }]
+
+
+@pytest.yield_fixture
+def mocked_schema_session(mocker, mocked_schemas):
+    '''Return a session instance with mocked schemas.'''
+    with mocker.patch.object(
+        ftrack_api.Session,
+        '_load_schemas',
+        return_value=mocked_schemas
+    ):
+        # Mock _configure_locations since it will fail if no location schemas
+        # exist.
+        with mocker.patch.object(
+            ftrack_api.Session,
+            '_configure_locations'
+        ):
+            patched_session = ftrack_api.Session()
+            yield patched_session

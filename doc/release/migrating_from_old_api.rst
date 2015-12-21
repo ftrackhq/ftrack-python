@@ -558,15 +558,13 @@ Old API::
 
 New API::
 
-    item = task
     parents = []
+    for item in task['link'][:-1]:
+        parents.append(session.get(item['type'], item['id']))
 
-    while True:
-        item = item['parent']
-        if not item:
-            break
-        parents.append(item)
-
+Note that link includes the task itself so `[:-1]` is used to only retreive the
+parents. To learn more about the `link` attribute, see
+:ref:`Using link attributes example<example/link_attribute>`.
 
 Limitations in the current version of the API
 =============================================
@@ -580,18 +578,14 @@ Missing schemas
 The following entities are as of the time of writing not currently available
 in the new API. Let us know if you depend on any of them.
 
-    * Attachment
     * Booking
     * Calendar and Calendar Type
     * Dependency
-    * Disk
     * Manager and Manager Type
     * Phase
     * Role
-    * Social Event and Social Feed
     * Task template
     * Temp data
-    * Version link
 
 Attachments and Thumbnails
 --------------------------
