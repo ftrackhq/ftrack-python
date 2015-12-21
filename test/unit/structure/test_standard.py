@@ -51,7 +51,7 @@ def new_project(request):
 
 
 def new_sequence_component():
-    '''Return sequence component with *padding*.'''
+    '''Return sequence component.'''
     session = ftrack_api.Session()
 
     entity = session.create_component(
