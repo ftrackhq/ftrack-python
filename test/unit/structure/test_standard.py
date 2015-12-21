@@ -9,22 +9,6 @@ import ftrack_api
 import ftrack_api.structure.standard
 
 
-def new_file_component(name='foo', container=None):
-    '''Return file component with *name* and *container*.'''
-    if container:
-        session = container.session
-    else:
-        session = ftrack_api.Session()
-
-    entity = session.create('FileComponent', {
-        'name': name,
-        'file_type': '.png',
-        'container': container
-    })
-
-    return entity
-
-
 @pytest.fixture(scope='session')
 def new_project(request):
     '''Return new empty project.'''
@@ -50,17 +34,6 @@ def new_project(request):
     return project
 
 
-def new_sequence_component():
-    '''Return sequence component.'''
-    session = ftrack_api.Session()
-
-    entity = session.create_component(
-        '/tmp/foo/%04d.jpg [1-10]', location=None, data={'name': 'baz'}
-    )
-
-    return entity
-
-
 def new_container_component():
     '''Return container component.'''
     session = ftrack_api.Session()
@@ -72,6 +45,34 @@ def new_container_component():
     return entity
 
 
+def new_sequence_component():
+    '''Return sequence component.'''
+    session = ftrack_api.Session()
+
+    entity = session.create_component(
+        '/tmp/foo/%04d.jpg [1-10]', location=None, data={'name': 'baz'}
+    )
+
+    return entity
+
+
+def new_file_component(name='foo', container=None):
+    '''Return file component with *name* and *container*.'''
+    if container:
+        session = container.session
+    else:
+        session = ftrack_api.Session()
+
+    entity = session.create('FileComponent', {
+        'name': name,
+        'file_type': '.png',
+        'container': container
+    })
+
+    return entity
+
+
+# Reusable fixtures.
 file_component = new_file_component()
 container_component = new_container_component()
 sequence_component = new_sequence_component()
