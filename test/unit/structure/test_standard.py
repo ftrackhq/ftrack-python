@@ -1,13 +1,15 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import uuid
+
 import pytest
 
 import ftrack_api
 import ftrack_api.structure.standard
 
 
-def file_component(name='foo', container=None):
+def new_file_component(name='foo', container=None, scope='session'):
     '''Return file component with *name* and *container*.'''
     if container:
         session = container.session
@@ -23,7 +25,32 @@ def file_component(name='foo', container=None):
     return entity
 
 
-def sequence_component(padding=0):
+@pytest.fixture(scope='session')
+def new_project(request):
+    '''Return new empty project.'''
+    session = ftrack_api.Session()
+
+    project_schema = session.query('ProjectSchema').first()
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return project
+
+
+def new_sequence_component():
     '''Return sequence component with *padding*.'''
     session = ftrack_api.Session()
 
@@ -34,7 +61,7 @@ def sequence_component(padding=0):
     return entity
 
 
-def container_component():
+def new_container_component():
     '''Return container component.'''
     session = ftrack_api.Session()
 
@@ -45,18 +72,27 @@ def container_component():
     return entity
 
 
+file_component = new_file_component()
+container_component = new_container_component()
+sequence_component = new_sequence_component()
+
+
+# Note: to improve test performance the same project is reused throughout the
+# tests. This means that all hierarchical names must be unique, otherwise an
+# IntegrityError will be raised on the server.
+
 @pytest.mark.parametrize(
     'component, hierarchy, expected, structure, asset_name',
     [
         (
-            file_component(),
+            file_component,
             [],
             '{project_name}/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(),
+            file_component,
             [],
             '{project_name}/foobar/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
@@ -65,96 +101,96 @@ def container_component():
             'my_new_asset'
         ),
         (
-            file_component(),
-            ['baz', 'bar'],
-            '{project_name}/baz/bar/my_new_asset/v001/foo.png',
+            file_component,
+            ['baz1', 'bar'],
+            '{project_name}/baz1/bar/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            sequence_component(),
-            ['baz', 'bar'],
-            '{project_name}/baz/bar/my_new_asset/v001/baz.%04d.jpg',
+            new_sequence_component(),
+            ['baz2', 'bar'],
+            '{project_name}/baz2/bar/my_new_asset/v001/baz.%04d.jpg',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            sequence_component()['members'][3],
-            ['baz', 'bar'],
-            '{project_name}/baz/bar/my_new_asset/v001/baz.0004.jpg',
+            new_sequence_component()['members'][3],
+            ['baz3', 'bar'],
+            '{project_name}/baz3/bar/my_new_asset/v001/baz.0004.jpg',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            container_component(),
-            ['baz', 'bar'],
-            '{project_name}/baz/bar/my_new_asset/v001/container_component',
+            container_component,
+            ['baz4', 'bar'],
+            '{project_name}/baz4/bar/my_new_asset/v001/container_component',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(container=container_component()),
-            ['baz', 'bar'],
+            new_file_component(container=container_component),
+            ['baz5', 'bar'],
             (
-                '{project_name}/baz/bar/my_new_asset/v001/container_component/'
+                '{project_name}/baz5/bar/my_new_asset/v001/container_component/'
                 'foo.png'
             ),
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(),
+            file_component,
             [u'björn'],
             '{project_name}/bjorn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(),
+            file_component,
             [u'björn!'],
             '{project_name}/bjorn_/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(name=u'fää'),
+            new_file_component(name=u'fää'),
             [],
             '{project_name}/my_new_asset/v001/faa.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(name=u'fo/o'),
+            new_file_component(name=u'fo/o'),
             [],
             '{project_name}/my_new_asset/v001/fo_o.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
         (
-            file_component(),
+            file_component,
             [],
             '{project_name}/aao/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             u'åäö'
         ),
         (
-            file_component(),
+            file_component,
             [],
             '{project_name}/my_ne____w_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             u'my_ne!!!!w_asset'
         ),
         (
-            file_component(),
-            [u'björn'],
-            u'{project_name}/björn/my_new_asset/v001/foo.png',
+            file_component,
+            [u'björn2'],
+            u'{project_name}/björn2/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
                 illegal_character_substitute=None
             ),
             'my_new_asset'
         ),
         (
-            file_component(),
+            file_component,
             [u'bj!rn'],
             '{project_name}/bj^rn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
