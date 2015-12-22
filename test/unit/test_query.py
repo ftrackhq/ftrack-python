@@ -6,6 +6,7 @@ import math
 import pytest
 
 import ftrack_api
+import ftrack_api.query
 import ftrack_api.exception
 
 
@@ -26,6 +27,18 @@ def test_all(session):
     results = session.query('User').all()
     assert isinstance(results, list)
     assert len(results)
+
+
+def test_implicit_iteration(session):
+    '''Implicitly iterate through query result.'''
+    results = session.query('User')
+    assert isinstance(results, ftrack_api.query.QueryResult)
+
+    records = []
+    for record in results:
+        records.append(record)
+
+    assert len(records) == len(results)
 
 
 def test_one(session):
