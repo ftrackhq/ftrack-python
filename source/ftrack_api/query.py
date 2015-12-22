@@ -83,7 +83,7 @@ class QueryResult(collections.Sequence):
 
     def __getitem__(self, index):
         '''Return value at *index*.'''
-        while self._can_fetch_more() and index > len(self._results):
+        while self._can_fetch_more() and index >= len(self._results):
             self._fetch_more()
 
         return self._results[index]
