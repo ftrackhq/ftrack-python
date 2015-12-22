@@ -11,7 +11,15 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: new
+    .. change:: changed
+        :tags: querying, performance
+
+        :class:`ftrack_api.query.QueryResult` now pages internally using a
+        specified page size in order to optimise record retrieval for large
+        query results. :meth:`Session.query` has also been updated to allow
+        passing a custom page size at runtime if desired.
+
+    .. change:: changed
         :tags: querying, performance
 
         Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
