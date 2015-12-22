@@ -37,8 +37,8 @@ import ftrack_api.operation
 import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
-import ftrack_api.structure.id
 import ftrack_api.accessor.server
+import ftrack_api.structure.standard as _standard
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -1453,7 +1453,6 @@ class Session(object):
         location.priority = 150
 
         # Master location based on server scenario.
-        master_location = None
         location_scenario = self.server_information.get('location_scenario')
         if (
             location_scenario and
@@ -1475,7 +1474,7 @@ class Session(object):
                 )
 
             else:
-                master_location = self.create(
+                location = self.create(
                     'Location',
                     data=dict(
                         name=location_name,
@@ -1497,20 +1496,18 @@ class Session(object):
                         ).format(sys.platform)
                     )
 
-                master_location.accessor = ftrack_api.accessor.disk.DiskAccessor(
+                location.accessor = ftrack_api.accessor.disk.DiskAccessor(
                     prefix=prefix
                 )
-                # TODO: Replace this with the new structure.
-                master_location.structure = ftrack_api.structure.id.IdStructure()
-                master_location.priority = 1
+                location.structure = _standard.StandardStructure()
+                location.priority = 1
 
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
                 topic='ftrack.api.session.configure-location',
                 data=dict(
-                    session=self,
-                    master_location=master_location
+                    session=self
                 )
             ),
             synchronous=True
