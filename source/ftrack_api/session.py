@@ -274,7 +274,7 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            server_version_range = ('3.2.1', '3.4')
+            server_version_range = ('3.3.10', '3.4')
             if not (
                 distutils.version.LooseVersion(server_version_range[0])
                 <= distutils.version.LooseVersion(server_version)

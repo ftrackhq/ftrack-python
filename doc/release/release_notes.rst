@@ -12,6 +12,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.3.10, < 3.4 required.
+
+    .. change:: changed
         :tags: querying, performance
 
         :class:`ftrack_api.query.QueryResult` now pages internally using a

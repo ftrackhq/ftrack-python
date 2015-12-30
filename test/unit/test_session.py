@@ -501,10 +501,10 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
 @pytest.mark.parametrize('server_information, compatible', [
     ({}, False),
-    ({'version': '3.2.1'}, True),
-    ({'version': '3.2.2'}, True),
-    ({'version': '3.2'}, False),
-    ({'version': '3.4'}, False)
+    ({'version': '3.3.10'}, True),
+    ({'version': '3.3.11'}, True),
+    ({'version': '3.4'}, False),
+    ({'version': '3.3.9'}, False)
 ], ids=[
     'No information',
     'Valid current version',
