@@ -56,7 +56,7 @@ Glossary
         :term:`Python` plugins are used by the API to extend it with new
         functionality, such as :term:`locations <location>` or :term:`actions <action>`.
 
-        .. seealso:: :ref:`configuring_plugins`
+        .. seealso:: :ref:`understanding_sessions/plugins`
 
     python
         A programming language that lets you work more quickly and integrate
