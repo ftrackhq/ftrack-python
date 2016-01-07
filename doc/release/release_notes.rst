@@ -14,7 +14,7 @@ Release Notes
     .. change:: changed
         :tags: server version
 
-        ftrack server version >= 3.3.10, < 3.4 required.
+        ftrack server version >= 3.3.11, < 3.4 required.
 
     .. change:: changed
         :tags: querying, performance
