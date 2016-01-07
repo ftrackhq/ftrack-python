@@ -12,6 +12,7 @@ import itertools
 import distutils.version
 import hashlib
 import tempfile
+import threading
 
 import requests
 import requests.auth
@@ -111,6 +112,14 @@ class Session(object):
         manually connected using :meth:`EventHub.connect
         <ftrack_api.event.hub.EventHub.connect>`.
 
+        .. note::
+
+            The event hub connection is performed in a background thread to
+            improve session startup time. If a registered plugin requires a
+            connected event hub then it should check the event hub connection
+            status explicitly. Subscribing to events does *not* require a
+            connected event hub.
+
         Enable schema caching by setting *schema_cache_path* to a folder path.
         If not set, :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
         determine the path to store cache in. If the environment variable is
@@ -207,7 +216,13 @@ class Session(object):
         )
 
         if auto_connect_event_hub:
-            self._event_hub.connect()
+            # Connect to event hub in background thread so as not to block main
+            # session usage waiting for event hub connection.
+            self._auto_connect_event_hub_thread = threading.Thread(
+                target=self._event_hub.connect
+            )
+            self._auto_connect_event_hub_thread.daemon = True
+            self._auto_connect_event_hub_thread.start()
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
