@@ -10,6 +10,14 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session, events
+
+        Auto connection of event hub for :class:`Session` now takes place in
+        background to improve session startup time.
+
 .. release:: 0.12.0
     :date: 2015-12-17
 
