@@ -1,7 +1,7 @@
 ..
     :copyright: Copyright (c) 2015 ftrack
 
-.. _configuring plugins:
+.. _configuring_plugins:
 
 ********************************
 Configuring plugins via registry
@@ -10,16 +10,15 @@ Configuring plugins via registry
 .. currentmodule:: ftrack_api
 
 Plugins are used by the API to extend it with new functionality, such as 
-:term:`locations` or :term:`actions`. 
+:term:`locations <location>` or :term:`actions <action>`. 
 
-When the :ref:`session` is created, you have the option to specify a list of
-paths to search for plugins, either as the :py:param:`plugin_paths` or
+When the :class:`session.Session` is created, you have the option to specify a
+list of paths to search for plugins, either as the `plugin_paths` argument or
 :envvar:`FTRACK_EVENT_PLUGIN_PATH`.
 
 The directories will be searched for :term:`plugins <plugin>`, python files
-which expose a :py:function:`register` function. These functions will be
-evaluated and can be used extend the API with new functionality, such as 
-locations or actions.
+which expose a `register` function. These functions will be evaluated and can
+be used extend the API with new functionality, such as locations or actions.
 
 Configuring plugins via registry
 ================================
@@ -63,3 +62,5 @@ output::
 
 Instead of specifying the plugin paths when instantiating the session, you can
 also specify the :envvar:`FTRACK_EVENT_PLUGIN_PATH` to point to the directory.
+To specify multiple directories, use the path separator for your operating
+system.
