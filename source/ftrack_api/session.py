@@ -218,11 +218,11 @@ class Session(object):
         if auto_connect_event_hub:
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
-            auto_connect_event_hub_thread = threading.Thread(
+            self._auto_connect_event_hub_thread = threading.Thread(
                 target=self._event_hub.connect
             )
-            auto_connect_event_hub_thread.daemon = True
-            auto_connect_event_hub_thread.start()
+            self._auto_connect_event_hub_thread.daemon = True
+            self._auto_connect_event_hub_thread.start()
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
