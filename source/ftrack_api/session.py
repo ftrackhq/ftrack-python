@@ -289,7 +289,7 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            server_version_range = ('3.2.1', '3.4')
+            server_version_range = ('3.3.11', '3.4')
             if not (
                 distutils.version.LooseVersion(server_version_range[0])
                 <= distutils.version.LooseVersion(server_version)
@@ -651,12 +651,15 @@ class Session(object):
 
         return entity
 
-    def query(self, expression):
+    def query(self, expression, page_size=500):
         '''Query against remote data according to *expression*.
 
         *expression* is not executed directly. Instead return an
         :class:`ftrack_api.query.QueryResult` instance that will execute remote
         call on access.
+
+        *page_size* specifies the maximum page size that the returned query
+        result object should be configured with.
 
         .. seealso:: :ref:`querying`
 
@@ -679,11 +682,18 @@ class Session(object):
                 expression
             )
 
-        query_result = ftrack_api.query.QueryResult(self, expression)
+        query_result = ftrack_api.query.QueryResult(
+            self, expression, page_size=page_size
+        )
         return query_result
 
     def _query(self, expression):
-        '''Execute *query*.'''
+        '''Execute *query* and return (records, metadata).
+
+        Records will be a list of entities retrieved via the query and metadata
+        a dictionary of accompanying information about the result set.
+
+        '''
         # TODO: Actually support batching several queries together.
         # TODO: Should batches have unique ids to match them up later.
         batch = [{
@@ -699,7 +709,7 @@ class Session(object):
         for entity in results[0]['data']:
             data.append(self.merge(entity))
 
-        return data
+        return data, results[0]['metadata']
 
     def merge(self, value, merged=None):
         '''Merge *value* into session and return merged value.

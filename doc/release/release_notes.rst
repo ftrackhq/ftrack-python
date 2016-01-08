@@ -9,6 +9,26 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.3.11, < 3.4 required.
+
+    .. change:: changed
+        :tags: querying, performance
+
+        :class:`ftrack_api.query.QueryResult` now pages internally using a
+        specified page size in order to optimise record retrieval for large
+        query results. :meth:`Session.query` has also been updated to allow
+        passing a custom page size at runtime if desired.
+
+    .. change:: changed
+        :tags: querying, performance
+
+        Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
+        :meth:`~ftrack_api.query.QueryResult.one` by using new `limit` syntax.
 
 .. release:: Upcoming
 
