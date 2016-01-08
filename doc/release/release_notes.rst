@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: session, events
+
+        Auto connection of event hub for :class:`Session` now takes place in
+        background to improve session startup time.
+
+    .. change:: changed
         :tags: server version
 
         ftrack server version >= 3.3.11, < 3.4 required.
@@ -29,14 +35,6 @@ Release Notes
 
         Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
         :meth:`~ftrack_api.query.QueryResult.one` by using new `limit` syntax.
-
-.. release:: Upcoming
-
-    .. change:: changed
-        :tags: session, events
-
-        Auto connection of event hub for :class:`Session` now takes place in
-        background to improve session startup time.
 
 .. release:: 0.12.0
     :date: 2015-12-17
