@@ -5,6 +5,7 @@ import os
 import re
 import unicodedata
 
+import ftrack_api.symbol
 import ftrack_api.structure.base
 
 
@@ -69,16 +70,36 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         '''Return resource identifier parts from *entity*.'''
         session = entity.session
 
+        version = entity['version']
+
+        error_message = (
+            'Component {0!r} must be attached to a committed '
+            'version and a committed asset with a parent context.'.format(
+                entity
+            )
+        )
+
+        if (
+            version is ftrack_api.symbol.NOT_SET or
+            version in session.created
+        ):
+            raise ftrack_api.exception.StructureError(error_message)
+
+        link = version['link']
+
+        if not link:
+            raise ftrack_api.exception.StructureError(error_message)
+
         structure_names = [
             item['name']
-            for item in entity['version']['link'][1:-1]
+            for item in link[1:-1]
         ]
 
-        project_id = entity['version']['link'][0]['id']
+        project_id = link[0]['id']
         project = session.get('Project', project_id)
-        asset = entity['version']['asset']
+        asset = version['asset']
 
-        version_number = self._format_version(entity['version']['version'])
+        version_number = self._format_version(version['version'])
 
         parts = []
         parts.append(project['name'])
@@ -125,6 +146,11 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         *context* can be a mapping that supplies additional information, but
         is unused in this implementation.
+
+
+        Raise a :py:exc:`ftrack_api.exeption.StructureError` if *entity* is not
+        attached to a committed version and a committed asset with a parent
+        context.
 
         '''
         if entity.entity_type in ('FileComponent',):
