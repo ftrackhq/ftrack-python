@@ -1460,6 +1460,9 @@ class Session(object):
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
+        # Save reference to server location for internal usage
+        self._server_location = location
+
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
@@ -1998,24 +2001,22 @@ class Session(object):
     def create_thumbnail(self, path, entity=None, data=None):
         '''Create and return a thumbnail component from *path*.
 
-        The component will be created in the ftrack.server location.
+        The component will be created using *data* if specified and
+        transferred to the ftrack.server location. Unless specified `thumbnail`
+        will be used as component name.
 
-        *data* will be used for component creation if specified.
+        The file is expected to be of an appropriate size and valid file
+        type.
 
-        Specify *entity* to automatically set the created component as a
-        thumbnail on *entity*.
+        Specify *entity* to set the created component as it's thumbnail.
         '''
-        server_location = self.query(
-            'Location where name is "ftrack.server"'
-        ).one()
-
         if data is None:
             data = {}
         if not data.get('name'):
             data['name'] = 'thumbnail'
 
         thumbnail_component = self.create_component(
-            path, data, location=server_location
+            path, data, location=self._server_location
         )
 
         if entity:
