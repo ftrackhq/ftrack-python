@@ -2020,7 +2020,7 @@ class Session(object):
         )
 
         if entity:
-            entity['thumbnail'] = thumbnail_component
+            entity['thumbnail_id'] = thumbnail_component['id']
             self.commit()
 
         return thumbnail_component
