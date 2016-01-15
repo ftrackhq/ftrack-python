@@ -12,7 +12,13 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
-        :tags: session, widget url
+        :tags: session
+
+        Added :meth:`ftrack_api.session.encode_media` that can be used to encode
+        media to make it playable in a browser.
+
+    .. change:: new
+        :tags: locations
 
         Added :meth:`ftrack_api.entity.Location.get_url` to retrieve a URL to a
         component in a location if supported by the
