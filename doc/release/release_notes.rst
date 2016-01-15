@@ -11,6 +11,13 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: session, widget url
+
+        Added :meth:`ftrack_api.entity.Location.get_url` to retrieve a URL to a
+        component in a location if supported by the
+        :class:`ftrack_api.accessor.Accessor`.
+
     .. change:: changed
         :tags: server version
 
