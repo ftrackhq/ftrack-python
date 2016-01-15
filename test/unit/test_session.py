@@ -1007,3 +1007,51 @@ def test_get_info_widget_url(session, task):
     url = session.get_widget_url('info', entity=task, theme='light')
     response = requests.get(url)
     response.raise_for_status()
+
+
+@pytest.fixture()
+def video_path():
+    '''Return a path to a video file.'''
+    video = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'fixture',
+            'media',
+            'colour_wheel.mov'
+        )
+    )
+
+    return video
+
+
+def test_encode_media_from_path(session, video_path):
+    '''Encode media based on a file path.'''
+    job = session.encode_media(video_path)
+
+    assert job.entity_type == 'Job'
+
+    job_data = json.loads(job['data'])
+    assert 'components' in job_data
+    assert 'source_component_id' in job_data
+    assert 'keep_original' in job_data and job_data['keep_original'] is False
+    assert len(job_data['components'])
+    assert 'component_id' in job_data['components'][0]
+    assert 'format' in job_data['components'][0]
+
+
+def test_encode_media_from_component(session, video_path):
+    '''Encode media based on a component.'''
+    location = session.query('Location where name is "ftrack.server"').one()
+    component = session.create_component(
+        video_path,
+        location=location
+    )
+    session.commit()
+
+    job = session.encode_media(component)
+
+    assert job.entity_type == 'Job'
+
+    job_data = json.loads(job['data'])
+    assert 'keep_original' in job_data and job_data['keep_original'] is True
