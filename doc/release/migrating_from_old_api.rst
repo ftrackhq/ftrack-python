@@ -412,6 +412,11 @@ thumbnail using the old API::
     task_old_api = ftrack.Task(version['task_id'])
     task_old_api.setThumbnail(thumbnail)
 
+.. note::
+
+    It is now possible to set thumbnails using the new API as well, for more
+    info see :ref:`example/component/thumbnail`.
+
 Plugin registration
 -------------------
 
@@ -517,10 +522,14 @@ New API::
     # Persist the changes 
     session.commit()
 
-    # Currently, it is not possible to set thumbnails using new API
-    # See the example above for a workaround using the old API.
-    # thumbnail = version.createThumbnail('/path/to/forest_thumbnail.jpg')
-    # task.setThumbnail(thumbnail)
+    # Add thumbnail to version.
+    thumbnail = session.create_thumbnail(
+        '/path/to/forest_thumbnail.jpg', entity=version
+    )
+
+    # Set thumbnail on other objects without duplicating it.
+    task['thumbnail'] = thumbnail
+    session.commit()
 
 
 Workarounds for missing convenience methods
