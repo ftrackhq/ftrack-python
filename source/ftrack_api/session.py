@@ -1995,6 +1995,35 @@ class Session(object):
         else:
             return result[0]['widget_url']
 
+    def create_thumbnail(self, path, entity=None, data=None):
+        '''Create and return a thumbnail component from *path*.
+
+        The component will be created in the ftrack.server location.
+
+        *data* will be used for component creation if specified.
+
+        Specify *entity* to automatically set the created component as a
+        thumbnail on *entity*.
+        '''
+        server_location = self.query(
+            'Location where name is "ftrack.server"'
+        ).one()
+
+        if data is None:
+            data = {}
+        if not data.get('name'):
+            data['name'] = 'thumbnail'
+
+        thumbnail_component = self.create_component(
+            path, data, location=server_location
+        )
+
+        if entity:
+            entity['thumbnail'] = thumbnail_component
+            self.commit()
+
+        return thumbnail_component
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''
