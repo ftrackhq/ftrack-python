@@ -62,11 +62,8 @@ server location to get the download URL::
     ).one()
 
     for job_component in job['job_components']:
-        resource_identifier = server_location.get_resource_identifier(
-            job_component['component']
-        )
         print 'Download URL: {0}'.format(
-            server_location.accessor.get_url(resource_identifier)   
+            server_location.get_url(job_component['component'])   
         )
 
 To add an attachment to a job you have to add it to the ftrack server location
