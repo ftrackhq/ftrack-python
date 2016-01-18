@@ -584,6 +584,12 @@ class Location(ftrack_api.entity.base.Entity):
 
         return filesystem_paths
 
+    def get_url(self, component):
+        '''Return url for *component*.'''
+        resource_identifier = self.get_resource_identifier(component)
+
+        return self.accessor.get_url(resource_identifier)
+
 
 class MemoryLocationMixin(object):
     '''Represent storage for components.
