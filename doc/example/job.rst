@@ -53,9 +53,12 @@ continue with the next task.
 Attachments
 ===========
 
-Job attachments are components that are attached to a job. To get a job's
-attachments you can use the `job_components` relation and then use the ftrack
-server location to get the download URL::
+Job attachments are files that are attached to a job. In the ftrack web
+interface these attachments can be downloaded by clicking on a job in the `Jobs`
+menu.
+
+To get a job's attachments through the API you can use the `job_components`
+relation and then use the ftrack server location to get the download URL::
 
     server_location = session.query(
         'Location where name is "ftrack.server"'

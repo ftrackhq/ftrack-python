@@ -115,9 +115,12 @@ To add recipients pass a list of user or group instances to the helper method::
 Attachments
 ===========
 
-Note attachments are components that are attached to a note. To get a note's
-attachments you can use the `note_components` relation and then use the ftrack
-server location to get the download URL::
+Note attachments are files that are attached to a note. In the ftrack web
+interface these attachments appears next to the note and can be downloaded by
+the user.
+
+To get a note's attachments through the API you can use the `note_components`
+relation and then use the ftrack server location to get the download URL::
 
     server_location = session.query(
         'Location where name is "ftrack.server"'
