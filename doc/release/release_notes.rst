@@ -12,6 +12,13 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: locations
+
+        Added :meth:`ftrack_api.entity.Location.get_url` to retrieve a URL to a
+        component in a location if supported by the
+        :class:`ftrack_api.accessor.Accessor`.
+
+    .. change:: new
         :tags: documentation
 
         Updated :ref:`example/note` and :ref:`example/job` articles with
