@@ -10,6 +10,7 @@ import ftrack_api.attribute
 import ftrack_api.inspection
 import ftrack_api.exception
 import ftrack_api.operation
+from ftrack_api.logging import LazyLogMessage as L
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -58,13 +59,10 @@ class Entity(collections.MutableMapping):
         if data is None:
             data = {}
 
-        self.logger.debug(
-            '{0} entity from {1!r}.'
-            .format(
-                ('Reconstructing' if reconstructing else 'Constructing'),
-                data
-            )
-        )
+        self.logger.debug(L(
+            '{0} entity from {1!r}.',
+            ('Reconstructing' if reconstructing else 'Constructing'), data
+        ))
 
         self._ignore_data_keys = ['__entity_type__']
         if not reconstructing:
@@ -86,10 +84,10 @@ class Entity(collections.MutableMapping):
 
                 attribute = self.__class__.attributes.get(key)
                 if attribute is None:
-                    self.logger.debug(
-                        'Cannot populate {0!r} attribute as no such attribute '
-                        'found on entity {1!r}.'.format(key, self)
-                    )
+                    self.logger.debug(L(
+                        'Cannot populate {0!r} attribute as no such '
+                        'attribute found on entity {1!r}.', key, self
+                    ))
                     continue
 
                 attribute.set_local_value(self, value)
@@ -112,10 +110,10 @@ class Entity(collections.MutableMapping):
 
             attribute = self.__class__.attributes.get(key)
             if attribute is None:
-                self.logger.debug(
+                self.logger.debug(L(
                     'Cannot populate {0!r} attribute as no such attribute '
-                    'found on entity {1!r}.'.format(key, self)
-                )
+                    'found on entity {1!r}.', key, self
+                ))
                 continue
 
             attribute.set_remote_value(self, value)
@@ -276,7 +274,7 @@ class Entity(collections.MutableMapping):
                         'old_value': local_value,
                         'new_value': merged_local_value
                     })
-                    self.logger.debug(log_message.format(**changes[-1]))
+                    self.logger.debug(L(log_message, **changes[-1]))
 
             # Remote attributes.
             other_remote_value = other_attribute.get_remote_value(entity)
@@ -294,7 +292,7 @@ class Entity(collections.MutableMapping):
                         'old_value': remote_value,
                         'new_value': merged_remote_value
                     })
-                    self.logger.debug(log_message.format(**changes[-1]))
+                    self.logger.debug(L(log_message, **changes[-1]))
 
         return changes
 
