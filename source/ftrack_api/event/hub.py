@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from __future__ import absolute_import
+
 import collections
 import urlparse
 import threading
