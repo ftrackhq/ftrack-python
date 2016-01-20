@@ -13,6 +13,13 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: session, locations
+
+        `ftrack.centralized-storage` location scenario is automatically
+        configured based on information passed from the server with the
+        `query_server_information` action.
+
+    .. change:: new
         :tags: structure
 
         Added :class:`ftrack_api.structure.standard.StandardStructure` with
