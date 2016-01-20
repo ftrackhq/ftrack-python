@@ -49,3 +49,49 @@ continue with the next task.
 
     job['status'] = 'done'
     session.commit()
+
+Attachments
+===========
+
+Job attachments are files that are attached to a job. In the ftrack web
+interface these attachments can be downloaded by clicking on a job in the `Jobs`
+menu.
+
+To get a job's attachments through the API you can use the `job_components`
+relation and then use the ftrack server location to get the download URL::
+
+    server_location = session.query(
+        'Location where name is "ftrack.server"'
+    ).one()
+
+    for job_component in job['job_components']:
+        print 'Download URL: {0}'.format(
+            server_location.get_url(job_component['component'])   
+        )
+
+To add an attachment to a job you have to add it to the ftrack server location
+and create a `jobComponent`::
+
+    server_location = session.query(
+        'Location where name is "ftrack.server"'
+    ).one()    
+
+    # Create component and name it "My file".
+    component = session.create_component(
+        '/path/to/file',
+        data={'name': 'My file'},
+        location=server_location
+    )
+
+    # Attach the component to the job.
+    session.create(
+        'JobComponent',
+        {'component_id': component['id'], 'job_id': job['id']}
+    )
+
+    session.commit()
+
+.. note::
+
+    The ftrack web interface does only support downloading one attachment so
+    attaching more than one will have limited support in the web interface.

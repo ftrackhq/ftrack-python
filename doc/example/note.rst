@@ -111,3 +111,44 @@ To add recipients pass a list of user or group instances to the helper method::
     note = task.create_note(
         'Note with recipients', author=user, recipients=[john, animation_group]
     )
+
+Attachments
+===========
+
+Note attachments are files that are attached to a note. In the ftrack web
+interface these attachments appears next to the note and can be downloaded by
+the user.
+
+To get a note's attachments through the API you can use the `note_components`
+relation and then use the ftrack server location to get the download URL::
+
+    server_location = session.query(
+        'Location where name is "ftrack.server"'
+    ).one()
+
+    for note_component in note['note_components']:
+        print 'Download URL: {0}'.format(
+            server_location.get_url(note_component['component'])
+        )
+
+To add an attachment to a note you have to add it to the ftrack server location
+and create a `NoteComponent`::
+
+    server_location = session.query(
+        'Location where name is "ftrack.server"'
+    ).one()    
+
+    # Create component and name it "My file".
+    component = session.create_component(
+        '/path/to/file',
+        data={'name': 'My file'},
+        location=server_location
+    )
+
+    # Attach the component to the note.
+    session.create(
+        'NoteComponent',
+        {'component_id': component['id'], 'note_id': note['id']}
+    )
+
+    session.commit()
