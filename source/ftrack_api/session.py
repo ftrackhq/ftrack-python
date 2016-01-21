@@ -1997,7 +1997,7 @@ class Session(object):
             return result[0]['widget_url']
 
     def encode_media(self, media):
-        '''Return a Job that encode *media* to make it playable in browsers.
+        '''Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
         location.
@@ -2026,8 +2026,9 @@ class Session(object):
             AssetVersion even if the supplied *media* belongs to one.
 
         If *media* is a file path, a new source component will be created and
-        added to the ftrack server location. Once the encoding is complete the
-        source component will be deleted.
+        added to the ftrack server location and a call to :meth:`commit` will be
+        issued. When the encoding is complete the source component will be
+        deleted.
 
         If *media* is a FileComponent, it will not be deleted after the encoding
         is complete.
