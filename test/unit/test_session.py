@@ -1007,21 +1007,3 @@ def test_get_info_widget_url(session, task):
     url = session.get_widget_url('info', entity=task, theme='light')
     response = requests.get(url)
     response.raise_for_status()
-
-
-def test_create_thumbnail(session, temporary_image):
-    '''Successfully create thumbnail component.'''
-    session.create_thumbnail(temporary_image)
-
-
-def test_create_and_set_thumbnail(session, task, temporary_image):
-    '''Successfully create thumbnail component and set as task thumbnail.'''
-    component = session.create_thumbnail(temporary_image, entity=task)
-    assert component['id'] == task['thumbnail_id']
-
-
-def test_create_thumbnail_with_data(session, temporary_image, unique_name):
-    '''Successfully create thumbnail component with custom data.'''
-    data = {'name': unique_name}
-    component = session.create_thumbnail(temporary_image, data=data)
-    assert component['name'] == unique_name

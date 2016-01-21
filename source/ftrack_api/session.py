@@ -1754,6 +1754,11 @@ class Session(object):
         location to add the component to if one is available. To not add to any
         location specifiy locations as None.
 
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components registration in the
+            location.
         '''
         if data is None:
             data = {}
@@ -1997,33 +2002,6 @@ class Session(object):
 
         else:
             return result[0]['widget_url']
-
-    def create_thumbnail(self, path, entity=None, data=None):
-        '''Create and return a thumbnail component from *path*.
-
-        The component will be created using *data* if specified and
-        transferred to the ftrack.server location. Unless specified `thumbnail`
-        will be used as component name.
-
-        The file is expected to be of an appropriate size and valid file
-        type.
-
-        Specify *entity* to set the created component as it's thumbnail.
-        '''
-        if data is None:
-            data = {}
-        if not data.get('name'):
-            data['name'] = 'thumbnail'
-
-        thumbnail_component = self.create_component(
-            path, data, location=self._server_location
-        )
-
-        if entity:
-            entity['thumbnail_id'] = thumbnail_component['id']
-            self.commit()
-
-        return thumbnail_component
 
 
 class AutoPopulatingContext(object):
