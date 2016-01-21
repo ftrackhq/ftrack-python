@@ -182,9 +182,6 @@ class Session(object):
         self.recorded_operations = ftrack_api.operation.Operations()
         self.record_operations = True
 
-        self._operation_recording_on = OperationRecordingContext(self, True)
-        self._operation_recording_off = OperationRecordingContext(self, False)
-
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
             self.cache_key_maker = ftrack_api.cache.StringKeyMaker()
@@ -207,9 +204,6 @@ class Session(object):
         )
 
         self.auto_populate = auto_populate
-
-        self._auto_populating_on = AutoPopulatingContext(self, True)
-        self._auto_populating_off = AutoPopulatingContext(self, False)
 
         # Fetch server information and in doing so also check credentials.
         self._server_information = self._fetch_server_information()
@@ -357,11 +351,7 @@ class Session(object):
                 print entity['name']
 
         '''
-        # Use preset contexts as minor optimisation.
-        if auto_populate:
-            return self._auto_populating_on
-        else:
-            return self._auto_populating_off
+        return AutoPopulatingContext(self, auto_populate)
 
     def operation_recording(self, record_operations):
         '''Temporarily set operation recording to *record_operations*.
@@ -374,11 +364,7 @@ class Session(object):
                 entity['name'] = 'change_not_recorded'
 
         '''
-        # Use preset contexts as minor optimisation.
-        if record_operations:
-            return self._operation_recording_on
-        else:
-            return self._operation_recording_off
+        return OperationRecordingContext(self, record_operations)
 
     @property
     def created(self):
