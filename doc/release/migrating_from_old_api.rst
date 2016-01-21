@@ -523,8 +523,8 @@ New API::
     session.commit()
 
     # Add thumbnail to version.
-    thumbnail = session.create_thumbnail(
-        '/path/to/forest_thumbnail.jpg', entity=version
+    thumbnail = version.create_thumbnail(
+        '/path/to/forest_thumbnail.jpg'
     )
 
     # Set thumbnail on other objects without duplicating it.

@@ -28,14 +28,13 @@ Working with thumbnails
 =======================
 
 Components can be used as thumbnails on various entities, including
-`Project`, `Task`, `AssetVersion` and `User`. You can use the provided helper
-method, :meth:`create_thumbnail <ftrack_api.session.Session.create_thumbnail>`
-to reduce the amount of boilerplate needed::
+`Project`, `Task`, `AssetVersion` and `User`.  To create and set a thumbnail
+you can use the helper method 
+:meth:`~ftrack_api.entity.component.CreateThumbnailMixin.create_thumbnail` on
+any entity that can have a thumbnail::
 
     task = session.get('Task', my_task_id)
-    thumbnail_component = session.create_thumbnail(
-        '/path/to/image.jpg', entity=task
-    )
+    thumbnail_component = task.create_thumbnail('/path/to/image.jpg')
 
 It is also possible to set an entity thumbnail by setting its `thumbnail`
 relation or `thumbnail_id` attribute to a component you would
