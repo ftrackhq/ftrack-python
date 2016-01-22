@@ -757,7 +757,7 @@ class EventHub(object):
         try:
             response = requests.get(
                 socket_io_url,
-                timeout=10  # 10 seconds timeout to recieve errors faster.
+                timeout=60  # 60 seconds timeout to recieve errors faster.
             )
         except requests.exceptions.Timeout as error:
             raise ftrack_api.exception.EventHubConnectionError(
