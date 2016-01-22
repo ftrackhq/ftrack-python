@@ -255,3 +255,47 @@ def test_unsupported_entity(user):
     structure = ftrack_api.structure.standard.StandardStructure()
     with pytest.raises(NotImplementedError):
         structure.get_resource_identifier(user)
+
+
+def test_component_without_version_relation():
+    '''Fail to get an identifer for component without a version relation.'''
+    file_component = new_file_component()
+    session = file_component.session
+    version = session.create('AssetVersion', {})
+
+    file_component['version_id'] = version['id']
+
+    structure = ftrack_api.structure.standard.StandardStructure()
+
+    with pytest.raises(ftrack_api.exception.StructureError):
+        structure.get_resource_identifier(file_component)
+
+
+def test_component_without_committed_version_relation():
+    '''Fail to get an identifer for component without a committed version.'''
+    file_component = new_file_component()
+    session = file_component.session
+    version = session.create('AssetVersion', {})
+
+    file_component['version'] = version
+
+    structure = ftrack_api.structure.standard.StandardStructure()
+
+    with pytest.raises(ftrack_api.exception.StructureError):
+        structure.get_resource_identifier(file_component)
+
+
+def test_component_without_committed_asset_relation():
+    '''Fail to get an identifer for component without a committed asset.'''
+    file_component = new_file_component()
+    session = file_component.session
+    version = session.create('AssetVersion', {})
+
+    file_component['version'] = version
+
+    session.commit()
+
+    structure = ftrack_api.structure.standard.StandardStructure()
+
+    with pytest.raises(ftrack_api.exception.StructureError):
+        structure.get_resource_identifier(file_component)
