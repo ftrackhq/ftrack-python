@@ -39,6 +39,7 @@ import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
 import ftrack_api.structure.standard as _standard
+import ftrack_api._location_scenario
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -235,6 +236,8 @@ class Session(object):
         self.types = self._build_entity_type_classes(self.schemas)
 
         self._configure_locations()
+
+        ftrack_api._location_scenario.register(self)
 
     @property
     def server_information(self):
