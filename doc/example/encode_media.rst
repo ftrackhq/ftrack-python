@@ -38,3 +38,11 @@ finished::
     location = session.query('Location where name is ftrack.server').one()
     for component in job['job_components']:
         print location.get_url(component)
+
+Media can also be an existing component in another location::
+
+    location = session.query('Location where name is ftrack.server').one()
+    location.add_component(component)
+    session.commit()
+
+    job = session.encode_media(component)
