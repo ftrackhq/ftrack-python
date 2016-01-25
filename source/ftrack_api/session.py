@@ -2006,7 +2006,7 @@ class Session(object):
         information about encoding in the following format::
 
             {
-                'components': [{
+                'output': [{
                     'format': 'video/mp4',
                     'component_id': 'e2dc0524-b576-11d3-9612-080027331d74'
                 }, {
@@ -2016,6 +2016,9 @@ class Session(object):
                 'source_component_id': 'e3791a09-7e11-4792-a398-3d9d4eefc294',
                 'keep_original': True
             }
+
+        The output components are associated with the job via the job_components
+        relation.
 
         An image component will always be generated that can be used as a
         thumbnail.

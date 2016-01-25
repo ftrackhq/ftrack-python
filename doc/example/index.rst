@@ -38,3 +38,4 @@ already constructed a :class:`Session`::
     note
     list
     timer
+    encode_media
