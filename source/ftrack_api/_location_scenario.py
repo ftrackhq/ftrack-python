@@ -1,4 +1,3 @@
-import logging
 import json
 
 
@@ -85,14 +84,20 @@ class CentralizedLocationScenario(object):
                 items = [{
                     'label': 'Label',
                     'name': 'location_label',
+                    'value': 'Studio location',
                     'type': 'text'
                 }, {
                     'label': 'Name',
                     'name': 'location_name',
+                    'value': 'studio.central-location',
                     'type': 'text'
                 }, {
                     'label': 'Description',
                     'name': 'location_description',
+                    'value': (
+                        'The studio central location where all assets and '
+                        'files are stored.'
+                    ),
                     'type': 'text'
                 }]
 
@@ -114,9 +119,6 @@ class CentralizedLocationScenario(object):
             }]
 
         if next_step == 'select_mount_point':
-            description = (
-                'Set mount points for your centralized storage location.'
-            )
             location_scenario = json.loads(self.location_scenario['value'])
 
             mount_points = dict()
@@ -131,7 +133,10 @@ class CentralizedLocationScenario(object):
 
             items = [
                 {
-                    'value': description,
+                    'value': (
+                        'Set mount points for your centralized storage '
+                        'location.'
+                    ),
                     'type': 'label'
                 }, {
                     'type': 'text',
@@ -155,13 +160,14 @@ class CentralizedLocationScenario(object):
             items = [{
                 'type': 'label',
                 'value': unicode(
-                    'You will update the location scenario to use a Centralized '
-                    'location. Your mount points are: \n\n'
+                    'You will update the location scenario to use a '
+                    'Centralized location. Your mount points are: \n\n'
                     '* Linux: {linux} \n'
                     '* OS X: {osx}\n'
                     '* Windows: {windows}\n\n'
-                    'Notice that the location will not work properly on platforms '
-                    'that doesn\'nt have a mount point filled in or accessible.'
+                    'Notice that the location will not work properly on '
+                    'platforms that doesn\'nt have a mount point filled in or '
+                    'accessible.'
                 ).format(
                     linux=values['linux_mount_point'],
                     osx=values['osx_mount_point'],
