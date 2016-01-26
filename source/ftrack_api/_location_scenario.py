@@ -70,6 +70,12 @@ class CentralizedLocationScenario(object):
                     })
 
             items = [{
+                'type': 'label',
+                'value': (
+                    'Choose an already existing location or create a new to '
+                    'represent your centralized storage.'
+                )
+            }, {
                 'type': 'enumerator',
                 'label': 'Location',
                 'name': 'location_id',
@@ -82,6 +88,16 @@ class CentralizedLocationScenario(object):
             if values.get('location_id') == 'create_new_location':
                 # Add options to create a new location.
                 items = [{
+                    'type': 'label',
+                    'value': (
+                        'Here you will create a new location to be used '
+                        'with your new Location scenario. For your '
+                        'convencience we have already filled in some default '
+                        'values. If this is the first time you configure a '
+                        'location scenario in ftrack we recommend that you '
+                        'stick with these settings.'
+                    )
+                }, {
                     'label': 'Label',
                     'name': 'location_label',
                     'value': 'Studio location',
@@ -95,8 +111,8 @@ class CentralizedLocationScenario(object):
                     'label': 'Description',
                     'name': 'location_description',
                     'value': (
-                        'The studio central location where all assets and '
-                        'files are stored.'
+                        'The studio central location where all components are '
+                        'stored.'
                     ),
                     'type': 'text'
                 }]
@@ -107,16 +123,30 @@ class CentralizedLocationScenario(object):
                 next_step = 'select_structure'
 
         if next_step == 'select_structure':
-            items = [{
-                'type': 'enumerator',
-                'label': 'Structure',
-                'name': 'structure_id',
-                'value': 'standard',
-                'data': [{
-                    'label': 'Standard',
-                    'value': 'standard'
-                }]
-            }]
+            items = [
+                {
+                    'type': 'label',
+                    'value': (
+                        'Select which structure to use with your location. The '
+                        'structure is used to generate the filesystem path '
+                        'for components that are added to this location.'
+                    )
+                },
+                {
+                    'type': 'enumerator',
+                    'label': 'Structure',
+                    'name': 'structure_id',
+                    'value': 'standard',
+                    'data': [{
+                        'label': 'Standard',
+                        'value': 'standard',
+                        'description': (
+                            'The Standard structure uses the names in your '
+                            'project structure to determine the path.'
+                        )
+                    }]
+                }
+            ]
 
         if next_step == 'select_mount_point':
             location_scenario = json.loads(self.location_scenario['value'])
@@ -135,23 +165,30 @@ class CentralizedLocationScenario(object):
                 {
                     'value': (
                         'Set mount points for your centralized storage '
-                        'location.'
+                        'location. For the location to work as expected each '
+                        'platform that you intend to use must have the '
+                        'corresponding mount point set and the storage must '
+                        'be accessible. If not set correctly files will not be '
+                        'saved or read.'
                     ),
                     'type': 'label'
                 }, {
                     'type': 'text',
                     'label': 'Linux',
                     'name': 'linux_mount_point',
+                    'empty_text': 'E.g. /usr/mnt/MyStorage ...',
                     'value': mount_points.get('linux', '')
                 }, {
                     'type': 'text',
                     'label': 'OS X',
                     'name': 'osx_mount_point',
+                    'empty_text': 'E.g. /Volumes/MyStorage ...',
                     'value': mount_points.get('osx', '')
                 }, {
                     'type': 'text',
                     'label': 'Windows',
                     'name': 'windows_mount_point',
+                    'empty_text': 'E.g. \\\\MyStorage ...',
                     'value': mount_points.get('windows', '')
                 }
             ]
