@@ -2020,8 +2020,8 @@ class Session(object):
         The output components are associated with the job via the job_components
         relation.
 
-        An image component will always be generated that can be used as a
-        thumbnail.
+        An image component will always be generated if possible that can be used
+        as a thumbnail.
 
         .. note::
 
