@@ -10,7 +10,9 @@ Encoding media
 **************
 
 Media such as images and video can be encoded by the ftrack server to allow
-playing it in the ftrack web interface.
+playing it in the ftrack web interface. Media can be encoded using
+:meth:`ftrack_api.session.Session.encode_media` which accepts a path to a file
+or an existing component in the ftrack.server location.
 
 Here is an example of how to encode a video and add to an existing asset
 version::
@@ -39,7 +41,8 @@ finished::
     for component in job['job_components']:
         print location.get_url(component)
 
-Media can also be an existing component in another location::
+Media can also be an existing component in another location. Before encoding it,
+the component needs to be added to the ftrack.server location::
 
     location = session.query('Location where name is ftrack.server').one()
     location.add_component(component)

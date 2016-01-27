@@ -14,7 +14,7 @@ Release Notes
     .. change:: new
         :tags: session
 
-        Added :meth:`ftrack_api.session.encode_media` that can be used to encode
+        Added :meth:`Session.encode_media` that can be used to encode
         media to make it playable in a browser.
 
     .. change:: new
