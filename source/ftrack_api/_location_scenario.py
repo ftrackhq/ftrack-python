@@ -25,9 +25,12 @@ class CentralizedLocationScenario(object):
                 '* Description: {location_description}\n'
             ).format(**configure_location)
         else:
+            location = self.session.get(
+                'Location', select_location['location_id']
+            )
             location_text = (
                 u'You have choosen to use an existing location: {0}'.format(
-                    select_location['location_id']
+                    location['label']
                 )
             )
 
@@ -100,7 +103,7 @@ class CentralizedLocationScenario(object):
         # Calculate previous step and the next.
         previous_step = values.get('step', 'select_scenario')
         next_step = steps[steps.index(previous_step) + 1]
-        summary = False
+        state = 'configuring'
 
         print 'Previous step', previous_step, ' Next step: ', next_step
 
@@ -119,7 +122,6 @@ class CentralizedLocationScenario(object):
                 location_id = location_scenario['data']['location_id']
             except (KeyError, TypeError):
                 location_id = None
-                pass
 
             options = [{
                 'label': 'Create new location',
@@ -273,14 +275,14 @@ class CentralizedLocationScenario(object):
                 'type': 'label',
                 'value': self._get_confirmation_text(configuration)
             }]
-            summary = True
+            state = 'confirm'
 
         if next_step == 'save_configuration':
             mount_points = configuration['select_mount_point']
             select_location = configuration['select_location']
-            configure_location = configuration['configure_location']
 
             if select_location['location_id'] == 'create_new_location':
+                configure_location = configuration['configure_location']
                 location = self.session.create(
                     'Location',
                     {
@@ -302,7 +304,7 @@ class CentralizedLocationScenario(object):
             self.location_scenario['value'] = json.dumps({
                 'scenario': self.scenario_name,
                 'data': {
-                    'location_id': select_location['location_id'],
+                    'location_id': location['id'],
                     'location_name': location['name'],
                     'accessor': {
                         'mount_points': {
@@ -323,6 +325,7 @@ class CentralizedLocationScenario(object):
                     'to start using it.'
                 )
             }]
+            state = 'done'
 
         items.append({
             'type': 'hidden',
@@ -337,7 +340,7 @@ class CentralizedLocationScenario(object):
 
         return {
             'items': items,
-            'summary': summary
+            'state': state
         }
 
     def discover_centralized_scenario(self, event):
