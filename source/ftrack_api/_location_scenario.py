@@ -12,6 +12,77 @@ class CentralizedLocationScenario(object):
             'where name is "location_scenario" and group is "LOCATION"'
         ).one()
 
+    def _get_confirmation_text(self, configuration):
+        configure_location = configuration.get('configure_location')
+        select_location = configuration.get('select_location')
+        select_mount_point = configuration.get('select_mount_point')
+
+        if configure_location:
+            location_text = unicode(
+                'A new location will be created:\n\n'
+                '* Label: {location_label}\n'
+                '* Name: {location_name}\n'
+                '* Description: {location_description}\n'
+            ).format(**configure_location)
+        else:
+            location_text = (
+                u'You have choosen to use an existing location: {0}'.format(
+                    select_location['location_id']
+                )
+            )
+
+        structure_text = (
+            'The *Standard* structure will be used.'
+        )
+
+        mount_points_text = (
+            '* Linux: {linux}\n'
+            '* OS X: {osx}\n'
+            '* Windows: {windows}\n\n'
+        ).format(
+            linux=select_mount_point.get('linux_mount_point') or '*Not set*',
+            osx=select_mount_point.get('osx_mount_point') or '*Not set*',
+            windows=select_mount_point.get('windows_mount_point') or '*Not set*'
+        )
+
+        mount_points_not_set = []
+
+        if not select_mount_point.get('linux_mount_point'):
+            mount_points_not_set.append('Linux')
+
+        if not select_mount_point.get('osx_mount_point'):
+            mount_points_not_set.append('OS X')
+
+        if not select_mount_point.get('windows_mount_point'):
+            mount_points_not_set.append('Windows')
+
+        if mount_points_not_set:
+            mount_points_text += (
+                'Please be aware that this location will not be working on '
+                '{missing} because the mount points are not set up.'
+            ).format(
+                missing=' and '.join(mount_points_not_set)
+            )
+
+        text = (
+            '#Confirm location setup#\n\n'
+            'Almost there! Please take a moment to verify the settings you '
+            'are about to save. You can always come back later and update the '
+            'configuration.\n'
+            '##Location##\n\n'
+            '{location}\n'
+            '##Structure##\n\n'
+            '{structure}\n'
+            '##Mount points##\n\n'
+            '{mount_points}'
+        ).format(
+            location=location_text,
+            structure=structure_text,
+            mount_points=mount_points_text
+        )
+
+        return text
+
     def configure_scenario(self, event):
 
         steps = (
@@ -72,6 +143,7 @@ class CentralizedLocationScenario(object):
             items = [{
                 'type': 'label',
                 'value': (
+                    '#Select location#\n'
                     'Choose an already existing location or create a new to '
                     'represent your centralized storage.'
                 )
@@ -90,6 +162,7 @@ class CentralizedLocationScenario(object):
                 items = [{
                     'type': 'label',
                     'value': (
+                        '#Create location#\n'
                         'Here you will create a new location to be used '
                         'with your new Location scenario. For your '
                         'convencience we have already filled in some default '
@@ -127,6 +200,7 @@ class CentralizedLocationScenario(object):
                 {
                     'type': 'label',
                     'value': (
+                        '#Select structure#\n'
                         'Select which structure to use with your location. The '
                         'structure is used to generate the filesystem path '
                         'for components that are added to this location.'
@@ -164,6 +238,7 @@ class CentralizedLocationScenario(object):
             items = [
                 {
                     'value': (
+                        '#Mount points#\n'
                         'Set mount points for your centralized storage '
                         'location. For the location to work as expected each '
                         'platform that you intend to use must have the '
@@ -196,20 +271,7 @@ class CentralizedLocationScenario(object):
         if next_step == 'confirm_summary':
             items = [{
                 'type': 'label',
-                'value': unicode(
-                    'You will update the location scenario to use a '
-                    'Centralized location. Your mount points are: \n\n'
-                    '* Linux: {linux} \n'
-                    '* OS X: {osx}\n'
-                    '* Windows: {windows}\n\n'
-                    'Notice that the location will not work properly on '
-                    'platforms that doesn\'nt have a mount point filled in or '
-                    'accessible.'
-                ).format(
-                    linux=values['linux_mount_point'],
-                    osx=values['osx_mount_point'],
-                    windows=values['windows_mount_point']
-                )
+                'value': self._get_confirmation_text(configuration)
             }]
             summary = True
 
