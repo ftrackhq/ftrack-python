@@ -278,12 +278,26 @@ class CentralizedLocationScenario(object):
         if next_step == 'save_configuration':
             mount_points = configuration['select_mount_point']
             select_location = configuration['select_location']
+            configure_location = configuration['configure_location']
 
-            location = self.session.query(
-                'Location where id is "{0}"'.format(
-                    select_location['location_id']
+            if select_location['location_id'] == 'create_new_location':
+                location = self.session.create(
+                    'Location',
+                    {
+                        'name': configure_location['location_name'],
+                        'label': configure_location['location_label'],
+                        'description': (
+                            configure_location['location_description']
+                        )
+                    }
                 )
-            ).one()
+
+            else:
+                location = self.session.query(
+                    'Location where id is "{0}"'.format(
+                        select_location['location_id']
+                    )
+                ).one()
 
             self.location_scenario['value'] = json.dumps({
                 'scenario': self.scenario_name,
@@ -300,6 +314,15 @@ class CentralizedLocationScenario(object):
                 }
             })
             self.session.commit()
+            items = [{
+                'type': 'label',
+                'value': (
+                    '#Done!#\n'
+                    'Your location scenario is now configured and ready '
+                    'to use. Please restart Connect and other applications '
+                    'to start using it.'
+                )
+            }]
 
         items.append({
             'type': 'hidden',
