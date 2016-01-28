@@ -2000,6 +2000,97 @@ class Session(object):
         else:
             return result[0]['widget_url']
 
+    def encode_media(self, media):
+        '''Return a new Job that encode *media* to make it playable in browsers.
+
+        *media* can be a path to a file or a FileComponent in the ftrack.server
+        location.
+
+        The job will encode *media* based on the file type and job data contains
+        information about encoding in the following format::
+
+            {
+                'output': [{
+                    'format': 'video/mp4',
+                    'component_id': 'e2dc0524-b576-11d3-9612-080027331d74'
+                }, {
+                    'format': 'image/jpeg',
+                    'component_id': '07b82a97-8cf9-11e3-9383-20c9d081909b'
+                }],
+                'source_component_id': 'e3791a09-7e11-4792-a398-3d9d4eefc294',
+                'keep_original': True
+            }
+
+        The output components are associated with the job via the job_components
+        relation.
+
+        An image component will always be generated if possible that can be used
+        as a thumbnail.
+
+        .. note::
+
+            The new components will not be automatically associated with an
+            AssetVersion even if the supplied *media* belongs to one.
+
+        If *media* is a file path, a new source component will be created and
+        added to the ftrack server location and a call to :meth:`commit` will be
+        issued. When the encoding is complete the source component will be
+        deleted.
+
+        If *media* is a FileComponent, it will not be deleted after the encoding
+        is complete.
+
+        '''
+        keep_original = True
+        if isinstance(media, basestring):
+            # Media is a path to a file.
+            server_location = self.get(
+                'Location', ftrack_api.symbol.SERVER_LOCATION_ID
+            )
+            component = self.create_component(
+                path=media, location=server_location
+            )
+            keep_original = False
+
+            # Auto commit to ensure component exists when sent to server.
+            self.commit()
+
+        elif (
+            hasattr(media, 'entity_type') and
+            media.entity_type in ('FileComponent',)
+        ):
+            # Existing file component.
+            component = media
+            keep_original = True
+
+        else:
+            raise ValueError(
+                'Unable to encode media of type: {0}'.format(type(media))
+            )
+
+        operation = {
+            'action': 'encode_media',
+            'component_id': component['id'],
+            'keep_original': keep_original
+        }
+
+        try:
+            result = self._call([operation])
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'encode_media\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support "encode_media", '
+                    'please update server and try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
+        return self.get('Job', result[0]['job_id'])
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''

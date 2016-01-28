@@ -39,3 +39,4 @@ already constructed a :class:`Session`::
     list
     timer
     thumbnail
+    encode_media
