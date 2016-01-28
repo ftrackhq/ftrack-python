@@ -1032,12 +1032,12 @@ def test_encode_media_from_path(session, video_path):
     assert job.entity_type == 'Job'
 
     job_data = json.loads(job['data'])
-    assert 'components' in job_data
+    assert 'output' in job_data
     assert 'source_component_id' in job_data
     assert 'keep_original' in job_data and job_data['keep_original'] is False
-    assert len(job_data['components'])
-    assert 'component_id' in job_data['components'][0]
-    assert 'format' in job_data['components'][0]
+    assert len(job_data['output'])
+    assert 'component_id' in job_data['output'][0]
+    assert 'format' in job_data['output'][0]
 
 
 def test_encode_media_from_component(session, video_path):
