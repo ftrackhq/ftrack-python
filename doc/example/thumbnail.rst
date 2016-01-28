@@ -20,7 +20,7 @@ relation or `thumbnail_id` attribute to a component you would
 like to use as a thumbnail. For a component to be usable as a thumbnail,
 it should
 
-    1. Be of system type file.
+    1. Be a FileComponent.
     2. Exist in the *ftrack.server* :term:`location`.
     3. Be of an appropriate resolution and valid file type.
 
