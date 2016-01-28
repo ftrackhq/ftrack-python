@@ -40,6 +40,7 @@ def test_get_availability(new_component):
 def test_create_task_thumbnail(task, temporary_image):
     '''Successfully create thumbnail component and set as task thumbnail.'''
     component = task.create_thumbnail(temporary_image)
+    component.session.commit()
     assert component['id'] == task['thumbnail_id']
 
 
@@ -47,4 +48,5 @@ def test_create_thumbnail_with_data(task, temporary_image, unique_name):
     '''Successfully create thumbnail component with custom data.'''
     data = {'name': unique_name}
     component = task.create_thumbnail(temporary_image, data=data)
+    component.session.commit()
     assert component['name'] == unique_name
