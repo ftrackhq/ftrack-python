@@ -25,6 +25,17 @@ Release Notes
         examples of how to use note and job attachments.
 
     .. change:: changed
+        :tags: session, events
+
+        Auto connection of event hub for :class:`Session` now takes place in
+        background to improve session startup time.
+
+    .. change:: changed
+        :tags: session, events
+
+        Event hub connection timeout is now 60 seconds instead of 10.
+
+    .. change:: changed
         :tags: server version
 
         ftrack server version >= 3.3.11, < 3.4 required.
