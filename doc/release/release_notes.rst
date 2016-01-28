@@ -16,7 +16,7 @@ Release Notes
 
         Added improved support for handling thumbnails.
 
-        .. seealso:: :ref:`example/component/thumbnail`.
+        .. seealso:: :ref:`example/thumbnail`.
 
     .. change:: changed
         :tags: server version
