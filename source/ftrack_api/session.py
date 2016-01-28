@@ -1459,7 +1459,6 @@ class Session(object):
         )
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
-        self._server_location = location
 
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
@@ -2040,8 +2039,11 @@ class Session(object):
         keep_original = True
         if isinstance(media, basestring):
             # Media is a path to a file.
+            server_location = self.get(
+                'Location', ftrack_api.symbol.SERVER_LOCATION_ID
+            )
             component = self.create_component(
-                path=media, location=self._server_location
+                path=media, location=server_location
             )
             keep_original = False
 
