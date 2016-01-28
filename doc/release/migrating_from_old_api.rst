@@ -415,7 +415,7 @@ thumbnail using the old API::
 .. note::
 
     It is now possible to set thumbnails using the new API as well, for more
-    info see :ref:`example/component/thumbnail`.
+    info see :ref:`example/thumbnail`.
 
 Plugin registration
 -------------------
@@ -595,16 +595,6 @@ in the new API. Let us know if you depend on any of them.
     * Role
     * Task template
     * Temp data
-
-Attachments and Thumbnails
---------------------------
-Uploading attachments and thumbnails using the new API is not yet possible. The
-functionality is planned for the near future.
-
-Publish components for review
------------------------------
-It is currently not possible to create web reviewable versions using the new
-API. The functionality is planned for the near future.
 
 Action base class
 -----------------
