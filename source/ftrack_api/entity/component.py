@@ -47,14 +47,19 @@ class CreateThumbnailMixin(object):
         if not data.get('name'):
             data['name'] = 'thumbnail'
 
+        # Defer adding component to server location in order to avoid
+        # committing half-way through the operation.
+        thumbnail_component = self.session.create_component(
+            path, data, location=None
+        )
+        self['thumbnail_id'] = thumbnail_component['id']
+
+        origin_location = self.session.get(
+            'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
+        )
         server_location = self.session.get(
             'Location', ftrack_api.symbol.SERVER_LOCATION_ID
         )
-        thumbnail_component = self.session.create_component(
-            path, data, location=server_location
-        )
-
-        self['thumbnail_id'] = thumbnail_component['id']
-        self.session.commit()
+        server_location.add_component(thumbnail_component, [origin_location])
 
         return thumbnail_component
