@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
+
 import logging
 import uuid
 import functools
@@ -16,6 +18,7 @@ import ftrack_api.entity.job
 import ftrack_api.entity.user
 import ftrack_api.symbol
 import ftrack_api.cache
+from ftrack_api.logging import LazyLogMessage as L
 
 
 class Factory(object):
@@ -86,11 +89,10 @@ class Factory(object):
                 elif data_type == 'mapped_array':
                     reference = fragment.get('items', {}).get('$ref')
                     if not reference:
-                        self.logger.debug(
+                        self.logger.debug(L(
                             'Skipping {0}.{1} mapped_array attribute that does '
-                            'not define a schema reference.'
-                            .format(class_name, name)
-                        )
+                            'not define a schema reference.', class_name, name
+                        ))
                         continue
 
                     attribute = self.create_mapped_collection_attribute(
@@ -100,19 +102,18 @@ class Factory(object):
                         attributes.add(attribute)
 
                 else:
-                    self.logger.debug(
+                    self.logger.debug(L(
                         'Skipping {0}.{1} attribute with unrecognised data '
-                        'type {2}'.format(class_name, name, data_type)
-                    )
+                        'type {2}', class_name, name, data_type
+                    ))
             else:
                 # Reference attribute.
                 reference = fragment.get('$ref', ftrack_api.symbol.NOT_SET)
                 if reference is ftrack_api.symbol.NOT_SET:
-                    self.logger.debug(
+                    self.logger.debug(L(
                         'Skipping {0}.{1} mapped_array attribute that does '
-                        'not define a schema reference.'
-                        .format(class_name, name)
-                    )
+                        'not define a schema reference.', class_name, name
+                    ))
                     continue
 
                 attribute = self.create_reference_attribute(
@@ -161,11 +162,11 @@ class Factory(object):
         self, class_name, name, mutable, reference
     ):
         '''Return appropriate mapped collection attribute instance.'''
-        self.logger.debug(
+        self.logger.debug(L(
             'Skipping {0}.{1} mapped_array attribute that has '
-            'no implementation defined for reference {2}.'
-            .format(class_name, name, reference)
-        )
+            'no implementation defined for reference {2}.',
+            class_name, name, reference
+        ))
 
 
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
@@ -271,8 +272,7 @@ class StandardFactory(Factory):
                 )
             )
 
-        self.logger.debug(
+        self.logger.debug(L(
             'Skipping {0}.{1} mapped_array attribute that has no configuration '
-            'for reference {2}.'
-            .format(class_name, name, reference)
-        )
+            'for reference {2}.', class_name, name, reference
+        ))
