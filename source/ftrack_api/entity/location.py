@@ -584,6 +584,18 @@ class Location(ftrack_api.entity.base.Entity):
 
         return filesystem_paths
 
+    def get_url(self, component):
+        '''Return url for *component*.
+
+        Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if
+        URL could not be determined from *component* or
+        :exc:`~ftrack_api.exception.AccessorUnsupportedOperationError` if
+        retrieving URL is not supported by the location's accessor.
+        '''
+        resource_identifier = self.get_resource_identifier(component)
+
+        return self.accessor.get_url(resource_identifier)
+
 
 class MemoryLocationMixin(object):
     '''Represent storage for components.
