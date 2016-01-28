@@ -1460,9 +1460,6 @@ class Session(object):
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
-        # Save reference to server location for internal usage
-        self._server_location = location
-
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(

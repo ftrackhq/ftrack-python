@@ -47,8 +47,11 @@ class CreateThumbnailMixin(object):
         if not data.get('name'):
             data['name'] = 'thumbnail'
 
+        server_location = self.session.get(
+            'Location', ftrack_api.symbol.SERVER_LOCATION_ID
+        )
         thumbnail_component = self.session.create_component(
-            path, data, location=self.session._server_location
+            path, data, location=server_location
         )
 
         self['thumbnail_id'] = thumbnail_component['id']
