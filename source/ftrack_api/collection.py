@@ -454,6 +454,13 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
                 .format(key, self.collection.entity)
             )
 
+    def __eq__(self, collection):
+        '''Return True if *collection* equals proxy collection.'''
+        if collection is ftrack_api.symbol.NOT_SET:
+            return False
+
+        return collection.collection == self.collection
+
     def __iter__(self):
         '''Iterate over all keys.'''
         keys = self._get_keys()

@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+
+        :meth:`Session.commit` fails when setting a custom attribute on an asset
+        version that has been created and committed in the same session.
+
     .. change:: new
         :tags: locations
 
