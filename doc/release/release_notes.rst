@@ -30,6 +30,12 @@ Release Notes
         examples of how to use note and job attachments.
 
     .. change:: changed
+        :tags: logging, performance
+
+        Logged messages now evaluated lazily using
+        :class:`ftrack_api.logging.LazyLogMessage` as optimisation.
+
+    .. change:: changed
         :tags: session, events
 
         Auto connection of event hub for :class:`Session` now takes place in

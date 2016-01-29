@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from __future__ import absolute_import
+
 import collections
 import urlparse
 import threading
@@ -22,6 +24,7 @@ import ftrack_api.exception
 import ftrack_api.event.base
 import ftrack_api.event.subscriber
 import ftrack_api.event.expression
+from ftrack_api.logging import LazyLogMessage as L
 
 
 SocketIoSession = collections.namedtuple('SocketIoSession', [
@@ -164,8 +167,10 @@ class EventHub(object):
 
         except Exception:
             self.logger.debug(
-                'Error connecting to event server at {0}.'
-                .format(self.get_server_url()),
+                L(
+                    'Error connecting to event server at {0}.',
+                    self.get_server_url()
+                ),
                 exc_info=1
             )
             raise ftrack_api.exception.EventHubConnectionError(
@@ -262,9 +267,9 @@ class EventHub(object):
             pass
 
         for attempt in range(attempts):
-            self.logger.debug(
-                'Reconnect attempt {0} of {1}'.format(attempt, attempts)
-            )
+            self.logger.debug(L(
+                'Reconnect attempt {0} of {1}', attempt, attempts
+            ))
 
             # Silence logging temporarily to avoid lots of failed connection
             # related information.
@@ -379,11 +384,10 @@ class EventHub(object):
         try:
             self._notify_server_about_subscriber(subscriber)
         except ftrack_api.exception.EventHubConnectionError:
-            self.logger.debug(
+            self.logger.debug(L(
                 'Failed to notify server about new subscriber {0} '
-                'as server not currently reachable.'
-                .format(subscriber.metadata['id'])
-            )
+                'as server not currently reachable.', subscriber.metadata['id']
+            ))
 
         return subscriber.metadata['id']
 
@@ -445,10 +449,10 @@ class EventHub(object):
     def _on_subscribed(self, subscriber, response):
         '''Handle acknowledgement of subscription.'''
         if response.get('success') is False:
-            self.logger.warning(
-                'Server failed to subscribe subscriber {0}: {1}'
-                .format(subscriber.metadata['id'], response.get('message'))
-            )
+            self.logger.warning(L(
+                'Server failed to subscribe subscriber {0}: {1}',
+                subscriber.metadata['id'], response.get('message')
+            ))
 
     def unsubscribe(self, subscriber_identifier):
         '''Unsubscribe subscriber with *subscriber_identifier*.
@@ -482,19 +486,18 @@ class EventHub(object):
                 callback=functools.partial(self._on_unsubscribed, subscriber)
             )
         except ftrack_api.exception.EventHubConnectionError:
-            self.logger.debug(
+            self.logger.debug(L(
                 'Failed to notify server to unsubscribe subscriber {0} as '
-                'server not currently reachable.'
-                .format(subscriber.metadata['id'])
-            )
+                'server not currently reachable.', subscriber.metadata['id']
+            ))
 
     def _on_unsubscribed(self, subscriber, response):
         '''Handle acknowledgement of unsubscribing *subscriber*.'''
         if response.get('success') is not True:
-            self.logger.warning(
-                'Server failed to unsubscribe subscriber {0}: {1}'
-                .format(subscriber.metadata['id'], response.get('message'))
-            )
+            self.logger.warning(L(
+                'Server failed to unsubscribe subscriber {0}: {1}',
+                subscriber.metadata['id'], response.get('message')
+            ))
 
     def _prepare_event(self, event):
         '''Prepare *event* for sending.'''
@@ -634,16 +637,15 @@ class EventHub(object):
             # TODO: This behaviour is inconsistent with the failing earlier on
             # lack of connection and also with the error handling parameter of
             # EventHub.publish. Consider refactoring.
-            self.logger.exception('Error sending event {0}.'.format(event))
+            self.logger.exception(L('Error sending event {0}.', event))
 
     def _on_published(self, event, response):
         '''Handle acknowledgement of published event.'''
         if response.get('success', False) is False:
-            self.logger.error(
+            self.logger.error(L(
                 'Server responded with error while publishing event {0}. '
-                'Error was: {1}'
-                .format(event, response.get('message'))
-            )
+                'Error was: {1}', event, response.get('message')
+            ))
 
     def _handle(self, event, synchronous=False):
         '''Handle *event*.
@@ -666,10 +668,10 @@ class EventHub(object):
             try:
                 target_expression = self._expression_parser.parse(target)
             except Exception:
-                self.logger.exception(
+                self.logger.exception(L(
                     'Cannot handle event as failed to parse event target '
-                    'information: {0}'.format(event)
-                )
+                    'information: {0}', event
+                ))
                 return
 
         for subscriber in subscribers:
@@ -690,10 +692,10 @@ class EventHub(object):
                 response = subscriber.callback(event)
                 results.append(response)
             except Exception:
-                self.logger.exception(
-                    'Error calling subscriber {0} for event {1}.'
-                    .format(subscriber, event)
-                )
+                self.logger.exception(L(
+                    'Error calling subscriber {0} for event {1}.',
+                    subscriber, event
+                ))
 
             # Automatically publish a non None response as a reply when not in
             # synchronous mode.
@@ -705,19 +707,18 @@ class EventHub(object):
                     )
 
                 except Exception:
-                    self.logger.exception(
+                    self.logger.exception(L(
                         'Error publishing response {0} from subscriber {1} '
-                        'for event {2}.'
-                        .format(response, subscriber, event)
-                    )
+                        'for event {2}.', response, subscriber, event
+                    ))
 
             # Check whether to continue processing topic event.
             if event.is_stopped():
-                self.logger.debug(
+                self.logger.debug(L(
                     'Subscriber {0} stopped event {1}. Will not process '
-                    'subsequent subscriber callbacks for this event.'
-                    .format(subscriber, event)
-                )
+                    'subsequent subscriber callbacks for this event.',
+                    subscriber, event
+                ))
                 break
 
         return results
@@ -833,7 +834,7 @@ class EventHub(object):
 
         try:
             self._connection.send(packet)
-            self.logger.debug('Sent packet: {0}'.format(packet))
+            self.logger.debug(L('Sent packet: {0}', packet))
         except socket.error as error:
             raise ftrack_api.exception.EventHubConnectionError(
                 'Failed to send packet: {0}'.format(error)
@@ -869,7 +870,7 @@ class EventHub(object):
                 'Received invalid packet {0}'.format(packet)
             )
 
-        self.logger.debug('Received packet: {0}'.format(packet))
+        self.logger.debug(L('Received packet: {0}', packet))
         return code, packet_identifier, path, data
 
     def _handle_packet(self, code, packet_identifier, path, data):
@@ -906,7 +907,7 @@ class EventHub(object):
             self._send_packet(self._code_name_mapping['heartbeat'])
 
         elif code_name == 'message':
-            self.logger.debug('Message received: {0}'.format(data))
+            self.logger.debug(L('Message received: {0}', data))
 
         elif code_name == 'event':
             payload = self._decode(data)
@@ -918,10 +919,10 @@ class EventHub(object):
                     try:
                         event = ftrack_api.event.base.Event(**event_payload)
                     except Exception:
-                        self.logger.exception(
-                            'Failed to convert payload into event: {0}'
-                            .format(event_payload)
-                        )
+                        self.logger.exception(L(
+                            'Failed to convert payload into event: {0}',
+                            event_payload
+                        ))
                         return
 
                     self._event_queue.put(event)
@@ -943,10 +944,10 @@ class EventHub(object):
                 callback(*args)
 
         elif code_name == 'error':
-            self.logger.error('Event server reported error: {0}.'.format(data))
+            self.logger.error(L('Event server reported error: {0}.', data))
 
         else:
-            self.logger.debug('{0}: {1}'.format(code_name, data))
+            self.logger.debug(L('{0}: {1}', code_name, data))
 
     def _encode(self, data):
         '''Return *data* encoded as JSON formatted string.'''
@@ -1029,9 +1030,7 @@ class _ProcessorThread(threading.Thread):
                 self.client._handle_packet(code, packet_identifier, path, data)
 
             except ftrack_api.exception.EventHubPacketError as error:
-                self.logger.debug(
-                    'Ignoring invalid packet: {0}'.format(error)
-                )
+                self.logger.debug(L('Ignoring invalid packet: {0}', error))
                 continue
 
             except ftrack_api.exception.EventHubConnectionError:
@@ -1044,9 +1043,7 @@ class _ProcessorThread(threading.Thread):
                 break
 
             except Exception as error:
-                self.logger.debug(
-                    'Aborting processor thread: {0}'.format(error)
-                )
+                self.logger.debug(L('Aborting processor thread: {0}', error))
                 self.cancel()
                 break
 
