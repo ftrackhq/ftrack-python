@@ -234,6 +234,11 @@ class StandardFactory(Factory):
                 ftrack_api.entity.note.CreateNoteMixin
             )
 
+        if 'thumbnail_id' in schema.get('properties', {}):
+            bases.append(
+                ftrack_api.entity.component.CreateThumbnailMixin
+            )
+
         cls = super(StandardFactory, self).create(schema, bases=bases)
 
         return cls

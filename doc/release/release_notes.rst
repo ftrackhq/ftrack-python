@@ -12,7 +12,14 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
-        :tags: session
+        :tags: component, thumbnail
+
+        Added improved support for handling thumbnails.
+
+        .. seealso:: :ref:`example/thumbnail`.
+
+    .. change:: new
+        :tags: session, encode media
 
         Added :meth:`Session.encode_media` that can be used to encode
         media to make it playable in a browser.
@@ -23,6 +30,7 @@ Release Notes
         Added :meth:`ftrack_api.entity.location.Location.get_url` to retrieve a
         URL to a component in a location if supported by the
         :class:`ftrack_api.accessor.base.Accessor`.
+
 
     .. change:: changed
         :tags: server version

@@ -1751,6 +1751,11 @@ class Session(object):
         location to add the component to if one is available. To not add to any
         location specifiy locations as None.
 
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components registration in the
+            location.
         '''
         if data is None:
             data = {}
