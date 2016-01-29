@@ -1,9 +1,19 @@
+import logging
 import json
+import sys
+
+import ftrack_api
+import ftrack_api.structure.standard as _standard
 
 
 class CentralizedLocationScenario(object):
 
     scenario_name = 'ftrack.centralized-storage'
+
+    def __init__(self):
+        self.logger = logging.getLogger(
+            __name__ + '.' + self.__class__.__name__
+        )
 
     @property
     def location_scenario(self):
@@ -366,6 +376,53 @@ class CentralizedLocationScenario(object):
             'description': 'A centralized location scenario'
         }
 
+    def activate(self, event):
+        location_scenario = event['data']['location_scenario']
+
+        try:
+            location_data = location_scenario['data']
+            location_name = location_data['location_name']
+            location_id = location_data['location_id']
+            mount_points = location_data['accessor']['mount_points']
+
+        except KeyError:
+            error_message = (
+                'Unable to read location scenario data.'
+            )
+            self.logger.error(error_message)
+            raise ftrack_api.exception.LocationError(
+                'Unable to configure location based on scenario.'
+            )
+
+        else:
+            location = self.session.create(
+                'Location',
+                data=dict(
+                    name=location_name,
+                    id=location_id
+                ),
+                reconstructing=True
+            )
+
+            if sys.platform == 'darwin':
+                prefix = mount_points['osx']
+            elif sys.platform == 'linux2':
+                prefix = mount_points['linux']
+            elif sys.platform == 'windows':
+                prefix = mount_points['windows']
+            else:
+                raise ftrack_api.exception.LocationError(
+                    (
+                        'Unable to find accessor prefix for platform {0}.'
+                    ).format(sys.platform)
+                )
+
+            location.accessor = ftrack_api.accessor.disk.DiskAccessor(
+                prefix=prefix
+            )
+            location.structure = _standard.StandardStructure()
+            location.priority = 1
+
     def register(self, session):
         self.session = session
 
@@ -376,6 +433,10 @@ class CentralizedLocationScenario(object):
         session.event_hub.subscribe(
             'topic=ftrack.location-scenario.configure',
             self.configure_scenario
+        )
+        session.event_hub.subscribe(
+            'topic=ftrack.location-scenario.activate',
+            self.activate
         )
 
 
