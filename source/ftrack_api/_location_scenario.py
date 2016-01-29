@@ -12,6 +12,23 @@ class CentralizedLocationScenario(object):
             'where name is "location_scenario" and group is "LOCATION"'
         ).one()
 
+    @property
+    def existing_centralized_storage_configuration(self):
+        location_scenario = self.location_scenario
+
+        try:
+            configuration = json.loads(location_scenario['value'])
+        except (ValueError, TypeError):
+            return None
+
+        if not isinstance(configuration, dict):
+            return None
+
+        if configuration.get('scenario') != self.scenario_name:
+            return None
+
+        return configuration.get('data', {})
+
     def _get_confirmation_text(self, configuration):
         configure_location = configuration.get('configure_location')
         select_location = configuration.get('select_location')
@@ -117,9 +134,10 @@ class CentralizedLocationScenario(object):
             configuration[previous_step] = values
 
         if next_step == 'select_location':
-            location_scenario = json.loads(self.location_scenario['value'])
             try:
-                location_id = location_scenario['data']['location_id']
+                location_id = (
+                    self.existing_centralized_storage_configuration['location_id']
+                )
             except (KeyError, TypeError):
                 location_id = None
 
@@ -225,17 +243,12 @@ class CentralizedLocationScenario(object):
             ]
 
         if next_step == 'select_mount_point':
-            location_scenario = json.loads(self.location_scenario['value'])
-
-            mount_points = dict()
-
-            if location_scenario['scenario'] == self.scenario_name:
-                try:
-                    mount_points = (
-                        location_scenario['data']['accessor']['mount_points']
-                    )
-                except (KeyError, TypeError):
-                    pass
+            try:
+                mount_points = (
+                    self.existing_centralized_storage_configuration['accessor']['mount_points']
+                )
+            except (KeyError, TypeError):
+                mount_points = dict()
 
             items = [
                 {
@@ -301,7 +314,7 @@ class CentralizedLocationScenario(object):
                     )
                 ).one()
 
-            self.location_scenario['value'] = json.dumps({
+            setting_value = json.dumps({
                 'scenario': self.scenario_name,
                 'data': {
                     'location_id': location['id'],
@@ -315,7 +328,10 @@ class CentralizedLocationScenario(object):
                     }
                 }
             })
+
+            self.location_scenario['value'] = setting_value
             self.session.commit()
+
             items = [{
                 'type': 'label',
                 'value': (
