@@ -37,9 +37,8 @@ class CreateThumbnailMixin(object):
 
         .. note::
 
-            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
-            automatically issued as part of the components registration in the
-            location.
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` will be
+            automatically issued.
 
         '''
         if data is None:
@@ -47,12 +46,9 @@ class CreateThumbnailMixin(object):
         if not data.get('name'):
             data['name'] = 'thumbnail'
 
-        # Defer adding component to server location in order to avoid
-        # committing half-way through the operation.
         thumbnail_component = self.session.create_component(
             path, data, location=None
         )
-        self['thumbnail_id'] = thumbnail_component['id']
 
         origin_location = self.session.get(
             'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
@@ -61,5 +57,18 @@ class CreateThumbnailMixin(object):
             'Location', ftrack_api.symbol.SERVER_LOCATION_ID
         )
         server_location.add_component(thumbnail_component, [origin_location])
+
+        # TODO: This commit can be avoided by reordering the operations in 
+        # this method so that the component is transferred to ftrack.server
+        # after the thumbnail has been set.
+        # 
+        # There is currently a bug in the API backend, causing the operations
+        # to *some* times be ordered wrongly, where the update occurs before
+        # the component has been created, causing an integrity error.
+        # 
+        # Once this issue has been resolved, this commit can be removed and
+        # and the update placed between component creation and registration. 
+        self['thumbnail_id'] = thumbnail_component['id']
+        self.session.commit()
 
         return thumbnail_component
