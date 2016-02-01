@@ -37,7 +37,7 @@ import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
-import ftrack_api._location_scenario
+import ftrack_api._centralized_storage_scenario
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -233,7 +233,7 @@ class Session(object):
         self.schemas = self._load_schemas(schema_cache_path)
         self.types = self._build_entity_type_classes(self.schemas)
 
-        ftrack_api._location_scenario.register(self)
+        ftrack_api._centralized_storage_scenario.register(self)
 
         self._configure_locations()
 
