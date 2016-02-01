@@ -371,7 +371,7 @@ class CentralizedLocationScenario(object):
 
     def discover_centralized_scenario(self, event):
         return {
-            'id': 'centralized_scenario',
+            'id': self.scenario_name,
             'name': 'Centralized scenario',
             'description': 'A centralized location scenario'
         }
@@ -427,11 +427,23 @@ class CentralizedLocationScenario(object):
         self.session = session
 
         session.event_hub.subscribe(
-            'topic=ftrack.location-scenario.discover',
+            (
+                'topic=ftrack.location-scenario.discover '
+                'and source.user.username="{0}"'
+            ).format(
+                session.api_user
+            ),
             self.discover_centralized_scenario
         )
         session.event_hub.subscribe(
-            'topic=ftrack.location-scenario.configure',
+            (
+                'topic=ftrack.location-scenario.configure '
+                'and data.scenario_id="{0}" '
+                'and source.user.username="{1}"'
+            ).format(
+                self.scenario_name,
+                session.api_user
+            ),
             self.configure_scenario
         )
         session.event_hub.subscribe(
