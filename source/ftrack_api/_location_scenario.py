@@ -1,3 +1,6 @@
+# :coding: utf-8
+# :copyright: Copyright (c) 2016 ftrack
+
 import logging
 import json
 import sys
@@ -7,16 +10,19 @@ import ftrack_api.structure.standard as _standard
 
 
 class CentralizedLocationScenario(object):
+    '''Centralized location scenario to activate and configure scenario.'''
 
     scenario_name = 'ftrack.centralized-storage'
 
     def __init__(self):
+        '''Instansiate centralized location scenario.'''
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
 
     @property
     def location_scenario(self):
+        '''Return location scenario setting.'''
         return self.session.query(
             'select value from Setting '
             'where name is "location_scenario" and group is "LOCATION"'
@@ -24,6 +30,7 @@ class CentralizedLocationScenario(object):
 
     @property
     def existing_centralized_storage_configuration(self):
+        '''Return existing centralized storage configuration.'''
         location_scenario = self.location_scenario
 
         try:
@@ -40,6 +47,7 @@ class CentralizedLocationScenario(object):
         return configuration.get('data', {})
 
     def _get_confirmation_text(self, configuration):
+        '''Return confirmation text from *configuration*.'''
         configure_location = configuration.get('configure_location')
         select_location = configuration.get('select_location')
         select_mount_point = configuration.get('select_mount_point')
@@ -114,7 +122,7 @@ class CentralizedLocationScenario(object):
         return text
 
     def configure_scenario(self, event):
-
+        '''Configure scenario based on *event* and return form items.'''
         steps = (
             'select_scenario',
             'select_location',
@@ -404,6 +412,7 @@ class CentralizedLocationScenario(object):
         }
 
     def discover_centralized_scenario(self, event):
+        '''Return action discover dictionary for *event*.'''
         return {
             'id': self.scenario_name,
             'name': 'Centralized scenario',
@@ -411,6 +420,7 @@ class CentralizedLocationScenario(object):
         }
 
     def activate(self, event):
+        '''Activate scenario in *event*.'''
         location_scenario = event['data']['location_scenario']
 
         try:
@@ -458,6 +468,7 @@ class CentralizedLocationScenario(object):
             location.priority = 1
 
     def register(self, session):
+        '''Subscribe to events on *session*.'''
         self.session = session
 
         session.event_hub.subscribe(
@@ -487,5 +498,6 @@ class CentralizedLocationScenario(object):
 
 
 def register(session):
+    '''Register location scenario.'''
     scenario = CentralizedLocationScenario()
     scenario.register(session)
