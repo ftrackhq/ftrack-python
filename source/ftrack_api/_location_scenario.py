@@ -133,7 +133,12 @@ class CentralizedLocationScenario(object):
         next_step = steps[steps.index(previous_step) + 1]
         state = 'configuring'
 
-        print 'Previous step', previous_step, ' Next step: ', next_step
+        self.logger.info(
+            u'Configuring scenario, previous step: {0}, next step: {1}.'
+            u' Values {2!r}.'.format(
+                previous_step, next_step, values
+            )
+        )
 
         if 'configuration' in values:
             configuration = values.pop('configuration')
