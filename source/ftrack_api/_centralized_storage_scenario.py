@@ -259,34 +259,36 @@ class CentralizedLocationScenario(object):
             else:
                 # The user selected an existing location. Move on to next
                 # step.
-                next_step = 'select_structure'
+                next_step = 'select_mount_point'
 
         if next_step == 'select_structure':
-            items = [
-                {
-                    'type': 'label',
-                    'value': (
-                        '#Select structure#\n'
-                        'Select which structure to use with your location. The '
-                        'structure is used to generate the filesystem path '
-                        'for components that are added to this location.'
-                    )
-                },
-                {
-                    'type': 'enumerator',
-                    'label': 'Structure',
-                    'name': 'structure_id',
-                    'value': 'standard',
-                    'data': [{
-                        'label': 'Standard',
-                        'value': 'standard',
-                        'description': (
-                            'The Standard structure uses the names in your '
-                            'project structure to determine the path.'
-                        )
-                    }]
-                }
-            ]
+            # There is only one structure to choose from, go to next step.
+            next_step = 'select_mount_point'
+            # items = [
+            #     {
+            #         'type': 'label',
+            #         'value': (
+            #             '#Select structure#\n'
+            #             'Select which structure to use with your location. '
+            #             'The structure is used to generate the filesystem '
+            #             'path for components that are added to this location.'
+            #         )
+            #     },
+            #     {
+            #         'type': 'enumerator',
+            #         'label': 'Structure',
+            #         'name': 'structure_id',
+            #         'value': 'standard',
+            #         'data': [{
+            #             'label': 'Standard',
+            #             'value': 'standard',
+            #             'description': (
+            #                 'The Standard structure uses the names in your '
+            #                 'project structure to determine the path.'
+            #             )
+            #         }]
+            #     }
+            # ]
 
         if next_step == 'select_mount_point':
             try:
