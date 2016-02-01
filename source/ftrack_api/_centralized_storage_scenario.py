@@ -471,6 +471,7 @@ class CentralizedLocationScenario(object):
         '''Subscribe to events on *session*.'''
         self.session = session
 
+        #: TODO: Move these to a separate function.
         session.event_hub.subscribe(
             unicode(
                 'topic=ftrack.location-scenario.discover '
@@ -491,8 +492,14 @@ class CentralizedLocationScenario(object):
             ),
             self.configure_scenario
         )
+
         session.event_hub.subscribe(
-            'topic=ftrack.location-scenario.activate',
+            (
+                'topic=ftrack.location-scenario.activate '
+                'and data.location_scenario.scenario="{0}"'.format(
+                    self.scenario_name
+                )
+            ),
             self.activate
         )
 
