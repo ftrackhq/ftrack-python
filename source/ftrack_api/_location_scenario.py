@@ -65,7 +65,7 @@ class CentralizedLocationScenario(object):
             'The *Standard* structure will be used.'
         )
 
-        mount_points_text = (
+        mount_points_text = unicode(
             '* Linux: {linux}\n'
             '* OS X: {osx}\n'
             '* Windows: {windows}\n\n'
@@ -87,14 +87,14 @@ class CentralizedLocationScenario(object):
             mount_points_not_set.append('Windows')
 
         if mount_points_not_set:
-            mount_points_text += (
+            mount_points_text += unicode(
                 'Please be aware that this location will not be working on '
                 '{missing} because the mount points are not set up.'
             ).format(
                 missing=' and '.join(mount_points_not_set)
             )
 
-        text = (
+        text = unicode(
             '#Confirm location setup#\n\n'
             'Almost there! Please take a moment to verify the settings you '
             'are about to save. You can always come back later and update the '
@@ -194,15 +194,15 @@ class CentralizedLocationScenario(object):
             if (
                 configure_location
                 and self.session.query(
-                    'Location where name is "{0}"'.format(
+                    u'Location where name is "{0}"'.format(
                         configure_location.get('location_name')
                     )
                 ).first()
             ):
                 next_step = 'configure_location'
                 warning_message += (
-                    '**There is already a location named {0}. '
-                    'Please change name and try again.**'.format(
+                    u'**There is already a location named {0}. '
+                    u'Please change name and try again.**'.format(
                         configure_location.get('location_name')
                     )
                 )
@@ -456,7 +456,7 @@ class CentralizedLocationScenario(object):
         self.session = session
 
         session.event_hub.subscribe(
-            (
+            unicode(
                 'topic=ftrack.location-scenario.discover '
                 'and source.user.username="{0}"'
             ).format(
@@ -465,7 +465,7 @@ class CentralizedLocationScenario(object):
             self.discover_centralized_scenario
         )
         session.event_hub.subscribe(
-            (
+            unicode(
                 'topic=ftrack.location-scenario.configure '
                 'and data.scenario_id="{0}" '
                 'and source.user.username="{1}"'
