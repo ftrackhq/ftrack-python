@@ -125,6 +125,7 @@ class CentralizedLocationScenario(object):
             'save_configuration'
         )
 
+        warning_message = ''
         values = event['data'].get('values', {})
 
         # Calculate previous step and the next.
@@ -184,6 +185,28 @@ class CentralizedLocationScenario(object):
                 'value': location_id,
                 'data': options
             }]
+
+        if previous_step == 'configure_location':
+            configure_location = configuration.get(
+                'configure_location'
+            )
+
+            if (
+                configure_location
+                and self.session.query(
+                    'Location where name is "{0}"'.format(
+                        configure_location.get('location_name')
+                    )
+                ).first()
+            ):
+                next_step = 'configure_location'
+                warning_message += (
+                    '**There is already a location named {0}. '
+                    'Please change name and try again.**'.format(
+                        configure_location.get('location_name')
+                    )
+                )
+                values = configuration['select_location']
 
         if next_step == 'configure_location':
 
@@ -352,6 +375,12 @@ class CentralizedLocationScenario(object):
                 )
             }]
             state = 'done'
+
+        if warning_message:
+            items.insert(0, {
+                'type': 'label',
+                'value': warning_message
+            })
 
         items.append({
             'type': 'hidden',
