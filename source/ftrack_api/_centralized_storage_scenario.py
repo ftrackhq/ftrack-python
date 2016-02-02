@@ -199,7 +199,7 @@ class CentralizedLocationScenario(object):
                 'data': options
             }]
 
-        default_location_name = 'studio.central-location'
+        default_location_name = 'studio.central-storage-location'
         default_location_label = 'Studio location'
         default_location_description = (
             'The studio central location where all components are '
@@ -222,7 +222,7 @@ class CentralizedLocationScenario(object):
                     next_step = 'configure_location'
                     warning_message += (
                         '**The location name contains non-ascii characters. '
-                        'Please change name and try again.**'
+                        'Please change the name and try again.**'
                     )
                     values = configuration['select_location']
                 else:
@@ -230,7 +230,7 @@ class CentralizedLocationScenario(object):
                         next_step = 'configure_location'
                         warning_message += (
                             u'**There is already a location named {0}. '
-                            u'Please change name and try again.**'.format(
+                            u'Please change the name and try again.**'.format(
                                 configure_location.get('location_name')
                             )
                         )
