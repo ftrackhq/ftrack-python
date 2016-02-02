@@ -385,8 +385,8 @@ class CentralizedLocationScenario(object):
                 'value': (
                     '#Done!#\n'
                     'Your location scenario is now configured and ready '
-                    'to use. Please restart Connect and other applications '
-                    'to start using it.'
+                    'to use. **Note that you may have to restart Connect and '
+                    'other applications to start using it.**'
                 )
             }]
             state = 'done'
