@@ -380,6 +380,12 @@ class CentralizedLocationScenario(object):
             self.location_scenario['value'] = setting_value
             self.session.commit()
 
+            # Broadcast an event that location scenario has been configured.
+            event = ftrack_api.event.base.Event(
+                topic='ftrack.location-scenario.configure-done'
+            )
+            self.session.event_hub.publish(event)
+
             items = [{
                 'type': 'label',
                 'value': (
