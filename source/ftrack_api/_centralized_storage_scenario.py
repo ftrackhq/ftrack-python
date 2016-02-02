@@ -443,8 +443,12 @@ class CentralizedLocationScenario(object):
         '''Return action discover dictionary for *event*.'''
         return {
             'id': self.scenario_name,
-            'name': 'Centralized scenario',
-            'description': 'A centralized location scenario'
+            'name': 'Centralized storage scenario',
+            'description': (
+                '(Recommended) centralized storage scenario where all files '
+                'are kept on a storage that is mounted and available to '
+                'everyone in the studio.'
+            )
         }
 
     def activate(self, event):
