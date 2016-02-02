@@ -833,7 +833,7 @@ class EventHub(object):
 
         try:
             self._connection.send(packet)
-            self.logger.debug('Sent packet: {0}'.format(packet))
+            self.logger.debug(u'Sent packet: {0}'.format(packet))
         except socket.error as error:
             raise ftrack_api.exception.EventHubConnectionError(
                 'Failed to send packet: {0}'.format(error)
