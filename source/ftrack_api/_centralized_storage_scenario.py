@@ -142,8 +142,8 @@ class CentralizedLocationScenario(object):
         state = 'configuring'
 
         self.logger.info(
-            u'Configuring scenario, previous step: {0}, next step: {1}.'
-            u' Values {2!r}.'.format(
+            u'Configuring scenario, previous step: {0}, next step: {1}. '
+            u'Values {2!r}.'.format(
                 previous_step, next_step, values
             )
         )
@@ -177,7 +177,7 @@ class CentralizedLocationScenario(object):
                     'ftrack.server', 'ftrack.review'
                 ):
                     options.append({
-                        'label': '{label} ({name})'.format(
+                        'label': u'{label} ({name})'.format(
                             label=location['label'], name=location['name']
                         ),
                         'description': location['description'],
@@ -199,27 +199,50 @@ class CentralizedLocationScenario(object):
                 'data': options
             }]
 
+        default_location_name = 'studio.central-location'
+        default_location_label = 'Studio location'
+        default_location_description = (
+            'The studio central location where all components are '
+            'stored.'
+        )
+
         if previous_step == 'configure_location':
             configure_location = configuration.get(
                 'configure_location'
             )
 
-            if (
-                configure_location
-                and self.session.query(
-                    u'Location where name is "{0}"'.format(
-                        configure_location.get('location_name')
+            if configure_location:
+                try:
+                    existing_location = self.session.query(
+                        u'Location where name is "{0}"'.format(
+                            configure_location.get('location_name')
+                        )
+                    ).first()
+                except UnicodeEncodeError:                
+                    next_step = 'configure_location'
+                    warning_message += (
+                        '**The location name contains non-ascii characters. '
+                        'Please change name and try again.**'
                     )
-                ).first()
-            ):
-                next_step = 'configure_location'
-                warning_message += (
-                    u'**There is already a location named {0}. '
-                    u'Please change name and try again.**'.format(
-                        configure_location.get('location_name')
-                    )
+                    values = configuration['select_location']
+                else:
+                    if existing_location:
+                        next_step = 'configure_location'
+                        warning_message += (
+                            u'**There is already a location named {0}. '
+                            u'Please change name and try again.**'.format(
+                                configure_location.get('location_name')
+                            )
+                        )
+                        values = configuration['select_location']
+
+            if next_step == 'configure_location':
+                # Populate form with previous configuration.
+                default_location_label = configure_location['location_label']
+                default_location_name = configure_location['location_name']
+                default_location_description = (
+                    configure_location['location_description']
                 )
-                values = configuration['select_location']
 
         if next_step == 'configure_location':
 
@@ -239,20 +262,17 @@ class CentralizedLocationScenario(object):
                 }, {
                     'label': 'Label',
                     'name': 'location_label',
-                    'value': 'Studio location',
+                    'value': default_location_label,
                     'type': 'text'
                 }, {
                     'label': 'Name',
                     'name': 'location_name',
-                    'value': 'studio.central-location',
+                    'value': default_location_name,
                     'type': 'text'
                 }, {
                     'label': 'Description',
                     'name': 'location_description',
-                    'value': (
-                        'The studio central location where all components are '
-                        'stored.'
-                    ),
+                    'value': default_location_description,
                     'type': 'text'
                 }]
 
