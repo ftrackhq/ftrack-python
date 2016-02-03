@@ -9,10 +9,11 @@ import ftrack_api
 import ftrack_api.structure.standard as _standard
 
 
-class CentralizedLocationScenario(object):
-    '''Centralized location scenario to activate and configure scenario.'''
+scenario_name = 'ftrack.centralized-storage'
 
-    scenario_name = 'ftrack.centralized-storage'
+
+class ConfigureCentralizedLocationScenario(object):
+    '''Configure a centralized location scenario.'''
 
     def __init__(self):
         '''Instansiate centralized location scenario.'''
@@ -41,7 +42,7 @@ class CentralizedLocationScenario(object):
         if not isinstance(configuration, dict):
             return None
 
-        if configuration.get('scenario') != self.scenario_name:
+        if configuration.get('scenario') != scenario_name:
             return None
 
         return configuration.get('data', {})
@@ -383,7 +384,7 @@ class CentralizedLocationScenario(object):
                 ).one()
 
             setting_value = json.dumps({
-                'scenario': self.scenario_name,
+                'scenario': scenario_name,
                 'data': {
                     'location_id': location['id'],
                     'location_name': location['name'],
@@ -442,7 +443,7 @@ class CentralizedLocationScenario(object):
     def discover_centralized_scenario(self, event):
         '''Return action discover dictionary for *event*.'''
         return {
-            'id': self.scenario_name,
+            'id': scenario_name,
             'name': 'Centralized storage scenario',
             'description': (
                 '(Recommended) centralized storage scenario where all files '
@@ -450,6 +451,42 @@ class CentralizedLocationScenario(object):
                 'everyone in the studio.'
             )
         }
+
+    def register(self, session):
+        '''Subscribe to events on *session*.'''
+        self.session = session
+
+        #: TODO: Move these to a separate function.
+        session.event_hub.subscribe(
+            unicode(
+                'topic=ftrack.location-scenario.discover '
+                'and source.user.username="{0}"'
+            ).format(
+                session.api_user
+            ),
+            self.discover_centralized_scenario
+        )
+        session.event_hub.subscribe(
+            unicode(
+                'topic=ftrack.location-scenario.configure '
+                'and data.scenario_id="{0}" '
+                'and source.user.username="{1}"'
+            ).format(
+                scenario_name,
+                session.api_user
+            ),
+            self.configure_scenario
+        )
+
+
+class ActivateCentralizedLocationScenario(object):
+    '''Activate a centralized location.'''
+
+    def __init__(self):
+        '''Instansiate centralized location scenario.'''
+        self.logger = logging.getLogger(
+            __name__ + '.' + self.__class__.__name__
+        )
 
     def activate(self, event):
         '''Activate scenario in *event*.'''
@@ -498,38 +535,22 @@ class CentralizedLocationScenario(object):
             )
             location.structure = _standard.StandardStructure()
             location.priority = 1
+            self.logger.info(
+                u'Location scenario activated. Configured {0!r} from '
+                u'{1!r}'.format(
+                    location, location_scenario
+                )
+            )
 
     def register(self, session):
         '''Subscribe to events on *session*.'''
         self.session = session
 
-        #: TODO: Move these to a separate function.
-        session.event_hub.subscribe(
-            unicode(
-                'topic=ftrack.location-scenario.discover '
-                'and source.user.username="{0}"'
-            ).format(
-                session.api_user
-            ),
-            self.discover_centralized_scenario
-        )
-        session.event_hub.subscribe(
-            unicode(
-                'topic=ftrack.location-scenario.configure '
-                'and data.scenario_id="{0}" '
-                'and source.user.username="{1}"'
-            ).format(
-                self.scenario_name,
-                session.api_user
-            ),
-            self.configure_scenario
-        )
-
         session.event_hub.subscribe(
             (
                 'topic=ftrack.location-scenario.activate '
                 'and data.location_scenario.scenario="{0}"'.format(
-                    self.scenario_name
+                    scenario_name
                 )
             ),
             self.activate
@@ -538,5 +559,11 @@ class CentralizedLocationScenario(object):
 
 def register(session):
     '''Register location scenario.'''
-    scenario = CentralizedLocationScenario()
+    scenario = ActivateCentralizedLocationScenario()
+    scenario.register(session)
+
+
+def register_configuration(session):
+    '''Register location scenario.'''
+    scenario = ConfigureCentralizedLocationScenario()
     scenario.register(session)
