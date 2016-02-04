@@ -24,6 +24,11 @@ Release Notes
         Added :meth:`Session.encode_media` that can be used to encode
         media to make it playable in a browser.
 
+    .. change:: fixed
+
+        :meth:`Session.commit` fails when setting a custom attribute on an asset
+        version that has been created and committed in the same session.
+
     .. change:: new
         :tags: locations
 
@@ -31,6 +36,28 @@ Release Notes
         URL to a component in a location if supported by the
         :class:`ftrack_api.accessor.base.Accessor`.
 
+    .. change:: new
+        :tags: documentation
+
+        Updated :ref:`example/note` and :ref:`example/job` articles with
+        examples of how to use note and job attachments.
+
+    .. change:: changed
+        :tags: logging, performance
+
+        Logged messages now evaluated lazily using
+        :class:`ftrack_api.logging.LazyLogMessage` as optimisation.
+
+    .. change:: changed
+        :tags: session, events
+
+        Auto connection of event hub for :class:`Session` now takes place in
+        background to improve session startup time.
+
+    .. change:: changed
+        :tags: session, events
+
+        Event hub connection timeout is now 60 seconds instead of 10.
 
     .. change:: changed
         :tags: server version
