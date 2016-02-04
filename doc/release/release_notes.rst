@@ -15,6 +15,13 @@ Release Notes
     .. change:: new
         :tags: session, locations
 
+        Added `ftrack.centralized-storage` configurator as a private module. It
+        implements a wizard like interface used to configure a centralised
+        storage scenario.
+
+    .. change:: new
+        :tags: session, locations
+
         `ftrack.centralized-storage` location scenario is automatically
         configured based on information passed from the server with the
         `query_server_information` action.
