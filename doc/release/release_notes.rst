@@ -24,6 +24,8 @@ Release Notes
         Added :meth:`Session.encode_media` that can be used to encode
         media to make it playable in a browser.
 
+        .. seealso:: :ref:`example/encode_media`.
+
     .. change:: fixed
 
         :meth:`Session.commit` fails when setting a custom attribute on an asset

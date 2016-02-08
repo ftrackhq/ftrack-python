@@ -40,7 +40,7 @@ uses that as a thumbnail for a task::
     task['thumbnail'] = thumbnail_component
     session.commit()
 
-The next example reuses a versions thumbnail for the asset parent thumbnail::
+The next example reuses a version's thumbnail for the asset parent thumbnail::
 
     asset_version = session.get('AssetVersion', my_asset_version_id)
     asset_parent = asset_version['asset']['parent']
