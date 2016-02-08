@@ -35,7 +35,9 @@ class User(ftrack_api.entity.base.Entity):
 
         timer = self.session.create('Timer', {
             'user': self,
-            'context': context
+            'context': context,
+            'name': name,
+            'comment': comment
         })
 
         # Commit the new timer and try to catch any error that indicate another
@@ -71,7 +73,24 @@ class User(ftrack_api.entity.base.Entity):
             'Timer where user_id = "{0}"'.format(self['id'])
         ).one()
 
-        delta = arrow.now() - timer['start']
+        # If the server is running in the same timezone as the local
+        # timezone, we remove the TZ offset to get the correct duration.
+        is_timezone_support_enabled = self.session.server_information.get(
+            'is_timezone_support_enabled', None
+        )
+        if is_timezone_support_enabled is None:
+            self.logger.warning(
+                'Could not identify if server has timezone support enabled. '
+                'Will assume server is running in UTC.'
+            )
+            is_timezone_support_enabled = True
+
+        if is_timezone_support_enabled:
+            now = arrow.now()
+        else:
+            now = arrow.now().replace(tzinfo='utc')
+
+        delta = now - timer['start']
         duration = delta.days * 24 * 60 * 60 + delta.seconds
 
         timelog = self.session.create('Timelog', {
