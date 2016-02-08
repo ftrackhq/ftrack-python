@@ -40,7 +40,7 @@ Release Notes
         :tags: documentation
 
         Updated :ref:`example/note` and :ref:`example/job` articles with
-        examples of how to use note and job attachments.
+        examples of how to use note and job components.
 
     .. change:: changed
         :tags: logging, performance
