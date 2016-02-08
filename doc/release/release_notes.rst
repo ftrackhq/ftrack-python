@@ -13,6 +13,19 @@ Release Notes
 
     .. change:: fixed
 
+        :meth:`~ftrack_api.entity.user.User.start_timer` arguments *comment*
+        and *name* are ignored.
+
+    .. change:: fixed
+
+        :meth:`~ftrack_api.entity.user.User.stop_timer` calculates the wrong
+        duration when the server is not running in UTC.
+
+        For the duration to be calculated correctly ftrack server version
+        >= 3.3.15 is required.
+
+    .. change:: fixed
+
         :meth:`Session.commit` fails when setting a custom attribute on an asset
         version that has been created and committed in the same session.
 
