@@ -18,7 +18,7 @@ Here is an example of how to encode a video and add to an existing asset
 version::
 
     job = session.encode_media('/PATH/TO/MEDIA')
-    job_data = json.loads(job.data)
+    job_data = json.loads(job['data'])
 
     for output in job_data['output']:
         component = session.get('FileComponent', output['component_id'])
