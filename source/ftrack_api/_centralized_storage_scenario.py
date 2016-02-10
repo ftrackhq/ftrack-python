@@ -4,6 +4,7 @@
 import logging
 import json
 import sys
+import os
 
 import ftrack_api
 import ftrack_api.structure.standard as _standard
@@ -540,6 +541,31 @@ class ActivateCentralizedLocationScenario(object):
                 u'{1!r}'.format(
                     location, location_scenario
                 )
+            )
+
+            # Register listener that can verify the scenario and feedback
+            # information to the user if it is not working correctly.
+            self.session.event_hub.subscribe(
+                'topic=ftrack.connect.verify-startup',
+                self.verify_startup
+            )
+
+    def verify_startup(self, event):
+        '''Verify startup.'''
+        location_scenario = event['data']['location_scenario']
+        location_data = location_scenario['data']
+        mount_points = location_data['accessor']['mount_points']
+        if sys.platform == 'darwin':
+            prefix = mount_points['osx']
+        elif sys.platform == 'linux2':
+            prefix = mount_points['linux']
+        elif sys.platform == 'windows':
+            prefix = mount_points['windows']
+
+        if not os.path.isdir(prefix):
+            return (
+                'The path {0} does not exist. ftrack may not be able to '
+                'store and track files correctly.'.format(prefix)
             )
 
     def register(self, session):
