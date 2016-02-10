@@ -35,6 +35,23 @@ def main(arguments=None):
     sleep_time_per_message = 1
 
     if namespace.mode == 'publish':
+        max_atempts = 100
+        retry_interval = 0.1
+        atempt = 0
+        while not session.event_hub.connected:
+            print (
+                'Session is not yet connected to event hub, sleeping for 0.1s'
+            )
+            time.sleep(retry_interval)
+
+            atempt = atempt + 1
+            if atempt > max_atempts:
+                raise Exception(
+                    'Unable to connect to server within {0} seconds'.format(
+                        max_atempts * retry_interval
+                    )
+                )
+
         print('Sending {0} messages...'.format(message_count))
 
         for counter in range(1, message_count + 1):

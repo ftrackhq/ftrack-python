@@ -11,6 +11,21 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: component, thumbnail
+
+        Added improved support for handling thumbnails.
+
+        .. seealso:: :ref:`example/thumbnail`.
+
+    .. change:: new
+        :tags: session, encode media
+
+        Added :meth:`Session.encode_media` that can be used to encode
+        media to make it playable in a browser.
+
+        .. seealso:: :ref:`example/encode_media`.
+
     .. change:: fixed
 
         :meth:`Session.commit` fails when setting a custom attribute on an asset
@@ -27,7 +42,7 @@ Release Notes
         :tags: documentation
 
         Updated :ref:`example/note` and :ref:`example/job` articles with
-        examples of how to use note and job attachments.
+        examples of how to use note and job components.
 
     .. change:: changed
         :tags: logging, performance
