@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.13.0
+    :date: 2016-02-10
 
     .. change:: new
         :tags: component, thumbnail
