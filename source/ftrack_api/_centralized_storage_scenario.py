@@ -543,15 +543,8 @@ class ActivateCentralizedLocationScenario(object):
                 )
             )
 
-            # Register listener that can verify the scenario and feedback
-            # information to the user if it is not working correctly.
-            self.session.event_hub.subscribe(
-                'topic=ftrack.connect.verify-startup',
-                self.verify_startup
-            )
-
-    def verify_startup(self, event):
-        '''Verify startup.'''
+    def _verify_startup(self, event):
+        '''Verify the scenario location configuration.'''
         location_scenario = event['data']['location_scenario']
         location_data = location_scenario['data']
         mount_points = location_data['accessor']['mount_points']
@@ -582,6 +575,18 @@ class ActivateCentralizedLocationScenario(object):
             self.activate
         )
 
+        # Listen to verify startup event from ftrack connect to allow responding
+        # with a message if something is not working correctly with this
+        # scenario that the user should be notified about.
+        self.session.event_hub.subscribe(
+            (
+                'topic=ftrack.connect.verify-startup '
+                'and data.location_scenario.scenario="{0}"'.format(
+                    scenario_name
+                )
+            ),
+            self._verify_startup
+        )
 
 def register(session):
     '''Register location scenario.'''
