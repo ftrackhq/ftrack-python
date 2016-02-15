@@ -548,6 +548,8 @@ class ActivateCentralizedLocationScenario(object):
         location_scenario = event['data']['location_scenario']
         location_data = location_scenario['data']
         mount_points = location_data['accessor']['mount_points']
+
+        prefix = None
         if sys.platform == 'darwin':
             prefix = mount_points['osx']
         elif sys.platform == 'linux2':
@@ -555,10 +557,22 @@ class ActivateCentralizedLocationScenario(object):
         elif sys.platform == 'windows':
             prefix = mount_points['windows']
 
+        if not prefix:
+            return (
+                u'The location scenario has not been configured for your '
+                u'operating system. ftrack may not be able to '
+                u'store and track files correctly.'
+            )
+
         if not os.path.isdir(prefix):
             return (
-                'The path {0} does not exist. ftrack may not be able to '
-                'store and track files correctly.'.format(prefix)
+                unicode(
+                    'The path {0} does not exist. ftrack may not be able to '
+                    'store and track files correctly. \n\nIf the storage is '
+                    'newly setup you may want to create necessary folder '
+                    'structures. If the storage is a network drive you should '
+                    'make sure that it is mounted correctly.'
+                ).format(prefix)
             )
 
     def register(self, session):
