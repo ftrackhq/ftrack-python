@@ -4,6 +4,7 @@
 import logging
 import json
 import sys
+import os
 
 import ftrack_api
 import ftrack_api.structure.standard as _standard
@@ -542,6 +543,38 @@ class ActivateCentralizedLocationScenario(object):
                 )
             )
 
+    def _verify_startup(self, event):
+        '''Verify the scenario location configuration.'''
+        location_scenario = event['data']['location_scenario']
+        location_data = location_scenario['data']
+        mount_points = location_data['accessor']['mount_points']
+
+        prefix = None
+        if sys.platform == 'darwin':
+            prefix = mount_points['osx']
+        elif sys.platform == 'linux2':
+            prefix = mount_points['linux']
+        elif sys.platform == 'windows':
+            prefix = mount_points['windows']
+
+        if not prefix:
+            return (
+                u'The location scenario has not been configured for your '
+                u'operating system. ftrack may not be able to '
+                u'store and track files correctly.'
+            )
+
+        if not os.path.isdir(prefix):
+            return (
+                unicode(
+                    'The path {0} does not exist. ftrack may not be able to '
+                    'store and track files correctly. \n\nIf the storage is '
+                    'newly setup you may want to create necessary folder '
+                    'structures. If the storage is a network drive you should '
+                    'make sure that it is mounted correctly.'
+                ).format(prefix)
+            )
+
     def register(self, session):
         '''Subscribe to events on *session*.'''
         self.session = session
@@ -556,6 +589,18 @@ class ActivateCentralizedLocationScenario(object):
             self.activate
         )
 
+        # Listen to verify startup event from ftrack connect to allow responding
+        # with a message if something is not working correctly with this
+        # scenario that the user should be notified about.
+        self.session.event_hub.subscribe(
+            (
+                'topic=ftrack.connect.verify-startup '
+                'and data.location_scenario.scenario="{0}"'.format(
+                    scenario_name
+                )
+            ),
+            self._verify_startup
+        )
 
 def register(session):
     '''Register location scenario.'''
