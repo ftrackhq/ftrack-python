@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
+
 import json
 import logging
 import collections
@@ -12,6 +14,7 @@ import itertools
 import distutils.version
 import hashlib
 import tempfile
+import threading
 
 import requests
 import requests.auth
@@ -37,6 +40,7 @@ import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
+from ftrack_api.logging import LazyLogMessage as L
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -110,6 +114,14 @@ class Session(object):
         subscribing to **local** events will be possible until the hub is
         manually connected using :meth:`EventHub.connect
         <ftrack_api.event.hub.EventHub.connect>`.
+
+        .. note::
+
+            The event hub connection is performed in a background thread to
+            improve session startup time. If a registered plugin requires a
+            connected event hub then it should check the event hub connection
+            status explicitly. Subscribing to events does *not* require a
+            connected event hub.
 
         Enable schema caching by setting *schema_cache_path* to a folder path.
         If not set, :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
@@ -207,7 +219,13 @@ class Session(object):
         )
 
         if auto_connect_event_hub:
-            self._event_hub.connect()
+            # Connect to event hub in background thread so as not to block main
+            # session usage waiting for event hub connection.
+            self._auto_connect_event_hub_thread = threading.Thread(
+                target=self._event_hub.connect
+            )
+            self._auto_connect_event_hub_thread.daemon = True
+            self._auto_connect_event_hub_thread.start()
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
@@ -274,7 +292,7 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            server_version_range = ('3.2.1', '3.4')
+            server_version_range = ('3.3.11', '3.4')
             if not (
                 distutils.version.LooseVersion(server_version_range[0])
                 <= distutils.version.LooseVersion(server_version)
@@ -487,10 +505,10 @@ class Session(object):
         if not identifying_keys:
             identifying_keys = data.keys()
 
-        self.logger.debug(
-            'Ensuring entity {0!r} with data {1!r} using identifying keys {2!r}'
-            .format(entity_type, data, identifying_keys)
-        )
+        self.logger.debug(L(
+            'Ensuring entity {0!r} with data {1!r} using identifying keys '
+            '{2!r}', entity_type, data, identifying_keys
+        ))
 
         if not identifying_keys:
             raise ValueError(
@@ -569,9 +587,7 @@ class Session(object):
         If no matching entity found, return None.
 
         '''
-        self.logger.debug(
-            'Get {0} with key {1}'.format(entity_type, entity_key)
-        )
+        self.logger.debug(L('Get {0} with key {1}', entity_type, entity_key))
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
         if isinstance(entity_key, basestring):
@@ -625,30 +641,31 @@ class Session(object):
         cache_key = self.cache_key_maker.key(
             (str(entity_type), map(str, entity_key))
         )
-        self.logger.debug(
-            'Checking cache for entity with key {0}'.format(cache_key)
-        )
+        self.logger.debug(L(
+            'Checking cache for entity with key {0}', cache_key
+        ))
         entity = self.cache.get(cache_key)
-        self.logger.debug(
-            'Retrieved existing entity from cache: {0} at {1}'
-            .format(entity, id(entity))
-        )
+        self.logger.debug(L(
+            'Retrieved existing entity from cache: {0} at {1}',
+            entity, id(entity)
+        ))
 
         return entity
 
-    def query(self, expression):
+    def query(self, expression, page_size=500):
         '''Query against remote data according to *expression*.
 
         *expression* is not executed directly. Instead return an
         :class:`ftrack_api.query.QueryResult` instance that will execute remote
         call on access.
 
+        *page_size* specifies the maximum page size that the returned query
+        result object should be configured with.
+
         .. seealso:: :ref:`querying`
 
         '''
-        self.logger.debug(
-            'Query {0!r}'.format(expression)
-        )
+        self.logger.debug(L('Query {0!r}', expression))
 
         # Add in sensible projections if none specified. Note that this is
         # done here rather than on the server to allow local modification of the
@@ -664,11 +681,18 @@ class Session(object):
                 expression
             )
 
-        query_result = ftrack_api.query.QueryResult(self, expression)
+        query_result = ftrack_api.query.QueryResult(
+            self, expression, page_size=page_size
+        )
         return query_result
 
     def _query(self, expression):
-        '''Execute *query*.'''
+        '''Execute *query* and return (records, metadata).
+
+        Records will be a list of entities retrieved via the query and metadata
+        a dictionary of accompanying information about the result set.
+
+        '''
         # TODO: Actually support batching several queries together.
         # TODO: Should batches have unique ids to match them up later.
         batch = [{
@@ -684,7 +708,7 @@ class Session(object):
         for entity in results[0]['data']:
             data.append(self.merge(entity))
 
-        return data
+        return data, results[0]['metadata']
 
     def merge(self, value, merged=None):
         '''Merge *value* into session and return merged value.
@@ -703,17 +727,18 @@ class Session(object):
     def _merge(self, value, merged):
         '''Return merged *value*.'''
         if isinstance(value, ftrack_api.entity.base.Entity):
-            self.logger.debug(
-                'Merging entity into session: {0} at {1}'
-                .format(value, id(value))
-            )
+            self.logger.debug(L(
+                'Merging entity into session: {0} at {1}',
+                value, id(value)
+            ))
+
             return self._merge_entity(value, merged=merged)
 
         elif isinstance(value, ftrack_api.collection.Collection):
-            self.logger.debug(
-                'Merging collection into session: {0!r} at {1}'
-                .format(value, id(value))
-            )
+            self.logger.debug(L(
+                'Merging collection into session: {0!r} at {1}',
+                value, id(value)
+            ))
 
             merged_collection = []
             for entry in value:
@@ -724,10 +749,10 @@ class Session(object):
             return merged_collection
 
         elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-            self.logger.debug(
-                'Merging mapped collection into session: {0!r} at {1}'
-                .format(value, id(value))
-            )
+            self.logger.debug(L(
+                'Merging mapped collection into session: {0!r} at {1}',
+                value, id(value)
+            ))
 
             merged_collection = []
             for entry in value.collection:
@@ -761,28 +786,29 @@ class Session(object):
             # Check whether this entity has already been processed.
             attached_entity = merged.get(entity_key)
             if attached_entity is not None:
-                self.logger.debug(
-                    'Entity already processed for key {0} as {1} at {2}'
-                    .format(entity_key, attached_entity, id(attached_entity))
-                )
+                self.logger.debug(L(
+                    'Entity already processed for key {0} as {1} at {2}',
+                    entity_key, attached_entity, id(attached_entity)
+                ))
+
                 return attached_entity
             else:
-                self.logger.debug(
-                    'Entity not already processed for key {0}. Keys: {1}'
-                    .format(entity_key, sorted(merged.keys()))
-                )
+                self.logger.debug(L(
+                    'Entity not already processed for key {0}. Keys: {1}',
+                    entity_key, sorted(merged.keys())
+                ))
 
             # Check for existing instance of entity in cache.
-            self.logger.debug(
-                'Checking for entity in cache with key {0}'.format(entity_key)
-            )
+            self.logger.debug(L(
+                'Checking for entity in cache with key {0}', entity_key
+            ))
             try:
                 attached_entity = self.cache.get(entity_key)
                 from_cache = True
-                self.logger.debug(
-                    'Retrieved existing entity from cache: {0} at {1}'
-                    .format(attached_entity, id(attached_entity))
-                )
+                self.logger.debug(L(
+                    'Retrieved existing entity from cache: {0} at {1}',
+                    attached_entity, id(attached_entity)
+                ))
 
             except KeyError:
                 # Construct new minimal instance to store in cache.
@@ -790,10 +816,10 @@ class Session(object):
                     entity.entity_type, {}, reconstructing=True
                 )
                 from_cache = False
-                self.logger.debug(
+                self.logger.debug(L(
                     'Entity not present in cache. Constructed new instance: '
-                    '{0} at {1}'.format(attached_entity, id(attached_entity))
-                )
+                    '{0} at {1}', attached_entity, id(attached_entity)
+                ))
 
             # Mark entity as seen to avoid infinite loops.
             merged[entity_key] = attached_entity
@@ -810,10 +836,12 @@ class Session(object):
             # Merge new entity data into cache entity. If this causes the cache
             # entity to change then persist those changes back to the cache.
             self.logger.debug('Merging new data into attached entity.')
+
             changes = attached_entity.merge(entity, merged=merged)
             if changes:
                 self.cache.set(entity_key, attached_entity)
                 self.logger.debug('Cache updated with merged entity.')
+
             else:
                 self.logger.debug(
                     'Cache not updated with merged entity as no differences '
@@ -859,9 +887,9 @@ class Session(object):
                     ftrack_api.collection.MappedCollectionProxy
                 )
             ):
-                self.logger.debug(
-                    'Merging local value for attribute {0}.'.format(attribute)
-                )
+                self.logger.debug(L(
+                    'Merging local value for attribute {0}.', attribute
+                ))
 
                 merged_local_value = self._merge(local_value, merged=merged)
                 if merged_local_value is not local_value:
@@ -878,9 +906,9 @@ class Session(object):
                     ftrack_api.collection.MappedCollectionProxy
                 )
             ):
-                self.logger.debug(
-                    'Merging remote value for attribute {0}.'.format(attribute)
-                )
+                self.logger.debug(L(
+                    'Merging remote value for attribute {0}.', attribute
+                ))
 
                 merged_remote_value = self._merge(remote_value, merged=merged)
                 if merged_remote_value is not remote_value:
@@ -907,9 +935,9 @@ class Session(object):
             skipped as they have no remote values to fetch.
 
         '''
-        self.logger.debug(
-            'Populate {0!r} projections for {1}.'.format(projections, entities)
-        )
+        self.logger.debug(L(
+            'Populate {0!r} projections for {1}.', projections, entities
+        ))
 
         if not isinstance(
             entities, (list, tuple, ftrack_api.query.QueryResult)
@@ -929,11 +957,10 @@ class Session(object):
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
                 # are NOT_SET.
-                self.logger.debug(
+                self.logger.debug(L(
                     'Skipping newly created entity {0!r} for population as no '
-                    'data will exist in the remote for this entity yet.'
-                    .format(entity)
-                )
+                    'data will exist in the remote for this entity yet.', entity
+                ))
                 continue
 
             entities_to_process.append(entity)
@@ -1244,16 +1271,14 @@ class Session(object):
         schemas in JSON format.
 
         '''
-        self.logger.debug(
-            'Reading schemas from cache {0!r}'.format(schema_cache_path)
-        )
+        self.logger.debug(L(
+            'Reading schemas from cache {0!r}', schema_cache_path
+        ))
 
         if not os.path.exists(schema_cache_path):
-            self.logger.info(
-                'Cache file not found at {0!r}.'.format(
-                    schema_cache_path
-                )
-            )
+            self.logger.info(L(
+                'Cache file not found at {0!r}.', schema_cache_path
+            ))
 
             return [], None
 
@@ -1272,10 +1297,9 @@ class Session(object):
         written to in JSON format.
 
         '''
-        self.logger.debug(
-            'Updating schema cache {0!r} with new schemas.'
-            .format(schema_cache_path)
-        )
+        self.logger.debug(L(
+            'Updating schema cache {0!r} with new schemas.', schema_cache_path
+        ))
 
         with open(schema_cache_path, 'w') as local_cache_file:
             json.dump(schemas, local_cache_file, indent=4)
@@ -1302,10 +1326,10 @@ class Session(object):
             except (IOError, TypeError, AttributeError, ValueError):
                 # Catch any known exceptions when trying to read the local
                 # schema cache to prevent API from being unusable.
-                self.logger.exception(
-                    'Schema cache could not be loaded from {0!r}'
-                    .format(schema_cache_path)
-                )
+                self.logger.exception(L(
+                    'Schema cache could not be loaded from {0!r}',
+                    schema_cache_path
+                ))
 
         # Use `dictionary.get` to retrieve hash to support older version of
         # ftrack server not returning a schema hash.
@@ -1313,27 +1337,25 @@ class Session(object):
             'schema_hash', False
         )
         if local_schema_hash != server_hash:
-            self.logger.debug(
+            self.logger.debug(L(
                 'Loading schemas from server due to hash not matching.'
-                'Local: {0!r} != Server: {1!r}'.format(
-                    local_schema_hash, server_hash
-                )
-            )
+                'Local: {0!r} != Server: {1!r}', local_schema_hash, server_hash
+            ))
             schemas = self._call([{'action': 'query_schemas'}])[0]
 
             if schema_cache_path:
                 try:
                     self._write_schemas_to_cache(schemas, schema_cache_path)
                 except (IOError, TypeError):
-                    self.logger.exception(
-                        'Failed to update schema cache {0!r}.'
-                        .format(schema_cache_path)
-                    )
+                    self.logger.exception(L(
+                        'Failed to update schema cache {0!r}.',
+                        schema_cache_path
+                    ))
 
         else:
-            self.logger.debug(
-                'Using cached schemas from {0!r}'.format(schema_cache_path)
-            )
+            self.logger.debug(L(
+                'Using cached schemas from {0!r}', schema_cache_path
+            ))
 
         return schemas
 
@@ -1357,10 +1379,10 @@ class Session(object):
             results = [result for result in results if result is not None]
 
             if not results:
-                self.logger.debug(
+                self.logger.debug(L(
                     'Using default StandardFactory to construct entity type '
-                    'class for "{0}"'.format(schema['id'])
-                )
+                    'class for "{0}"', schema['id']
+                ))
                 entity_type_class = fallback_factory.create(schema)
 
             elif len(results) > 1:
@@ -1470,9 +1492,7 @@ class Session(object):
         }
         data = self.encode(data, entity_attribute_strategy='modified_only')
 
-        self.logger.debug(
-            'Calling server {0} with {1!r}'.format(url, data)
-        )
+        self.logger.debug(L('Calling server {0} with {1!r}', url, data))
 
         response = self._request.post(
             url,
@@ -1480,11 +1500,9 @@ class Session(object):
             data=data
         )
 
-        self.logger.debug(
-            'Call took: {0}'.format(response.elapsed.total_seconds())
-        )
+        self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
 
-        self.logger.debug('Response: {0!r}'.format(response.text))
+        self.logger.debug(L('Response: {0!r}', response.text))
         try:
             result = self.decode(response.text)
 
@@ -1741,6 +1759,11 @@ class Session(object):
         location to add the component to if one is available. To not add to any
         location specifiy locations as None.
 
+        .. note::
+
+            A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
+            automatically issued as part of the components registration in the
+            location.
         '''
         if data is None:
             data = {}
@@ -1984,6 +2007,97 @@ class Session(object):
 
         else:
             return result[0]['widget_url']
+
+    def encode_media(self, media):
+        '''Return a new Job that encode *media* to make it playable in browsers.
+
+        *media* can be a path to a file or a FileComponent in the ftrack.server
+        location.
+
+        The job will encode *media* based on the file type and job data contains
+        information about encoding in the following format::
+
+            {
+                'output': [{
+                    'format': 'video/mp4',
+                    'component_id': 'e2dc0524-b576-11d3-9612-080027331d74'
+                }, {
+                    'format': 'image/jpeg',
+                    'component_id': '07b82a97-8cf9-11e3-9383-20c9d081909b'
+                }],
+                'source_component_id': 'e3791a09-7e11-4792-a398-3d9d4eefc294',
+                'keep_original': True
+            }
+
+        The output components are associated with the job via the job_components
+        relation.
+
+        An image component will always be generated if possible that can be used
+        as a thumbnail.
+
+        .. note::
+
+            The new components will not be automatically associated with an
+            AssetVersion even if the supplied *media* belongs to one.
+
+        If *media* is a file path, a new source component will be created and
+        added to the ftrack server location and a call to :meth:`commit` will be
+        issued. When the encoding is complete the source component will be
+        deleted.
+
+        If *media* is a FileComponent, it will not be deleted after the encoding
+        is complete.
+
+        '''
+        keep_original = True
+        if isinstance(media, basestring):
+            # Media is a path to a file.
+            server_location = self.get(
+                'Location', ftrack_api.symbol.SERVER_LOCATION_ID
+            )
+            component = self.create_component(
+                path=media, location=server_location
+            )
+            keep_original = False
+
+            # Auto commit to ensure component exists when sent to server.
+            self.commit()
+
+        elif (
+            hasattr(media, 'entity_type') and
+            media.entity_type in ('FileComponent',)
+        ):
+            # Existing file component.
+            component = media
+            keep_original = True
+
+        else:
+            raise ValueError(
+                'Unable to encode media of type: {0}'.format(type(media))
+            )
+
+        operation = {
+            'action': 'encode_media',
+            'component_id': component['id'],
+            'keep_original': keep_original
+        }
+
+        try:
+            result = self._call([operation])
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'encode_media\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support "encode_media", '
+                    'please update server and try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
+        return self.get('Job', result[0]['job_id'])
 
 
 class AutoPopulatingContext(object):
