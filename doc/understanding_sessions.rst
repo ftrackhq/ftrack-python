@@ -178,7 +178,12 @@ Configuring plugins
 ===================
 
 Plugins are used by the API to extend it with new functionality, such as 
-:term:`locations <location>` or :term:`actions <action>`.
+:term:`locations <location>` or adding convenience methods to
+:ref:`understanding_sessions/entity_types`. In addition to new API
+functionality, event plugins may also be used for event processing by listening
+to :ref:`ftrack update events <handling_events>` or adding custom functionality to ftrack by registering
+:term:`actions <action>`.
+
 
 When starting a new :class:`Session` either pass the *plugins_paths* to search
 explicitly or rely on the environment variable 
