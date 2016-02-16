@@ -9,6 +9,77 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: 0.13.0
+    :date: 2016-02-10
+
+    .. change:: new
+        :tags: component, thumbnail
+
+        Added improved support for handling thumbnails.
+
+        .. seealso:: :ref:`example/thumbnail`.
+
+    .. change:: new
+        :tags: session, encode media
+
+        Added :meth:`Session.encode_media` that can be used to encode
+        media to make it playable in a browser.
+
+        .. seealso:: :ref:`example/encode_media`.
+
+    .. change:: fixed
+
+        :meth:`Session.commit` fails when setting a custom attribute on an asset
+        version that has been created and committed in the same session.
+
+    .. change:: new
+        :tags: locations
+
+        Added :meth:`ftrack_api.entity.location.Location.get_url` to retrieve a
+        URL to a component in a location if supported by the
+        :class:`ftrack_api.accessor.base.Accessor`.
+
+    .. change:: new
+        :tags: documentation
+
+        Updated :ref:`example/note` and :ref:`example/job` articles with
+        examples of how to use note and job components.
+
+    .. change:: changed
+        :tags: logging, performance
+
+        Logged messages now evaluated lazily using
+        :class:`ftrack_api.logging.LazyLogMessage` as optimisation.
+
+    .. change:: changed
+        :tags: session, events
+
+        Auto connection of event hub for :class:`Session` now takes place in
+        background to improve session startup time.
+
+    .. change:: changed
+        :tags: session, events
+
+        Event hub connection timeout is now 60 seconds instead of 10.
+
+    .. change:: changed
+        :tags: server version
+
+        ftrack server version >= 3.3.11, < 3.4 required.
+
+    .. change:: changed
+        :tags: querying, performance
+
+        :class:`ftrack_api.query.QueryResult` now pages internally using a
+        specified page size in order to optimise record retrieval for large
+        query results. :meth:`Session.query` has also been updated to allow
+        passing a custom page size at runtime if desired.
+
+    .. change:: changed
+        :tags: querying, performance
+
+        Increased performance of :meth:`~ftrack_api.query.QueryResult.first` and
+        :meth:`~ftrack_api.query.QueryResult.one` by using new `limit` syntax.
 
 .. release:: 0.12.0
     :date: 2015-12-17

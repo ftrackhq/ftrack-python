@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
+
 import logging
 
 import collections
@@ -11,6 +13,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.operation
 import ftrack_api.cache
+from ftrack_api.logging import LazyLogMessage as L
 
 
 class Collection(collections.MutableSequence):
@@ -449,10 +452,17 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
 
             custom_attribute_value.session.delete(custom_attribute_value)
         else:
-            self.logger.warning(
-                'Cannot delete {0!r} on {1!r}, no custom attribute value set.'
-                .format(key, self.collection.entity)
-            )
+            self.logger.warning(L(
+                'Cannot delete {0!r} on {1!r}, no custom attribute value set.',
+                key, self.collection.entity
+            ))
+
+    def __eq__(self, collection):
+        '''Return True if *collection* equals proxy collection.'''
+        if collection is ftrack_api.symbol.NOT_SET:
+            return False
+
+        return collection.collection == self.collection
 
     def __iter__(self):
         '''Iterate over all keys.'''
