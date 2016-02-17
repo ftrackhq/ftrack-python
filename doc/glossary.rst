@@ -13,6 +13,13 @@ Glossary
 
         .. seealso:: :ref:`locations/overview/accessors`
 
+    action
+        Actions in ftrack provide a standardised way to integrate other tools,
+        either off-the-shelf or custom built, directly into your ftrack
+        workflow.
+
+        .. seealso:: :ref:`ftrack:using/actions`
+
     api
         Application programming interface.
 
@@ -44,6 +51,12 @@ Glossary
     PEP-8
         Style guide for :term:`Python` code. Read the guide at 
         https://www.python.org/dev/peps/pep-0008/
+
+    plugin
+        :term:`Python` plugins are used by the API to extend it with new
+        functionality, such as :term:`locations <location>` or :term:`actions <action>`.
+
+        .. seealso:: :ref:`understanding_sessions/plugins`
 
     python
         A programming language that lets you work more quickly and integrate
