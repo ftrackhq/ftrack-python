@@ -1454,17 +1454,17 @@ class Session(object):
         location.priority = 150
 
         # Master location based on server scenario.
-        location_scenario = self.server_information.get('location_scenario')
+        storage_scenario = self.server_information.get('storage_scenario')
 
         if (
-            location_scenario and
-            location_scenario.get('scenario')
+            storage_scenario and
+            storage_scenario.get('scenario')
         ):
             self.event_hub.publish(
                 ftrack_api.event.base.Event(
-                    topic='ftrack.location-scenario.activate',
+                    topic='ftrack.storage-scenario.activate',
                     data=dict(
-                        location_scenario=location_scenario
+                        storage_scenario=storage_scenario
                     )
                 ),
                 synchronous=True

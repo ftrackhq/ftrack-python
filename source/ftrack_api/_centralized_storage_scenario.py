@@ -13,30 +13,30 @@ import ftrack_api.structure.standard as _standard
 scenario_name = 'ftrack.centralized-storage'
 
 
-class ConfigureCentralizedLocationScenario(object):
-    '''Configure a centralized location scenario.'''
+class ConfigureCentralizedStorageScenario(object):
+    '''Configure a centralized storage scenario.'''
 
     def __init__(self):
-        '''Instansiate centralized location scenario.'''
+        '''Instansiate centralized storage scenario.'''
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
 
     @property
-    def location_scenario(self):
-        '''Return location scenario setting.'''
+    def storage_scenario(self):
+        '''Return storage scenario setting.'''
         return self.session.query(
             'select value from Setting '
-            'where name is "location_scenario" and group is "LOCATION"'
+            'where name is "storage_scenario" and group is "STORAGE"'
         ).one()
 
     @property
     def existing_centralized_storage_configuration(self):
         '''Return existing centralized storage configuration.'''
-        location_scenario = self.location_scenario
+        storage_scenario = self.storage_scenario
 
         try:
-            configuration = json.loads(location_scenario['value'])
+            configuration = json.loads(storage_scenario['value'])
         except (ValueError, TypeError):
             return None
 
@@ -105,7 +105,7 @@ class ConfigureCentralizedLocationScenario(object):
             )
 
         text = unicode(
-            '#Confirm location setup#\n\n'
+            '#Confirm storage setup#\n\n'
             'Almost there! Please take a moment to verify the settings you '
             'are about to save. You can always come back later and update the '
             'configuration.\n'
@@ -255,10 +255,10 @@ class ConfigureCentralizedLocationScenario(object):
                     'value': (
                         '#Create location#\n'
                         'Here you will create a new location to be used '
-                        'with your new Location scenario. For your '
+                        'with your new Storage scenario. For your '
                         'convencience we have already filled in some default '
                         'values. If this is the first time you configure a '
-                        'location scenario in ftrack we recommend that you '
+                        'storage scenario in ftrack we recommend that you '
                         'stick with these settings.'
                     )
                 }, {
@@ -399,12 +399,12 @@ class ConfigureCentralizedLocationScenario(object):
                 }
             })
 
-            self.location_scenario['value'] = setting_value
+            self.storage_scenario['value'] = setting_value
             self.session.commit()
 
-            # Broadcast an event that location scenario has been configured.
+            # Broadcast an event that storage scenario has been configured.
             event = ftrack_api.event.base.Event(
-                topic='ftrack.location-scenario.configure-done'
+                topic='ftrack.storage-scenario.configure-done'
             )
             self.session.event_hub.publish(event)
 
@@ -412,7 +412,7 @@ class ConfigureCentralizedLocationScenario(object):
                 'type': 'label',
                 'value': (
                     '#Done!#\n'
-                    'Your location scenario is now configured and ready '
+                    'Your storage scenario is now configured and ready '
                     'to use. **Note that you may have to restart Connect and '
                     'other applications to start using it.**'
                 )
@@ -460,7 +460,7 @@ class ConfigureCentralizedLocationScenario(object):
         #: TODO: Move these to a separate function.
         session.event_hub.subscribe(
             unicode(
-                'topic=ftrack.location-scenario.discover '
+                'topic=ftrack.storage-scenario.discover '
                 'and source.user.username="{0}"'
             ).format(
                 session.api_user
@@ -469,7 +469,7 @@ class ConfigureCentralizedLocationScenario(object):
         )
         session.event_hub.subscribe(
             unicode(
-                'topic=ftrack.location-scenario.configure '
+                'topic=ftrack.storage-scenario.configure '
                 'and data.scenario_id="{0}" '
                 'and source.user.username="{1}"'
             ).format(
@@ -480,28 +480,28 @@ class ConfigureCentralizedLocationScenario(object):
         )
 
 
-class ActivateCentralizedLocationScenario(object):
-    '''Activate a centralized location.'''
+class ActivateCentralizedStorageScenario(object):
+    '''Activate a centralized storage scenario.'''
 
     def __init__(self):
-        '''Instansiate centralized location scenario.'''
+        '''Instansiate centralized storage scenario.'''
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
 
     def activate(self, event):
         '''Activate scenario in *event*.'''
-        location_scenario = event['data']['location_scenario']
+        storage_scenario = event['data']['storage_scenario']
 
         try:
-            location_data = location_scenario['data']
+            location_data = storage_scenario['data']
             location_name = location_data['location_name']
             location_id = location_data['location_id']
             mount_points = location_data['accessor']['mount_points']
 
         except KeyError:
             error_message = (
-                'Unable to read location scenario data.'
+                'Unable to read storage scenario data.'
             )
             self.logger.error(error_message)
             raise ftrack_api.exception.LocationError(
@@ -537,16 +537,16 @@ class ActivateCentralizedLocationScenario(object):
             location.structure = _standard.StandardStructure()
             location.priority = 1
             self.logger.info(
-                u'Location scenario activated. Configured {0!r} from '
+                u'Storage scenario activated. Configured {0!r} from '
                 u'{1!r}'.format(
-                    location, location_scenario
+                    location, storage_scenario
                 )
             )
 
     def _verify_startup(self, event):
-        '''Verify the scenario location configuration.'''
-        location_scenario = event['data']['location_scenario']
-        location_data = location_scenario['data']
+        '''Verify the storage scenario configuration.'''
+        storage_scenario = event['data']['storage_scenario']
+        location_data = storage_scenario['data']
         mount_points = location_data['accessor']['mount_points']
 
         prefix = None
@@ -559,7 +559,7 @@ class ActivateCentralizedLocationScenario(object):
 
         if not prefix:
             return (
-                u'The location scenario has not been configured for your '
+                u'The storage scenario has not been configured for your '
                 u'operating system. ftrack may not be able to '
                 u'store and track files correctly.'
             )
@@ -581,8 +581,8 @@ class ActivateCentralizedLocationScenario(object):
 
         session.event_hub.subscribe(
             (
-                'topic=ftrack.location-scenario.activate '
-                'and data.location_scenario.scenario="{0}"'.format(
+                'topic=ftrack.storage-scenario.activate '
+                'and data.storage_scenario.scenario="{0}"'.format(
                     scenario_name
                 )
             ),
@@ -595,7 +595,7 @@ class ActivateCentralizedLocationScenario(object):
         self.session.event_hub.subscribe(
             (
                 'topic=ftrack.connect.verify-startup '
-                'and data.location_scenario.scenario="{0}"'.format(
+                'and data.storage_scenario.scenario="{0}"'.format(
                     scenario_name
                 )
             ),
@@ -603,12 +603,12 @@ class ActivateCentralizedLocationScenario(object):
         )
 
 def register(session):
-    '''Register location scenario.'''
-    scenario = ActivateCentralizedLocationScenario()
+    '''Register storage scenario.'''
+    scenario = ActivateCentralizedStorageScenario()
     scenario.register(session)
 
 
 def register_configuration(session):
-    '''Register location scenario.'''
-    scenario = ConfigureCentralizedLocationScenario()
+    '''Register storage scenario.'''
+    scenario = ConfigureCentralizedStorageScenario()
     scenario.register(session)
