@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: documentation
+
+        Added more information to the :ref:`understanding_sessions/plugins`
+        article.
+
 .. release:: 0.13.0
     :date: 2016-02-10
 
