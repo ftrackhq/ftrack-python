@@ -22,7 +22,7 @@ Release Notes
     .. change:: new
         :tags: session, locations
 
-        `ftrack.centralized-storage` location scenario is automatically
+        `ftrack.centralized-storage` storage scenario is automatically
         configured based on information passed from the server with the
         `query_server_information` action.
 
