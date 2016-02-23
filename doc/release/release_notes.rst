@@ -11,6 +11,30 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: documentation
+
+        Added more information to the :ref:`understanding_sessions/plugins`
+        article.
+
+.. release:: 0.13.0
+    :date: 2016-02-10
+
+    .. change:: new
+        :tags: component, thumbnail
+
+        Added improved support for handling thumbnails.
+
+        .. seealso:: :ref:`example/thumbnail`.
+
+    .. change:: new
+        :tags: session, encode media
+
+        Added :meth:`Session.encode_media` that can be used to encode
+        media to make it playable in a browser.
+
+        .. seealso:: :ref:`example/encode_media`.
+
     .. change:: fixed
 
         :meth:`~ftrack_api.entity.user.User.start_timer` arguments *comment*
@@ -40,7 +64,7 @@ Release Notes
         :tags: documentation
 
         Updated :ref:`example/note` and :ref:`example/job` articles with
-        examples of how to use note and job attachments.
+        examples of how to use note and job components.
 
     .. change:: changed
         :tags: logging, performance

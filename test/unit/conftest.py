@@ -30,10 +30,9 @@ def pytest_generate_tests(metafunc):
         generator(metafunc)
 
 
-@pytest.fixture()
-def temporary_file(request):
+def _temporary_file(request, **kwargs):
     '''Return temporary file.'''
-    file_handle, path = tempfile.mkstemp()
+    file_handle, path = tempfile.mkstemp(**kwargs)
     os.close(file_handle)
 
     def cleanup():
@@ -44,8 +43,19 @@ def temporary_file(request):
             pass
 
     request.addfinalizer(cleanup)
-
     return path
+
+
+@pytest.fixture()
+def temporary_file(request):
+    '''Return temporary file.'''
+    return _temporary_file(request)
+
+
+@pytest.fixture()
+def temporary_image(request):
+    '''Return temporary file.'''
+    return _temporary_file(request, suffix='.jpg')
 
 
 @pytest.fixture()

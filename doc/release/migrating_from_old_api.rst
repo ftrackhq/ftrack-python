@@ -412,6 +412,11 @@ thumbnail using the old API::
     task_old_api = ftrack.Task(version['task_id'])
     task_old_api.setThumbnail(thumbnail)
 
+.. note::
+
+    It is now possible to set thumbnails using the new API as well, for more
+    info see :ref:`example/thumbnail`.
+
 Plugin registration
 -------------------
 
@@ -517,10 +522,14 @@ New API::
     # Persist the changes 
     session.commit()
 
-    # Currently, it is not possible to set thumbnails using new API
-    # See the example above for a workaround using the old API.
-    # thumbnail = version.createThumbnail('/path/to/forest_thumbnail.jpg')
-    # task.setThumbnail(thumbnail)
+    # Add thumbnail to version.
+    thumbnail = version.create_thumbnail(
+        '/path/to/forest_thumbnail.jpg'
+    )
+
+    # Set thumbnail on other objects without duplicating it.
+    task['thumbnail'] = thumbnail
+    session.commit()
 
 
 Workarounds for missing convenience methods
@@ -586,16 +595,6 @@ in the new API. Let us know if you depend on any of them.
     * Role
     * Task template
     * Temp data
-
-Attachments and Thumbnails
---------------------------
-Uploading attachments and thumbnails using the new API is not yet possible. The
-functionality is planned for the near future.
-
-Publish components for review
------------------------------
-It is currently not possible to create web reviewable versions using the new
-API. The functionality is planned for the near future.
 
 Action base class
 -----------------
