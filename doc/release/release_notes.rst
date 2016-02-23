@@ -17,6 +17,19 @@ Release Notes
         Added more information to the :ref:`understanding_sessions/plugins`
         article.
 
+    .. change:: fixed
+
+        :meth:`~ftrack_api.entity.user.User.start_timer` arguments *comment*
+        and *name* are ignored.
+
+    .. change:: fixed
+
+        :meth:`~ftrack_api.entity.user.User.stop_timer` calculates the wrong
+        duration when the server is not running in UTC.
+
+        For the duration to be calculated correctly ftrack server version
+        >= 3.3.15 is required.
+
 .. release:: 0.13.0
     :date: 2016-02-10
 
@@ -34,19 +47,6 @@ Release Notes
         media to make it playable in a browser.
 
         .. seealso:: :ref:`example/encode_media`.
-
-    .. change:: fixed
-
-        :meth:`~ftrack_api.entity.user.User.start_timer` arguments *comment*
-        and *name* are ignored.
-
-    .. change:: fixed
-
-        :meth:`~ftrack_api.entity.user.User.stop_timer` calculates the wrong
-        duration when the server is not running in UTC.
-
-        For the duration to be calculated correctly ftrack server version
-        >= 3.3.15 is required.
 
     .. change:: fixed
 
