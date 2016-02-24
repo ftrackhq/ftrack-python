@@ -18,9 +18,6 @@ and is typically used to assign users to tasks.
 The following example prints all groups and users assigned to a `Folder`
 object::
 
-    # Create a session
-    import ftrack_api; session = ftrack_api.Session()
-
     # Retrieve a `Folder` object
     folder = session.query('Folder').first()
 
