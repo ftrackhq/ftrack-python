@@ -8,6 +8,7 @@ import ftrack_api.exception
 import ftrack_api.event.base
 import ftrack_api.symbol
 import ftrack_api.inspection
+from ftrack_api.logging import LazyLogMessage as L
 
 
 class Location(ftrack_api.entity.base.Entity):
@@ -292,12 +293,12 @@ class Location(ftrack_api.entity.base.Entity):
         locations accessor.
 
         '''
-        self.logger.debug(
+        self.logger.debug(L(
             'Adding data for component {0!r} from source {1!r} to location '
-            '{2!r} using resource identifier {3!r}.'.format(
-                component, resource_identifier, source, self
-            )
-        )
+            '{2!r} using resource identifier {3!r}.',
+            component, resource_identifier, source, self
+        ))
+
         # Read data from source and write to this location.
         if not source.accessor:
             raise ftrack_api.exception.LocationError(
@@ -583,6 +584,18 @@ class Location(ftrack_api.entity.base.Entity):
             )
 
         return filesystem_paths
+
+    def get_url(self, component):
+        '''Return url for *component*.
+
+        Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if
+        URL could not be determined from *component* or
+        :exc:`~ftrack_api.exception.AccessorUnsupportedOperationError` if
+        retrieving URL is not supported by the location's accessor.
+        '''
+        resource_identifier = self.get_resource_identifier(component)
+
+        return self.accessor.get_url(resource_identifier)
 
 
 class MemoryLocationMixin(object):

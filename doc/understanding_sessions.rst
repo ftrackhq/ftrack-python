@@ -177,11 +177,22 @@ the attributes that are available.
 Configuring plugins
 ===================
 
-As each session is independent of others, you can configure plugins per session.
+Plugins are used by the API to extend it with new functionality, such as 
+:term:`locations <location>` or adding convenience methods to
+:ref:`understanding_sessions/entity_types`. In addition to new API
+functionality, event plugins may also be used for event processing by listening
+to :ref:`ftrack update events <handling_events>` or adding custom functionality to ftrack by registering
+:term:`actions <action>`.
+
 
 When starting a new :class:`Session` either pass the *plugins_paths* to search
-explicitly or rely on the environment variable
-:envvar:`FTRACK_EVENT_PLUGIN_PATH`.
+explicitly or rely on the environment variable 
+:envvar:`FTRACK_EVENT_PLUGIN_PATH`. As each session is independent of others,
+you can configure plugins per session.
+
+The paths will be searched for :term:`plugins <plugin>`, python files
+which expose a `register` function. These functions will be evaluated and can
+be used extend the API with new functionality, such as locations or actions.
 
 If you do not specify any override then the session will attempt to discover and
 use the default plugins.
@@ -202,3 +213,52 @@ of a mount function that then subscribes to specific :ref:`events
             'topic=ftrack.api.session.configure-location',
             configure_locations
         )
+
+.. seealso::
+
+    Lists of events which you can subscribe to in your plugins are available
+    both for :ref:`synchronous event published by the python API <event_list>`
+    and :ref:`asynchronous events published by the server <ftrack:developing/events/list>`
+
+
+Quick setup
+-----------
+
+1. Create a directory where plugins will be stored. Place any plugins you want
+loaded automatically in an API *session* here.
+
+.. image:: /image/configuring_plugins_directory.png
+
+2. Configure the :envvar:`FTRACK_EVENT_PLUGIN_PATH` to point to the directory.
+
+
+Detailed setup
+--------------
+
+Start out by creating a directory on your machine where you will store your
+plugins. Download :download:`example_plugin.py </resource/example_plugin.py>`
+and place it in the directory.
+
+Open up a terminal window, and ensure that plugin is picked up when
+instantiating the session and manually setting the *plugin_paths*::
+
+    >>>  # Set up basic logging
+    >>> import logging
+    >>> logging.basicConfig()
+    >>> plugin_logger = logging.getLogger('com.example.example-plugin')
+    >>> plugin_logger.setLevel(logging.DEBUG)
+    >>>
+    >>> # Configure the API, loading plugins in the specified paths.
+    >>> import ftrack_api
+    >>> plugin_paths = ['/path/to/plugins']
+    >>> session = ftrack_api.Session(plugin_paths=plugin_paths)
+
+If everything is working as expected, you should see the following in the
+output::
+
+    DEBUG:com.example.example-plugin:Plugin registered
+
+Instead of specifying the plugin paths when instantiating the session, you can
+also specify the :envvar:`FTRACK_EVENT_PLUGIN_PATH` to point to the directory.
+To specify multiple directories, use the path separator for your operating
+system.
