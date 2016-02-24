@@ -14,6 +14,12 @@ Release Notes
     .. change:: new
         :tags: documentation
 
+        Added an example on how to work with assignments and allocations 
+        :ref:`example/assignments_and_allocations`.
+
+    .. change:: new
+        :tags: documentation
+
         Added more information to the :ref:`understanding_sessions/plugins`
         article.
 
