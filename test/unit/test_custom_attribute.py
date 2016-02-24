@@ -253,3 +253,11 @@ def test_write_non_existing_custom_attributes_with_dictionary(session):
         entity['custom_attributes'] = {
             'BAZ': 'Foo'
         }
+
+
+def test_set_custom_attribute_on_new_but_persisted_version(
+    session, new_asset_version
+):
+    '''Set custom attribute on new persisted version.'''
+    new_asset_version['custom_attributes']['versiontest'] = 5
+    session.commit()

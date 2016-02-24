@@ -254,6 +254,8 @@ of :class:`ftrack_api.entity.factory.StandardFactory` to create the classes in
 response to the construct event. The simplest way to get started is to edit this
 default plugin as required.
 
+.. seealso:: :ref:`understanding_sessions/plugins`
+
 .. _working_with_entities/entity_types/default_projections:
 
 Default projections

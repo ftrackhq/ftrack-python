@@ -38,3 +38,5 @@ already constructed a :class:`Session`::
     note
     list
     timer
+    thumbnail
+    encode_media
