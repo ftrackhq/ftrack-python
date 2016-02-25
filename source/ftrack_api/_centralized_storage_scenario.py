@@ -181,12 +181,23 @@ class ConfigureCentralizedStorageScenario(object):
                         'value': location['id']
                     })
 
+            warning = ''
+            if location_id is not None:
+                warning = (
+                    '\n\n**Be careful if you switch to another location '
+                    'for an existing storage scenario. Components that have '
+                    'already been published to the previous location will be '
+                    'made unavailable for common use.**'
+                )
+
             items = [{
                 'type': 'label',
                 'value': (
                     '#Select location#\n'
                     'Choose an already existing location or create a new to '
-                    'represent your centralized storage.'
+                    'represent your centralized storage. {0}'.format(
+                        warning
+                    )
                 )
             }, {
                 'type': 'enumerator',
