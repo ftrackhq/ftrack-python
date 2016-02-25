@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2016 ftrack
 
+from __future__ import absolute_import
+
 import logging
 import json
 import sys
@@ -8,6 +10,7 @@ import os
 
 import ftrack_api
 import ftrack_api.structure.standard as _standard
+from ftrack_api.logging import LazyLogMessage as L
 
 
 scenario_name = 'ftrack.centralized-storage'
@@ -71,10 +74,6 @@ class ConfigureCentralizedStorageScenario(object):
                 )
             )
 
-        structure_text = (
-            'The *Standard* structure will be used.'
-        )
-
         mount_points_text = unicode(
             '* Linux: {linux}\n'
             '* OS X: {osx}\n'
@@ -111,13 +110,10 @@ class ConfigureCentralizedStorageScenario(object):
             'configuration.\n'
             '##Location##\n\n'
             '{location}\n'
-            '##Structure##\n\n'
-            '{structure}\n'
             '##Mount points##\n\n'
             '{mount_points}'
         ).format(
             location=location_text,
-            structure=structure_text,
             mount_points=mount_points_text
         )
 
@@ -143,12 +139,11 @@ class ConfigureCentralizedStorageScenario(object):
         next_step = steps[steps.index(previous_step) + 1]
         state = 'configuring'
 
-        self.logger.info(
+        self.logger.info(L(
             u'Configuring scenario, previous step: {0}, next step: {1}. '
-            u'Values {2!r}.'.format(
-                previous_step, next_step, values
-            )
-        )
+            u'Values {2!r}.',
+            previous_step, next_step, values
+        ))
 
         if 'configuration' in values:
             configuration = values.pop('configuration')
@@ -503,7 +498,7 @@ class ActivateCentralizedStorageScenario(object):
             error_message = (
                 'Unable to read storage scenario data.'
             )
-            self.logger.error(error_message)
+            self.logger.error(L(error_message))
             raise ftrack_api.exception.LocationError(
                 'Unable to configure location based on scenario.'
             )
@@ -536,12 +531,11 @@ class ActivateCentralizedStorageScenario(object):
             )
             location.structure = _standard.StandardStructure()
             location.priority = 1
-            self.logger.info(
+            self.logger.info(L(
                 u'Storage scenario activated. Configured {0!r} from '
-                u'{1!r}'.format(
-                    location, storage_scenario
-                )
-            )
+                u'{1!r}',
+                location, storage_scenario
+            ))
 
     def _verify_startup(self, event):
         '''Verify the storage scenario configuration.'''
