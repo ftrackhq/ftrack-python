@@ -597,7 +597,7 @@ def test_server_heartbeat_response():
     subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe'])
 
     # Give subscriber time to connect to server.
-    time.sleep(10)
+    time.sleep(2)
 
     # Start publisher to publish three messages.
     publisher = subprocess.Popen([sys.executable, test_script, 'publish'])
