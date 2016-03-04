@@ -2119,10 +2119,22 @@ class Session(object):
 
         return self.get('Job', result[0]['job_id'])
 
-    def send_review_session_invite(self, invitees):
-        '''Send an invite to a review session to list of *invitees*.
+    def send_review_session_invite(self, invitee):
+        '''Send an invite to a review session to *invitee*.
 
-        *invitees* is a list of ReviewSessionInvitee objects.
+        *invitee* is a instance of ReviewSessionInvitee.
+
+        .. note::
+
+            The *invitee* must be committed.
+
+        '''
+        self.send_review_session_invites([invitee])
+
+    def send_review_session_invites(self, invitees):
+        '''Send an invite to a review session to a list of *invitees*.
+
+        *invitee* is a list of ReviewSessionInvitee objects.
 
         .. note::
 
