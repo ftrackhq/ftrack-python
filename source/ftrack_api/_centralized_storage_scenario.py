@@ -244,6 +244,18 @@ class ConfigureCentralizedStorageScenario(object):
                         )
                         values = configuration['select_location']
 
+                if (
+                    not configure_location.get('location_name') or
+                    not configure_location.get('location_label') or
+                    not configure_location.get('location_description')
+                ):
+                    next_step = 'configure_location'
+                    warning_message += (
+                        '**Location name, label and description cannot '
+                        'be empty.**'
+                    )
+                    values = configuration['select_location']
+
             if next_step == 'configure_location':
                 # Populate form with previous configuration.
                 default_location_label = configure_location['location_label']
