@@ -194,8 +194,8 @@ class ConfigureCentralizedStorageScenario(object):
                 'type': 'label',
                 'value': (
                     '#Select location#\n'
-                    'Choose an already existing location or create a new to '
-                    'represent your centralized storage. {0}'.format(
+                    'Choose an already existing location or create a new one '
+                    'to represent your centralized storage. {0}'.format(
                         warning
                     )
                 )
@@ -262,9 +262,9 @@ class ConfigureCentralizedStorageScenario(object):
                         '#Create location#\n'
                         'Here you will create a new location to be used '
                         'with your new Storage scenario. For your '
-                        'convencience we have already filled in some default '
-                        'values. If this is the first time you configure a '
-                        'storage scenario in ftrack we recommend that you '
+                        'convenience we have already filled in some default '
+                        'values. If this is the first time you are configuring
+                        'a storage scenario in ftrack we recommend that you '
                         'stick with these settings.'
                     )
                 }, {
