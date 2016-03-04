@@ -263,7 +263,7 @@ class ConfigureCentralizedStorageScenario(object):
                         'Here you will create a new location to be used '
                         'with your new Storage scenario. For your '
                         'convenience we have already filled in some default '
-                        'values. If this is the first time you are configuring
+                        'values. If this is the first time you are configuring '
                         'a storage scenario in ftrack we recommend that you '
                         'stick with these settings.'
                     )
