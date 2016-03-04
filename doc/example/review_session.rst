@@ -72,14 +72,14 @@ To remove a collaborator simply delete the object using
 
     session.delete(invitee)
 
-To send out an invite email to a collaborator use the
+To send out an invite email to a signle collaborator use
 :meth:`Session.send_review_session_invite`.
 
 .. code-block:: python
 
     session.send_review_session_invite(invitee)
 
-If you have multiple invitees you want to invite you can use
+Multiple invitees can have emails sent to them in one batch using
 :meth:`Session.send_review_session_invites`.
 
 .. code-block:: python
