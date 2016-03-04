@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: session, locations
+
+        The `ftrack.centralized-storage` configurator now validates that name,
+        label and description for new locations are filled in.
+
     .. change:: new
         :tags: session, locations
 
