@@ -14,7 +14,7 @@ Release Notes
     .. change:: new
         :tags: session, client review
 
-        Added :meth:`Session.send_review_session_invites` and
+        Added :meth:`Session.send_review_session_invite` and
         :meth:`Session.send_review_session_invites` that can be used to inform
         review session invitees about a review session.
 
