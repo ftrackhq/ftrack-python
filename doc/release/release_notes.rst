@@ -12,6 +12,15 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: session, client review
+
+        Added :meth:`Session.send_review_session_invite` and
+        :meth:`Session.send_review_session_invites` that can be used to inform
+        review session invitees about a review session.
+
+        .. seealso:: :ref:`Usage guide <example/review_session>`.
+
+    .. change:: new
         :tags: session, locations
 
         Added `ftrack.centralized-storage` configurator as a private module. It

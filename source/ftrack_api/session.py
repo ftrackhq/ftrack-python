@@ -2119,6 +2119,53 @@ class Session(object):
 
         return self.get('Job', result[0]['job_id'])
 
+    def send_review_session_invite(self, invitee):
+        '''Send an invite to a review session to *invitee*.
+
+        *invitee* is a instance of ReviewSessionInvitee.
+
+        .. note::
+
+            The *invitee* must be committed.
+
+        '''
+        self.send_review_session_invites([invitee])
+
+    def send_review_session_invites(self, invitees):
+        '''Send an invite to a review session to a list of *invitees*.
+
+        *invitee* is a list of ReviewSessionInvitee objects.
+
+        .. note::
+
+            All *invitees* must be committed.
+
+        '''
+        operations = []
+
+        for invitee in invitees:
+            operations.append(
+                {
+                    'action': 'send_review_session_invite',
+                    'review_session_invitee_id': invitee['id']
+                }
+            )
+
+        try:
+            self._call(operations)
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'send_review_session_invite\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    '"send_review_session_invite", please update server and '
+                    'try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
 
 class AutoPopulatingContext(object):
     '''Context manager for temporary change of session auto_populate value.'''
