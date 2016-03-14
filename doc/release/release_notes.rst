@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.14.0
+    :date: 2016-03-14
 
     .. change:: changed
         :tags: session, locations
