@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: collection, attribute, performance
+
+        Custom attribute configurations does not cache necessary keys, leading
+        to performance issues.
+
 .. release:: 0.14.0
     :date: 2016-03-14
 
