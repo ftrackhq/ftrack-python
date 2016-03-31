@@ -311,7 +311,7 @@ def _get_custom_attribute_configurations(session):
 
     '''
     return session.query(
-        'select key, project_id, id, object_type_id from '
+        'select key, project_id, id, object_type_id, entity_type from '
         'CustomAttributeConfiguration'
     ).all()
 
