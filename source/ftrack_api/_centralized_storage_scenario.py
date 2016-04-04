@@ -540,7 +540,7 @@ class ActivateCentralizedStorageScenario(object):
                 prefix = mount_points['osx']
             elif sys.platform == 'linux2':
                 prefix = mount_points['linux']
-            elif sys.platform == 'windows':
+            elif sys.platform == 'win32':
                 prefix = mount_points['windows']
             else:
                 raise ftrack_api.exception.LocationError(
@@ -571,7 +571,7 @@ class ActivateCentralizedStorageScenario(object):
             prefix = mount_points['osx']
         elif sys.platform == 'linux2':
             prefix = mount_points['linux']
-        elif sys.platform == 'windows':
+        elif sys.platform == 'win32':
             prefix = mount_points['windows']
 
         if not prefix:
