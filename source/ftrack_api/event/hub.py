@@ -15,6 +15,7 @@ import operator
 import functools
 import json
 import socket
+import os
 
 import requests
 import requests.exceptions
@@ -157,13 +158,45 @@ class EventHub(object):
                 scheme, self.get_network_location(), session.id
             )
 
+            # Configure proxy.
+            http_proxy_host = None
+            http_proxy_port = None
+            http_proxy_auth = None
+
+            proxy_url = None
+            if os.environ.get('HTTP_PROXY') and not self.secure:
+                proxy_url = os.environ.get('HTTP_PROXY')
+            elif os.environ.get('HTTPS_PROXY') and self.secure:
+                proxy_url = os.environ.get('HTTPS_PROXY')
+
+            if proxy_url:
+                url_parse_result = urlparse.urlparse(proxy_url)
+                http_proxy_host = url_parse_result.hostname
+                http_proxy_port = url_parse_result.port
+                if url_parse_result.username and url_parse_result.password:
+                    http_proxy_auth = u'{0}:{1}'.format(
+                        url_parse_result.username,
+                        url_parse_result.password
+                    )
+
             # timeout is set to 60 seconds to avoid the issue where the socket
             # ends up in a bad state where it is reported as connected but the
             # connection has been closed. The issue happens often when connected
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
-            self._connection = websocket.create_connection(url, timeout=60)
+            self._connection = websocket.create_connection(
+                url,
+                timeout=60,
+                http_proxy_host=http_proxy_host,
+                http_proxy_port=http_proxy_port,
+                http_proxy_auth=http_proxy_auth,
+                # TODO: Update this to verify cert once we have made sure it
+                # does not break anything. The security implication of this
+                # should be limited as the previous connection has verification
+                # enabled.
+                sslopt={'cert_reqs': ssl.CERT_NONE}
+            )
 
         except Exception:
             self.logger.debug(
