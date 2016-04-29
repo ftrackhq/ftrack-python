@@ -9,6 +9,20 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: events
+
+        `websocket-client` library was updated from 0.12.0 to 0.35.0 to add
+        proxy support.
+
+    .. change:: fixed
+        :tags: events
+
+        Event hub does honor the proxy environment variables `HTTP_PROXY` and
+        `HTTPS_PROXY`.
+
 .. release:: 0.15.0
     :date: 2016-04-04
 
