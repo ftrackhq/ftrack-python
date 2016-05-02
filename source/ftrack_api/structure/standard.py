@@ -72,6 +72,9 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         version = entity['version']
 
+        if version is ftrack_api.symbol.NOT_SET and entity['version_id']:
+            version = session.get('AssetVersion', entity['version_id'])
+
         error_message = (
             'Component {0!r} must be attached to a committed '
             'version and a committed asset with a parent context.'.format(

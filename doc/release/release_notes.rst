@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: locations, structure
+
+        Standard structure does not work if version relation is not set on
+        the `Component`.
+
 .. release:: 0.15.0
     :date: 2016-04-04
 
