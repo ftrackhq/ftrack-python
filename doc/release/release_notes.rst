@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: collection, attribute, performance
+
+        Custom attribute configurations does not cache necessary keys, leading
+        to performance issues.
+
+    .. change:: fixed
         :tags: locations, structure
 
         Standard structure does not work if version relation is not set on
