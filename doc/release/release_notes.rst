@@ -17,6 +17,20 @@ Release Notes
         Custom attribute configurations does not cache necessary keys, leading
         to performance issues.
 
+    .. change:: fixed
+        :tags: locations, structure
+
+        Standard structure does not work if version relation is not set on
+        the `Component`.
+
+.. release:: 0.15.0
+    :date: 2016-04-04
+
+    .. change:: new
+        :tags: session, locations
+
+        `ftrack.centralized-storage` not working properly on Windows.
+
 .. release:: 0.14.0
     :date: 2016-03-14
 
