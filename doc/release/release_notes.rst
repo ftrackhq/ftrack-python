@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.15.1
+    :date: 2016-05-02
 
     .. change:: fixed
         :tags: collection, attribute, performance
