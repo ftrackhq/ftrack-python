@@ -30,7 +30,7 @@ The following example retrieves all users part of the project team::
         # Resource may be either a group or a user
         resource = allocation['resource']
 
-        # If the resource is a group, append it's members
+        # If the resource is a group, append its members
         if resource.entity_type == 'Group':
             for membership in resource['memberships']:
                 user = membership['user']
