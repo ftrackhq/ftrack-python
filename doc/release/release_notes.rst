@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: performance
+        
+        Improve performance of large collection management.
+
 .. release:: 0.15.0
     :date: 2016-04-04
 
