@@ -11,36 +11,42 @@ Working with assignments and allocations
 
 The API exposes `assignments` and `allocations` relationships on objects in
 the project hierarchy. You can use these to retrieve the allocated or assigned
-resources, which can be either groups or users. Allocations can be used to
-allocate users or groups to a project team, while assignments are more explicit
-and is typically used to assign users to tasks.
+resources, which can be either groups or users. 
 
-The following example prints all groups and users assigned to a `Folder`
-object::
+Allocations can be used to allocate users or groups to a project team, while
+assignments are more explicit and is used to assign users to tasks.
 
-    # Retrieve a `Folder` object
-    folder = session.query('Folder').first()
+The following example retrieves all users part of the project team::
 
-    # Print a header
-    print folder['name']
-    print 80*'='
+    # Retrieve a project
+    project = session.query('Project').first()
 
-    # List all assigned groups and users
-    for assignment in folder['assignments']:
+    # List to hold all users part of the project team
+    project_team = []
+
+    # List all allocated groups and users
+    for allocation in project['allocations']:
 
         # Resource may be either a group or a user
-        resource = assignment['resource']
+        resource = allocation['resource']
 
+        # If the resource is a group, append it's members
         if resource.entity_type == 'Group':
-            print resource['name']
-
-            # Print group members
             for membership in resource['memberships']:
                 user = membership['user']
-                print u'   |- {0} {1}'.format(
-                    user['first_name'], user['last_name']
-                )
+                project_team.append(user)
+
+        # The resource is a user, append it.
         else:
-            print u'{0} {1}'.format(
-                resource['first_name'], resource['last_name']
-            )
+            user = resource
+            project_team.append(user)
+
+The next example shows how to assign the current user to a task::
+
+    # Retrieve a project
+    task = session.query('Task').first()
+    current_user = session.query(
+        u'User where username is {0}'.format(session.api_user)
+    ).one()
+    task['assignments'].append(current_user)
+
