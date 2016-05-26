@@ -21,25 +21,25 @@ The following example retrieves all users part of the project team::
     # Retrieve a project
     project = session.query('Project').first()
 
-    # List to hold all users part of the project team
-    project_team = []
+    # Set to hold all users part of the project team
+    project_team = set()
 
-    # List all allocated groups and users
+    # Add all allocated groups and users
     for allocation in project['allocations']:
 
         # Resource may be either a group or a user
         resource = allocation['resource']
 
-        # If the resource is a group, append its members
-        if resource.entity_type == 'Group':
+        # If the resource is a group, add its members
+        if isinstance(resource, session.types['Group']):
             for membership in resource['memberships']:
                 user = membership['user']
-                project_team.append(user)
+                project_team.add(user)
 
-        # The resource is a user, append it.
+        # The resource is a user, add it.
         else:
             user = resource
-            project_team.append(user)
+            project_team.add(user)
 
 The next example shows how to assign the current user to a task::
 
