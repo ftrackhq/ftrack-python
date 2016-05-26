@@ -378,3 +378,9 @@ class AccessorContainerNotEmptyError(AccessorResourceError):
     '''Raise when container is not empty.'''
 
     default_message = 'Container is not empty: {resource_identifier}'
+
+
+class StructureError(Error):
+    '''Base for errors associated with structures.'''
+
+    default_message = 'Unspecified structure error'

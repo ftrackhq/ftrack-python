@@ -40,6 +40,7 @@ import ftrack_api.accessor.disk
 import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
+import ftrack_api._centralized_storage_scenario
 from ftrack_api.logging import LazyLogMessage as L
 
 
@@ -249,6 +250,8 @@ class Session(object):
 
         self.schemas = self._load_schemas(schema_cache_path)
         self.types = self._build_entity_type_classes(self.schemas)
+
+        ftrack_api._centralized_storage_scenario.register(self)
 
         self._configure_locations()
 
@@ -1472,6 +1475,23 @@ class Session(object):
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
+        # Master location based on server scenario.
+        storage_scenario = self.server_information.get('storage_scenario')
+
+        if (
+            storage_scenario and
+            storage_scenario.get('scenario')
+        ):
+            self.event_hub.publish(
+                ftrack_api.event.base.Event(
+                    topic='ftrack.storage-scenario.activate',
+                    data=dict(
+                        storage_scenario=storage_scenario
+                    )
+                ),
+                synchronous=True
+            )
+
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
@@ -2098,6 +2118,53 @@ class Session(object):
                 raise
 
         return self.get('Job', result[0]['job_id'])
+
+    def send_review_session_invite(self, invitee):
+        '''Send an invite to a review session to *invitee*.
+
+        *invitee* is a instance of ReviewSessionInvitee.
+
+        .. note::
+
+            The *invitee* must be committed.
+
+        '''
+        self.send_review_session_invites([invitee])
+
+    def send_review_session_invites(self, invitees):
+        '''Send an invite to a review session to a list of *invitees*.
+
+        *invitee* is a list of ReviewSessionInvitee objects.
+
+        .. note::
+
+            All *invitees* must be committed.
+
+        '''
+        operations = []
+
+        for invitee in invitees:
+            operations.append(
+                {
+                    'action': 'send_review_session_invite',
+                    'review_session_invitee_id': invitee['id']
+                }
+            )
+
+        try:
+            self._call(operations)
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'send_review_session_invite\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    '"send_review_session_invite", please update server and '
+                    'try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
 
 
 class AutoPopulatingContext(object):

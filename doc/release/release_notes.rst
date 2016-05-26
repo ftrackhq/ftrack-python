@@ -9,7 +9,66 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.15.1
+    :date: 2016-05-02
+
+    .. change:: fixed
+        :tags: collection, attribute, performance
+
+        Custom attribute configurations does not cache necessary keys, leading
+        to performance issues.
+
+    .. change:: fixed
+        :tags: locations, structure
+
+        Standard structure does not work if version relation is not set on
+        the `Component`.
+
+.. release:: 0.15.0
+    :date: 2016-04-04
+
+    .. change:: new
+        :tags: session, locations
+
+        `ftrack.centralized-storage` not working properly on Windows.
+
+.. release:: 0.14.0
+    :date: 2016-03-14
+
+    .. change:: changed
+        :tags: session, locations
+
+        The `ftrack.centralized-storage` configurator now validates that name,
+        label and description for new locations are filled in.
+
+    .. change:: new
+        :tags: session, client review
+
+        Added :meth:`Session.send_review_session_invite` and
+        :meth:`Session.send_review_session_invites` that can be used to inform
+        review session invitees about a review session.
+
+        .. seealso:: :ref:`Usage guide <example/review_session>`.
+
+    .. change:: new
+        :tags: session, locations
+
+        Added `ftrack.centralized-storage` configurator as a private module. It
+        implements a wizard like interface used to configure a centralised
+        storage scenario.
+
+    .. change:: new
+        :tags: session, locations
+
+        `ftrack.centralized-storage` storage scenario is automatically
+        configured based on information passed from the server with the
+        `query_server_information` action.
+
+    .. change:: new
+        :tags: structure
+
+        Added :class:`ftrack_api.structure.standard.StandardStructure` with
+        hierarchy based resource identifier generation.
 
     .. change:: new
         :tags: documentation
