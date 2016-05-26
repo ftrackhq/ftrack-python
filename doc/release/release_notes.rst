@@ -16,6 +16,21 @@ Release Notes
         
         Improve performance of large collection management.
 
+.. release:: 0.15.1
+    :date: 2016-05-02
+
+    .. change:: fixed
+        :tags: collection, attribute, performance
+
+        Custom attribute configurations does not cache necessary keys, leading
+        to performance issues.
+
+    .. change:: fixed
+        :tags: locations, structure
+
+        Standard structure does not work if version relation is not set on
+        the `Component`.
+
 .. release:: 0.15.0
     :date: 2016-04-04
 
