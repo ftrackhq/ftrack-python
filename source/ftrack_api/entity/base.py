@@ -141,7 +141,8 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(ftrack_api.inspection.identity(self))
+        entity_type, entity_keys = ftrack_api.inspection.identity(self)
+        return hash(entity_type + ':' + ','.join(entity_keys))
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.

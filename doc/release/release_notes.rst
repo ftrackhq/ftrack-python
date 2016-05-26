@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+
+        Entities are not hashable because 
+        :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
+
 .. release:: 0.15.1
     :date: 2016-05-02
 
