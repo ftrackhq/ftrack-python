@@ -801,8 +801,8 @@ class Session(object):
                 return attached_entity
             else:
                 log_debug and self.logger.debug(
-                    'Entity not already processed for key {0}. Keys: {1}'
-                    .format(entity_key, merged.keys())
+                    'Entity not already processed for key {0}.'
+                    .format(entity_key)
                 )
 
             # Check for existing instance of entity in cache.
