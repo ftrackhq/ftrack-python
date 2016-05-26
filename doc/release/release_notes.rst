@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: documentation
+
+        Added an example on how to work with assignments and allocations 
+        :ref:`example/assignments_and_allocations`.
+
 .. release:: 0.15.1
     :date: 2016-05-02
 
@@ -69,12 +77,6 @@ Release Notes
 
         Added :class:`ftrack_api.structure.standard.StandardStructure` with
         hierarchy based resource identifier generation.
-
-    .. change:: new
-        :tags: documentation
-
-        Added an example on how to work with assignments and allocations 
-        :ref:`example/assignments_and_allocations`.
 
     .. change:: new
         :tags: documentation
