@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: documentation
+
+        Added :ref:`example/asset_version_dependency` article with
+        examples of how to asset version dependencies.
+
 .. release:: 0.15.1
     :date: 2016-05-02
 
