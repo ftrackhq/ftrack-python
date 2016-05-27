@@ -40,3 +40,4 @@ already constructed a :class:`Session`::
     timer
     thumbnail
     encode_media
+    asset_version_dependency
