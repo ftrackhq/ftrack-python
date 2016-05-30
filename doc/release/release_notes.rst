@@ -15,7 +15,7 @@ Release Notes
         :tags: documentation
 
         Added :ref:`example/asset_version_dependency` article with
-        examples of how to asset version dependencies.
+        examples of how to manage asset version dependencies.
 
 .. release:: 0.15.1
     :date: 2016-05-02
