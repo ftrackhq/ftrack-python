@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: performance
+        
+        Improve performance of large collection management.
+
     .. change:: new
         :tags: documentation
 
