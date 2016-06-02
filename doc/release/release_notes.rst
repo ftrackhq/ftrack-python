@@ -12,6 +12,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+
+        Entities are not hashable because 
+        :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
+
+    .. change:: fixed
         :tags: performance
         
         Improve performance of large collection management.
