@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: documentation
+
+        Added an example on how to work with assignments and allocations 
+        :ref:`example/assignments_and_allocations`.
+
     .. change:: fixed
 
         Entities are not hashable because 
