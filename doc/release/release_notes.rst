@@ -17,6 +17,22 @@ Release Notes
         Added an example on how to work with assignments and allocations 
         :ref:`example/assignments_and_allocations`.
 
+    .. change:: fixed
+
+        Entities are not hashable because 
+        :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
+
+    .. change:: fixed
+        :tags: performance
+        
+        Improve performance of large collection management.
+
+    .. change:: new
+        :tags: documentation
+
+        Added :ref:`example/asset_version_dependency` article with
+        examples of how to manage asset version dependencies.
+
 .. release:: 0.15.1
     :date: 2016-05-02
 

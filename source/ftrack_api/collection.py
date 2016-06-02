@@ -24,6 +24,7 @@ class Collection(collections.MutableSequence):
         self.entity = entity
         self.attribute = attribute
         self._data = []
+        self._identities = set()
 
         # Set initial dataset.
         # Note: For initialisation, immutability is deferred till after initial
@@ -40,6 +41,10 @@ class Collection(collections.MutableSequence):
         finally:
             self.mutable = mutable
 
+    def _identity_key(self, entity):
+        '''Return identity key for *entity*.'''
+        return str(ftrack_api.inspection.identity(entity))
+
     def __copy__(self):
         '''Return shallow copy.
 
@@ -53,6 +58,7 @@ class Collection(collections.MutableSequence):
         copied_instance = cls.__new__(cls)
         copied_instance.__dict__.update(self.__dict__)
         copied_instance._data = copy.copy(self._data)
+        copied_instance._identities = copy.copy(self._identities)
 
         return copied_instance
 
@@ -82,7 +88,12 @@ class Collection(collections.MutableSequence):
 
         old_value = self._data[:]
         self._data.insert(index, item)
+        self._identities.add(self._identity_key(item))
         self._notify(old_value)
+
+    def __contains__(self, value):
+        '''Return whether *value* present in collection.'''
+        return self._identity_key(value) in self._identities
 
     def __getitem__(self, index):
         '''Return item at *index*.'''
@@ -104,7 +115,15 @@ class Collection(collections.MutableSequence):
                 )
 
         old_value = self._data[:]
+        try:
+            existing_item = self._data[index]
+        except IndexError:
+            pass
+        else:
+            self._identities.remove(self._identity_key(existing_item))
+
         self._data[index] = item
+        self._identities.add(self._identity_key(item))
         self._notify(old_value)
 
     def __delitem__(self, index):
@@ -113,7 +132,9 @@ class Collection(collections.MutableSequence):
             raise ftrack_api.exception.ImmutableCollectionError(self)
 
         old_value = self._data[:]
+        item = self._data[index]
         del self._data[index]
+        self._identities.remove(self._identity_key(item))
         self._notify(old_value)
 
     def __len__(self):
@@ -125,16 +146,7 @@ class Collection(collections.MutableSequence):
         if not isinstance(other, Collection):
             return False
 
-        identities = [
-            ftrack_api.inspection.identity(entity)
-            for entity in self
-        ]
-        other_identities = [
-            ftrack_api.inspection.identity(entity)
-            for entity in other
-        ]
-
-        return sorted(identities) == sorted(other_identities)
+        return sorted(self._identities) == sorted(other._identities)
 
     def __ne__(self, other):
         '''Return whether this collection is not equal to *other*.'''

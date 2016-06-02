@@ -141,7 +141,7 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(ftrack_api.inspection.identity(self))
+        return hash(str(ftrack_api.inspection.identity(self)))
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.
@@ -238,6 +238,8 @@ class Entity(collections.MutableMapping):
             * new_value - The new merged value.
 
         '''
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
+
         if merged is None:
             merged = {}
 
@@ -276,7 +278,9 @@ class Entity(collections.MutableMapping):
                         'old_value': local_value,
                         'new_value': merged_local_value
                     })
-                    self.logger.debug(L(log_message, **changes[-1]))
+                    log_debug and self.logger.debug(
+                        log_message.format(**changes[-1])
+                    )
 
             # Remote attributes.
             other_remote_value = other_attribute.get_remote_value(entity)
@@ -294,7 +298,9 @@ class Entity(collections.MutableMapping):
                         'old_value': remote_value,
                         'new_value': merged_remote_value
                     })
-                    self.logger.debug(L(log_message, **changes[-1]))
+                    log_debug and self.logger.debug(
+                        log_message.format(**changes[-1])
+                    )
 
         return changes
 
