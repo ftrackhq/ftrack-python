@@ -5,5 +5,6 @@ pipelines:
   default:
     - step:
         script:
+          - pip install -e .
           - pip install pytest pytest-mock pytest-catchlog
           - py.test test/unit -vv -k-slow
