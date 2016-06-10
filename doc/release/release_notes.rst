@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session, caching
+
+        A callable cache maker can now return ``None`` to indicate that it could
+        not create a suitable cache, but :class:`Session` instantiation can
+        continue safely.
+
 .. release:: 0.15.2
     :date: 2016-06-02
 
