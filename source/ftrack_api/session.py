@@ -93,7 +93,9 @@ class Session(object):
         *cache* should be an instance of a cache that fulfils the
         :class:`ftrack_api.cache.Cache` interface and will be used as the cache
         for the session. It can also be a callable that will be called with the
-        session instance as sole argument.
+        session instance as sole argument. The callable should return ``None``
+        if a suitable cache could not be configured, but session instantiation
+        can continue safely.
 
         .. note::
 
@@ -197,7 +199,8 @@ class Session(object):
             if callable(cache):
                 cache = cache(self)
 
-            self.cache.caches.append(cache)
+            if cache is not None:
+                self.cache.caches.append(cache)
 
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
