@@ -11,6 +11,16 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: session, caching
+
+        A newly created entity now has the correct
+        :attr:`ftrack_api.symbol.CREATED` state when checked in caching layer.
+        Previously the state was :attr:`ftrack_api.symbol.NOT_SET`. Note that
+        this fix causes a change in logic and the stored
+        :class:`ftrack_api.operation.CreateEntityOperation` might hold data that
+        has not been fully :meth:`merged <Session.merge>`.
+
     .. change:: changed
         :tags: session, caching
 
