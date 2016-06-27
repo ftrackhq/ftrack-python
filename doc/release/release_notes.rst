@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: documentation
+
+        The second example in the assignments article is not working. 
+
     .. change:: changed
         :tags: session, caching
 
