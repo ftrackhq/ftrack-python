@@ -11,27 +11,37 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: session, caching
+
+        A callable cache maker can now return ``None`` to indicate that it could
+        not create a suitable cache, but :class:`Session` instantiation can
+        continue safely.
+
+.. release:: 0.15.2
+    :date: 2016-06-02
+
     .. change:: new
         :tags: documentation
 
         Added an example on how to work with assignments and allocations 
         :ref:`example/assignments_and_allocations`.
 
-    .. change:: fixed
+    .. change:: new
+        :tags: documentation
 
-        Entities are not hashable because 
-        :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
+        Added :ref:`example/asset_version_dependency` article with
+        examples of how to manage asset version dependencies.
 
     .. change:: fixed
         :tags: performance
         
         Improve performance of large collection management.
 
-    .. change:: new
-        :tags: documentation
+    .. change:: fixed
 
-        Added :ref:`example/asset_version_dependency` article with
-        examples of how to manage asset version dependencies.
+        Entities are not hashable because 
+        :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
 
 .. release:: 0.15.1
     :date: 2016-05-02
