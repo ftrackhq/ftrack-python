@@ -21,6 +21,11 @@ Release Notes
         :class:`ftrack_api.operation.CreateEntityOperation` might hold data that
         has not been fully :meth:`merged <Session.merge>`.
 
+    .. change:: fixed
+        :tags: documentation
+
+        The second example in the assignments article is not working.
+
     .. change:: changed
         :tags: session, caching
 
