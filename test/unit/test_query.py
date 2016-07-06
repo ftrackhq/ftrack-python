@@ -65,6 +65,12 @@ def test_one_with_existing_limit(session):
         session.query('User where username is jenkins limit 0').one()
 
 
+def test_one_with_existing_offset(session):
+    '''Fail to return single result when existing offset in expression.'''
+    with pytest.raises(ValueError):
+        session.query('User where username is jenkins offset 2').one()
+
+
 def test_one_with_prefetched_data(session):
     '''Return single result ignoring prefetched data.'''
     query = session.query('User where username is jenkins')
@@ -92,6 +98,14 @@ def test_first_with_existing_limit(session):
     '''Fail to return first result when existing limit in expression.'''
     with pytest.raises(ValueError):
         session.query('User where username is jenkins limit 0').first()
+
+
+def test_first_with_existing_offset(session):
+    '''Return first result whilst respecting custom offset.'''
+    users = session.query('User offset 2').all()
+
+    user = session.query('User').first()
+    assert user == users[2]
 
 
 def test_first_with_prefetched_data(session):
