@@ -9,6 +9,22 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: querying
+
+        Custom offset not respected by
+        :meth:`QueryResult.first <ftrack_api.query.QueryResult.first>`.
+
+    .. change:: changed
+        :tags: querying
+
+        Using a custom offset with :meth:`QueryResult.one
+        <ftrack_api.query.QueryResult.one>` helper method now raises an
+        exception as an offset is inappropriate when expecting to select a
+        single item.
+
 .. release:: 0.15.3
     :date: 2016-06-30
 
