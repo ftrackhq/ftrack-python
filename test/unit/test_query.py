@@ -102,9 +102,9 @@ def test_first_with_existing_limit(session):
 
 def test_first_with_existing_offset(session):
     '''Return first result whilst respecting custom offset.'''
-    users = session.query('User offset 2').all()
+    users = session.query('User').all()
 
-    user = session.query('User').first()
+    user = session.query('User offset 2').first()
     assert user == users[2]
 
 
