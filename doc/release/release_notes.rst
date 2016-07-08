@@ -25,6 +25,13 @@ Release Notes
         exception as an offset is inappropriate when expecting to select a
         single item.
 
+    .. change:: fixed
+        :tags: caching
+
+        :meth:`LayeredCache.remove <ftrack_api.cache.LayeredCache.remove>`
+        incorrectly raises :exc:`~exceptions.KeyError` if key only exists in
+        sub-layer cache.
+
 .. release:: 0.15.3
     :date: 2016-06-30
 
