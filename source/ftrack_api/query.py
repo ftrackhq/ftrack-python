@@ -61,7 +61,7 @@ class QueryResult(collections.Sequence):
         Return (expression, offset, limit).
 
         '''
-        offset = 0
+        offset = None
         match = self.OFFSET_EXPRESSION.search(expression)
         if match:
             offset = int(match.group('value'))
