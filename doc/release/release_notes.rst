@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 0.15.4
+    :date: 2016-07-12
 
     .. change:: fixed
         :tags: querying
