@@ -38,5 +38,7 @@ already constructed a :class:`Session`::
     note
     list
     timer
+    assignments_and_allocations
     thumbnail
     encode_media
+    asset_version_dependency

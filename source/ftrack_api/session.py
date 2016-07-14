@@ -93,7 +93,9 @@ class Session(object):
         *cache* should be an instance of a cache that fulfils the
         :class:`ftrack_api.cache.Cache` interface and will be used as the cache
         for the session. It can also be a callable that will be called with the
-        session instance as sole argument.
+        session instance as sole argument. The callable should return ``None``
+        if a suitable cache could not be configured, but session instantiation
+        can continue safely.
 
         .. note::
 
@@ -197,7 +199,8 @@ class Session(object):
             if callable(cache):
                 cache = cache(self)
 
-            self.cache.caches.append(cache)
+            if cache is not None:
+                self.cache.caches.append(cache)
 
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
@@ -418,30 +421,6 @@ class Session(object):
         '''
         entity = self._create(entity_type, data, reconstructing=reconstructing)
         entity = self.merge(entity)
-
-        if not reconstructing:
-
-            # Record create operation.
-            # This is done here rather than in the Entity constructor in order
-            # to ensure that all recorded values are fully merged into session.
-            if self.record_operations:
-                entity_data = {}
-
-                # Lower level API used here to avoid including any empty
-                # collections that are automatically generated on access.
-                for attribute in entity.attributes:
-                    value = attribute.get_local_value(entity)
-                    if value is not ftrack_api.symbol.NOT_SET:
-                        entity_data[attribute.name] = value
-
-                self.recorded_operations.push(
-                    ftrack_api.operation.CreateEntityOperation(
-                        entity.entity_type,
-                        ftrack_api.inspection.primary_key(entity),
-                        entity_data
-                    )
-                )
-
         return entity
 
     def _create(self, entity_type, data, reconstructing):
@@ -729,19 +708,21 @@ class Session(object):
 
     def _merge(self, value, merged):
         '''Return merged *value*.'''
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
+
         if isinstance(value, ftrack_api.entity.base.Entity):
-            self.logger.debug(L(
-                'Merging entity into session: {0} at {1}',
-                value, id(value)
-            ))
+            log_debug and self.logger.debug(
+                'Merging entity into session: {0} at {1}'
+                .format(value, id(value))
+            )
 
             return self._merge_entity(value, merged=merged)
 
         elif isinstance(value, ftrack_api.collection.Collection):
-            self.logger.debug(L(
-                'Merging collection into session: {0!r} at {1}',
-                value, id(value)
-            ))
+            log_debug and self.logger.debug(
+                'Merging collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
 
             merged_collection = []
             for entry in value:
@@ -752,10 +733,10 @@ class Session(object):
             return merged_collection
 
         elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-            self.logger.debug(L(
-                'Merging mapped collection into session: {0!r} at {1}',
-                value, id(value)
-            ))
+            log_debug and self.logger.debug(
+                'Merging mapped collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
 
             merged_collection = []
             for entry in value.collection:
@@ -778,6 +759,8 @@ class Session(object):
         merged entity instance is used.
 
         '''
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
+
         if merged is None:
             merged = {}
 
@@ -789,29 +772,29 @@ class Session(object):
             # Check whether this entity has already been processed.
             attached_entity = merged.get(entity_key)
             if attached_entity is not None:
-                self.logger.debug(L(
-                    'Entity already processed for key {0} as {1} at {2}',
-                    entity_key, attached_entity, id(attached_entity)
-                ))
+                log_debug and self.logger.debug(
+                    'Entity already processed for key {0} as {1} at {2}'
+                    .format(entity_key, attached_entity, id(attached_entity))
+                )
 
                 return attached_entity
             else:
-                self.logger.debug(L(
-                    'Entity not already processed for key {0}. Keys: {1}',
-                    entity_key, sorted(merged.keys())
-                ))
+                log_debug and self.logger.debug(
+                    'Entity not already processed for key {0}.'
+                    .format(entity_key)
+                )
 
             # Check for existing instance of entity in cache.
-            self.logger.debug(L(
-                'Checking for entity in cache with key {0}', entity_key
-            ))
+            log_debug and self.logger.debug(
+                'Checking for entity in cache with key {0}'.format(entity_key)
+            )
             try:
                 attached_entity = self.cache.get(entity_key)
                 from_cache = True
-                self.logger.debug(L(
-                    'Retrieved existing entity from cache: {0} at {1}',
-                    attached_entity, id(attached_entity)
-                ))
+                log_debug and self.logger.debug(
+                    'Retrieved existing entity from cache: {0} at {1}'
+                    .format(attached_entity, id(attached_entity))
+                )
 
             except KeyError:
                 # Construct new minimal instance to store in cache.
@@ -819,10 +802,10 @@ class Session(object):
                     entity.entity_type, {}, reconstructing=True
                 )
                 from_cache = False
-                self.logger.debug(L(
+                log_debug and self.logger.debug(
                     'Entity not present in cache. Constructed new instance: '
-                    '{0} at {1}', attached_entity, id(attached_entity)
-                ))
+                    '{0} at {1}'.format(attached_entity, id(attached_entity))
+                )
 
             # Mark entity as seen to avoid infinite loops.
             merged[entity_key] = attached_entity
@@ -873,6 +856,7 @@ class Session(object):
         else:
             entity._inflated = True
 
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
         self.logger.debug('Merging references.')
 
         if merged is None:
@@ -890,9 +874,9 @@ class Session(object):
                     ftrack_api.collection.MappedCollectionProxy
                 )
             ):
-                self.logger.debug(L(
-                    'Merging local value for attribute {0}.', attribute
-                ))
+                log_debug and self.logger.debug(
+                    'Merging local value for attribute {0}.'.format(attribute)
+                )
 
                 merged_local_value = self._merge(local_value, merged=merged)
                 if merged_local_value is not local_value:
@@ -909,9 +893,9 @@ class Session(object):
                     ftrack_api.collection.MappedCollectionProxy
                 )
             ):
-                self.logger.debug(L(
-                    'Merging remote value for attribute {0}.', attribute
-                ))
+                log_debug and self.logger.debug(
+                    'Merging remote value for attribute {0}.'.format(attribute)
+                )
 
                 merged_remote_value = self._merge(remote_value, merged=merged)
                 if merged_remote_value is not remote_value:

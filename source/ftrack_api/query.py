@@ -61,7 +61,7 @@ class QueryResult(collections.Sequence):
         Return (expression, offset, limit).
 
         '''
-        offset = 0
+        offset = None
         match = self.OFFSET_EXPRESSION.search(expression)
         if match:
             offset = int(match.group('value'))
@@ -128,6 +128,9 @@ class QueryResult(collections.Sequence):
         Raise :exc:`ValueError` if an existing limit is already present in the
         expression.
 
+        Raise :exc:`ValueError` if an existing offset is already present in the
+        expression as offset is inappropriate when expecting a single item.
+
         Raise :exc:`~ftrack_api.exception.MultipleResultsFoundError` if more
         than one result was available or
         :exc:`~ftrack_api.exception.NoResultFoundError` if no results were
@@ -145,6 +148,12 @@ class QueryResult(collections.Sequence):
         if self._limit is not None:
             raise ValueError(
                 'Expression already contains a limit clause.'
+            )
+
+        if self._offset is not None:
+            raise ValueError(
+                'Expression contains an offset clause which does not make '
+                'sense when selecting a single item.'
             )
 
         # Apply custom limit as optimisation. A limit of 2 is used rather than
@@ -177,6 +186,10 @@ class QueryResult(collections.Sequence):
             raise ValueError(
                 'Expression already contains a limit clause.'
             )
+
+        # Apply custom offset if present.
+        if self._offset is not None:
+            expression += ' offset {0}'.format(self._offset)
 
         # Apply custom limit as optimisation.
         expression += ' limit 1'

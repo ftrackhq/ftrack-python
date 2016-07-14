@@ -93,6 +93,21 @@ def temporary_valid_schema_cache(request, mocked_schemas):
     return schema_cache_path
 
 
+class SelectiveCache(ftrack_api.cache.ProxyCache):
+    '''Proxy cache that should not cache newly created entities.'''
+
+    def set(self, key, value):
+        '''Set *value* for *key*.'''
+        if isinstance(value, ftrack_api.entity.base.Entity):
+            if (
+                ftrack_api.inspection.state(value)
+                is ftrack_api.symbol.CREATED
+            ):
+                return
+
+        super(SelectiveCache, self).set(key, value)
+
+
 def test_get_entity(session, user):
     '''Retrieve an entity by type and id.'''
     matching = session.get(*ftrack_api.inspection.identity(user))
@@ -854,6 +869,23 @@ def test_merge_circular_reference(cache, temporary_file):
     # fail.
     component = session.create_component(path=temporary_file)
     assert component
+
+
+def test_create_with_selective_cache(session):
+    '''Create entity does not store entity in selective cache.'''
+    cache = ftrack_api.cache.MemoryCache()
+    session.cache.caches.append(SelectiveCache(cache))
+    try:
+        user = session.create('User', {'username': 'martin'})
+        cache_key = session.cache_key_maker.key(
+            ftrack_api.inspection.identity(user)
+        )
+
+        with pytest.raises(KeyError):
+            cache.get(cache_key)
+
+    finally:
+        session.cache.caches.pop()
 
 
 def test_correct_file_type_on_sequence_component(session):

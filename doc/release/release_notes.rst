@@ -23,6 +23,95 @@ Release Notes
         Event hub does honor the proxy environment variables `HTTP_PROXY` and
         `HTTPS_PROXY`.
 
+.. release:: 0.15.4
+    :date: 2016-07-12
+
+    .. change:: fixed
+        :tags: querying
+
+        Custom offset not respected by
+        :meth:`QueryResult.first <ftrack_api.query.QueryResult.first>`.
+
+    .. change:: changed
+        :tags: querying
+
+        Using a custom offset with :meth:`QueryResult.one
+        <ftrack_api.query.QueryResult.one>` helper method now raises an
+        exception as an offset is inappropriate when expecting to select a
+        single item.
+
+    .. change:: fixed
+        :tags: caching
+
+        :meth:`LayeredCache.remove <ftrack_api.cache.LayeredCache.remove>`
+        incorrectly raises :exc:`~exceptions.KeyError` if key only exists in
+        sub-layer cache.
+
+.. release:: 0.15.3
+    :date: 2016-06-30
+
+    .. change:: fixed
+        :tags: session, caching
+
+        A newly created entity now has the correct
+        :attr:`ftrack_api.symbol.CREATED` state when checked in caching layer.
+        Previously the state was :attr:`ftrack_api.symbol.NOT_SET`. Note that
+        this fix causes a change in logic and the stored
+        :class:`ftrack_api.operation.CreateEntityOperation` might hold data that
+        has not been fully :meth:`merged <Session.merge>`.
+
+    .. change:: fixed
+        :tags: documentation
+
+        The second example in the assignments article is not working.
+
+    .. change:: changed
+        :tags: session, caching
+
+        A callable cache maker can now return ``None`` to indicate that it could
+        not create a suitable cache, but :class:`Session` instantiation can
+        continue safely.
+
+.. release:: 0.15.2
+    :date: 2016-06-02
+
+    .. change:: new
+        :tags: documentation
+
+        Added an example on how to work with assignments and allocations 
+        :ref:`example/assignments_and_allocations`.
+
+    .. change:: new
+        :tags: documentation
+
+        Added :ref:`example/asset_version_dependency` article with
+        examples of how to manage asset version dependencies.
+
+    .. change:: fixed
+        :tags: performance
+        
+        Improve performance of large collection management.
+
+    .. change:: fixed
+
+        Entities are not hashable because 
+        :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
+
+.. release:: 0.15.1
+    :date: 2016-05-02
+
+    .. change:: fixed
+        :tags: collection, attribute, performance
+
+        Custom attribute configurations does not cache necessary keys, leading
+        to performance issues.
+
+    .. change:: fixed
+        :tags: locations, structure
+
+        Standard structure does not work if version relation is not set on
+        the `Component`.
+
 .. release:: 0.15.0
     :date: 2016-04-04
 
