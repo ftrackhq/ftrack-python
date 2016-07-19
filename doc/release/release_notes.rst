@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: documentation
+
+        Source distribution of ftrack-python-api does not include ftrack.css
+        in the documentation.
+
+    .. change:: fixed
         :tags: performance
         
         Improve performance of large collection management.
