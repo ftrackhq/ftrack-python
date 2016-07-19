@@ -194,11 +194,20 @@ class LayeredCache(Cache):
     def remove(self, key):
         '''Remove *key*.
 
-        Raise :exc:`KeyError` if *key* not found.
+        Raise :exc:`KeyError` if *key* not found in any layer.
 
         '''
+        removed = False
         for cache in self.caches:
-            cache.remove(key)
+            try:
+                cache.remove(key)
+            except KeyError:
+                pass
+            else:
+                removed = True
+
+        if not removed:
+            raise KeyError(key)
 
     def keys(self):
         '''Return list of keys at this current time.

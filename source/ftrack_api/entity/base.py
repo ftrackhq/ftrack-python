@@ -103,6 +103,37 @@ class Entity(collections.MutableMapping):
 
                     attribute.set_local_value(self, default_value)
 
+        # Record create operation.
+        # Note: As this operation is recorded *before* any Session.merge takes
+        # place there is the possibility that the operation will hold references
+        # to outdated data in entity_data. However, this would be unusual in
+        # that it would mean the same new entity was created twice and only one
+        # altered. Conversely, if this operation were recorded *after*
+        # Session.merge took place, any cache would not be able to determine
+        # the status of the entity, which could be important if the cache should
+        # not store newly created entities that have not yet been persisted. Out
+        # of these two 'evils' this approach is deemed the lesser at this time.
+        # A third, more involved, approach to satisfy both might be to record
+        # the operation with a PENDING entity_data value and then update with
+        # merged values post merge.
+        if self.session.record_operations:
+            entity_data = {}
+
+            # Lower level API used here to avoid including any empty
+            # collections that are automatically generated on access.
+            for attribute in self.attributes:
+                value = attribute.get_local_value(self)
+                if value is not ftrack_api.symbol.NOT_SET:
+                    entity_data[attribute.name] = value
+
+            self.session.recorded_operations.push(
+                ftrack_api.operation.CreateEntityOperation(
+                    self.entity_type,
+                    ftrack_api.inspection.primary_key(self),
+                    entity_data
+                )
+            )
+
     def _reconstruct(self, data):
         '''Reconstruct from *data*.'''
         # Data represents remote values.
@@ -141,7 +172,7 @@ class Entity(collections.MutableMapping):
 
     def __hash__(self):
         '''Return hash representing instance.'''
-        return hash(ftrack_api.inspection.identity(self))
+        return hash(str(ftrack_api.inspection.identity(self)))
 
     def __eq__(self, other):
         '''Return whether *other* is equal to this instance.
