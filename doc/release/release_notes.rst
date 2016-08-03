@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: documentation
+
+        Source distribution of ftrack-python-api does not include ftrack.css
+        in the documentation.
+
 .. release:: 0.15.4
     :date: 2016-07-12
 
