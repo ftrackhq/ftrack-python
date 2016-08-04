@@ -16,7 +16,9 @@ If you already have a file encoded in the correct format and want to bypass
 the built-in encoding in ftrack, you can create the component manually
 and add it to the `ftrack.server` location::
 
-    version = # Retrieve or create version.
+    # Retrieve or create version.
+    version = session.query('AssetVersion', 'SOME-ID')
+
     server_location = session.query('Location where name is "ftrack.server"').one()
     filepath = '/path/to/local/file.mp4'
 
@@ -39,7 +41,9 @@ and add it to the `ftrack.server` location::
 
 To publish an image for review the steps are similar::
 
-    version = # Retrieve or create a version you want to use
+    # Retrieve or create version.
+    version = session.query('AssetVersion', 'SOME-ID')
+
     server_location = session.query('Location where name is "ftrack.server"').one()
     filepath = '/path/to/image.jpg'
 
@@ -58,9 +62,17 @@ To publish an image for review the steps are similar::
 
     component.session.commit()
 
+Here is a list of components names and how they should be used:
+
+==================  =====================================
+Component name      Use
+==================  =====================================
+ftrackreview-image  Images reviewable in the browser
+ftrackreview-mp4    H.264/mp4 video reviewable in browser
+ftrackreview-webm   WebM video reviewable in browser
+==================  =====================================
+
 .. note::
 
-    Make sure to use the pre-defined component names `ftrackreview-mp4`,
-    `ftrackreview-webm` and `ftrackreview-image`. They are used to identify
-    playable components in ftrack. You also need to set the `ftr_meta` on the
-    components.
+    Make sure to use the pre-defined component names and set the `ftr_meta` on
+    the components or review will not work.

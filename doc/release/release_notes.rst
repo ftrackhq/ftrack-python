@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: documentation
+
+        Added two new examples for :ref:`example/publishing` and
+        :ref:`example/web_review`.
+
 .. release:: 0.15.4
     :date: 2016-07-12
 

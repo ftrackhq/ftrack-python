@@ -16,6 +16,7 @@ about publishing.
 To publish an asset you first need to get the context where the asset should be
 published::
 
+    # Get a task from a given id.
     task = session.get('Task', '423ac382-e61d-4802-8914-dce20c92b740')
 
 And the parent of the task which will be used to publish the asset on::
@@ -38,7 +39,7 @@ Then we create an asset and a version on the asset::
     The task is not used as the parent of the asset, instead the task is linked
     directly to the AssetVersion.
 
-then when we have a version where we can create the components::
+Then when we have a version where we can create the components::
 
     asset_version.create_component(
         '/path/to/a/file.mov'
