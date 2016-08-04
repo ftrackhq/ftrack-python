@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: session, availability
+
+        :meth:`Session.get_component_availabilities` ignores passed locations
+        shortlist and includes all locations in returned availability mapping.
+
     .. change:: new
         :tags: documentation
 
