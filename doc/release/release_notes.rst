@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: documentation
+
+        Added two new examples for :ref:`example/publishing` and
+        :ref:`example/web_review`.
+
     .. change:: fixed
         :tags: documentation
 

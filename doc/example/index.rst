@@ -42,3 +42,5 @@ already constructed a :class:`Session`::
     thumbnail
     encode_media
     asset_version_dependency
+    web_review
+    publishing
