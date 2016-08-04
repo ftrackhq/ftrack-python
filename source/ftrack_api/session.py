@@ -1956,7 +1956,8 @@ class Session(object):
             else:
                 for component_location in component['component_locations']:
                     location_id = component_location['location_id']
-                    availability[location_id] = 100.0
+                    if location_id in availability:
+                        availability[location_id] = 100.0
 
             for location_id, percentage in availability.items():
                 # Avoid quantization error by rounding percentage and clamping
