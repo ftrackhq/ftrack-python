@@ -17,6 +17,12 @@ Release Notes
         Added two new examples for :ref:`example/publishing` and
         :ref:`example/web_review`.
 
+    .. change:: fixed
+        :tags: documentation
+
+        Source distribution of ftrack-python-api does not include ftrack.css
+        in the documentation.
+
 .. release:: 0.15.4
     :date: 2016-07-12
 
