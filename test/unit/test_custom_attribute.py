@@ -2,7 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import pytest
-
+import json
 
 @pytest.mark.parametrize(
     'entity_type, entity_model_name, custom_attribute_name',
@@ -260,4 +260,55 @@ def test_set_custom_attribute_on_new_but_persisted_version(
 ):
     '''Set custom attribute on new persisted version.'''
     new_asset_version['custom_attributes']['versiontest'] = 5
+    session.commit()
+
+
+@pytest.mark.xfail
+def test_enumerator_custom_attribute_caching(
+    session, new_asset_version
+):
+    '''Set custom attribute of enumerator values.
+
+    Sets the value to one, and then another value to ensure caching is
+    properly cleared.
+    '''
+    configuration = session.query(
+        'select object_type_id, project_id, key, config '
+        'from CustomAttributeConfiguration '
+        'where type.name is Enumerator and entity_type is task'
+    ).first()
+    attribute_key = configuration['key']
+
+    entity = session.query(
+        'select custom_attributes from TypedContext '
+        'where object_type_id is "{}" and project_id is "{}"'.format(
+            configuration['object_type_id'], configuration['project_id']
+        )
+    ).first()
+    original_value = entity['custom_attributes'][attribute_key]
+
+    # Get a valid option from all possible enumerator values
+    possible_values = [
+        option['value']
+        for option in json.loads(
+            json.loads(configuration['config'])['data']
+        )
+    ]
+    test_value = [possible_values[0]]
+
+    # Set custom attribute to first value, commit and assert
+    entity['custom_attributes'][attribute_key] = []
+    session.commit()
+    assert entity['custom_attributes'][attribute_key] == []
+
+    # Set the custom attribute to a second value.
+    # An issue currently prevents the value from being persisted properly.
+    entity['custom_attributes'][attribute_key] = test_value
+    assert entity['custom_attributes'][attribute_key] == test_value
+    session.commit()
+    # TODO: This assertion should hold true, the attribute has currently been reverted.
+    assert entity['custom_attributes'][attribute_key] == test_value
+
+    # Revert original value
+    entity['custom_attributes'][attribute_key] = original_value
     session.commit()
