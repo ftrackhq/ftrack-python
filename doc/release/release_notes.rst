@@ -9,6 +9,20 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: session, encode media
+
+        :meth:`Session.encode_media` can now automatically associate the output
+        with a version by specifying a *version_id* keyword argument. A new
+        helper method on versions, :meth:`AssetVersion.encode_media
+        <ftrack_api.entity.asset_version.AssetVersion.encode_media>`, can be
+        used to make versions playable in a browser.
+
+        .. seealso:: :ref:`example/encode_media`.
+
 .. release:: 0.15.5
     :date: 2016-08-12
 

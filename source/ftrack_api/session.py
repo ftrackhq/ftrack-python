@@ -2013,7 +2013,7 @@ class Session(object):
         else:
             return result[0]['widget_url']
 
-    def encode_media(self, media):
+    def encode_media(self, media, version_id=None):
         '''Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
@@ -2040,11 +2040,6 @@ class Session(object):
         An image component will always be generated if possible that can be used
         as a thumbnail.
 
-        .. note::
-
-            The new components will not be automatically associated with an
-            AssetVersion even if the supplied *media* belongs to one.
-
         If *media* is a file path, a new source component will be created and
         added to the ftrack server location and a call to :meth:`commit` will be
         issued. When the encoding is complete the source component will be
@@ -2053,6 +2048,9 @@ class Session(object):
         If *media* is a FileComponent, it will not be deleted after the encoding
         is complete.
 
+        If *version_id* is specified, the new components will automatically be
+        associated with the AssetVersion. Otherwise, the components will not
+        be associated to a version even if the supplied *media* belongs to one.
         '''
         keep_original = True
         if isinstance(media, basestring):
@@ -2084,6 +2082,7 @@ class Session(object):
         operation = {
             'action': 'encode_media',
             'component_id': component['id'],
+            'version_id': version_id,
             'keep_original': keep_original
         }
 
