@@ -23,6 +23,13 @@ Release Notes
 
         .. seealso:: :ref:`example/encode_media`.
 
+    .. change:: changed
+        :tags: session, encode media
+
+        You can now decide if :meth:`Session.encode_media` should keep or
+        delete the original component by specifying the *keep_original*
+        keyword argument.
+
 .. release:: 0.15.5
     :date: 2016-08-12
 
