@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: documentation
+
+        Asset parent variable is declared but never used in
+        :ref:`example/publishing`.
+
 .. release:: 0.15.5
     :date: 2016-08-12
 

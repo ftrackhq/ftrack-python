@@ -29,7 +29,8 @@ Then we create an asset and a version on the asset::
     asset = session.create('Asset', {
         'parent': asset_parent,
         'name': 'My asset',
-        'type': asset_type
+        'type': asset_type,
+        'parent': asset_parent
     })
     asset_version = session.create('AssetVersion', {
         'asset': asset,
