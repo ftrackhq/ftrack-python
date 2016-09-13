@@ -46,7 +46,7 @@ class AssetVersion(ftrack_api.entity.base.Entity):
 
         return self.session.create_component(path, data=data, location=location)
 
-    def encode_media(self, media, keep_original=True):
+    def encode_media(self, media, keep_original='auto'):
         '''Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
@@ -80,9 +80,9 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         issued. If *media* is a FileComponent, it will be assumed to be in
         available in the ftrack.server location.
 
-        The original media will be kept by default, specify *keep_original* as
-        False to automatically delete the source component once the encoding
-        has been completed.
+        If *keep_original* is not set, the original media will be kept if it
+        is a FileComponent, and deleted if it is a file path. You can specify
+        True or False to change this behavior.
         '''
         return self.session.encode_media(
             media, version_id=self['id'], keep_original=keep_original
