@@ -2059,7 +2059,9 @@ class Session(object):
                 'Location', ftrack_api.symbol.SERVER_LOCATION_ID
             )
             component = self.create_component(
-                path=media, location=server_location
+                path=media,
+                data=dict(version_id=version_id),
+                location=server_location
             )
             if keep_original == 'auto':
                 keep_original = False
