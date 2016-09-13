@@ -2048,6 +2048,8 @@ class Session(object):
         If *version_id* is specified, the new components will automatically be
         associated with the AssetVersion. Otherwise, the components will not
         be associated to a version even if the supplied *media* belongs to one.
+        A server version of 3.3.32 or higher is required for the version_id
+        argument to function properly.
 
         If *keep_original* is not set, the original media will be kept if it
         is a FileComponent, and deleted if it is a file path. You can specify

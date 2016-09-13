@@ -74,6 +74,8 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         set as the version's thumbnail.
 
         The new components will automatically be associated with the version.
+        A server version of 3.3.32 or higher is required for this to function
+        properly.
 
         If *media* is a file path, a new source component will be created and
         added to the ftrack server location and a call to :meth:`commit` will be
