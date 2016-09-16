@@ -15,7 +15,7 @@ Release Notes
         :tags: documentation
 
         Documentation of hierarchical attributes and their limitations are
-        missleading. See :ref:`example/custom_attribute`.
+        misleading. See :ref:`example/custom_attribute`.
 
 .. release:: 0.15.5
     :date: 2016-08-12
