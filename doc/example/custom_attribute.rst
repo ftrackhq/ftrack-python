@@ -62,8 +62,16 @@ always be the non-evaluated expression.
 Hierarchical attributes
 -----------------------
 
-Hierarchical attributes are not yet supported and can not be read or updated
-using the API.
+Hierarchical attributes are not yet fully supported in the API. Hierarchical
+attributes support both read and write, but when read they are not calculated
+and instead the `raw` value is returned::
+
+    # The hierarchical attribute `my_attribute` is set on Shot but this will not
+    # be reflected on the children. Instead the raw value is returned.
+    print shot['custom_attributes']['my_attribute']
+    'foo'
+    print task['custom_attributes']['my_attribute']
+    None
 
 Filtering
 ---------

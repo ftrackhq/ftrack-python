@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: documentation
+
+        Documentation of hierarchical attributes and their limitations are
+        missleading. See :ref:`example/custom_attribute`.
+
 .. release:: 0.15.5
     :date: 2016-08-12
 
