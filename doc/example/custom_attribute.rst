@@ -73,7 +73,7 @@ and instead the `raw` value is returned::
     print task['custom_attributes']['my_attribute']
     None
 
-To worka around this limitation it is possible to use the legacy api for
+To work around this limitation it is possible to use the legacy api for
 hierarchical attributes or to manually query the parents for values and use the
 first value that is set.
 
