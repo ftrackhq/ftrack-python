@@ -2060,13 +2060,18 @@ class Session(object):
             server_location = self.get(
                 'Location', ftrack_api.symbol.SERVER_LOCATION_ID
             )
-            component = self.create_component(
-                path=media,
-                data=dict(version_id=version_id),
-                location=server_location
-            )
             if keep_original == 'auto':
                 keep_original = False
+
+            component_data = None
+            if keep_original:
+                component_data = dict(version_id=version_id)
+
+            component = self.create_component(
+                path=media,
+                data=component_data,
+                location=server_location
+            )
 
             # Auto commit to ensure component exists when sent to server.
             self.commit()
