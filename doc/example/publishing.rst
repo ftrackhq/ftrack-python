@@ -24,8 +24,10 @@ And the parent of the task which will be used to publish the asset on::
     asset_parent = task['parent']
 
 Then we create an asset and a version on the asset::
+
     asset_type = session.query('AssetType where name is "Geometry"').one()
     asset = session.create('Asset', {
+        'parent': asset_parent,
         'name': 'My asset',
         'type': asset_type
     })
@@ -58,7 +60,7 @@ Components can also be created and added to a custom location like this::
     location = session.query('Location where name is "my-location"')
     asset_version.create_component(
         '/path/to/a/file.mov',
-        'data={
+        data={
             'name': 'foobar'
         },
         location=location

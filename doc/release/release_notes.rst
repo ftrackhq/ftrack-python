@@ -11,17 +11,26 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: fixed
-        :tags: session, availability
+    .. change:: new
+        :tags: documentation
 
-        :meth:`Session.get_component_availabilities` ignores passed locations
-        shortlist and includes all locations in returned availability mapping.
+        Documentation of hierarchical attributes and their limitations are
+        misleading. See :ref:`example/custom_attribute`.
+
+.. release:: 0.15.5
+    :date: 2016-08-12
 
     .. change:: new
         :tags: documentation
 
         Added two new examples for :ref:`example/publishing` and
         :ref:`example/web_review`.
+
+    .. change:: fixed
+        :tags: session, availability
+
+        :meth:`Session.get_component_availabilities` ignores passed locations
+        shortlist and includes all locations in returned availability mapping.
 
     .. change:: fixed
         :tags: documentation
