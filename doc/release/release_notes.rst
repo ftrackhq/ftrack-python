@@ -17,6 +17,36 @@ Release Notes
         Documentation of hierarchical attributes and their limitations are
         misleading. See :ref:`example/custom_attribute`.
 
+    .. change:: new
+        :tags: session
+
+        :meth:`Session.get_upload_metadata` has been added.
+
+    .. change:: changed
+        :tags: locations
+
+        Data transfer between locations using accessors is now chunked to avoid
+        reading large files into memory.
+
+    .. change:: changed
+        :tags: server accessor
+
+        :class:`ftrack_api.accessor.server.ServerFile` has been refactored to
+        work with large files more efficiently.
+
+    .. change:: changed
+        :tags: server accessor
+
+        :class:`ftrack_api.accessor.server.ServerFile` has been updated to use
+        the get_upload_metadata API endpoint instead of
+        /component/getPutMetadata.
+
+    .. change:: changed
+        :tags: locations
+
+        :class:`ftrack_api.data.String` is now using a temporary file instead of
+        StringIO to avoid reading large files into memory.
+
 .. release:: 0.15.5
     :date: 2016-08-12
 

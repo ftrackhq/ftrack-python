@@ -73,10 +73,6 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        url = '{0}/component/getPutMetadata'.format(
-            self._session.server_url
-        )
-
         # Retrieve component from cache to construct a filename.
         component = self._session.get('FileComponent', self.resource_identifier)
         if not component:
