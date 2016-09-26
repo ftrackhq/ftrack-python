@@ -360,7 +360,10 @@ class Location(ftrack_api.entity.base.Entity):
 
             # Read/write data in chunks to avoid reading all into memory at the
             # same time.
-            for chunk in iter(functools.partial(source_data.read, 1024), ''):
+            chunked_read = functools.partial(
+                source_data.read, ftrack_api.symbol.CHUNK_SIZE
+            )
+            for chunk in iter(chunked_read, ''):
                 target_data.write(chunk)
 
             target_data.close()
