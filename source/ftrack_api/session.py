@@ -2013,7 +2013,7 @@ class Session(object):
         else:
             return result[0]['widget_url']
 
-    def encode_media(self, media):
+    def encode_media(self, media, version_id=None, keep_original='auto'):
         '''Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
@@ -2040,30 +2040,38 @@ class Session(object):
         An image component will always be generated if possible that can be used
         as a thumbnail.
 
-        .. note::
-
-            The new components will not be automatically associated with an
-            AssetVersion even if the supplied *media* belongs to one.
-
         If *media* is a file path, a new source component will be created and
         added to the ftrack server location and a call to :meth:`commit` will be
-        issued. When the encoding is complete the source component will be
-        deleted.
+        issued. If *media* is a FileComponent, it will be assumed to be in
+        available in the ftrack.server location.
 
-        If *media* is a FileComponent, it will not be deleted after the encoding
-        is complete.
+        If *version_id* is specified, the new components will automatically be
+        associated with the AssetVersion. Otherwise, the components will not
+        be associated to a version even if the supplied *media* belongs to one.
+        A server version of 3.3.32 or higher is required for the version_id
+        argument to function properly.
 
+        If *keep_original* is not set, the original media will be kept if it
+        is a FileComponent, and deleted if it is a file path. You can specify
+        True or False to change this behavior.
         '''
-        keep_original = True
         if isinstance(media, basestring):
             # Media is a path to a file.
             server_location = self.get(
                 'Location', ftrack_api.symbol.SERVER_LOCATION_ID
             )
+            if keep_original == 'auto':
+                keep_original = False
+
+            component_data = None
+            if keep_original:
+                component_data = dict(version_id=version_id)
+
             component = self.create_component(
-                path=media, location=server_location
+                path=media,
+                data=component_data,
+                location=server_location
             )
-            keep_original = False
 
             # Auto commit to ensure component exists when sent to server.
             self.commit()
@@ -2074,7 +2082,8 @@ class Session(object):
         ):
             # Existing file component.
             component = media
-            keep_original = True
+            if keep_original == 'auto':
+                keep_original = True
 
         else:
             raise ValueError(
@@ -2084,6 +2093,7 @@ class Session(object):
         operation = {
             'action': 'encode_media',
             'component_id': component['id'],
+            'version_id': version_id,
             'keep_original': keep_original
         }
 

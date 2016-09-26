@@ -14,21 +14,23 @@ playing it in the ftrack web interface. Media can be encoded using
 :meth:`ftrack_api.session.Session.encode_media` which accepts a path to a file
 or an existing component in the ftrack.server location.
 
-Here is an example of how to encode a video and add to an existing asset
-version::
+Here is an example of how to encode a video and read the output::
 
     job = session.encode_media('/PATH/TO/MEDIA')
     job_data = json.loads(job['data'])
 
+    print 'Source component id', job_data['source_component_id']
+    print 'Keeping original component', job_data['keep_original']
     for output in job_data['output']:
-        component = session.get('FileComponent', output['component_id'])
-        
-        # Add component to version.
-        component['version_id'] = version['id']
+        print u'Output component - id: {0}, format: {1}'.format(
+            output['component_id'], output['format']
+        )
 
-        # Add thumbnail to the version.
-        if output['format'] == 'image/jpeg':
-            version['thumbnail_id'] = output['component_id']
+You can also call the corresponding helper method on an :meth:`asset version
+<ftrack_api.entity.asset_version.AssetVersion.encode_media>`_, to have the
+encoded components automatically associated with the version::
+
+    job = asset_version.encode_media('/PATH/TO/MEDIA')
 
 It is also possible to get the URL to an encoded component once the job has
 finished::
