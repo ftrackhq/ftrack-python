@@ -2104,6 +2104,34 @@ class Session(object):
 
         return self.get('Job', result[0]['job_id'])
 
+    def get_upload_metadata(self, data):
+        '''Return upload metadata from *data*.
+
+        *data* should be a dict with component_id, file_name, file_size and
+        checksum.
+
+        '''
+        operation = data.copy()
+        operation['action'] = 'get_upload_metadata'
+
+        try:
+            result = self._call([operation])
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'get_upload_metadata\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    '"get_upload_metadata", please update server and try '
+                    'again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
+        return result[0]
+
     def send_review_session_invite(self, invitee):
         '''Send an invite to a review session to *invitee*.
 

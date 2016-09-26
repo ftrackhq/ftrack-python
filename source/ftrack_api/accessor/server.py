@@ -94,32 +94,14 @@ class ServerFile(String):
                 component['file_type'].lstrip('.')
             )
 
-        # Get put metadata.
-        response = requests.get(
-            url,
-            params={
-                'id': self.resource_identifier,
-                'username': self._session.api_user,
-                'apiKey': self._session.api_key,
+        metadata = self._session.get_upload_metadata(
+            {
+                'component_id': self.resource_identifier,
                 'checksum': self._compute_checksum(),
-                'fileSize': self._get_size(),
-                'fileName': name
+                'file_size': self._get_size(),
+                'file_name': name
             }
         )
-
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
-            raise ftrack_api.exception.AccessorOperationFailedError(
-                'Failed to get put metadata: {0}.'.format(error)
-            )
-
-        try:
-            metadata = json.loads(response.text)
-        except ValueError as error:
-            raise ftrack_api.exception.AccessorOperationFailedError(
-                'Failed to decode put metadata response: {0}.'.format(error)
-            )
 
         # Ensure at beginning of file before put.
         self.seek(0)
