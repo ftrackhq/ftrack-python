@@ -3,6 +3,7 @@
 
 import os
 import base64
+import filecmp
 
 import pytest
 
@@ -438,3 +439,23 @@ def test_get_context_for_component_not_in_source(new_component, new_location):
     '''Retrieve context for component not in source location.'''
     context = new_location._get_context(new_component, new_location)
     assert context == {}
+
+
+def test_data_transfer(session, new_location, origin_location):
+    '''Transfer a real file and make sure it is identical.'''
+    video_file = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            '..',
+            'fixture',
+            'media',
+            'colour_wheel.mov'
+        )
+    )
+    component = session.create_component(
+        video_file, location=new_location
+    )
+    new_video_file = new_location.get_filesystem_path(component)
+
+    assert filecmp.cmp(video_file, new_video_file)
