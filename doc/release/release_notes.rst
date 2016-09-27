@@ -12,6 +12,13 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: Performance, session, sequence component
+
+        Improved performance when using :meth:`Session.create_component` to
+        create large sequence components.
+
+
+    .. change:: fixed
         :tags: documentation
 
         Asset parent variable is declared but never used in

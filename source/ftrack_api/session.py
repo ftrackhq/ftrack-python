@@ -1829,10 +1829,14 @@ class Session(object):
             )
 
             # Create member components for sequence.
+            container_members = []
             for member_path in collection:
+                # Create component with `container_id` instead of `container`
+                # to avoid a large duplicated payload when creating large
+                # sequence components.
                 member_data = {
                     'name': collection.match(member_path).group('index'),
-                    'container': container,
+                    'container_id': container['id'],
                     'size': member_sizes[member_path],
                     'file_type': os.path.splitext(member_path)[-1]
                 }
@@ -1840,7 +1844,16 @@ class Session(object):
                 component = self._create_component(
                     'FileComponent', member_path, member_data, location=None
                 )
-                container['members'].append(component)
+                container_members.append(component)
+
+            # Update the container with all member components locally, but
+            # avoid updating the server value, which is already set by the
+            # create operation.
+            with self.operation_recording(False):
+                container['members'].attribute.set_local_value(
+                    container,
+                    container_members
+                )
 
             if location:
                 origin_location = self.get(
