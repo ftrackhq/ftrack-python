@@ -99,6 +99,22 @@ def temporary_sequence(temporary_directory):
 
 
 @pytest.fixture()
+def video_path():
+    '''Return a path to a video file.'''
+    video = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'fixture',
+            'media',
+            'colour_wheel.mov'
+        )
+    )
+
+    return video
+
+
+@pytest.fixture()
 def session():
     '''Return session instance.'''
     return ftrack_api.Session()

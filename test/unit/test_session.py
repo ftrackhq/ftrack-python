@@ -1041,22 +1041,6 @@ def test_get_info_widget_url(session, task):
     response.raise_for_status()
 
 
-@pytest.fixture()
-def video_path():
-    '''Return a path to a video file.'''
-    video = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'fixture',
-            'media',
-            'colour_wheel.mov'
-        )
-    )
-
-    return video
-
-
 def test_encode_media_from_path(session, video_path):
     '''Encode media based on a file path.'''
     job = session.encode_media(video_path)
