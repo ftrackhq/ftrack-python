@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: documentation
+
+        Asset parent variable is declared but never used in
+        :ref:`example/publishing`.
+
     .. change:: new
         :tags: session, encode media
 
