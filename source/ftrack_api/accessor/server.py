@@ -11,6 +11,7 @@ import requests
 from .base import Accessor
 from ..data import String
 import ftrack_api.exception
+import ftrack_api.symbol
 
 
 class ServerFile(String):
@@ -62,7 +63,7 @@ class ServerFile(String):
                 'Failed to read data: {0}.'.format(error)
             )
 
-        for block in response.iter_content(1024):
+        for block in response.iter_content(ftrack_api.symbol.CHUNK_SIZE):
             self.wrapped_file.write(block)
 
         self.flush()
@@ -129,7 +130,7 @@ class ServerFile(String):
     def _compute_checksum(self):
         '''Return checksum for file.'''
         fp = self.wrapped_file
-        buf_size = 8192
+        buf_size = ftrack_api.symbol.CHUNK_SIZE
         hash_obj = hashlib.md5()
         spos = fp.tell()
 
