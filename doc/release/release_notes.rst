@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: performance
+
+        Improve performance of commit operations by optimising encoding and
+        reducing payload sent to server.
+
     .. change:: fixed
         :tags: documentation
 
