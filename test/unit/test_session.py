@@ -19,6 +19,7 @@ import ftrack_api.cache
 import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.exception
+import ftrack_api.session
 
 
 @pytest.fixture(params=['memory', 'persisted'])
@@ -645,7 +646,7 @@ def test_encode_operation_payload(session, temporary_sequence):
     )
 
     encoded = session.encode(
-        {
+        ftrack_api.session.OperationPayload({
             'action': 'create',
             'entity_data': {
                 '__entity_type__': u'FileComponent',
@@ -657,7 +658,7 @@ def test_encode_operation_payload(session, temporary_sequence):
             },
             'entity_key': ['47227f28-ff05-43d4-a521-2d55f8c1a2a2'],
             'entity_type': u'FileComponent'
-        }
+        })
     )
 
     expected = textwrap.dedent('''
