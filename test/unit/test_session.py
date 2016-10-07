@@ -638,6 +638,42 @@ def test_encode_entity_using_invalid_strategy(session, new_task):
         session.encode(new_task, entity_attribute_strategy='invalid')
 
 
+def test_encode_operation_payload(session, temporary_sequence):
+    '''Encode operation payload.'''
+    sequence_component = session.create_component(
+        temporary_sequence, location=None
+    )
+
+    encoded = session.encode(
+        {
+            'action': 'create',
+            'entity_data': {
+                '__entity_type__': u'FileComponent',
+                u'container': sequence_component,
+                u'file_type': '.ext',
+                'id': '47227f28-ff05-43d4-a521-2d55f8c1a2a2',
+                u'name': '00001',
+                u'size': 0
+            },
+            'entity_key': ['47227f28-ff05-43d4-a521-2d55f8c1a2a2'],
+            'entity_type': u'FileComponent'
+        }
+    )
+
+    expected = textwrap.dedent('''
+        {{"action": "create",
+         "entity_data": {{"__entity_type__": "FileComponent",
+         "container": {{"__entity_type__": "SequenceComponent",
+         "id": "{0}"}},
+         "file_type": ".ext", "id": "47227f28-ff05-43d4-a521-2d55f8c1a2a2",
+         "name": "00001", "size": 0}},
+         "entity_key": ["47227f28-ff05-43d4-a521-2d55f8c1a2a2"],
+         "entity_type": "FileComponent"}}
+    '''.format(sequence_component['id'])).replace('\n', '')
+
+    assert encoded == expected
+
+
 def test_decode_partial_entity(
     session, new_task
 ):
