@@ -72,7 +72,7 @@ class Collection(collections.MutableSequence):
                     ftrack_api.inspection.primary_key(self.entity),
                     self.attribute.name,
                     old_value,
-                    self._data
+                    self
                 )
             )
 
@@ -86,7 +86,7 @@ class Collection(collections.MutableSequence):
                 item, self
             )
 
-        old_value = self._data[:]
+        old_value = copy.copy(self)
         self._data.insert(index, item)
         self._identities.add(self._identity_key(item))
         self._notify(old_value)
@@ -114,7 +114,7 @@ class Collection(collections.MutableSequence):
                     item, self
                 )
 
-        old_value = self._data[:]
+        old_value = copy.copy(self)
         try:
             existing_item = self._data[index]
         except IndexError:
@@ -131,7 +131,7 @@ class Collection(collections.MutableSequence):
         if not self.mutable:
             raise ftrack_api.exception.ImmutableCollectionError(self)
 
-        old_value = self._data[:]
+        old_value = copy.copy(self)
         item = self._data[index]
         del self._data[index]
         self._identities.remove(self._identity_key(item))
