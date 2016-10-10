@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: backwards-incompatible, collection
+
+        Collection mutation now stores collection instance in operations rather
+        than underlying data structure.
+
+    .. change:: changed
         :tags: performance
 
         Improve performance of commit operations by optimising encoding and
