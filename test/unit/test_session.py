@@ -20,6 +20,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.session
+import ftrack_api.collection
 
 
 @pytest.fixture(params=['memory', 'persisted'])
@@ -639,38 +640,53 @@ def test_encode_entity_using_invalid_strategy(session, new_task):
         session.encode(new_task, entity_attribute_strategy='invalid')
 
 
-def test_encode_operation_payload(session, temporary_sequence):
+def test_encode_operation_payload(session):
     '''Encode operation payload.'''
     sequence_component = session.create_component(
-        temporary_sequence, location=None
+        "/path/to/sequence.%d.jpg [1]", location=None
     )
+    file_component = sequence_component["members"][0]
 
-    encoded = session.encode(
+    encoded = session.encode([
         ftrack_api.session.OperationPayload({
             'action': 'create',
             'entity_data': {
                 '__entity_type__': u'FileComponent',
                 u'container': sequence_component,
-                u'file_type': '.ext',
-                'id': '47227f28-ff05-43d4-a521-2d55f8c1a2a2',
-                u'name': '00001',
-                u'size': 0
+                'id': file_component['id']
             },
-            'entity_key': ['47227f28-ff05-43d4-a521-2d55f8c1a2a2'],
+            'entity_key': [file_component['id']],
             'entity_type': u'FileComponent'
+        }),
+        ftrack_api.session.OperationPayload({
+            'action': 'update',
+            'entity_data': {
+                '__entity_type__': u'SequenceComponent',
+                u'members': ftrack_api.collection.Collection(
+                    sequence_component,
+                    sequence_component.attributes.get('members'),
+                    data=[file_component]
+                )
+            },
+            'entity_key': [sequence_component['id']],
+            'entity_type': u'SequenceComponent'
         })
-    )
+    ])
 
     expected = textwrap.dedent('''
-        {{"action": "create",
+        [{{"action": "create",
          "entity_data": {{"__entity_type__": "FileComponent",
          "container": {{"__entity_type__": "SequenceComponent",
-         "id": "{0}"}},
-         "file_type": ".ext", "id": "47227f28-ff05-43d4-a521-2d55f8c1a2a2",
-         "name": "00001", "size": 0}},
-         "entity_key": ["47227f28-ff05-43d4-a521-2d55f8c1a2a2"],
-         "entity_type": "FileComponent"}}
-    '''.format(sequence_component['id'])).replace('\n', '')
+         "id": "{0[id]}"}},
+         "id": "{1[id]}"}},
+         "entity_key": ["{1[id]}"],
+         "entity_type": "FileComponent"}},
+         {{"action": "update",
+         "entity_data": {{"__entity_type__": "SequenceComponent",
+         "members": [{{"__entity_type__": "FileComponent", "id": "{1[id]}"}}]}},
+         "entity_key": ["{0[id]}"],
+         "entity_type": "SequenceComponent"}}]
+    '''.format(sequence_component, file_component)).replace('\n', '')
 
     assert encoded == expected
 
