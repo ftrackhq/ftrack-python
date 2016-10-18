@@ -1020,12 +1020,12 @@ class Session(object):
                     entity_data.update(operation.entity_key)
                     entity_data.update(operation.entity_data)
 
-                    payload = {
+                    payload = OperationPayload({
                         'action': 'create',
                         'entity_type': operation.entity_type,
                         'entity_key': operation.entity_key.values(),
                         'entity_data': entity_data
-                    }
+                    })
 
                 elif isinstance(
                     operation, ftrack_api.operation.UpdateEntityOperation
@@ -1037,21 +1037,21 @@ class Session(object):
                         operation.attribute_name: operation.new_value
                     }
 
-                    payload = {
+                    payload = OperationPayload({
                         'action': 'update',
                         'entity_type': operation.entity_type,
                         'entity_key': operation.entity_key.values(),
                         'entity_data': entity_data
-                    }
+                    })
 
                 elif isinstance(
                     operation, ftrack_api.operation.DeleteEntityOperation
                 ):
-                    payload = {
+                    payload = OperationPayload({
                         'action': 'delete',
                         'entity_type': operation.entity_type,
                         'entity_key': operation.entity_key.values()
-                    }
+                    })
 
                 else:
                     raise ValueError(
@@ -1576,6 +1576,15 @@ class Session(object):
                 '__type__': 'datetime',
                 'value': item.isoformat()
             }
+
+        if isinstance(item, OperationPayload):
+            data = dict(item.items())
+            if "entity_data" in data:
+                for key, value in data["entity_data"].items():
+                    if isinstance(value, ftrack_api.entity.base.Entity):
+                        data["entity_data"][key] = self._entity_reference(value)
+
+            return data
 
         if isinstance(item, ftrack_api.entity.base.Entity):
             data = self._entity_reference(item)
@@ -2200,3 +2209,39 @@ class OperationRecordingContext(object):
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context.'''
         self._session.record_operations = self._current_record_operations
+
+
+class OperationPayload(collections.MutableMapping):
+    '''Represent operation payload.'''
+
+    def __init__(self, *args, **kwargs):
+        '''Initialise payload.'''
+        super(OperationPayload, self).__init__()
+        self._data = dict()
+        self.update(dict(*args, **kwargs))
+
+    def __str__(self):
+        '''Return string representation.'''
+        return '<{0} {1}>'.format(
+            self.__class__.__name__, str(self._data)
+        )
+
+    def __getitem__(self, key):
+        '''Return value for *key*.'''
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        '''Set *value* for *key*.'''
+        self._data[key] = value
+
+    def __delitem__(self, key):
+        '''Remove *key*.'''
+        del self._data[key]
+
+    def __iter__(self):
+        '''Iterate over all keys.'''
+        return iter(self._data)
+
+    def __len__(self):
+        '''Return count of keys.'''
+        return len(self._data)
