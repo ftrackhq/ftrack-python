@@ -27,7 +27,7 @@ Here is an example of how to encode a video and read the output::
         )
 
 You can also call the corresponding helper method on an :meth:`asset version
-<ftrack_api.entity.asset_version.AssetVersion.encode_media>`_, to have the
+<ftrack_api.entity.asset_version.AssetVersion.encode_media>`, to have the
 encoded components automatically associated with the version::
 
     job = asset_version.encode_media('/PATH/TO/MEDIA')
