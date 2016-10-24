@@ -9,7 +9,7 @@
 Publishing for web review
 *************************
 
-Follow the :ref:` encode media <example/encode_media>` example if you want to
+Follow the :ref:`example/encode_media` example if you want to
 upload and encode media using ftrack.
 
 If you already have a file encoded in the correct format and want to bypass

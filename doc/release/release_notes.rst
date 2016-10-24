@@ -12,12 +12,6 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
-        :tags: documentation
-
-        Documentation of hierarchical attributes and their limitations are
-        misleading. See :ref:`example/custom_attribute`.
-
-    .. change:: new
         :tags: session
 
         :meth:`Session.get_upload_metadata` has been added.
@@ -46,6 +40,52 @@ Release Notes
 
         :class:`ftrack_api.data.String` is now using a temporary file instead of
         StringIO to avoid reading large files into memory.
+
+.. release:: 0.16.0
+    :date: 2016-10-18
+
+    .. change:: new
+        :tags: session, encode media
+
+        :meth:`Session.encode_media` can now automatically associate the output
+        with a version by specifying a *version_id* keyword argument. A new
+        helper method on versions, :meth:`AssetVersion.encode_media
+        <ftrack_api.entity.asset_version.AssetVersion.encode_media>`, can be
+        used to make versions playable in a browser. A server version of 3.3.32
+        or higher is required for it to function properly.
+
+        .. seealso:: :ref:`example/encode_media`.
+
+    .. change:: changed
+        :tags: session, encode media
+
+        You can now decide if :meth:`Session.encode_media` should keep or
+        delete the original component by specifying the *keep_original*
+        keyword argument.
+
+    .. change:: changed
+        :tags: backwards-incompatible, collection
+
+        Collection mutation now stores collection instance in operations rather
+        than underlying data structure.
+
+    .. change:: changed
+        :tags: performance
+
+        Improve performance of commit operations by optimising encoding and
+        reducing payload sent to server.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Asset parent variable is declared but never used in
+        :ref:`example/publishing`.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Documentation of hierarchical attributes and their limitations are
+        misleading. See :ref:`example/custom_attribute`.
 
 .. release:: 0.15.5
     :date: 2016-08-12

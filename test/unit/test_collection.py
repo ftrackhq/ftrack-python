@@ -282,7 +282,7 @@ def test_collection_notify_on_modification(
     assert len(session.recorded_operations) == 1
     operation = session.recorded_operations.pop()
     assert isinstance(operation, ftrack_api.operation.UpdateEntityOperation)
-    assert operation.new_value == list(collection)
+    assert operation.new_value == collection
 
 
 def test_mapped_collection_proxy_shallow_copy(new_project, unique_name):
