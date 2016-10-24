@@ -91,14 +91,17 @@ class ServerFile(String):
                 component['file_type'].lstrip('.')
             )
 
-        metadata = self._session.get_upload_metadata(
-            {
-                'component_id': self.resource_identifier,
-                'checksum': self._compute_checksum(),
-                'file_size': self._get_size(),
-                'file_name': name
-            }
-        )
+        try:
+            metadata = self._session.get_upload_metadata(
+                component_id=self.resource_identifier,
+                file_name=name,
+                file_size=self._get_size(),
+                checksum=self._compute_checksum()
+            )
+        except Exception as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                'Failed to get put metadata: {0}.'.format(error)
+            )
 
         # Ensure at beginning of file before put.
         self.seek(0)

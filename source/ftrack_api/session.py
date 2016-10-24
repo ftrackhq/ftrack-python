@@ -2123,15 +2123,28 @@ class Session(object):
 
         return self.get('Job', result[0]['job_id'])
 
-    def get_upload_metadata(self, data):
-        '''Return upload metadata from *data*.
+    def get_upload_metadata(
+        self, component_id, file_name, file_size, checksum=None
+    ):
+        '''Return URL and headers used to upload data for *component_id*.
 
-        *data* should be a dict with component_id, file_name, file_size and
-        checksum.
+        *file_name* and *file_size* should match the components details.
 
+        The returned URL should be requested using HTTP PUT with the specified
+        headers.
+
+        The *checksum* is used as the Content-MD5 header and should contain
+        the base64-encoded 128-bit MD5 digest of the message (without the
+        headers) according to RFC 1864. This can be used as a message integrity
+        check to verify that the data is the same data that was originally sent.
         '''
-        operation = data.copy()
-        operation['action'] = 'get_upload_metadata'
+        operation = {
+            'action': 'get_upload_metadata',
+            'component_id': component_id,
+            'file_name': file_name,
+            'file_size': file_size,
+            'checksum': checksum
+        }
 
         try:
             result = self._call([operation])

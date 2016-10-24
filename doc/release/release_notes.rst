@@ -17,10 +17,12 @@ Release Notes
         :meth:`Session.get_upload_metadata` has been added.
 
     .. change:: changed
-        :tags: locations
+        :tags: locations, backwards-incompatible
 
         Data transfer between locations using accessors is now chunked to avoid
         reading large files into memory.
+
+        .. seealso:: :ref:`release/migration/upcoming/chunked_transfer`.
 
     .. change:: changed
         :tags: server accessor
