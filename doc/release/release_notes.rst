@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session, locations
+
+        `ftrack.centralized-storage` does not properly validate location
+        selection during user configuration.
+
 .. release:: 0.16.0
     :date: 2016-10-18
 
