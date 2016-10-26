@@ -154,6 +154,21 @@ class ConfigureCentralizedStorageScenario(object):
             # Update configuration with values from the previous step.
             configuration[previous_step] = values
 
+        if previous_step == 'select_location':
+            values = configuration['select_location']
+            if values.get('location_id') != 'create_new_location':
+                location_exists = self.session.query(
+                    'Location where id is "{0}"'.format(
+                        values.get('location_id')
+                    )
+                ).first()
+                if not location_exists:
+                    next_step = 'select_location'
+                    warning_message = (
+                        '**The selected location does not exist. Please choose '
+                        'one from the dropdown or create a new one.**'
+                    )
+
         if next_step == 'select_location':
             try:
                 location_id = (
@@ -183,12 +198,22 @@ class ConfigureCentralizedStorageScenario(object):
 
             warning = ''
             if location_id is not None:
+                # If there is already a location configured we must make the
+                # user aware that changing the location may be problematic.
                 warning = (
                     '\n\n**Be careful if you switch to another location '
                     'for an existing storage scenario. Components that have '
                     'already been published to the previous location will be '
                     'made unavailable for common use.**'
                 )
+                default_value = location_id
+            elif location_id is None and len(options) == 1:
+                # No location configured and no existing locations to use.
+                default_value = 'create_new_location'
+            else:
+                # There are existing locations to choose from but non of them
+                # are currently active in the centralized storage scenario.
+                default_value = None
 
             items = [{
                 'type': 'label',
@@ -203,7 +228,7 @@ class ConfigureCentralizedStorageScenario(object):
                 'type': 'enumerator',
                 'label': 'Location',
                 'name': 'location_id',
-                'value': location_id,
+                'value': default_value,
                 'data': options
             }]
 
