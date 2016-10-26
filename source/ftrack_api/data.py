@@ -111,7 +111,7 @@ class String(FileWrapper):
     def __init__(self, content=None):
         '''Initialise data with *content*.'''
         super(String, self).__init__(
-            tempfile.TemporaryFile(mode='w+')
+            tempfile.TemporaryFile()
         )
 
         if content is not None:
