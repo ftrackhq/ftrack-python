@@ -19,6 +19,8 @@ import ftrack_api.cache
 import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.exception
+import ftrack_api.session
+import ftrack_api.collection
 
 
 @pytest.fixture(params=['memory', 'persisted'])
@@ -91,6 +93,21 @@ def temporary_valid_schema_cache(request, mocked_schemas):
     request.addfinalizer(cleanup)
 
     return schema_cache_path
+
+
+class SelectiveCache(ftrack_api.cache.ProxyCache):
+    '''Proxy cache that should not cache newly created entities.'''
+
+    def set(self, key, value):
+        '''Set *value* for *key*.'''
+        if isinstance(value, ftrack_api.entity.base.Entity):
+            if (
+                ftrack_api.inspection.state(value)
+                is ftrack_api.symbol.CREATED
+            ):
+                return
+
+        super(SelectiveCache, self).set(key, value)
 
 
 def test_get_entity(session, user):
@@ -623,6 +640,57 @@ def test_encode_entity_using_invalid_strategy(session, new_task):
         session.encode(new_task, entity_attribute_strategy='invalid')
 
 
+def test_encode_operation_payload(session):
+    '''Encode operation payload.'''
+    sequence_component = session.create_component(
+        "/path/to/sequence.%d.jpg [1]", location=None
+    )
+    file_component = sequence_component["members"][0]
+
+    encoded = session.encode([
+        ftrack_api.session.OperationPayload({
+            'action': 'create',
+            'entity_data': {
+                '__entity_type__': u'FileComponent',
+                u'container': sequence_component,
+                'id': file_component['id']
+            },
+            'entity_key': [file_component['id']],
+            'entity_type': u'FileComponent'
+        }),
+        ftrack_api.session.OperationPayload({
+            'action': 'update',
+            'entity_data': {
+                '__entity_type__': u'SequenceComponent',
+                u'members': ftrack_api.collection.Collection(
+                    sequence_component,
+                    sequence_component.attributes.get('members'),
+                    data=[file_component]
+                )
+            },
+            'entity_key': [sequence_component['id']],
+            'entity_type': u'SequenceComponent'
+        })
+    ])
+
+    expected = textwrap.dedent('''
+        [{{"action": "create",
+         "entity_data": {{"__entity_type__": "FileComponent",
+         "container": {{"__entity_type__": "SequenceComponent",
+         "id": "{0[id]}"}},
+         "id": "{1[id]}"}},
+         "entity_key": ["{1[id]}"],
+         "entity_type": "FileComponent"}},
+         {{"action": "update",
+         "entity_data": {{"__entity_type__": "SequenceComponent",
+         "members": [{{"__entity_type__": "FileComponent", "id": "{1[id]}"}}]}},
+         "entity_key": ["{0[id]}"],
+         "entity_type": "SequenceComponent"}}]
+    '''.format(sequence_component, file_component)).replace('\n', '')
+
+    assert encoded == expected
+
+
 def test_decode_partial_entity(
     session, new_task
 ):
@@ -856,6 +924,23 @@ def test_merge_circular_reference(cache, temporary_file):
     assert component
 
 
+def test_create_with_selective_cache(session):
+    '''Create entity does not store entity in selective cache.'''
+    cache = ftrack_api.cache.MemoryCache()
+    session.cache.caches.append(SelectiveCache(cache))
+    try:
+        user = session.create('User', {'username': 'martin'})
+        cache_key = session.cache_key_maker.key(
+            ftrack_api.inspection.identity(user)
+        )
+
+        with pytest.raises(KeyError):
+            cache.get(cache_key)
+
+    finally:
+        session.cache.caches.pop()
+
+
 def test_correct_file_type_on_sequence_component(session):
     '''Create sequence component with correct file type.'''
     path = '/path/to/image/sequence.%04d.dpx [1-10]'
@@ -1007,22 +1092,6 @@ def test_get_info_widget_url(session, task):
     url = session.get_widget_url('info', entity=task, theme='light')
     response = requests.get(url)
     response.raise_for_status()
-
-
-@pytest.fixture()
-def video_path():
-    '''Return a path to a video file.'''
-    video = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'fixture',
-            'media',
-            'colour_wheel.mov'
-        )
-    )
-
-    return video
 
 
 def test_encode_media_from_path(session, video_path):

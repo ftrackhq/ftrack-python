@@ -9,6 +9,130 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session, locations
+
+        `ftrack.centralized-storage` does not properly validate location
+        selection during user configuration.
+
+.. release:: 0.16.0
+    :date: 2016-10-18
+
+    .. change:: new
+        :tags: session, encode media
+
+        :meth:`Session.encode_media` can now automatically associate the output
+        with a version by specifying a *version_id* keyword argument. A new
+        helper method on versions, :meth:`AssetVersion.encode_media
+        <ftrack_api.entity.asset_version.AssetVersion.encode_media>`, can be
+        used to make versions playable in a browser. A server version of 3.3.32
+        or higher is required for it to function properly.
+
+        .. seealso:: :ref:`example/encode_media`.
+
+    .. change:: changed
+        :tags: session, encode media
+
+        You can now decide if :meth:`Session.encode_media` should keep or
+        delete the original component by specifying the *keep_original*
+        keyword argument.
+
+    .. change:: changed
+        :tags: backwards-incompatible, collection
+
+        Collection mutation now stores collection instance in operations rather
+        than underlying data structure.
+
+    .. change:: changed
+        :tags: performance
+
+        Improve performance of commit operations by optimising encoding and
+        reducing payload sent to server.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Asset parent variable is declared but never used in
+        :ref:`example/publishing`.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Documentation of hierarchical attributes and their limitations are
+        misleading. See :ref:`example/custom_attribute`.
+
+.. release:: 0.15.5
+    :date: 2016-08-12
+
+    .. change:: new
+        :tags: documentation
+
+        Added two new examples for :ref:`example/publishing` and
+        :ref:`example/web_review`.
+
+    .. change:: fixed
+        :tags: session, availability
+
+        :meth:`Session.get_component_availabilities` ignores passed locations
+        shortlist and includes all locations in returned availability mapping.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Source distribution of ftrack-python-api does not include ftrack.css
+        in the documentation.
+
+.. release:: 0.15.4
+    :date: 2016-07-12
+
+    .. change:: fixed
+        :tags: querying
+
+        Custom offset not respected by
+        :meth:`QueryResult.first <ftrack_api.query.QueryResult.first>`.
+
+    .. change:: changed
+        :tags: querying
+
+        Using a custom offset with :meth:`QueryResult.one
+        <ftrack_api.query.QueryResult.one>` helper method now raises an
+        exception as an offset is inappropriate when expecting to select a
+        single item.
+
+    .. change:: fixed
+        :tags: caching
+
+        :meth:`LayeredCache.remove <ftrack_api.cache.LayeredCache.remove>`
+        incorrectly raises :exc:`~exceptions.KeyError` if key only exists in
+        sub-layer cache.
+
+.. release:: 0.15.3
+    :date: 2016-06-30
+
+    .. change:: fixed
+        :tags: session, caching
+
+        A newly created entity now has the correct
+        :attr:`ftrack_api.symbol.CREATED` state when checked in caching layer.
+        Previously the state was :attr:`ftrack_api.symbol.NOT_SET`. Note that
+        this fix causes a change in logic and the stored
+        :class:`ftrack_api.operation.CreateEntityOperation` might hold data that
+        has not been fully :meth:`merged <Session.merge>`.
+
+    .. change:: fixed
+        :tags: documentation
+
+        The second example in the assignments article is not working.
+
+    .. change:: changed
+        :tags: session, caching
+
+        A callable cache maker can now return ``None`` to indicate that it could
+        not create a suitable cache, but :class:`Session` instantiation can
+        continue safely.
+
 .. release:: 0.15.2
     :date: 2016-06-02
 

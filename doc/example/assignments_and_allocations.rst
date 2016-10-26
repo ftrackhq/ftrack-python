@@ -14,7 +14,9 @@ the project hierarchy. You can use these to retrieve the allocated or assigned
 resources, which can be either groups or users. 
 
 Allocations can be used to allocate users or groups to a project team, while
-assignments are more explicit and is used to assign users to tasks.
+assignments are more explicit and is used to assign users to tasks. Both
+assignment and allocations are modelled as `Appointment` objects, with a
+`type` attribute indicating the type of the appoinment.
 
 The following example retrieves all users part of the project team::
 
@@ -43,10 +45,18 @@ The following example retrieves all users part of the project team::
 
 The next example shows how to assign the current user to a task::
 
-    # Retrieve a project
+    # Retrieve a task and the current user
     task = session.query('Task').first()
     current_user = session.query(
         u'User where username is {0}'.format(session.api_user)
     ).one()
-    task['assignments'].append(current_user)
 
+    # Create a new Appointment of type assignment.
+    session.create('Appointment', {
+        'context': task,
+        'resource': current_user,
+        'type': 'assignment'
+    })
+
+    # Finally, persist the new assignment
+    session.commit()

@@ -192,6 +192,25 @@ def test_layered_cache_propagates_value_on_get():
         caches[2].get('key')
 
 
+def test_layered_cache_remove_at_depth():
+    '''Remove key that only exists at depth in LayeredCache.'''
+    caches = [
+        ftrack_api.cache.MemoryCache(),
+        ftrack_api.cache.MemoryCache()
+    ]
+
+    cache = ftrack_api.cache.LayeredCache(caches)
+
+    # Set item on second level cache only.
+    caches[1].set('key', 'value')
+
+    # Removing key that only exists at depth should not raise key error.
+    cache.remove('key')
+
+    # Ensure key was removed.
+    assert not cache.keys()
+
+
 @pytest.mark.parametrize('items, key', [
     (({},), '{}'),
     (({}, {}), '{}{}')
