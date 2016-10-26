@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import collections
+import functools
 
 import ftrack_api.entity.base
 import ftrack_api.exception
@@ -356,7 +357,15 @@ class Location(ftrack_api.entity.base.Entity):
                 source.get_resource_identifier(component), 'rb'
             )
             target_data = self.accessor.open(resource_identifier, 'wb')
-            target_data.write(source_data.read())
+
+            # Read/write data in chunks to avoid reading all into memory at the
+            # same time.
+            chunked_read = functools.partial(
+                source_data.read, ftrack_api.symbol.CHUNK_SIZE
+            )
+            for chunk in iter(chunked_read, ''):
+                target_data.write(chunk)
+
             target_data.close()
             source_data.close()
 

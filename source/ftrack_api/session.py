@@ -2123,6 +2123,47 @@ class Session(object):
 
         return self.get('Job', result[0]['job_id'])
 
+    def get_upload_metadata(
+        self, component_id, file_name, file_size, checksum=None
+    ):
+        '''Return URL and headers used to upload data for *component_id*.
+
+        *file_name* and *file_size* should match the components details.
+
+        The returned URL should be requested using HTTP PUT with the specified
+        headers.
+
+        The *checksum* is used as the Content-MD5 header and should contain
+        the base64-encoded 128-bit MD5 digest of the message (without the
+        headers) according to RFC 1864. This can be used as a message integrity
+        check to verify that the data is the same data that was originally sent.
+        '''
+        operation = {
+            'action': 'get_upload_metadata',
+            'component_id': component_id,
+            'file_name': file_name,
+            'file_size': file_size,
+            'checksum': checksum
+        }
+
+        try:
+            result = self._call([operation])
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'get_upload_metadata\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    '"get_upload_metadata", please update server and try '
+                    'again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
+        return result[0]
+
     def send_review_session_invite(self, invitee):
         '''Send an invite to a review session to *invitee*.
 

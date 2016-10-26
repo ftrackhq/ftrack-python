@@ -3,10 +3,7 @@
 
 import os
 from abc import ABCMeta, abstractmethod
-try:
-    from cStringIO import StringIO
-except ImportError:  # pragma: no cover
-    from StringIO import StringIO
+import tempfile
 
 
 class Data(object):
@@ -109,11 +106,13 @@ class File(FileWrapper):
 
 
 class String(FileWrapper):
-    '''Data wrapper using StringIO instance.'''
+    '''Data wrapper using TemporaryFile instance.'''
 
     def __init__(self, content=None):
         '''Initialise data with *content*.'''
-        super(String, self).__init__(StringIO())
+        super(String, self).__init__(
+            tempfile.TemporaryFile()
+        )
 
         if content is not None:
             self.wrapped_file.write(content)
