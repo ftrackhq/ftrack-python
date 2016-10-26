@@ -1,0 +1,10 @@
+# Test configuration for bitbucket pipelines.
+image: python:2.7.11
+
+pipelines:
+  default:
+    - step:
+        script:
+          - pip install -e .
+          - pip install pytest pytest-mock pytest-catchlog
+          - py.test test/unit -vv -k-slow --ignore test/unit/test_custom_attribute.py
