@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.0.0
+    :date: 2016-10-28
 
     .. change:: new
         :tags: session
@@ -22,7 +23,7 @@ Release Notes
         Data transfer between locations using accessors is now chunked to avoid
         reading large files into memory.
 
-        .. seealso:: :ref:`release/migration/upcoming/chunked_transfer`.
+        .. seealso:: :ref:`release/migration/1.0.0/chunked_transfer`.
 
     .. change:: changed
         :tags: server accessor
