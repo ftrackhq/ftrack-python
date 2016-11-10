@@ -725,7 +725,7 @@ class EventHub(object):
 
     def _handle_reply(self, event):
         '''Handle reply *event*, passing it to any registered callback.'''
-        callback = self._reply_callbacks.pop(event['in_reply_to_event'], None)
+        callback = self._reply_callbacks.get(event['in_reply_to_event'], None)
         if callback is not None:
             callback(event)
 
