@@ -613,8 +613,9 @@ class EventHub(object):
         try:
             # Register on reply callback if specified.
             if on_reply is not None:
-                # TODO: Add a timeout or some other approach to avoid growing
-                # endlessly for events that never receive replies.
+                # TODO: Add cleanup process that runs after a set duration to
+                # garbage collect old reply callbacks and prevent dictionary
+                # growing too large.
                 self._reply_callbacks[event['id']] = on_reply
 
             try:
