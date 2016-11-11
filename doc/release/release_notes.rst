@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+
+        :meth:`EventHub.publish <ftrack_api.event.hub.EventHub.publish>`
+        *on_reply* callback only called for first received reply. It should be
+        called for all relevant replies received.
+
 .. release:: 1.0.0
     :date: 2016-10-28
 

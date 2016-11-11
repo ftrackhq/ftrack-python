@@ -586,6 +586,31 @@ def test_publish_with_reply(event_hub):
     assert called['callback'] == 'Replied'
 
 
+def test_publish_with_multiple_replies(event_hub):
+    '''Publish asynchronous event and retrieve multiple replies.'''
+
+    def replier_one(event):
+        '''Replier.'''
+        return 'One'
+
+    def replier_two(event):
+        '''Replier.'''
+        return 'Two'
+
+    event_hub.subscribe('topic=test', replier_one)
+    event_hub.subscribe('topic=test', replier_two)
+
+    called = {'callback': []}
+
+    def on_reply(event):
+        called['callback'].append(event['data'])
+
+    event_hub.publish(Event(topic='test'), on_reply=on_reply)
+    event_hub.wait(2)
+
+    assert sorted(called['callback']) == ['One', 'Two']
+
+
 @pytest.mark.slow
 def test_server_heartbeat_response():
     '''Maintain connection by responding to server heartbeat request.'''
