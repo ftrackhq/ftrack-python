@@ -298,18 +298,16 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != 'dev':
-            server_version_range = ('3.3.11', '3.4')
-            if not (
-                distutils.version.LooseVersion(server_version_range[0])
-                <= distutils.version.LooseVersion(server_version)
-                < distutils.version.LooseVersion(server_version_range[1])
+            min_server_version = '3.3.11'
+            if (
+                distutils.version.LooseVersion(min_server_version)
+                > distutils.version.LooseVersion(server_version)
             ):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0} incompatible with this version of the '
-                    'API which requires a server version >= {1}, < {2}'.format(
+                    'API which requires a server version >= {1}'.format(
                         server_version,
-                        server_version_range[0],
-                        server_version_range[1]
+                        min_server_version
                     )
                 )
 

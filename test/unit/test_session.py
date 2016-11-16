@@ -520,13 +520,17 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
     ({}, False),
     ({'version': '3.3.11'}, True),
     ({'version': '3.3.12'}, True),
-    ({'version': '3.4'}, False),
+    ({'version': '3.4'}, True),
+    ({'version': '3.4.1'}, True),
+    ({'version': '3.5.16'}, True),
     ({'version': '3.3.10'}, False)
 ], ids=[
     'No information',
     'Valid current version',
     'Valid higher version',
-    'Invalid higher version',
+    'Valid higher version',
+    'Valid higher version',
+    'Valid higher version',
     'Invalid lower version'
 ])
 def test_check_server_compatibility(
