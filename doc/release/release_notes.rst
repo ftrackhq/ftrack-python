@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session
+
+        Removed version restriction for higher server versions.
+
 .. release:: 1.0.1
     :date: 2016-11-11
 
