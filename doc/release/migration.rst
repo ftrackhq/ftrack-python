@@ -12,6 +12,21 @@ Migration notes
     Migrating from the old ftrack API? Read the dedicated :ref:`guide
     <release/migrating_from_old_api>`.
 
+Migrate to 1.0.0
+================
+
+.. _release/migration/1.0.0/chunked_transfer:
+
+Chunked accessor transfers
+--------------------------
+
+Data transfers between accessors is now buffered using smaller chunks instead of
+all data at the same time. Included accessor file representations such as
+:class:`ftrack_api.data.File` and :class:`ftrack_api.accessor.server.ServerFile`
+are built to handle that. If you have written your own accessor and file
+representation you may have to update it to support multiple reads using the
+limit parameter and multiple writes.
+
 Migrate to 0.2.0
 ================
 

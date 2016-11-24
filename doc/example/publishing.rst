@@ -28,7 +28,8 @@ Then we create an asset and a version on the asset::
     asset_type = session.query('AssetType where name is "Geometry"').one()
     asset = session.create('Asset', {
         'name': 'My asset',
-        'type': asset_type
+        'type': asset_type,
+        'parent': asset_parent
     })
     asset_version = session.create('AssetVersion', {
         'asset': asset,

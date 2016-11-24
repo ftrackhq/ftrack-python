@@ -11,63 +11,68 @@ import requests
 from .base import Accessor
 from ..data import String
 import ftrack_api.exception
+import ftrack_api.symbol
 
 
 class ServerFile(String):
-    '''HTTP Buffered File.'''
-    def __init__(self, resource_identifier, session, mode='rb', **kwargs):
+    '''Representation of a server file.'''
+
+    def __init__(self, resource_identifier, session, mode='rb'):
         '''Initialise file.'''
-        self.resource_identifier = resource_identifier
         self.mode = mode
-        self._hasRead = False
+        self.resource_identifier = resource_identifier
         self._session = session
-        super(ServerFile, self).__init__(**kwargs)
+        self._has_read = False
+
+        super(ServerFile, self).__init__()
 
     def flush(self):
         '''Flush all changes.'''
         super(ServerFile, self).flush()
 
-        # TODO: Handle other modes.
         if self.mode == 'wb':
             self._write()
 
-    def read(self):
-        '''Read remote content from resource_identifier.'''
-        if not self._hasRead:
-            position = self.tell()
-            self.wrapped_file.seek(0)
+    def read(self, limit=None):
+        '''Read file.'''
+        if not self._has_read:
+            self._read()
+            self._has_read = True
 
-            response = requests.get(
-                '{0}/component/get'.format(self._session.server_url),
-                params={
-                    'id': self.resource_identifier,
-                    'username': self._session.api_user,
-                    'apiKey': self._session.api_key
-                }
-            )
+        return super(ServerFile, self).read(limit)
 
-            try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as error:
-                raise ftrack_api.exception.AccessorOperationFailedError(
-                    'Failed to read data: {0}.'.format(error)
-                )
-
-            self.wrapped_file.write(response.content)
-            self.seek(position)
-
-            self._hasRead = True
-
-        return self.wrapped_file.read()
-
-    def _write(self):
-        '''Write current data to remote *resource_identifier*.'''
+    def _read(self):
+        '''Read all remote content from key into wrapped_file.'''
         position = self.tell()
         self.seek(0)
 
-        url = '{0}/component/getPutMetadata'.format(
-            self._session.server_url
+        response = requests.get(
+            '{0}/component/get'.format(self._session.server_url),
+            params={
+                'id': self.resource_identifier,
+                'username': self._session.api_user,
+                'apiKey': self._session.api_key
+            },
+            stream=True
         )
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                'Failed to read data: {0}.'.format(error)
+            )
+
+        for block in response.iter_content(ftrack_api.symbol.CHUNK_SIZE):
+            self.wrapped_file.write(block)
+
+        self.flush()
+        self.seek(position)
+
+    def _write(self):
+        '''Write current data to remote key.'''
+        position = self.tell()
+        self.seek(0)
 
         # Retrieve component from cache to construct a filename.
         component = self._session.get('FileComponent', self.resource_identifier)
@@ -86,31 +91,16 @@ class ServerFile(String):
                 component['file_type'].lstrip('.')
             )
 
-        # Get put metadata.
-        response = requests.get(
-            url,
-            params={
-                'id': self.resource_identifier,
-                'username': self._session.api_user,
-                'apiKey': self._session.api_key,
-                'checksum': self._compute_checksum(),
-                'fileSize': self._get_size(),
-                'fileName': name
-            }
-        )
-
         try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
+            metadata = self._session.get_upload_metadata(
+                component_id=self.resource_identifier,
+                file_name=name,
+                file_size=self._get_size(),
+                checksum=self._compute_checksum()
+            )
+        except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 'Failed to get put metadata: {0}.'.format(error)
-            )
-
-        try:
-            metadata = json.loads(response.text)
-        except ValueError as error:
-            raise ftrack_api.exception.AccessorOperationFailedError(
-                'Failed to decode put metadata response: {0}.'.format(error)
             )
 
         # Ensure at beginning of file before put.
@@ -143,7 +133,7 @@ class ServerFile(String):
     def _compute_checksum(self):
         '''Return checksum for file.'''
         fp = self.wrapped_file
-        buf_size = 8192
+        buf_size = ftrack_api.symbol.CHUNK_SIZE
         hash_obj = hashlib.md5()
         spos = fp.tell()
 
