@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: tests
+
+        Improved test coverage for custom attributes.
+
 .. release:: 1.0.2
     :date: 2016-11-17
 
