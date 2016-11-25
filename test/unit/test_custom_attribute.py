@@ -4,6 +4,8 @@
 import pytest
 import json
 
+import ftrack_api
+
 
 @pytest.mark.parametrize(
     'entity_type, entity_model_name, custom_attribute_name',
@@ -298,6 +300,24 @@ def test_clearing_custom_attribute_values(session):
     session.populate(shot, 'custom_attributes')
 
     assert shot['custom_attributes']['fend'] == original_value
+
+
+def test_setting_attribute_value_in_other_session(session, new_task):
+    '''Test re-fetching attribute values when changed in other session.'''
+    new_task['custom_attributes']['test_check'] = True
+    session.commit()
+    assert new_task['custom_attributes']['test_check'] == True
+
+    other_session = ftrack_api.Session();
+    other_session_task = other_session.get('Task', new_task['id'])
+    assert other_session_task['custom_attributes']['test_check'] == True
+    other_session_task['custom_attributes']['test_check'] = False
+    other_session.commit()
+    assert other_session_task['custom_attributes']['test_check'] == False
+
+    del new_task['custom_attributes']
+    session.populate(new_task, 'custom_attributes')
+    assert new_task['custom_attributes']['test_check'] == False
 
 
 def test_enumerator_custom_attribute_caching(
