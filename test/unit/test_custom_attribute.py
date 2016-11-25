@@ -4,6 +4,7 @@
 import pytest
 import json
 
+
 @pytest.mark.parametrize(
     'entity_type, entity_model_name, custom_attribute_name',
     [
@@ -202,7 +203,7 @@ def test_write_custom_attribute_that_does_not_exist(
 
 
 def test_update_custom_attributes_with_dictionary_when_set(session):
-    '''Batch set custom attribute values when set on instance'''
+    '''Batch set custom attribute values when set on instance.'''
     configuration = session.query(
         'CustomAttributeConfiguration where key is customNumber'
     ).first()
@@ -263,7 +264,42 @@ def test_set_custom_attribute_on_new_but_persisted_version(
     session.commit()
 
 
-@pytest.mark.xfail
+def test_update_custom_attribute_and_verify_value(session):
+    '''Test update for a custom attribute and verify value.'''
+    shot = session.query(
+        'Shot where not custom_attributes any (configuration.key is "fend")'
+    ).first()
+
+    shot['custom_attributes']['fend'] = 10.0
+    session.commit()
+
+    assert shot['custom_attributes']['fend'] == 10.0
+
+    shot['custom_attributes']['fend'] = 20.0
+    session.commit()
+
+    assert shot['custom_attributes']['fend'] == 20.0
+
+
+def test_clearing_custom_attribute_values(session):
+    '''Test clearing custom attribute local value cache.'''
+    shot = session.query(
+        'Shot where not custom_attributes any (configuration.key is "fend")'
+    ).first()
+
+    original_value = shot['custom_attributes']['fend']
+    new_value = original_value + 1000
+
+    shot['custom_attributes']['fend'] = new_value
+
+    assert shot['custom_attributes']['fend'] == new_value
+    del shot['custom_attributes']
+
+    session.populate(shot, 'custom_attributes')
+
+    assert shot['custom_attributes']['fend'] == original_value
+
+
 def test_enumerator_custom_attribute_caching(
     session, new_asset_version
 ):
@@ -306,7 +342,8 @@ def test_enumerator_custom_attribute_caching(
     entity['custom_attributes'][attribute_key] = test_value
     assert entity['custom_attributes'][attribute_key] == test_value
     session.commit()
-    # TODO: This assertion should hold true, the attribute has currently been reverted.
+
+    # The attribute has been reverted.
     assert entity['custom_attributes'][attribute_key] == test_value
 
     # Revert original value
