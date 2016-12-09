@@ -160,9 +160,9 @@ Old API::
 
 New API::
 
-    project = ftrack_api.query('Project where name is "dev_tutorial"').one()
-    task = ftrack_api.get('Task', '8923b7b3-4bf0-11e5-8811-3c0754289fd3')
-    user = ftrack_api.query('User where username is "jane"').one()
+    project = session.query('Project where name is "dev_tutorial"').one()
+    task = session.get('Task', '8923b7b3-4bf0-11e5-8811-3c0754289fd3')
+    user = session.query('User where username is "jane"').one()
 
 While the new API can be a bit more verbose for simple queries, it is much more
 powerful and allows you to filter on any field and preload related data::
