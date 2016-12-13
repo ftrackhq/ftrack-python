@@ -277,6 +277,20 @@ class StandardFactory(Factory):
                 )
             )
 
+        elif reference.endswith('CustomAttributeValue'):
+            def creator(proxy, data):
+                raise KeyError(
+                    'Custom attributes must be creted explicitly for the given '
+                    'entity type before being set.' 
+                )
+
+            key_attribute = 'key'
+            value_attribute = 'value'
+
+            return ftrack_api.attribute.KeyValueMappedCollectionAttribute(
+                name, creator, key_attribute, value_attribute, mutable=mutable
+            )
+
         self.logger.debug(L(
             'Skipping {0}.{1} mapped_array attribute that has no configuration '
             'for reference {2}.', class_name, name, reference
