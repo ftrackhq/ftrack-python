@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: documentation
+
+        Added examples to show how to list a user's assigned tasks and all
+        users assigned to a task. :ref:`example/assignments_and_allocations`.
+
 .. release:: 1.0.2
     :date: 2016-11-17
 

@@ -60,3 +60,26 @@ The next example shows how to assign the current user to a task::
 
     # Finally, persist the new assignment
     session.commit()
+
+To list all users assigned to a task, see the following example::
+
+    task = session.query('Task').first()
+    users = session.query(
+        'select first_name, last_name from User '
+        'where assignments any (context_id = "{0}")'.format(task['id'])
+    )
+    for user in users:
+        print user['first_name'], user['last_name']
+
+To list a user's assigned tasks, see the example below::
+
+    current_user = session.query(
+        u'User where username is {0}'.format(session.api_user)
+    ).one()
+    assigned_tasks = session.query(
+        'select link from Task '
+        'where assignments any (resource_id = "{0}")'.format(current_user['id'])
+    )
+    for task in assigned_tasks:
+        print u' / '.join(item['name'] for item in task['link'])
+
