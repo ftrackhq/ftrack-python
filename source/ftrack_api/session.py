@@ -1451,6 +1451,10 @@ class Session(object):
             ),
             reconstructing=True
         )
+        ftrack_api.mixin(
+            location, ftrack_api.entity.location.ServerLocationMixin,
+            name='ServerLocation'
+        )
         location.accessor = ftrack_api.accessor.server._ServerAccessor(
             session=self
         )

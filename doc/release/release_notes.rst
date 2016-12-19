@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+  .. change:: new
+    :tags: server location, thumbnail
+
+        Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`
+        to server location, which can be used to retrieve a thumbnail URL.
+        See :ref:`example/thumbnail/url` for example usage.
+
 .. release:: 1.0.2
     :date: 2016-11-17
 

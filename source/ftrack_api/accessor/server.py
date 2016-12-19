@@ -217,3 +217,24 @@ class _ServerAccessor(Accessor):
             username=self._session.api_user,
             apiKey=self._session.api_key
         )
+
+    def get_thumbnail_url(self, resource_identifier, size=None):
+        '''Return thumbnail url for *resource_identifier*.
+
+        Optionally, specify *size* to constrain the downscaled image to size
+        x size pixels.
+        '''
+        url_string = (
+            u'{url}/component/thumbnail?id={id}&username={username}'
+            u'&apiKey={apiKey}'
+        )
+        url = url_string.format(
+            url=self._session.server_url,
+            id=resource_identifier,
+            username=self._session.api_user,
+            apiKey=self._session.api_key
+        )
+        if size:
+            url += u'&size={0}'.format(size)
+
+        return url
