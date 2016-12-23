@@ -15,7 +15,8 @@ Release Notes
         :tags: session, custom attributes
 
         Increased performance of custom attributes and better support for
-        filtering when using the <UPCOMING> version of ftrack.
+        filtering when using a version of ftrack that supports non-sparse
+        attribute values.
 
     .. change:: changed
         :tags: session, custom attributes
