@@ -8,12 +8,10 @@ import pytest
     'entity_type, entity_model_name, custom_attribute_name',
     [
         ('Task', 'task', 'customNumber'),
-        ('Shot', 'task', 'fstart'),
         ('AssetVersion', 'assetversion', 'NumberField')
     ],
     ids=[
         'task',
-        'shot',
         'asset_version'
     ]
 )
@@ -21,21 +19,25 @@ def test_read_set_custom_attribute(
     session, entity_type, entity_model_name, custom_attribute_name
 ):
     '''Retrieve custom attribute value set on instance.'''
-    entity = session.query(
-        'select custom_attributes from {entity_type} where '
-        'custom_attributes.configuration.key is {custom_attribute_name}'.format(
-            entity_type=entity_type,
+    custom_attribute_value = session.query(
+        'CustomAttributeValue where configuration.key is '
+        '{custom_attribute_name}'
+        .format(
             custom_attribute_name=custom_attribute_name
         )
     ).first()
 
-    custom_attribute_value = session.query(
-        'CustomAttributeValue where entity_id is {entity_id} and '
-        'configuration.key is {custom_attribute_name}'.format(
-            entity_id=entity['id'],
-            custom_attribute_name=custom_attribute_name
+    print custom_attribute_value['entity_id'], custom_attribute_value['configuration']['key']
+
+    entity = session.query(
+        'select custom_attributes from {entity_type} where id is '
+        '{entity_id}'.format(
+            entity_type=entity_type,
+            entity_id=custom_attribute_value['entity_id'],
         )
     ).first()
+
+    assert custom_attribute_value
 
     assert entity['id'] == entity['custom_attributes'].collection.entity['id']
     assert entity is entity['custom_attributes'].collection.entity
