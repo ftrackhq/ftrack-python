@@ -9,6 +9,22 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session, custom attributes
+
+        Increased performance of custom attributes and better support for
+        filtering when using a version of ftrack that supports non-sparse
+        attribute values.
+
+    .. change:: changed
+        :tags: session, custom attributes
+
+        Custom attributes can no longer be set by mutating entire dictionary.
+
+        .. seealso:: :ref:`release/migration/upcoming/mutating_dictionary`.
+
 .. release:: 1.0.2
     :date: 2016-11-17
 
