@@ -12,10 +12,10 @@ Migration notes
     Migrating from the old ftrack API? Read the dedicated :ref:`guide
     <release/migrating_from_old_api>`.
 
-Migrate to Upcoming
+Migrate to 1.0.3
 ================
 
-.. _release/migration/upcoming/mutating_dictionary:
+.. _release/migration/1.0.3/mutating_dictionary:
 
 Mutating custom attribute dictionary
 ------------------------------------

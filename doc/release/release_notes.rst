@@ -24,7 +24,7 @@ Release Notes
 
         Custom attributes can no longer be set by mutating entire dictionary.
 
-        .. seealso:: :ref:`release/migration/upcoming/mutating_dictionary`.
+        .. seealso:: :ref:`release/migration/1.0.3/mutating_dictionary`.
 
 .. release:: 1.0.2
     :date: 2016-11-17
