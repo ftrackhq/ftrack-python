@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: custom attributes
+
+        Custom attributes cannot be batch created together with entities.
+
 .. release:: 1.0.3
     :date: 2017-01-04
 
