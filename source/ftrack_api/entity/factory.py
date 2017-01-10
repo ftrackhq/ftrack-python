@@ -235,7 +235,7 @@ def _get_entity_configurations(entity):
     if entity.entity_type == 'User':
         entity_type = 'user'
 
-    if entity.entity_type == 'List':
+    if entity.entity_type in ('TypedContextList', 'AssetVersionList'):
         entity_type = 'list'
 
     if entity_type is None:
