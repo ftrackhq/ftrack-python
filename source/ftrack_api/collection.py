@@ -254,7 +254,11 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
                 self.value_attribute: value
             }
             entity = self.creator(self, data)
-            self.collection.append(entity)
+
+            with self.collection.entity.session.operation_recording(False):
+                # Do not record this operation since it will trigger
+                # redudant and potentially failing operations.
+                self.collection.append(entity)
         else:
             entity[self.value_attribute] = value
 
