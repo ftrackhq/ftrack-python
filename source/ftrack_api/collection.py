@@ -255,10 +255,22 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
             }
             entity = self.creator(self, data)
 
-            with self.collection.entity.session.operation_recording(False):
-                # Do not record this operation since it will trigger
-                # redudant and potentially failing operations.
+            if (
+                ftrack_api.inspection.state(entity) is
+                ftrack_api.symbol.CREATED
+            ):
+                # Persisting this entity will be handled here, record the
+                # operation.
                 self.collection.append(entity)
+
+            else:
+                # The entity is created and persisted separately by the
+                # creator. Do not record this operation.
+                with self.collection.entity.session.operation_recording(False):
+                    # Do not record this operation since it will trigger
+                    # redudant and potentially failing operations.
+                    self.collection.append(entity)
+
         else:
             entity[self.value_attribute] = value
 
