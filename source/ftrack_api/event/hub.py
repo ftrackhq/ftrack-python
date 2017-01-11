@@ -503,7 +503,7 @@ class EventHub(object):
         '''Prepare *event* for sending.'''
         event['source'].setdefault('id', self.id)
         event['source'].setdefault('user', {
-            'username': getpass.getuser()
+            'username': self._api_user
         })
 
     def _prepare_reply_event(self, event, source_event, source=None):
