@@ -9,7 +9,6 @@ import threading
 import Queue as queue
 import logging
 import time
-import getpass
 import uuid
 import operator
 import functools
