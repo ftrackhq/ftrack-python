@@ -349,6 +349,20 @@ class StandardFactory(Factory):
 
         elif reference.endswith('CustomAttributeValue'):
             def creator(proxy, data):
+                '''Create a custom attribute based on *proxy* and *data*.
+
+                Raise :py:exc:`KeyError` if related entity is already presisted
+                to the server. The proxy represents dense custom attribute
+                values and should never create new custom attribute values
+                through the proxy if entity exists on the remote.
+
+                If the entity is not persisted the ususal
+                <entity_type>CustomAttributeValue items cannot be updated as
+                the related entity does not exist on remote and values not in
+                the proxy. Instead a <entity_type>CustomAttributeValue will
+                be reconstructed and an update operation will be recorded.
+
+                '''
                 entity = proxy.collection.entity
                 if (
                     ftrack_api.inspection.state(entity) is not
@@ -377,14 +391,21 @@ class StandardFactory(Factory):
 
                 session = entity.session
 
-                # Create underlying custom attribute value.
-                session.create('CustomAttributeValue', create_data)
-
-                return session.create(
+                # Create custom attribute by reconstructing it and update the
+                # value. This will prevent a create operation to be sent to the
+                # remote, as create operations for this entity type is not
+                # allowed. Instead an update operation will be recorded.
+                value = create_data.pop('value')
+                item = session.create(
                     reference,
                     create_data,
                     reconstructing=True
                 )
+
+                # Record update operation.
+                item['value'] = value
+
+                return item
 
             key_attribute = 'key'
             value_attribute = 'value'
