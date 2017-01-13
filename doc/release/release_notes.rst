@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.0.4
+    :date: 2017-01-13
 
     .. change:: fixed
         :tags: custom attributes
