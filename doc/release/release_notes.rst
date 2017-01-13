@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: custom attributes
+
+        Custom attribute values cannot be set on entities that are not
+        persisted.
+
+    .. change:: fixed
         :tags: events
 
         `username` in published event's source data is set to the operating

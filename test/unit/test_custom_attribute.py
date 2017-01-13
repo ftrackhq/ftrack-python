@@ -1,7 +1,56 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import uuid
+
 import pytest
+
+
+@pytest.fixture(
+    params=[
+        'AssetVersion', 'Shot', 'AssetVersionList', 'TypedContextList', 'User'
+    ]
+)
+def new_entity_and_custom_attribute(request, session):
+    '''Return tuple with new entity, custom attribute name and value.'''
+    if request.param == 'AssetVersion':
+        entity = session.create(
+            request.param, {
+                'asset': session.query('Asset').first()
+            }
+        )
+        return (entity, 'versiontest', 123)
+
+    elif request.param == 'Shot':
+        sequence = session.query('Sequence').first()
+        entity = session.create(
+            request.param, {
+                'parent_id': sequence['id'],
+                'project_id': sequence['project_id'],
+                'name': str(uuid.uuid1())
+            }
+        )
+        return (entity, 'fstart', 1005)
+
+    elif request.param in ('AssetVersionList', 'TypedContextList'):
+        entity = session.create(
+            request.param, {
+                'project_id': session.query('Project').first()['id'],
+                'category_id': session.query('ListCategory').first()['id'],
+                'name': str(uuid.uuid1())
+            }
+        )
+        return (entity, 'listbool', True)
+
+    elif request.param == 'User':
+        entity = session.create(
+            request.param, {
+                'first_name': 'Custom attribute test',
+                'last_name': 'Custom attribute test',
+                'username': str(uuid.uuid1())
+            }
+        )
+        return (entity, 'teststring', 'foo')
 
 
 @pytest.mark.parametrize(
@@ -143,3 +192,17 @@ def test_set_custom_attribute_on_new_but_persisted_version(
     '''Set custom attribute on new persisted version.'''
     new_asset_version['custom_attributes']['versiontest'] = 5
     session.commit()
+
+
+def test_batch_create_entity_and_cust_attributes(
+    new_entity_and_custom_attribute
+):
+    '''Write custom attribute value and entity in the same batch.'''
+    entity, name, value = new_entity_and_custom_attribute
+    session = entity.session
+    entity['custom_attributes'][name] = value
+
+    assert entity['custom_attributes'][name] == value
+    session.commit()
+
+    assert entity['custom_attributes'][name] == value
