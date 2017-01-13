@@ -14,7 +14,8 @@ Release Notes
     .. change:: fixed
         :tags: custom attributes
 
-        Custom attributes cannot be batch created together with entities.
+        Custom attribute values cannot be set on entities that are not
+        persisted.
 
     .. change:: fixed
         :tags: events
