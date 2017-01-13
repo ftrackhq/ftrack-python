@@ -458,25 +458,33 @@ def test_unsubscribe_missing_subscriber(event_hub):
 
 
 @pytest.mark.parametrize('event_data', [
-    dict(source=dict(id='1', user=dict(username='test'))),
-    dict(source=dict(user=dict(username='test'))),
-    dict(source=dict(id='1'))
+    dict(source=dict(id='1', user=dict(username='auto'))),
+    dict(source=dict(user=dict(username='auto'))),
+    dict(source=dict(id='1')),
+    dict()
 ], ids=[
     'pre-prepared',
     'missing id',
-    'missing user'
+    'missing user',
+    'no source'
 ])
-def test_prepare_event(session, event_data, mocker):
+def test_prepare_event(session, event_data):
     '''Prepare event.'''
+    # Replace username `auto` in event data with API user.
+    try:
+        if event_data['source']['user']['username'] == 'auto':
+            event_data['source']['user']['username'] = session.api_user
+    except KeyError:
+        pass
+
     event_hub = ftrack_api.event.hub.EventHub(
         session.server_url, session.api_user, session.api_key
     )
     event_hub.id = '1'
-    mocker.patch('getpass.getuser', return_value='test')
 
     event = Event('test', id='event-id', **event_data)
     expected = Event(
-        'test', id='event-id', source=dict(id='1', user=dict(username='test'))
+        'test', id='event-id', source=dict(id='1', user=dict(username=session.api_user))
     )
     event_hub._prepare_event(event)
     assert event == expected

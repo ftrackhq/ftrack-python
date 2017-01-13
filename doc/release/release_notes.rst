@@ -16,6 +16,12 @@ Release Notes
 
         Custom attributes cannot be batch created together with entities.
 
+    .. change:: fixed
+        :tags: events
+
+        `username` in published event's source data is set to the operating
+        system user and not the API user.
+
 .. release:: 1.0.3
     :date: 2017-01-04
 
