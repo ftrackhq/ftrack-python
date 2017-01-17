@@ -139,7 +139,11 @@ by a specific author when only name is known::
         'Note where author has (first_name is "Jane" and last_name is "Doe")'
     )
 
-This query could be written without ``has``, giving the same results.
+This query could be written without ``has``, giving the same results::
+
+    notes_written_by_jane_doe = session.query(
+        'Note where author.first_name is "Jane" and author.last_name is "Doe"'
+    )
 
 ``any`` should be used for collection relationships. For example, to find all
 projects that have at least one metadata instance that has `key=some_key` 
