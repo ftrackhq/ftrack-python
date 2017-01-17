@@ -132,8 +132,9 @@ condition can be written against the following form::
 
     <not?> <relationship> <has|any> (<criteria>)
 
-``has`` should be used for scalar relationships. For example, to find notes 
-by a specific author when only name is known::
+For optimal performance ``has`` should be used for scalar relationships when
+multiple conditions are involved. For example, to find notes by a specific
+author when only name is known::
 
     notes_written_by_jane_doe = session.query(
         'Note where author has (first_name is "Jane" and last_name is "Doe")'
