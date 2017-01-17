@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: fixed
+        :tags: documentation
+
+        Query tutorial article gives missleading information about the ``has``
+        operator.
+
 .. release:: 1.0.4
     :date: 2017-01-13
 

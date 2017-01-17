@@ -127,8 +127,8 @@ time greater than the start of today is returned.
 
 When filtering on relationships, the conjunctions ``has`` and ``any`` can be
 used to specify how the criteria should be applied. This becomes important when
-querying using multiple conditions. The relationship condition can be written
-against the following form::
+querying using multiple conditions on collection relationships. The relationship
+condition can be written against the following form::
 
     <not?> <relationship> <has|any> (<criteria>)
 
@@ -139,9 +139,7 @@ by a specific author when only name is known::
         'Note where author has (first_name is "Jane" and last_name is "Doe")'
     )
 
-In contrast, if the query was written without ``has`` each condition would be
-tested separately. In that case, notes written by both *Jane Smith* and 
-*John Doe* would have been returned in addition to those written by *Jane Doe*.
+This query could be written without ``has``, giving the same results.
 
 ``any`` should be used for collection relationships. For example, to find all
 projects that have at least one metadata instance that has `key=some_key` 
