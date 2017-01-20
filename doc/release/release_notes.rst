@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: fixed
+        :tags: documentation
+
+        The :ref:`example/project` example can be confusing since the project
+        schema may not contain the necessary object types.
+
 .. release:: 1.0.4
     :date: 2017-01-13
 
