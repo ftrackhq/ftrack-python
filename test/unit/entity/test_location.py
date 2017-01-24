@@ -498,5 +498,19 @@ def test_get_thumbnail_url(server_location, server_image_component):
         size=10
     )
     assert thumbnail_url
+
     response = requests.get(thumbnail_url)
     response.raise_for_status()
+
+    image_file = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            '..',
+            'fixture',
+            'media',
+            'image-resized-10.png'
+        )
+    )
+    expected_image_contents = open(image_file).read()
+    assert response.content == expected_image_contents
