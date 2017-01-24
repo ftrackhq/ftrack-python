@@ -191,6 +191,76 @@ memoise_defaults = ftrack_api.cache.memoise_decorator(
     )
 )
 
+#: Memoiser for use with callables that should be called once per session.
+memoise_session = ftrack_api.cache.memoise_decorator(
+    ftrack_api.cache.Memoiser(
+        key_maker=PerSessionDefaultKeyMaker(), return_copies=False
+    )
+)
+
+
+@memoise_session
+def _get_custom_attribute_configurations(session):
+    '''Return list of custom attribute configurations.
+
+    The configuration objects will have key, project_id, id and object_type_id
+    populated.
+
+    '''
+    return session.query(
+        'select key, project_id, id, object_type_id, entity_type from '
+        'CustomAttributeConfiguration'
+    ).all()
+
+
+def _get_entity_configurations(entity):
+    '''Return all configurations for current collection entity.'''
+    entity_type = None
+    project_id = None
+    object_type_id = None
+
+    if 'object_type_id' in entity.keys():
+        project_id = entity['project_id']
+        entity_type = 'task'
+        object_type_id = entity['object_type_id']
+
+    if entity.entity_type == 'AssetVersion':
+        project_id = entity['asset']['parent']['project_id']
+        entity_type = 'assetversion'
+
+    if entity.entity_type == 'Project':
+        project_id = entity['id']
+        entity_type = 'show'
+
+    if entity.entity_type == 'User':
+        entity_type = 'user'
+
+    if entity.entity_type in ('TypedContextList', 'AssetVersionList'):
+        entity_type = 'list'
+
+    if entity_type is None:
+        raise ValueError(
+            'Entity {!r} not supported.'.format(entity)
+        )
+
+    configurations = []
+    for configuration in _get_custom_attribute_configurations(
+        entity.session
+    ):
+        if (
+            configuration['entity_type'] == entity_type and
+            configuration['project_id'] in (project_id, None) and
+            configuration['object_type_id'] == object_type_id
+        ):
+            configurations.append(configuration)
+
+    # Return with global configurations at the end of the list. This is done
+    # so that global conigurations are shadowed by project specific if the
+    # configurations list is looped when looking for a matching `key`.
+    return sorted(
+        configurations, key=lambda item: item['project_id'] is None
+    )
+
 
 class StandardFactory(Factory):
     '''Standard entity class factory.'''
@@ -275,6 +345,73 @@ class StandardFactory(Factory):
                 ftrack_api.attribute.CustomAttributeCollectionAttribute(
                     name, mutable=mutable
                 )
+            )
+
+        elif reference.endswith('CustomAttributeValue'):
+            def creator(proxy, data):
+                '''Create a custom attribute based on *proxy* and *data*.
+
+                Raise :py:exc:`KeyError` if related entity is already presisted
+                to the server. The proxy represents dense custom attribute
+                values and should never create new custom attribute values
+                through the proxy if entity exists on the remote.
+
+                If the entity is not persisted the ususal
+                <entity_type>CustomAttributeValue items cannot be updated as
+                the related entity does not exist on remote and values not in
+                the proxy. Instead a <entity_type>CustomAttributeValue will
+                be reconstructed and an update operation will be recorded.
+
+                '''
+                entity = proxy.collection.entity
+                if (
+                    ftrack_api.inspection.state(entity) is not
+                    ftrack_api.symbol.CREATED
+                ):
+                    raise KeyError(
+                        'Custom attributes must be created explicitly for the '
+                        'given entity type before being set.'
+                    )
+
+                configuration = None
+                for candidate in _get_entity_configurations(entity):
+                    if candidate['key'] == data['key']:
+                        configuration = candidate
+                        break
+
+                if configuration is None:
+                    raise ValueError(
+                        u'No valid custom attribute for data {0!r} was found.'
+                        .format(data)
+                    )
+
+                create_data = dict(data.items())
+                create_data['configuration_id'] = configuration['id']
+                create_data['entity_id'] = entity['id']
+
+                session = entity.session
+
+                # Create custom attribute by reconstructing it and update the
+                # value. This will prevent a create operation to be sent to the
+                # remote, as create operations for this entity type is not
+                # allowed. Instead an update operation will be recorded.
+                value = create_data.pop('value')
+                item = session.create(
+                    reference,
+                    create_data,
+                    reconstructing=True
+                )
+
+                # Record update operation.
+                item['value'] = value
+
+                return item
+
+            key_attribute = 'key'
+            value_attribute = 'value'
+
+            return ftrack_api.attribute.KeyValueMappedCollectionAttribute(
+                name, creator, key_attribute, value_attribute, mutable=mutable
             )
 
         self.logger.debug(L(

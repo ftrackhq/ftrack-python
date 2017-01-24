@@ -12,6 +12,27 @@ Migration notes
     Migrating from the old ftrack API? Read the dedicated :ref:`guide
     <release/migrating_from_old_api>`.
 
+Migrate to 1.0.3
+================
+
+.. _release/migration/1.0.3/mutating_dictionary:
+
+Mutating custom attribute dictionary
+------------------------------------
+
+Custom attributes can no longer be set by mutating entire dictionary::
+
+    # This will result in an error.
+    task['custom_attributes'] = dict(foo='baz', bar=2)
+    session.commit()
+
+Instead the individual values should be changed::
+
+    # This works better.
+    task['custom_attributes']['foo'] = 'baz'
+    task['custom_attributes']['bar'] = 2
+    session.commit()
+
 Migrate to 1.0.0
 ================
 
