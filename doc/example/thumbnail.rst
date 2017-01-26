@@ -3,8 +3,9 @@
 
 .. _example/thumbnail:
 
+***********************
 Working with thumbnails
-=======================
+***********************
 
 Components can be used as thumbnails on various entities, including
 `Project`, `Task`, `AssetVersion` and `User`.  To create and set a thumbnail
@@ -46,6 +47,24 @@ The next example reuses a version's thumbnail for the asset parent thumbnail::
     asset_parent = asset_version['asset']['parent']
     asset_parent['thumbnail_id'] = asset_version['thumbnail_id']
     session.commit()
+
+.. _example/thumbnail/url:
+
+Retrieving thumbnail URL
+========================
+
+To get an URL to a thumbnail, `thumbnail_component`, which can be used used
+to download or display the image in an interface, use the following::
+
+    import ftrack_api.symbol
+    server_location = session.get('Location', ftrack_api.symbol.SERVER_LOCATION_ID)
+    thumbnail_url = server_location.get_thumbnail_url(thumbnail_component)
+    thumbnail_url_tiny = server_location.get_thumbnail_url(
+        thumbnail_component, size=100
+    )
+    thumbnail_url_large = server_location.get_thumbnail_url(
+        thumbnail_component, size=500
+    )
 
 .. seealso::
 
