@@ -18,6 +18,12 @@ Release Notes
         to server location, which can be used to retrieve a thumbnail URL.
         See :ref:`example/thumbnail/url` for example usage.
 
+    .. change:: fixed
+        :tags: documentation
+
+        Query tutorial article gives misleading information about the ``has``
+        operator.
+
 .. release:: 1.0.4
     :date: 2017-01-13
 
