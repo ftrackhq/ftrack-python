@@ -29,26 +29,18 @@ Read existing custom attribute values::
     >>> print task['custom_attributes']['my_text_field']
     'some text'
 
-Setting custom attributes can be done in several ways. The first example below 
-will only update a singe attribute, while the second way will completely replace
-any existing ``custom_attributes``::
+Updating a custom attributes can also be done similar to a dictionary::
 
     task['custom_attributes']['my_text_field'] = 'foo'
-    task['custom_attributes'] = {
-        'my_text_field': 'bar'
-    }
 
 To query for tasks with a custom attribute, ``my_text_field``, you can use the
-configration relation::
-    
+key from the configuration::
+ 
     for task in session.query(
         'Task where custom_attributes any '
-        '(configuration.key is "my_text_field" and value is "bar")'
+        '(key is "my_text_field" and value is "bar")'
     ):
         print task['name']
-
-This will only include tasks where the custom attribute has been changed from
-the default value.
 
 Limitations
 ===========
@@ -76,20 +68,6 @@ and instead the `raw` value is returned::
 To work around this limitation it is possible to use the legacy api for
 hierarchical attributes or to manually query the parents for values and use the
 first value that is set.
-
-Filtering
----------
-
-Custom attribute values are saved sparsely when changed from the default value.
-Filtering on custom attributes will not account for default values which may
-lead to confusing behaviour.
-
-Available custom attributes
----------------------------
-
-The custom attributes available on entities are cached on the
-:class:`~ftrack_api.session.Session`. If a new custom attribute configuration
-is added from the web UI a new session must be instantiated.
 
 Validation
 ==========

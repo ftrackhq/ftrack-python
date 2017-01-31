@@ -710,3 +710,23 @@ class OriginLocationMixin(MemoryLocationMixin, UnmanagedLocationMixin):
             ))
 
         return context
+
+
+class ServerLocationMixin(object):
+    '''Location representing ftrack server.
+
+    Adds convenience methods to location, specific to ftrack server.
+    '''
+    def get_thumbnail_url(self, component, size=None):
+        '''Return thumbnail url for *component*.
+
+        Optionally, specify *size* to constrain the downscaled image to size
+        x size pixels.
+
+        Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if
+        URL could not be determined from *resource_identifier* or
+        :exc:`~ftrack_api.exception.AccessorUnsupportedOperationError` if
+        retrieving URL is not supported by the location's accessor.
+        '''
+        resource_identifier = self.get_resource_identifier(component)
+        return self.accessor.get_thumbnail_url(resource_identifier, size)

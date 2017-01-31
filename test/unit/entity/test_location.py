@@ -6,6 +6,7 @@ import base64
 import filecmp
 
 import pytest
+import requests
 
 import ftrack_api.exception
 import ftrack_api.accessor.disk
@@ -13,6 +14,7 @@ import ftrack_api.structure.origin
 import ftrack_api.structure.id
 import ftrack_api.entity.location
 import ftrack_api.resource_identifier_transformer.base as _transformer
+import ftrack_api.symbol
 
 
 class Base64ResourceIdentifierTransformer(
@@ -116,6 +118,34 @@ def new_unmanaged_location(request, session, unique_name):
 def origin_location(session):
     '''Return origin location.'''
     return session.query('Location where name is "ftrack.origin"').one()
+
+@pytest.fixture()
+def server_location(session):
+    '''Return server location.'''
+    return session.get('Location', ftrack_api.symbol.SERVER_LOCATION_ID)
+
+
+@pytest.fixture()
+def server_image_component(request, session, server_location):
+    image_file = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            '..',
+            'fixture',
+            'media',
+            'image.png'
+        )
+    )
+    component = session.create_component(
+        image_file, location=server_location
+    )
+
+    def cleanup():
+        server_location.remove_component(component)
+    request.addfinalizer(cleanup)
+
+    return component
 
 
 @pytest.mark.parametrize('name', [
@@ -459,3 +489,28 @@ def test_data_transfer(session, new_location, origin_location):
     new_video_file = new_location.get_filesystem_path(component)
 
     assert filecmp.cmp(video_file, new_video_file)
+
+
+def test_get_thumbnail_url(server_location, server_image_component):
+    '''Test download a thumbnail image from server location'''
+    thumbnail_url = server_location.get_thumbnail_url(
+        server_image_component,
+        size=10
+    )
+    assert thumbnail_url
+
+    response = requests.get(thumbnail_url)
+    response.raise_for_status()
+
+    image_file = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            '..',
+            'fixture',
+            'media',
+            'image-resized-10.png'
+        )
+    )
+    expected_image_contents = open(image_file).read()
+    assert response.content == expected_image_contents

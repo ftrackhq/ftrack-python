@@ -17,6 +17,51 @@ Release Notes
         Added examples to show how to list a user's assigned tasks and all
         users assigned to a task. :ref:`example/assignments_and_allocations`.
 
+  .. change:: new
+    :tags: server location, thumbnail
+
+        Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`
+        to server location, which can be used to retrieve a thumbnail URL.
+        See :ref:`example/thumbnail/url` for example usage.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Query tutorial article gives misleading information about the ``has``
+        operator.
+
+.. release:: 1.0.4
+    :date: 2017-01-13
+
+    .. change:: fixed
+        :tags: custom attributes
+
+        Custom attribute values cannot be set on entities that are not
+        persisted.
+
+    .. change:: fixed
+        :tags: events
+
+        `username` in published event's source data is set to the operating
+        system user and not the API user.
+
+.. release:: 1.0.3
+    :date: 2017-01-04
+
+    .. change:: changed
+        :tags: session, custom attributes
+
+        Increased performance of custom attributes and better support for
+        filtering when using a version of ftrack that supports non-sparse
+        attribute values.
+
+    .. change:: changed
+        :tags: session, custom attributes
+
+        Custom attributes can no longer be set by mutating entire dictionary.
+
+        .. seealso:: :ref:`release/migration/1.0.3/mutating_dictionary`.
+
 .. release:: 1.0.2
     :date: 2016-11-17
 

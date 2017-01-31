@@ -87,7 +87,7 @@ particularly when :ref:`targeting events
 useful to enhance this. To do so, simply pass in *subscriber* as a dictionary of
 data to the :meth:`~hub.EventHub.subscribe` method::
 
-    ftrack.event_hub.subscribe(
+    session.event_hub.subscribe(
         'topic=ftrack.update',
         my_callback,
         subscriber={
