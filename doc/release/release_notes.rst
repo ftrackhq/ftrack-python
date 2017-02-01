@@ -14,7 +14,7 @@ Release Notes
     .. change:: new
         :tags: documentation
 
-        Added example on how to use `SecurityRole` and `UserSecurityRole` and
+        Added example on how to use `SecurityRole` and `UserSecurityRole` to
         manage security roles for users.
 
   .. change:: new
