@@ -14,14 +14,15 @@ Release Notes
     .. change:: new
         :tags: documentation
 
-        Added example on how to use `SecurityRole` and `UserSecurityRole` to
-        manage security roles for users.
+        Added :ref:`example <example/security_roles>` on how to use
+        `SecurityRole` and `UserSecurityRole` to manage security roles for
+        users.
 
     .. change:: changed
         :tags: documentation
 
-        Added examples to show how to list a user's assigned tasks and all
-        users assigned to a task. :ref:`example/assignments_and_allocations`.
+        Added :ref:`examples <example/assignments_and_allocations>` to show how
+        to list a user's assigned tasks and all users assigned to a task.
 
     .. change:: new
         :tags: server location, thumbnail
