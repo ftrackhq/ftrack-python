@@ -49,7 +49,7 @@ or query them directly like this::
 User security roles can also be added to a user for all projects like this::
 
     project_manager_role = session.query(
-        'select name from SecurityRole where name is "Project Manager"'
+        'SecurityRole where name is "Project Manager"'
     ).one()
 
     session.create('UserSecurityRole', {
