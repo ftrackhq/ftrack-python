@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: documentation
+
+        Added example on how to use `SecurityRole` and `UserSecurityRole` and
+        manage security roles for users.
+
   .. change:: new
     :tags: server location, thumbnail
 
