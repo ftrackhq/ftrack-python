@@ -15,7 +15,7 @@ specify who should have access to certain data on different projects.
 List all available security roles like this::
 
     security_roles = session.query(
-        'select name from SecurityRole where type == "PROJECT"'
+        'select name from SecurityRole where type is "PROJECT"'
     )
 
 .. note::
