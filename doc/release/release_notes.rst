@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: documentation
+
+        Added examples to show how to list a user's assigned tasks and all
+        users assigned to a task. :ref:`example/assignments_and_allocations`.
+
   .. change:: new
     :tags: server location, thumbnail
 
