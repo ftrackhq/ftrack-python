@@ -68,7 +68,8 @@ class Session(object):
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=True, schema_cache_path=None
+        auto_connect_event_hub=True, schema_cache_path=None,
+        plugin_arguments=None
     ):
         '''Initialise session.
 
@@ -131,6 +132,13 @@ class Session(object):
         determine the path to store cache in. If the environment variable is
         also not specified then a temporary directory will be used. Set to
         `False` to disable schema caching entirely.
+
+        *plugin_arguments* are an optional list of arguments that plugins
+        can specify when they are registered.  This provides a programmatic way
+        to pass configuration information to a plugin without the complexities
+        of globals such as env variables.  Only custom keyword arguments would
+        be passable to be backwards compatible with existing code that does not
+        accept arbitrary arguments. If not specified, defaults to None.
 
         '''
         super(Session, self).__init__()
@@ -236,6 +244,8 @@ class Session(object):
             self._plugin_paths = os.environ.get(
                 'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
+
+        self._plugin_arguments = plugin_arguments
 
         self._discover_plugins()
 
