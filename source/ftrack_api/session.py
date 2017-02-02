@@ -1257,7 +1257,9 @@ class Session(object):
                 )
 
         '''
-        ftrack_api.plugin.discover(self._plugin_paths, [self])
+        ftrack_api.plugin.discover(self._plugin_paths,
+                                   self._plugin_arguments,
+                                   [self])
 
     def _read_schemas_from_cache(self, schema_cache_path):
         '''Return schemas and schema hash from *schema_cache_path*.

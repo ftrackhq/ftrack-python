@@ -7,9 +7,11 @@ import logging
 import os
 import uuid
 import imp
+import inspect
 
 
-def discover(paths, positional_arguments=None, keyword_arguments=None):
+def discover(paths, plugin_arguments='', positional_arguments=None,
+             keyword_arguments=None):
     '''Find and load plugins in search *paths*.
 
     Each discovered module should implement a register function that accepts
@@ -49,6 +51,11 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                     )
                     continue
 
+                # TODO: Question:  Do we need to do the inspection as part of
+                # the try: module.register?
+                # or in the else?
+                if plugin_arguments and plugin_arguments != '':
+                    arg_spec = inspect.getargspec(module)
                 try:
                     module.register
                 except AttributeError:
