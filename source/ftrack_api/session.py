@@ -133,10 +133,10 @@ class Session(object):
         also not specified then a temporary directory will be used. Set to
         `False` to disable schema caching entirely.
 
-        *plugin_arguments* are an optional list of arguments that plugins
-        can specify when they are registered.  This provides a programmatic way
-        to pass configuration information to a plugin without the complexities
-        of globals such as env variables.  Only custom keyword arguments would
+        *plugin_arguments* are keyword arguments that plugins can specify when
+        they are registered.  This provides a programmatic way to pass
+        configuration information to a plugin without the complexities of
+        globals such as env variables.  Only custom keyword arguments would
         be passable to be backwards compatible with existing code that does not
         accept arbitrary arguments. If not specified, defaults to None.
 
@@ -1257,9 +1257,7 @@ class Session(object):
                 )
 
         '''
-        ftrack_api.plugin.discover(self._plugin_paths,
-                                   self._plugin_arguments,
-                                   [self])
+        ftrack_api.plugin.discover(self._plugin_paths, [self])
 
     def _read_schemas_from_cache(self, schema_cache_path):
         '''Return schemas and schema hash from *schema_cache_path*.
