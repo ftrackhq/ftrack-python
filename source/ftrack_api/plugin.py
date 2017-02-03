@@ -99,10 +99,8 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                             if keyword_argument in remainder
                         ])
 
-                        if (
-                            not remaining_keyword_arguments.issuperset(
-                               set(keyword_arguments.keys())
-                            )
+                        if not set(keyword_arguments.keys()).issubset(
+                            remaining_keyword_arguments
                         ):
                             logger.warning(
                                 'Culling passed arguments to match register '
