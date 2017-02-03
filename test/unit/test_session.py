@@ -1128,3 +1128,15 @@ def test_encode_media_from_component(session, video_path):
 
     job_data = json.loads(job['data'])
     assert 'keep_original' in job_data and job_data['keep_original'] is True
+
+
+def test_plugin_arguments(mocker):
+    '''Pass plugin arguments to plugin discovery mechanism.'''
+    mock = mocker.patch(
+        'ftrack_api.plugin.discover'
+    )
+    session = ftrack_api.Session(
+        plugin_paths=[], plugin_arguments={"test": "value"}
+    )
+    assert mock.called
+    mock.assert_called_once_with([], [session], {"test": "value"})
