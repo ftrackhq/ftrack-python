@@ -12,13 +12,13 @@ Release Notes
 .. release:: Upcoming
 
   .. change:: changed
-    :tags: session, register
+    :tags: session, plugins
 
-        Added *plugin_arguments* to :meth:`Session.init` to allow passing of
-        optional keyword arguments that plugins can specify when they are
-        registered.  This provides a programmatic way to pass configuration
-        information to a plugin without the complexities of globals such as
-        env variables.  If not specified, defaults to None.
+        Added *plugin_arguments* to :class:`Session` to allow passing of
+        optional keyword arguments to discovered plugin register functions. Only
+        arguments defined in a plugin register function signature are passed so
+        existing plugin register functions do not need updating if the new
+        functionality is not desired.
 
   .. change:: new
     :tags: server location, thumbnail
