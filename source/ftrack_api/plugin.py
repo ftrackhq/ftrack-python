@@ -17,6 +17,9 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
     *positional_arguments* and *keyword_arguments* as \*args and \*\*kwargs
     respectively.
 
+    If a register function does not accept variable arguments, then attempt to
+    only pass accepted arguments to the function by inspecting its signature.
+
     '''
     logger = logging.getLogger(__name__ + '.discover')
 
@@ -59,20 +62,55 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                         .format(module_path)
                     )
                 else:
-                    register_arguments = inspect.getargspec(module.register)
-                    args = register_arguments[0]
-                    defaults = register_arguments[3]
-                    if defaults:
-                        requested_keyword_arguments = args[-len(defaults):]
+                    # Attempt to only pass arguments that are accepted by the
+                    # register function.
+                    specification = inspect.getargspec(module.register)
 
-                        validated_keyword_args = {
-                            x: keyword_arguments[x] for x in keyword_arguments
-                            if x in requested_keyword_arguments
+                    if (
+                        not specification.varargs and
+                        len(positional_arguments) > len(specification.args)
+                    ):
+                        logger.warning(
+                            'Culling passed arguments to match register '
+                            'function signature.'
+                        )
+
+                        positional_arguments = positional_arguments[
+                            len(specification.args):
+                        ]
+                        keyword_arguments = {}
+
+                    elif not specification.keywords:
+                        # Remove arguments that have been passed as positionals.
+                        remainder = specification.args[
+                            len(positional_arguments):
+                        ]
+
+                        # Determine remaining available keyword arguments.
+                        defined_keyword_arguments = []
+                        if specification.defaults:
+                            defined_keyword_arguments = specification.args[
+                                -len(specification.defaults):
+                            ]
+
+                        remaining_keyword_arguments = set([
+                            keyword_argument for keyword_argument
+                            in defined_keyword_arguments
+                            if keyword_argument in remainder
+                        ])
+
+                        if (
+                            remaining_keyword_arguments
+                            != set(keyword_arguments.keys())
+                        ):
+                            logger.warning(
+                                'Culling passed arguments to match register '
+                                'function signature.'
+                            )
+                            keyword_arguments = {
+                                key: value
+                                for key, value in keyword_arguments.items()
+                                if key in remaining_keyword_arguments
                             }
 
-                        if validated_keyword_args:
-                            module.register(*positional_arguments,
-                                            **validated_keyword_args)
-                    else:
-                        module.register(*positional_arguments,
-                                        **keyword_arguments)
+                    module.register(*positional_arguments, **keyword_arguments)
