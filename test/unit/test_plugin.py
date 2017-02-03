@@ -55,6 +55,30 @@ def broken_plugin(temporary_path):
     return temporary_path
 
 
+@pytest.fixture()
+def plugin_accepting_specific_arguments(temporary_path):
+    '''Return path containing a plugin accepting specific arguments.'''
+    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(positional, keyword_a=None, keyword_b=None):
+                print "Registered with", positional, keyword_a, keyword_b
+        '''))
+
+    return temporary_path
+
+
+@pytest.fixture()
+def plugin_accepting_variable_arguments(temporary_path):
+    '''Return path containing a plugin accepting variable arguments.'''
+    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(*args, **kw):
+                print "Registered with", args, kw
+        '''))
+
+    return temporary_path
+
+
 def test_discover_empty_paths(capsys):
     '''Discover no plugins when paths are empty.'''
     ftrack_api.plugin.discover(['   '])
@@ -96,29 +120,27 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     assert 'Failed to load plugin' in records[0].message
 
 
-@pytest.fixture()
-def valid_plugin_with_keywords(temporary_path):
-    '''Return path to directory containing a valid plugin.'''
-    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
-            def register(*args, plugin_arguments=None):
-                print "Registered with plugin_arguments", args, plugin_arguments
-        '''))
-
-    return temporary_path
-
-
-def test_discover_valid_plugin_with_keywords(valid_plugin_with_keywords,
-                                             capsys):
-    '''Discover valid plugin that uses plugin arguments.'''
-    huddle_id = uuid.uuid4().hex
+def test_discover_plugin_accepting_specific_arguments(
+    plugin_accepting_specific_arguments, capsys
+):
+    '''Discover plugin that accepts specific arguments.'''
     ftrack_api.plugin.discover(
-        [valid_plugin_with_keywords],
+        [plugin_accepting_specific_arguments],
         (1, 2),
-        keyword_arguments={"plugin_arguments": {'huddle': huddle_id}}
+        keyword_arguments={'keyword_b': 'b', 'unused_keyword': 'unused'}
     )
     output, error = capsys.readouterr()
-    register_message = ("Registered with plugin_arguments (1, 2) "
-                        "{\'huddle\': {0}}".format(huddle_id))
-    # register_message = "Registered with plugin_arguments (1, 2)"
-    assert register_message in output
+    assert 'Registered with 1 2 b' in output
+
+
+def test_discover_plugin_accepting_variable_arguments(
+    plugin_accepting_variable_arguments, capsys
+):
+    '''Discover plugin that accepts variable arguments.'''
+    ftrack_api.plugin.discover(
+        [plugin_accepting_variable_arguments],
+        (1, 2),
+        keyword_arguments={'a': True, 'b': False}
+    )
+    output, error = capsys.readouterr()
+    assert 'Registered with (1, 2) {\'a\': True, \'b\': False}' in output
