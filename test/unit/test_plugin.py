@@ -4,7 +4,7 @@
 import os
 import textwrap
 import logging
-import uuid
+import re
 
 import pytest
 
@@ -56,25 +56,19 @@ def broken_plugin(temporary_path):
 
 
 @pytest.fixture()
-def plugin_accepting_specific_arguments(temporary_path):
-    '''Return path containing a plugin accepting specific arguments.'''
+def plugin(request, temporary_path):
+    '''Return path containing a plugin with requested specification.'''
+    specification = request.param
+    output = re.sub('(\w+)=\w+', '"\g<1>={}".format(\g<1>)', specification)
+    output = re.sub('\*args', 'args', output)
+    output = re.sub('\*\*kwargs', 'sorted(kwargs.items())', output)
+
     with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
-            def register(positional, keyword_a=None, keyword_b=None):
-                print "Registered with", positional, keyword_a, keyword_b
-        '''))
-
-    return temporary_path
-
-
-@pytest.fixture()
-def plugin_accepting_variable_arguments(temporary_path):
-    '''Return path containing a plugin accepting variable arguments.'''
-    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
-            def register(*args, **kw):
-                print "Registered with", args, kw
-        '''))
+        content = textwrap.dedent('''
+            def register({}):
+                print {}
+        '''.format(specification, output))
+        file_object.write(content)
 
     return temporary_path
 
@@ -120,27 +114,56 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     assert 'Failed to load plugin' in records[0].message
 
 
-def test_discover_plugin_accepting_specific_arguments(
-    plugin_accepting_specific_arguments, capsys
+@pytest.mark.parametrize(
+    'plugin, positional, keyword, expected',
+    [
+        (
+            'a, b=False, c=False',
+            (1, 2), {'c': True, 'd': False},
+            '1 b=2 c=True'
+        ),
+        (
+            '*args',
+            (1, 2), {'b': True, 'c': False},
+            '(1, 2)'
+        ),
+        (
+            '**kwargs',
+            tuple(), {'b': True, 'c': False},
+            '[(\'b\', True), (\'c\', False)]'
+        ),
+        (
+            'a=False, b=False',
+            (True,), {'b': True},
+            'a=True b=True'
+        ),
+        (
+            'a, c=False, *args',
+            (1, 2, 3, 4), {},
+            '1 c=2 (3, 4)'
+        ),
+        (
+            'a, c=False, **kwargs',
+            tuple(), {'a': 1, 'b': 2, 'c': 3, 'd': 4},
+            '1 c=3 [(\'b\', 2), (\'d\', 4)]'
+        ),
+    ],
+    indirect=['plugin'],
+    ids=[
+        'mixed-explicit',
+        'variable-args-only',
+        'variable-kwargs-only',
+        'keyword-from-positional',
+        'trailing-variable-args',
+        'trailing-keyword-args'
+    ]
+)
+def test_discover_plugin_with_specific_signature(
+    plugin, positional, keyword, expected, capsys
 ):
-    '''Discover plugin that accepts specific arguments.'''
+    '''Discover plugin.'''
     ftrack_api.plugin.discover(
-        [plugin_accepting_specific_arguments],
-        (1, 2),
-        keyword_arguments={'keyword_b': 'b', 'unused_keyword': 'unused'}
+        [plugin], positional, keyword
     )
     output, error = capsys.readouterr()
-    assert 'Registered with 1 2 b' in output
-
-
-def test_discover_plugin_accepting_variable_arguments(
-    plugin_accepting_variable_arguments, capsys
-):
-    '''Discover plugin that accepts variable arguments.'''
-    ftrack_api.plugin.discover(
-        [plugin_accepting_variable_arguments],
-        (1, 2),
-        keyword_arguments={'a': True, 'b': False}
-    )
-    output, error = capsys.readouterr()
-    assert 'Registered with (1, 2) {\'a\': True, \'b\': False}' in output
+    assert expected in output
