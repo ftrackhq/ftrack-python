@@ -4,6 +4,7 @@
 import os
 import textwrap
 import logging
+import uuid
 
 import pytest
 
@@ -93,3 +94,31 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     assert len(records) == 1
     assert records[0].levelno is logging.WARNING
     assert 'Failed to load plugin' in records[0].message
+
+
+@pytest.fixture()
+def valid_plugin_with_keywords(temporary_path):
+    '''Return path to directory containing a valid plugin.'''
+    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(*args, plugin_arguments=None):
+                print "Registered with plugin_arguments", args, plugin_arguments
+        '''))
+
+    return temporary_path
+
+
+def test_discover_valid_plugin_with_keywords(valid_plugin_with_keywords,
+                                             capsys):
+    '''Discover valid plugin that uses plugin arguments.'''
+    huddle_id = uuid.uuid4().hex
+    ftrack_api.plugin.discover(
+        [valid_plugin_with_keywords],
+        (1, 2),
+        keyword_arguments={"plugin_arguments": {'huddle': huddle_id}}
+    )
+    output, error = capsys.readouterr()
+    register_message = ("Registered with plugin_arguments (1, 2) "
+                        "{\'huddle\': {0}}".format(huddle_id))
+    # register_message = "Registered with plugin_arguments (1, 2)"
+    assert register_message in output
