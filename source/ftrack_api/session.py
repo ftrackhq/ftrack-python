@@ -133,11 +133,12 @@ class Session(object):
         also not specified then a temporary directory will be used. Set to
         `False` to disable schema caching entirely.
 
-        *plugin_arguments* should be optional keyword arguments to pass to
-        plugin register functions upon discovery. If a discovered plugin has a
-        signature that is incompatible with the passed arguments, the discovery
-        mechanism will attempt to reduce the passed arguments to only those that
-        the plugin accepts. Note that a warning will be logged in this case.
+        *plugin_arguments* should be an optional mapping (dict) of keyword
+        arguments to pass to plugin register functions upon discovery. If a
+        discovered plugin has a signature that is incompatible with the passed
+        arguments, the discovery mechanism will attempt to reduce the passed
+        arguments to only those that the plugin accepts. Note that a warning
+        will be logged in this case.
 
         '''
         super(Session, self).__init__()
