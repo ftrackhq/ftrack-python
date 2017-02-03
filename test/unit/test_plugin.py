@@ -161,7 +161,7 @@ def test_discover_broken_plugin(broken_plugin, caplog):
 def test_discover_plugin_with_specific_signature(
     plugin, positional, keyword, expected, capsys
 ):
-    '''Discover plugin.'''
+    '''Discover plugin passing only supported arguments.'''
     ftrack_api.plugin.discover(
         [plugin], positional, keyword
     )
