@@ -44,7 +44,6 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                 try:
                     module = imp.load_source(unique_name, module_path)
                 except Exception as error:
-                    print('Failed to load plugin from "{0}": {1}'.format(module_path, error))
                     logger.warning(
                         'Failed to load plugin from "{0}": {1}'
                         .format(module_path, error)
