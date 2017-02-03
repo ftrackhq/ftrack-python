@@ -118,9 +118,9 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     'plugin, positional, keyword, expected',
     [
         (
-            'a, b=False, c=False',
-            (1, 2), {'c': True, 'd': False},
-            '1 b=2 c=True'
+            'a, b=False, c=False, d=False',
+            (1, 2), {'c': True, 'd': True, 'e': True},
+            '1 b=2 c=True d=True'
         ),
         (
             '*args',
