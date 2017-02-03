@@ -21,6 +21,19 @@ Release Notes
         functionality is not desired.
 
     .. change:: new
+        :tags: documentation
+
+        Added :ref:`example <example/security_roles>` on how to use
+        `SecurityRole` and `UserSecurityRole` to manage security roles for
+        users.
+
+    .. change:: changed
+        :tags: documentation
+
+        Added :ref:`examples <example/assignments_and_allocations>` to show how
+        to list a user's assigned tasks and all users assigned to a task.
+
+    .. change:: new
         :tags: server location, thumbnail
 
         Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`

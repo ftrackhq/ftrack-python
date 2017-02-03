@@ -44,3 +44,4 @@ already constructed a :class:`Session`::
     asset_version_dependency
     web_review
     publishing
+    security_roles
