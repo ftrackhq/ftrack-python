@@ -11,8 +11,8 @@ Release Notes
 
 .. release:: Upcoming
 
-  .. change:: changed
-    :tags: session, plugins
+    .. change:: changed
+        :tags: session, plugins
 
         Added *plugin_arguments* to :class:`Session` to allow passing of
         optional keyword arguments to discovered plugin register functions. Only
@@ -20,8 +20,8 @@ Release Notes
         existing plugin register functions do not need updating if the new
         functionality is not desired.
 
-  .. change:: new
-    :tags: server location, thumbnail
+    .. change:: new
+        :tags: server location, thumbnail
 
         Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`
         to server location, which can be used to retrieve a thumbnail URL.
