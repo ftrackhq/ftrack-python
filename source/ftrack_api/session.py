@@ -133,12 +133,11 @@ class Session(object):
         also not specified then a temporary directory will be used. Set to
         `False` to disable schema caching entirely.
 
-        *plugin_arguments* are keyword arguments that plugins can specify when
-        they are registered.  This provides a programmatic way to pass
-        configuration information to a plugin without the complexities of
-        globals such as env variables.  Only custom keyword arguments would
-        be passable to be backwards compatible with existing code that does not
-        accept arbitrary arguments. If not specified, defaults to None.
+        *plugin_arguments* should be optional keyword arguments to pass to
+        plugin register functions upon discovery. If a discovered plugin has a
+        signature that is incompatible with the passed arguments, the discovery
+        mechanism will attempt to reduce the passed arguments to only those that
+        the plugin accepts. Note that a warning will be logged in this case.
 
         '''
         super(Session, self).__init__()
@@ -245,7 +244,7 @@ class Session(object):
                 'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
 
-        self._plugin_arguments = plugin_arguments
+        self._plugin_arguments = plugin_arguments or {}
 
         self._discover_plugins()
 
@@ -1256,8 +1255,16 @@ class Session(object):
                     construct_entity_type
                 )
 
+        .. note::
+
+            Any *plugin_arguments* passed to the session upon instantiation
+            will be passed as keyword arguments to the discovered plugin
+            register function.
+
         '''
-        ftrack_api.plugin.discover(self._plugin_paths, [self])
+        ftrack_api.plugin.discover(
+            self._plugin_paths, [self], self._plugin_arguments
+        )
 
     def _read_schemas_from_cache(self, schema_cache_path):
         '''Return schemas and schema hash from *schema_cache_path*.
