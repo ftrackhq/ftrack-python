@@ -245,9 +245,7 @@ class Session(object):
                 'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
 
-        self._plugin_arguments = plugin_arguments or {}
-
-        self._discover_plugins()
+        self._discover_plugins(plugin_arguments=plugin_arguments)
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?
@@ -1243,7 +1241,7 @@ class Session(object):
         result = self._call([{'action': 'query_server_information'}])
         return result[0]
 
-    def _discover_plugins(self):
+    def _discover_plugins(self, plugin_arguments=None):
         '''Find and load plugins in search paths.
 
         Each discovered module should implement a register function that
@@ -1256,15 +1254,13 @@ class Session(object):
                     construct_entity_type
                 )
 
-        .. note::
-
-            Any *plugin_arguments* passed to the session upon instantiation
-            will be passed as keyword arguments to the discovered plugin
-            register function.
+        *plugin_arguments* should be an optional mapping of keyword arguments
+        and values to pass to plugin register functions upon discovery.
 
         '''
+        plugin_arguments = plugin_arguments or {}
         ftrack_api.plugin.discover(
-            self._plugin_paths, [self], self._plugin_arguments
+            self._plugin_paths, [self], plugin_arguments
         )
 
     def _read_schemas_from_cache(self, schema_cache_path):
