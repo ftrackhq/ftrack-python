@@ -14,6 +14,12 @@ Release Notes
     .. change:: new
         :tags: documentation
 
+        Added :ref:`example <example/manage_custom_attribute_configuration>` on
+        how to manage custom attribute configurations from the API.
+
+    .. change:: new
+        :tags: documentation
+
         Added :ref:`example <example/security_roles>` on how to use
         `SecurityRole` and `UserSecurityRole` to manage security roles for
         users.
