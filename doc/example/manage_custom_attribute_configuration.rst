@@ -168,7 +168,9 @@ set:
 
     The enumerator can either be single or multi select. The config must a json
     dump of a dictionary containing `multiSelect` and `data`. Where
-    `multiSelect` is True or False and data is a list of.
+    `multiSelect` is True or False and data is a list of options. Each option
+    should be a dictionary containing `value` and `menu`, where `menu` is meant
+    to be used as label in a user interface.
 
     Create a custom attribute enumerator::
 
