@@ -32,6 +32,7 @@ already constructed a :class:`Session`::
     review_session
     metadata
     custom_attribute
+    manage_custom_attribute_configuration
     link_attribute
     scope
     job
