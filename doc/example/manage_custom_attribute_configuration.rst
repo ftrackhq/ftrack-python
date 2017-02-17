@@ -35,6 +35,9 @@ Use :meth:`Session.create` to create a new custom attribute configuration::
     # Persist it to the ftrack instance.
     session.commit()
 
+Note that no one will be able to read or write this custom attributes until security
+roles are set. See example further down.
+
 Global or project specific
 ==========================
 
