@@ -35,8 +35,11 @@ Use :meth:`Session.create` to create a new custom attribute configuration::
     # Persist it to the ftrack instance.
     session.commit()
 
-Note that no one will be able to read or write this custom attributes until security
-roles are set. See example further down.
+.. tip::
+
+    The example above does not add security roles. This can be done either
+    from System Settings in the ftrack web application, or by following the
+    :ref:`example/manage_custom_attribute_configuration/security_roles` example.
 
 Global or project specific
 ==========================
@@ -225,6 +228,8 @@ attributes::
     # newly created entities.
     custom_attribute_configuration['default'] = 43
     session.commit()
+
+.. _example/manage_custom_attribute_configuration/security_roles:
 
 Security roles
 ==============
