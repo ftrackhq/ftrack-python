@@ -88,6 +88,7 @@ def temporary_sequence(temporary_directory):
             temporary_directory, '{0:04d}.jpg'.format(index)
         )
         with open(item_path, 'w') as file_descriptor:
+            file_descriptor.write(uuid.uuid4().hex)
             file_descriptor.close()
 
         items.append(item_path)

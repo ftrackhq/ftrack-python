@@ -1128,3 +1128,13 @@ def test_encode_media_from_component(session, video_path):
 
     job_data = json.loads(job['data'])
     assert 'keep_original' in job_data and job_data['keep_original'] is True
+
+
+def test_create_sequence_component_with_size(session, temporary_sequence):
+    '''Create a sequence component and verify that is has a size.'''
+    location = session.query('Location where name is "ftrack.server"').one()
+    component = session.create_component(
+        temporary_sequence
+    )
+
+    assert component['size'] > 0

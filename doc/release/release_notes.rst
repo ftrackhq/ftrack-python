@@ -43,6 +43,12 @@ Release Notes
         Query tutorial article gives misleading information about the ``has``
         operator.
 
+    .. change:: fixed
+        :tags: session
+
+        Size is not set on sequence components when using
+        :meth:`Session.create_component`.
+
 .. release:: 1.0.4
     :date: 2017-01-13
 
