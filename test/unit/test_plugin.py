@@ -167,3 +167,25 @@ def test_discover_plugin_with_specific_signature(
     )
     output, error = capsys.readouterr()
     assert expected in output
+
+
+def test_discover_plugin_varying_signatures(temporary_path, capsys):
+    '''Discover multiple plugins with varying signatures.'''
+    with open(os.path.join(temporary_path, 'plugin_a.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(a):
+                print (a,)
+        '''))
+
+    with open(os.path.join(temporary_path, 'plugin_b.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(a, b=False):
+                print (a,), {'b': b}
+        '''))
+
+    ftrack_api.plugin.discover(
+        [temporary_path], (True,), {'b': True}
+    )
+
+    output, error = capsys.readouterr()
+    assert '(True,)\n(True,) {\'b\': True}' in output
