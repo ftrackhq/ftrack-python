@@ -1848,6 +1848,7 @@ class Session(object):
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
             data.setdefault('file_type', os.path.splitext(container_path)[-1])
+            data.setdefault('size', container_size)
 
             container = self._create_component(
                 'SequenceComponent', container_path, data, location=None
