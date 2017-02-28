@@ -66,6 +66,9 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                     # register function.
                     specification = inspect.getargspec(module.register)
 
+                    selected_positional_arguments = positional_arguments
+                    selected_keyword_arguments = keyword_arguments
+
                     if (
                         not specification.varargs and
                         len(positional_arguments) > len(specification.args)
@@ -75,10 +78,10 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                             'function signature.'
                         )
 
-                        positional_arguments = positional_arguments[
+                        selected_positional_arguments = positional_arguments[
                             len(specification.args):
                         ]
-                        keyword_arguments = {}
+                        selected_keyword_arguments = {}
 
                     elif not specification.keywords:
                         # Remove arguments that have been passed as positionals.
@@ -106,10 +109,13 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                                 'Culling passed arguments to match register '
                                 'function signature.'
                             )
-                            keyword_arguments = {
+                            selected_keyword_arguments = {
                                 key: value
                                 for key, value in keyword_arguments.items()
                                 if key in remaining_keyword_arguments
                             }
 
-                    module.register(*positional_arguments, **keyword_arguments)
+                    module.register(
+                        *selected_positional_arguments,
+                        **selected_keyword_arguments
+                    )
