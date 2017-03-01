@@ -4,6 +4,7 @@
 import os
 import textwrap
 import logging
+import re
 
 import pytest
 
@@ -54,6 +55,24 @@ def broken_plugin(temporary_path):
     return temporary_path
 
 
+@pytest.fixture()
+def plugin(request, temporary_path):
+    '''Return path containing a plugin with requested specification.'''
+    specification = request.param
+    output = re.sub('(\w+)=\w+', '"\g<1>={}".format(\g<1>)', specification)
+    output = re.sub('\*args', 'args', output)
+    output = re.sub('\*\*kwargs', 'sorted(kwargs.items())', output)
+
+    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
+        content = textwrap.dedent('''
+            def register({}):
+                print {}
+        '''.format(specification, output))
+        file_object.write(content)
+
+    return temporary_path
+
+
 def test_discover_empty_paths(capsys):
     '''Discover no plugins when paths are empty.'''
     ftrack_api.plugin.discover(['   '])
@@ -93,3 +112,80 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     assert len(records) == 1
     assert records[0].levelno is logging.WARNING
     assert 'Failed to load plugin' in records[0].message
+
+
+@pytest.mark.parametrize(
+    'plugin, positional, keyword, expected',
+    [
+        (
+            'a, b=False, c=False, d=False',
+            (1, 2), {'c': True, 'd': True, 'e': True},
+            '1 b=2 c=True d=True'
+        ),
+        (
+            '*args',
+            (1, 2), {'b': True, 'c': False},
+            '(1, 2)'
+        ),
+        (
+            '**kwargs',
+            tuple(), {'b': True, 'c': False},
+            '[(\'b\', True), (\'c\', False)]'
+        ),
+        (
+            'a=False, b=False',
+            (True,), {'b': True},
+            'a=True b=True'
+        ),
+        (
+            'a, c=False, *args',
+            (1, 2, 3, 4), {},
+            '1 c=2 (3, 4)'
+        ),
+        (
+            'a, c=False, **kwargs',
+            tuple(), {'a': 1, 'b': 2, 'c': 3, 'd': 4},
+            '1 c=3 [(\'b\', 2), (\'d\', 4)]'
+        ),
+    ],
+    indirect=['plugin'],
+    ids=[
+        'mixed-explicit',
+        'variable-args-only',
+        'variable-kwargs-only',
+        'keyword-from-positional',
+        'trailing-variable-args',
+        'trailing-keyword-args'
+    ]
+)
+def test_discover_plugin_with_specific_signature(
+    plugin, positional, keyword, expected, capsys
+):
+    '''Discover plugin passing only supported arguments.'''
+    ftrack_api.plugin.discover(
+        [plugin], positional, keyword
+    )
+    output, error = capsys.readouterr()
+    assert expected in output
+
+
+def test_discover_plugin_varying_signatures(temporary_path, capsys):
+    '''Discover multiple plugins with varying signatures.'''
+    with open(os.path.join(temporary_path, 'plugin_a.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(a):
+                print (a,)
+        '''))
+
+    with open(os.path.join(temporary_path, 'plugin_b.py'), 'w') as file_object:
+        file_object.write(textwrap.dedent('''
+            def register(a, b=False):
+                print (a,), {'b': b}
+        '''))
+
+    ftrack_api.plugin.discover(
+        [temporary_path], (True,), {'b': True}
+    )
+
+    output, error = capsys.readouterr()
+    assert '(True,)\n(True,) {\'b\': True}' in output

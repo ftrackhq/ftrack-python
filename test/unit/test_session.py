@@ -1138,3 +1138,15 @@ def test_create_sequence_component_with_size(session, temporary_sequence):
     )
 
     assert component['size'] > 0
+
+
+def test_plugin_arguments(mocker):
+    '''Pass plugin arguments to plugin discovery mechanism.'''
+    mock = mocker.patch(
+        'ftrack_api.plugin.discover'
+    )
+    session = ftrack_api.Session(
+        plugin_paths=[], plugin_arguments={"test": "value"}
+    )
+    assert mock.called
+    mock.assert_called_once_with([], [session], {"test": "value"})

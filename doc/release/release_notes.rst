@@ -11,6 +11,15 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: session, plugins
+
+        Added *plugin_arguments* to :class:`Session` to allow passing of
+        optional keyword arguments to discovered plugin register functions. Only
+        arguments defined in a plugin register function signature are passed so
+        existing plugin register functions do not need updating if the new
+        functionality is not desired.
+
     .. change:: new
         :tags: documentation
 
