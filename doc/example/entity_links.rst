@@ -28,8 +28,9 @@ In the above example `link['to']` is the shot and `link['from']` could be an
 asset build or something else that is linked to the shot. There is an equivalent
 `outgoing_links` that can be used to access outgoing links on an object.
 
-To create a new link between objects or asset versions the link entity can be
-used. In this example we will link two asset versions::
+To create a new link between objects or asset versions create a new 
+`TypedContextLink` or `AssetVersionLink` entity with the from and to properties
+set. In this example we will link two asset versions::
 
     session.create('AssetVersionLink', {
         'from': from_asset_version,
@@ -46,9 +47,10 @@ Links on asset version can also be created by the use of the `uses_versions` and
     rig_version['uses_versions'].append(model_version)
     session.commit()
 
-Which versions are using the model can then be listed with::
+This has the same result as creating the `AssetVersionLink` entity as in the
+previous section.
+
+Which versions are using the model can be listed with::
 
     for version in model_version['used_in_versions']:
         print '{0} is using {1}'.format(version, model_version)
-
-This has the same result as creating the `AssetVersionLink` directly.
