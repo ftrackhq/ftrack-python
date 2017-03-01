@@ -42,7 +42,7 @@ already constructed a :class:`Session`::
     assignments_and_allocations
     thumbnail
     encode_media
-    asset_version_dependency
+    entity_links
     web_review
     publishing
     security_roles

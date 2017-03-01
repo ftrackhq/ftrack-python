@@ -23,6 +23,12 @@ Release Notes
     .. change:: new
         :tags: documentation
 
+        Added :ref:`example <example/entity_links>` on how to manage entity
+        links from the API.
+
+    .. change:: new
+        :tags: documentation
+
         Added :ref:`example <example/manage_custom_attribute_configuration>` on
         how to manage custom attribute configurations from the API.
 
@@ -282,7 +288,7 @@ Release Notes
     .. change:: new
         :tags: documentation
 
-        Added :ref:`example/asset_version_dependency` article with
+        Added :ref:`example/entity_links` article with
         examples of how to manage asset version dependencies.
 
     .. change:: fixed
