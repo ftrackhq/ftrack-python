@@ -73,6 +73,11 @@ time::
             configure_locations
         )
 
+.. note::
+
+    If you expect the plugin to also be evaluated by the legacy API, remember
+    to :ref:`validate the arguments <ftrack:release/migration/3.0.29/developer_notes/register_function>`.
+
 So long as the directory containing the plugin exists on your
 :envvar:`FTRACK_EVENT_PLUGIN_PATH`, the plugin will run for each session
 created and any configured locations will then remain configured for the

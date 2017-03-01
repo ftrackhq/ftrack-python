@@ -9,13 +9,61 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: upcoming
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session, plugins
+
+        Added *plugin_arguments* to :class:`Session` to allow passing of
+        optional keyword arguments to discovered plugin register functions. Only
+        arguments defined in a plugin register function signature are passed so
+        existing plugin register functions do not need updating if the new
+        functionality is not desired.
+
+    .. change:: new
+        :tags: documentation
+
+        Added :ref:`example <example/manage_custom_attribute_configuration>` on
+        how to manage custom attribute configurations from the API.
+
+    .. change:: new
+        :tags: documentation
+
+        Added :ref:`example <example/security_roles>` on how to use
+        `SecurityRole` and `UserSecurityRole` to manage security roles for
+        users.
+
+    .. change:: changed
+        :tags: documentation
+
+        Added :ref:`examples <example/assignments_and_allocations>` to show how
+        to list a user's assigned tasks and all users assigned to a task.
+
+    .. change:: new
+        :tags: server location, thumbnail
+
+        Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`
+        to server location, which can be used to retrieve a thumbnail URL.
+        See :ref:`example/thumbnail/url` for example usage.
+
 
     .. change:: fixed
         :tags: documentation
 
         The :ref:`example/project` example can be confusing since the project
         schema may not contain the necessary object types.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Query tutorial article gives misleading information about the ``has``
+        operator.
+
+    .. change:: fixed
+        :tags: session
+
+        Size is not set on sequence components when using
+        :meth:`Session.create_component`.
 
 .. release:: 1.0.4
     :date: 2017-01-13

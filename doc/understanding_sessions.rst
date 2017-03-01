@@ -198,8 +198,8 @@ If you do not specify any override then the session will attempt to discover and
 use the default plugins.
 
 Plugins are discovered using :func:`ftrack_api.plugin.discover` with the
-session instance passed as the sole argument. Most plugins should take the form
-of a mount function that then subscribes to specific :ref:`events
+session instance passed as the sole positional argument. Most plugins should
+take the form of a mount function that then subscribes to specific :ref:`events
 <handling_events>` on the session::
 
     def configure_locations(event):
@@ -213,6 +213,23 @@ of a mount function that then subscribes to specific :ref:`events
             'topic=ftrack.api.session.configure-location',
             configure_locations
         )
+
+Additional keyword arguments can be passed as *plugin_arguments* to the
+:class:`Session` on instantiation. These are passed to the plugin register
+function if its signature supports them::
+
+    # a_plugin.py
+    def register(session, reticulate_splines=False):
+        '''Register plugin with *session*.'''
+        ...
+
+    # main.py
+    session = ftrack_api.Session(
+        plugin_arguments={
+            'reticulate_splines': True,
+            'some_other_argument': 42
+        }
+    )
 
 .. seealso::
 
