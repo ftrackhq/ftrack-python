@@ -7,6 +7,7 @@ import logging
 import os
 import uuid
 import imp
+import inspect
 
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
@@ -15,6 +16,9 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
     Each discovered module should implement a register function that accepts
     *positional_arguments* and *keyword_arguments* as \*args and \*\*kwargs
     respectively.
+
+    If a register function does not accept variable arguments, then attempt to
+    only pass accepted arguments to the function by inspecting its signature.
 
     '''
     logger = logging.getLogger(__name__ + '.discover')
@@ -58,4 +62,60 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                         .format(module_path)
                     )
                 else:
-                    module.register(*positional_arguments, **keyword_arguments)
+                    # Attempt to only pass arguments that are accepted by the
+                    # register function.
+                    specification = inspect.getargspec(module.register)
+
+                    selected_positional_arguments = positional_arguments
+                    selected_keyword_arguments = keyword_arguments
+
+                    if (
+                        not specification.varargs and
+                        len(positional_arguments) > len(specification.args)
+                    ):
+                        logger.warning(
+                            'Culling passed arguments to match register '
+                            'function signature.'
+                        )
+
+                        selected_positional_arguments = positional_arguments[
+                            len(specification.args):
+                        ]
+                        selected_keyword_arguments = {}
+
+                    elif not specification.keywords:
+                        # Remove arguments that have been passed as positionals.
+                        remainder = specification.args[
+                            len(positional_arguments):
+                        ]
+
+                        # Determine remaining available keyword arguments.
+                        defined_keyword_arguments = []
+                        if specification.defaults:
+                            defined_keyword_arguments = specification.args[
+                                -len(specification.defaults):
+                            ]
+
+                        remaining_keyword_arguments = set([
+                            keyword_argument for keyword_argument
+                            in defined_keyword_arguments
+                            if keyword_argument in remainder
+                        ])
+
+                        if not set(keyword_arguments.keys()).issubset(
+                            remaining_keyword_arguments
+                        ):
+                            logger.warning(
+                                'Culling passed arguments to match register '
+                                'function signature.'
+                            )
+                            selected_keyword_arguments = {
+                                key: value
+                                for key, value in keyword_arguments.items()
+                                if key in remaining_keyword_arguments
+                            }
+
+                    module.register(
+                        *selected_positional_arguments,
+                        **selected_keyword_arguments
+                    )

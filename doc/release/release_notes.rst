@@ -11,6 +11,15 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: session, plugins
+
+        Added *plugin_arguments* to :class:`Session` to allow passing of
+        optional keyword arguments to discovered plugin register functions. Only
+        arguments defined in a plugin register function signature are passed so
+        existing plugin register functions do not need updating if the new
+        functionality is not desired.
+
     .. change:: new
         :tags: documentation
 
@@ -46,8 +55,20 @@ Release Notes
     .. change:: fixed
         :tags: documentation
 
+        The :ref:`example/project` example can be confusing since the project
+        schema may not contain the necessary object types.
+
+    .. change:: fixed
+        :tags: documentation
+
         Query tutorial article gives misleading information about the ``has``
         operator.
+
+    .. change:: fixed
+        :tags: session
+
+        Size is not set on sequence components when using
+        :meth:`Session.create_component`.
 
 .. release:: 1.0.4
     :date: 2017-01-13

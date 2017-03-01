@@ -68,7 +68,8 @@ class Session(object):
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=True, schema_cache_path=None
+        auto_connect_event_hub=True, schema_cache_path=None,
+        plugin_arguments=None
     ):
         '''Initialise session.
 
@@ -131,6 +132,13 @@ class Session(object):
         determine the path to store cache in. If the environment variable is
         also not specified then a temporary directory will be used. Set to
         `False` to disable schema caching entirely.
+
+        *plugin_arguments* should be an optional mapping (dict) of keyword
+        arguments to pass to plugin register functions upon discovery. If a
+        discovered plugin has a signature that is incompatible with the passed
+        arguments, the discovery mechanism will attempt to reduce the passed
+        arguments to only those that the plugin accepts. Note that a warning
+        will be logged in this case.
 
         '''
         super(Session, self).__init__()
@@ -237,7 +245,7 @@ class Session(object):
                 'FTRACK_EVENT_PLUGIN_PATH', ''
             ).split(os.pathsep)
 
-        self._discover_plugins()
+        self._discover_plugins(plugin_arguments=plugin_arguments)
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?
@@ -1233,7 +1241,7 @@ class Session(object):
         result = self._call([{'action': 'query_server_information'}])
         return result[0]
 
-    def _discover_plugins(self):
+    def _discover_plugins(self, plugin_arguments=None):
         '''Find and load plugins in search paths.
 
         Each discovered module should implement a register function that
@@ -1246,8 +1254,14 @@ class Session(object):
                     construct_entity_type
                 )
 
+        *plugin_arguments* should be an optional mapping of keyword arguments
+        and values to pass to plugin register functions upon discovery.
+
         '''
-        ftrack_api.plugin.discover(self._plugin_paths, [self])
+        plugin_arguments = plugin_arguments or {}
+        ftrack_api.plugin.discover(
+            self._plugin_paths, [self], plugin_arguments
+        )
 
     def _read_schemas_from_cache(self, schema_cache_path):
         '''Return schemas and schema hash from *schema_cache_path*.
@@ -1834,6 +1848,7 @@ class Session(object):
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
             data.setdefault('file_type', os.path.splitext(container_path)[-1])
+            data.setdefault('size', container_size)
 
             container = self._create_component(
                 'SequenceComponent', container_path, data, location=None
