@@ -288,7 +288,7 @@ Release Notes
     .. change:: new
         :tags: documentation
 
-        Added :ref:`example/asset_version_dependency` article with
+        Added :ref:`example/entity_links` article with
         examples of how to manage asset version dependencies.
 
     .. change:: fixed
