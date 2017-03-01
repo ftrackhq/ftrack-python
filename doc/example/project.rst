@@ -21,7 +21,8 @@ project schema::
     # Create a unique name for the project.
     name = 'projectname_{0}'.format(uuid.uuid1().hex)
 
-    # Choose project schema.
+    # Naively pick the first project schema. For this example to work the
+    # schema must contain `Shot` and `Sequence` object types.
     project_schema = session.query('ProjectSchema').first()
 
     # Create the project with the chosen schema.

@@ -49,6 +49,12 @@ Release Notes
     .. change:: fixed
         :tags: documentation
 
+        The :ref:`example/project` example can be confusing since the project
+        schema may not contain the necessary object types.
+
+    .. change:: fixed
+        :tags: documentation
+
         Query tutorial article gives misleading information about the ``has``
         operator.
 
