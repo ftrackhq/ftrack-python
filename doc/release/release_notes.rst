@@ -9,16 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.1.0
+    :date: 2017-03-08
 
-    .. change:: changed
-        :tags: session, plugins
+    .. change:: new
+        :tags: server location, thumbnail
 
-        Added *plugin_arguments* to :class:`Session` to allow passing of
-        optional keyword arguments to discovered plugin register functions. Only
-        arguments defined in a plugin register function signature are passed so
-        existing plugin register functions do not need updating if the new
-        functionality is not desired.
+        Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`
+        to server location, which can be used to retrieve a thumbnail URL.
+        See :ref:`example/thumbnail/url` for example usage.
 
     .. change:: new
         :tags: documentation
@@ -39,18 +38,20 @@ Release Notes
         `SecurityRole` and `UserSecurityRole` to manage security roles for
         users.
 
-    .. change:: changed
+    .. change:: new
         :tags: documentation
 
         Added :ref:`examples <example/assignments_and_allocations>` to show how
         to list a user's assigned tasks and all users assigned to a task.
 
-    .. change:: new
-        :tags: server location, thumbnail
+    .. change:: changed
+        :tags: session, plugins
 
-        Added method :meth:`get_thumbnail_url() <ftrack_api.entity.location.ServerLocationMixin.get_thumbnail_url>`
-        to server location, which can be used to retrieve a thumbnail URL.
-        See :ref:`example/thumbnail/url` for example usage.
+        Added *plugin_arguments* to :class:`Session` to allow passing of
+        optional keyword arguments to discovered plugin register functions. Only
+        arguments defined in a plugin register function signature are passed so
+        existing plugin register functions do not need updating if the new
+        functionality is not desired.
 
     .. change:: fixed
         :tags: documentation
