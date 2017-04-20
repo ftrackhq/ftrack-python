@@ -30,6 +30,7 @@ Use :meth:`Session.create` to create a new custom attribute configuration::
         'label': 'Asset version text attribute',
         'key': 'asset_version_text_attribute',
         'default': 'bar',
+        'config': json.dumps({'markdown': False})
     })
 
     # Persist it to the ftrack instance.
@@ -57,6 +58,7 @@ A custom attribute can be global or project specific depending on the
         'label': 'Asset version text attribute',
         'key': 'asset_version_text_attribute',
         'default': 'bar',
+        'config': json.dumps({'markdown': False})
     })
     session.commit()
 
@@ -142,7 +144,26 @@ set:
 
     The `default` value must be either :py:class:`str` or :py:class:`unicode`.
 
-    No config is required.
+    Can be either presented as raw text or markdown formatted in applicaitons
+    which support it. This is configured through a markwdown key::
+
+        # Get the custom attribute type.
+        custom_attribute_type = session.query(
+            'CustomAttributeType where name is "text"'
+        ).one()
+
+        # Create a custom attribute configuration.
+        session.create('CustomAttributeConfiguration', {
+            'entity_type': 'assetversion',
+            'type': custom_attribute_type,
+            'label': 'Asset version text attribute',
+            'key': 'asset_version_text_attribute',
+            'default': 'bar',
+            'config': json.dumps({'markdown': False})
+        })
+
+        # Persist it to the ftrack instance.
+        session.commit()
 
 :boolean:
 
