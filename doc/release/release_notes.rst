@@ -21,7 +21,7 @@ Release Notes
         :tags: documentation
 
         The :ref:`example <example/manage_custom_attribute_configuration>`
-        information for managing `text` custom attributes is not correct. 
+        section for managing `text` custom attributes is not correct. 
 
 .. release:: 1.1.0
     :date: 2017-03-08
