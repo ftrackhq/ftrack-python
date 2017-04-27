@@ -9,6 +9,20 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: custom attributes
+
+        Cannot use custom attributes for `Asset` in ftrack versions prior to
+        `3.5.0`.
+
+    .. change:: fixed
+        :tags: documentation
+
+        The :ref:`example <example/manage_custom_attribute_configuration>`
+        section for managing `text` custom attributes is not correct. 
+
 .. release:: 1.1.0
     :date: 2017-03-08
 

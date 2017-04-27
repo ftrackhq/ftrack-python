@@ -371,6 +371,10 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             project_id = entity['asset']['parent']['project_id']
             entity_type = 'assetversion'
 
+        if entity.entity_type == 'Asset':
+            project_id = entity['parent']['project_id']
+            entity_type = 'asset'
+
         if entity.entity_type == 'Project':
             project_id = entity['id']
             entity_type = 'show'
