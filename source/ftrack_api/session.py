@@ -1994,7 +1994,9 @@ class Session(object):
 
         return availabilities
 
-    def get_widget_url(self, name, entity=None, theme=None):
+    def get_widget_url(
+        self, name, entity=None, theme=None, entity_type=None, entity_key=None
+    ):
         '''Return an authenticated URL for widget with *name* and given options.
 
         The returned URL will be authenticated using a token which will expire
@@ -2004,7 +2006,8 @@ class Session(object):
         'info', 'tasks' or 'tasks_browser'.
 
         Certain widgets require an entity to be specified. If so, specify it by
-        setting *entity* to a valid entity instance.
+        setting *entity* to a valid entity instance or by specifying both
+        *entity_type* and *entity_key*.
 
         *theme* sets the theme of the widget and can be either 'light' or 'dark'
         (defaulting to 'dark' if an invalid option given).
@@ -2020,6 +2023,11 @@ class Session(object):
             operation['entity_key'] = (
                 ftrack_api.inspection.primary_key(entity).values()
             )
+        elif entity_type and entity_key:
+            if isinstance(entity_key, basestring):
+                entity_key = [entity_key]
+            operation['entity_type'] = entity_type
+            operation['entity_key'] = entity_key
 
         try:
             result = self._call([operation])

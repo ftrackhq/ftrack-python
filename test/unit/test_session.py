@@ -1097,6 +1097,12 @@ def test_get_info_widget_url(session, task):
     response = requests.get(url)
     response.raise_for_status()
 
+    url = session.get_widget_url(
+        'info', entity_key=task['id'], entity_type=task['entity_type']
+    )
+    response = requests.get(url)
+    response.raise_for_status()
+
 
 def test_encode_media_from_path(session, video_path):
     '''Encode media based on a file path.'''
