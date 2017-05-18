@@ -9,7 +9,7 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. upcoming::
+.. release:: Upcoming
     .. change:: new
         :tags: task template
 
