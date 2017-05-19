@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: documentation
+
+        The :ref:`example/publishing` example incorrectly stated that a
+        location would be automatically picked if the *location* keyword
+        argument was omitted.
+
 .. release:: 1.1.1
     :date: 2017-04-27
 
