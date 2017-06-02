@@ -113,6 +113,12 @@ excessive strides can affect performance)::
         .format(project['id'])
     )
 
+You can also filter on the existence of a relationship::
+
+    tasks_with_thumbnails = session.query(
+        'Task where thumbnail is_not none'
+    )
+
 The same works for collections (where each entity in the collection is compared
 against the subsequent condition)::
 
