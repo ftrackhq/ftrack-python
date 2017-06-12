@@ -46,3 +46,11 @@ can reference:
 
     Path to a directory that will be used for storing and retrieving a cache of
     the entity schemas fetched from the server.
+
+.. envvar:: http_proxy / https_proxy
+
+    If you need to use a proxy to connect to ftrack you can use the
+    "standard" :envvar:`http_proxy` and :envvar:`https_proxy`. Please note that they
+    are lowercase.
+
+    For example "export https_proxy=http://proxy.mycompany.com:8080"
