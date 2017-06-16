@@ -11,6 +11,14 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: events
+
+        Updated the websocket-client dependency to version >= 0.40.0 to allow
+        for http proxies.
+
+
+
     .. change:: fixed
         :tags: documentation
 
