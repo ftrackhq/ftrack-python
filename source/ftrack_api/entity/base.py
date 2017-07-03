@@ -77,7 +77,19 @@ class Entity(collections.MutableMapping):
         # Suspend operation recording so that all modifications can be applied
         # in single create operation. In addition, recording a modification
         # operation requires a primary key which may not be available yet.
+
+        complex_attributes = dict()
+
         with self.session.operation_recording(False):
+            # Set defaults for any unset local attributes.
+            for attribute in self.__class__.attributes:
+                if attribute.name not in data:
+                    default_value = attribute.default_value
+                    if callable(default_value):
+                        default_value = default_value(self)
+
+                    attribute.set_local_value(self, default_value)
+
 
             # Data represents locally set values.
             for key, value in data.items():
@@ -92,16 +104,13 @@ class Entity(collections.MutableMapping):
                     ))
                     continue
 
-                attribute.set_local_value(self, value)
+                if not isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+                    complex_attributes.setdefault(
+                        attribute, value
+                    )
 
-            # Set defaults for any unset local attributes.
-            for attribute in self.__class__.attributes:
-                if attribute.name not in data:
-                    default_value = attribute.default_value
-                    if callable(default_value):
-                        default_value = default_value(self)
-
-                    attribute.set_local_value(self, default_value)
+                else:
+                    attribute.set_local_value(self, value)
 
         # Record create operation.
         # Note: As this operation is recorded *before* any Session.merge takes
@@ -132,6 +141,16 @@ class Entity(collections.MutableMapping):
                     ftrack_api.inspection.primary_key(self),
                     entity_data
                 )
+            )
+
+        for attribute, value in complex_attributes.items():
+            # Finally we set values for "complex" attributes, we need
+            # to do this at the end in order to get the create operations
+            # in the correct order as the newly created attributes might
+            # contain references to the newly created entity.
+
+            attribute.set_local_value(
+                self, value
             )
 
     def _reconstruct(self, data):
