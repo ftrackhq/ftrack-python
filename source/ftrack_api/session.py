@@ -961,6 +961,29 @@ class Session(object):
         if entities_to_process:
             reference_entity = entities_to_process[0]
             entity_type = reference_entity.entity_type
+
+            updated_projections = []
+            for projection in [projection.strip() for projection in projections.split(',')]:
+
+                attribute = reference_entity.attributes.get(
+                    projection
+                )
+
+                if isinstance(
+                        attribute, ftrack_api.attribute.KeyValueMappedCollectionAttribute
+                ):
+                    projection = u'{0},{0}.{1}'.format(
+                        projection, attribute.value_attribute
+                    )
+
+                updated_projections.append(
+                    projection
+                )
+
+            projections = ','.join(
+                updated_projections
+            )
+
             query = 'select {0} from {1}'.format(projections, entity_type)
 
             primary_key_definition = reference_entity.primary_key_attributes
@@ -1504,6 +1527,7 @@ class Session(object):
         )
 
     def _call(self, data):
+        print "CALL!"
         '''Make request to server with *data*.'''
         url = self._server_url + '/api'
         headers = {
