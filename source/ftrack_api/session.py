@@ -145,6 +145,7 @@ class Session(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
+        self._closed = False
 
         if server_url is None:
             server_url = os.environ.get('FTRACK_SERVER')
@@ -210,6 +211,7 @@ class Session(object):
             if cache is not None:
                 self.cache.caches.append(cache)
 
+        self._managed_request = None
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
@@ -267,6 +269,29 @@ class Session(object):
         self._configure_locations()
 
     @property
+    def _request(self):
+        '''Return request session.
+
+        Raise :exc:`ftrack_api.exception.ConnectionClosedError` if session has
+        been closed and connection unavailable.
+
+        '''
+        if self._managed_request is None:
+            raise ftrack_api.exception.ConnectionClosedError()
+
+        return self._managed_request
+
+    @_request.setter
+    def _request(self, value):
+        '''Set request session to *value*.'''
+        self._managed_request = value
+
+    @property
+    def closed(self):
+        '''Return whether session has been closed.'''
+        return self._closed
+
+    @property
     def server_information(self):
         '''Return server information such as server version.'''
         return self._server_information.copy()
@@ -318,6 +343,45 @@ class Session(object):
                         min_server_version
                     )
                 )
+
+    def close(self):
+        '''Close session.
+
+        Close connections to server. Clear any pending operations and local
+        cache.
+
+        Use this to ensure that session is cleaned up properly after use.
+
+        '''
+        if self.closed:
+            self.logger.debug('Session already closed.')
+            return
+
+        self._closed = True
+
+        self.logger.debug('Closing session.')
+        if self.recorded_operations:
+            self.logger.warning(
+                'Closing session with pending operations not persisted.'
+            )
+
+        # Clear pending operations.
+        self.recorded_operations.clear()
+
+        # Clear top level cache (expected to be enforced memory cache).
+        self._local_cache.clear()
+
+        # Close connections.
+        self._request.close()
+        self._request = None
+
+        try:
+            self.event_hub.disconnect()
+            self._auto_connect_event_hub_thread.join()
+        except ftrack_api.exception.EventHubConnectionError:
+            pass
+
+        self.logger.debug('Session closed.')
 
     def reset(self):
         '''Reset session clearing local state.

@@ -9,6 +9,20 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: session
+
+        Added :meth:`Session.close` to properly close a session's connections to
+        the server(s) as well as ensure event listeners are properly
+        unsubscribed.
+
+    .. change:: new
+
+        Added :exc:`ftrack_api.exception.ConnectionClosedError` to represent
+        error caused when trying to access servers over closed connection.
+
 .. release:: 1.2.0
 
     .. change:: changed
