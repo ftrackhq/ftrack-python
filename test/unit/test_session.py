@@ -1174,3 +1174,11 @@ def test_server_call_after_close(session):
 
     with pytest.raises(ftrack_api.exception.ConnectionClosedError):
         session.query('User').first()
+
+
+def test_context_manager(session):
+    '''Use session as context manager.'''
+    with session:
+        assert session.closed is False
+
+    assert session.closed is True

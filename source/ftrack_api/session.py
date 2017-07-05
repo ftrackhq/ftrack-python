@@ -272,6 +272,14 @@ class Session(object):
 
         self._configure_locations()
 
+    def __enter__(self):
+        '''Return session as context manager.'''
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        '''Exit session context, closing session in process.'''
+        self.close()
+
     @property
     def _request(self):
         '''Return request session.
