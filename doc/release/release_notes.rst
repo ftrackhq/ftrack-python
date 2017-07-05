@@ -14,6 +14,12 @@ Release Notes
     .. change:: new
         :tags: session
 
+        :meth:`Session.close` automatically called on Python exit if session not
+        already closed.
+
+    .. change:: new
+        :tags: session
+
         Added :meth:`Session.close` to properly close a session's connections to
         the server(s) as well as ensure event listeners are properly
         unsubscribed.

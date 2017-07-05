@@ -15,6 +15,7 @@ import distutils.version
 import hashlib
 import tempfile
 import threading
+import atexit
 
 import requests
 import requests.auth
@@ -240,6 +241,9 @@ class Session(object):
             )
             self._auto_connect_event_hub_thread.daemon = True
             self._auto_connect_event_hub_thread.start()
+
+        # Register to auto-close session on exit.
+        atexit.register(self.close)
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
