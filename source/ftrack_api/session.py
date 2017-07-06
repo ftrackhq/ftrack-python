@@ -1527,7 +1527,6 @@ class Session(object):
         )
 
     def _call(self, data):
-        print "CALL!"
         '''Make request to server with *data*.'''
         url = self._server_url + '/api'
         headers = {
