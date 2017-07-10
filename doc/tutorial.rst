@@ -140,7 +140,7 @@ listeners. It is also possible to use the session as a context manager in order
 to have it closed automatically after use::
 
     >>> with ftrack_api.Session() as session:
-    ...     print session.query("User").first()
+    ...     print session.query('User').first()
     <User(0154901c-eaf9-11e5-b165-00505681ec7a)>
     >>> print session.closed
     True
@@ -148,7 +148,7 @@ to have it closed automatically after use::
 Once a :class:`Session` is closed, any operations that attempt to use the closed
 connection to the ftrack server will fail::
 
-    >>> session.query("Project").first()
+    >>> session.query('Project').first()
     ConnectionClosedError: Connection closed.
 
 Continue to the next section to start learning more about the API in greater
