@@ -411,6 +411,21 @@ class Session(object):
             if state is ftrack_api.symbol.DELETED
         ]
 
+    def reset_attributes(self, entity_type, entity_id, attributes):
+        '''Reset attributes to there default value.'''
+
+        if not isinstance(attributes, (list, tuple)):
+            attributes = [attributes]
+
+        if self.record_operations:
+            self.recorded_operations.push(
+                ftrack_api.operation.ResetEntityOperation(
+                    entity_type,
+                    entity_id,
+                    attributes
+                )
+            )
+
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
 
@@ -1051,6 +1066,28 @@ class Session(object):
                     })
 
                 elif isinstance(
+                    operation, ftrack_api.operation.ResetEntityOperation
+                ):
+
+                    entity_data = {
+                        # At present, data payload requires duplicating entity
+                        # type.
+                        '__entity_type__': operation.entity_type
+
+                    }
+
+                    entity_data.update(
+                        dict([(attribute, None) for attribute in operation.attributes])
+                    )
+
+                    payload = OperationPayload({
+                        'action': 'reset',
+                        'entity_type': operation.entity_type,
+                        'entity_key': operation.entity_key,
+                        'entity_data': entity_data
+                    })
+
+                elif isinstance(
                     operation, ftrack_api.operation.DeleteEntityOperation
                 ):
                     payload = OperationPayload({
@@ -1105,7 +1142,7 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] == 'update':
+            if payload['action'] in ('update', 'reset'):
                 for key, value in payload['entity_data'].items():
                     if key == '__entity_type__':
                         continue
@@ -1180,7 +1217,7 @@ class Session(object):
             # Process results merging into cache relevant data.
             for entry in result:
 
-                if entry['action'] in ('create', 'update'):
+                if entry['action'] in ('create', 'update', 'reset'):
                     # Merge returned entities into local cache.
                     self.merge(entry['data'])
 
@@ -1188,7 +1225,6 @@ class Session(object):
                     # TODO: Detach entity - need identity returned?
                     # TODO: Expunge entity from cache.
                     pass
-
             # Clear remaining local state, including local values for primary
             # keys on entities that were merged.
             with self.auto_populating(False):

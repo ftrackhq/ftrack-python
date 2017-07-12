@@ -9,6 +9,18 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: new
+        :tags: session
+
+        New function :meth:`ftrack_api.session.Session.reset_attributes` allows resetting of attributes to their
+        default value.
+
+        .. seealso:: :ref:`working_with_entities/resetting`.
+
+
+
 .. release:: 1.2.0
 
     .. change:: changed

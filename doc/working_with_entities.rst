@@ -75,6 +75,8 @@ accessing a particular attribute by key:
     >>> new_timelog = session.create('Timelog', {...})
     >>> task['timelogs'].append(new_timelog)
 
+
+
 .. _working_with_entities/attributes/bidirectional:
 
 Bi-directional relationships
@@ -139,6 +141,24 @@ first fetching them from the server, turn :ref:`auto-population
     >>> with session.auto_populating(False):
     ...    task = session.query('Task').first()
     ...    task['bid'] = 8
+
+
+.. _working_with_entities/resetting:
+
+Resetting entity attributes
+===========================
+
+It is also possible to reset a attribute to its default value, for example
+to reset a users api key::
+
+    session.reset_attributes(
+        'User', entity_id, ['api_key']
+    )
+
+.. note::
+    Currently only attributes with default attributes defined on the backend
+    are resettable. This is currently not exposed in the schema.
+
 
 .. _working_with_entities/deleting:
 
