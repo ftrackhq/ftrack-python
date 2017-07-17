@@ -9,7 +9,7 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.3.0
 
     .. change:: new
         :tags: session
