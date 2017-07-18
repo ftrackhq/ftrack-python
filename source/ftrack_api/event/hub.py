@@ -230,8 +230,12 @@ class EventHub(object):
                 for subscriber in self._subscribers[:]:
                     self.unsubscribe(subscriber.metadata['id'])
 
-                # Wait briefly to allow unsubscribe messages to be sent.
-                time.sleep(self._wait_timeout)
+            self._connection.sock.settimeout(1)
+            self._receive_packet()
+
+            # Now disconnect.
+            self._connection.close()#timeout=None)
+            self._connection = None
 
             # Shutdown background processing thread.
             self._processor_thread.cancel()
@@ -240,10 +244,6 @@ class EventHub(object):
             # shutdown.
             if threading.current_thread() != self._processor_thread:
                 self._processor_thread.join(self._wait_timeout)
-
-            # Now disconnect.
-            self._connection.close()
-            self._connection = None
 
     def reconnect(self, attempts=10, delay=5):
         '''Reconnect to server.
