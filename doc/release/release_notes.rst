@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: fixed
+        :tags: session, events
+
+        Calling disconnect on the event hub is slow.
+
 .. release:: 1.3.0
 
     .. change:: new
