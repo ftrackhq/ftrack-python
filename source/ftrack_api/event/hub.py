@@ -234,7 +234,7 @@ class EventHub(object):
             self._receive_packet()
 
             # Now disconnect.
-            self._connection.close()#timeout=None)
+            self._connection.close()
             self._connection = None
 
             # Shutdown background processing thread.
