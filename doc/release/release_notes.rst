@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+    .. change:: fixed
+        :tags: metadata
+
+        Not possible to set metadata on creation
+
+
 .. release:: 1.2.0
 
     .. change:: changed

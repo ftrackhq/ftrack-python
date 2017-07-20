@@ -78,7 +78,7 @@ class Entity(collections.MutableMapping):
         # in single create operation. In addition, recording a modification
         # operation requires a primary key which may not be available yet.
 
-        complex_attributes = dict()
+        relational_attributes = dict()
 
         with self.session.operation_recording(False):
             # Set defaults for any unset local attributes.
@@ -105,7 +105,7 @@ class Entity(collections.MutableMapping):
                     continue
 
                 if not isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                    complex_attributes.setdefault(
+                    relational_attributes.setdefault(
                         attribute, value
                     )
 
@@ -143,8 +143,8 @@ class Entity(collections.MutableMapping):
                 )
             )
 
-        for attribute, value in complex_attributes.items():
-            # Finally we set values for "complex" attributes, we need
+        for attribute, value in relational_attributes.items():
+            # Finally we set values for "relational" attributes, we need
             # to do this at the end in order to get the create operations
             # in the correct order as the newly created attributes might
             # contain references to the newly created entity.

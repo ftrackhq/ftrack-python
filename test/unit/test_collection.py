@@ -453,6 +453,7 @@ def test_mapped_collection_proxy_count(new_project, unique_name):
 
 
 def test_mapped_collection_on_create(session, unique_name, project):
+    '''Test that it is possible to set relational attributes on create'''
     metadata = {
         'a': 'value-a',
         'b': 'value-b',
