@@ -225,13 +225,14 @@ class EventHub(object):
             # Set flag to indicate disconnection was intentional.
             self._intentional_disconnect = True
 
-            # # Unsubscribe all subscribers.
+            # Set blocking to true on socket to make sure unsubscribe events
+            # are emitted before closing the connection.
+            self._connection.sock.setblocking(1)
+
+            # Unsubscribe all subscribers.
             if unsubscribe:
                 for subscriber in self._subscribers[:]:
                     self.unsubscribe(subscriber.metadata['id'])
-
-            self._connection.sock.settimeout(1)
-            self._receive_packet()
 
             # Now disconnect.
             self._connection.close()
