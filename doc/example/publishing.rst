@@ -44,10 +44,10 @@ Then we create an asset and a version on the asset::
 Then when we have a version where we can create the components::
 
     asset_version.create_component(
-        '/path/to/a/file.mov'
+        '/path/to/a/file.mov', location='auto'
     )
     asset_version.create_component(
-        '/path/to/a/another-file.mov'
+        '/path/to/a/another-file.mov', location='auto'
     )
 
     session.commit()
@@ -55,7 +55,7 @@ Then when we have a version where we can create the components::
 This will automatically create a new component and add it to the location which
 has been configured as the first in priority.
 
-Components can also be created and added to a custom location like this::
+Components can also be named and added to a custom location like this::
 
     location = session.query('Location where name is "my-location"')
     asset_version.create_component(
