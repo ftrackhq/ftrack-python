@@ -14,9 +14,7 @@ Release Notes
     .. change:: fixed
         :tags: metadata
 
-        unable-to-refresh-metadata-relationship-via-API
-
-
+        Unable to refresh metadata relationship via API.
 
 .. release:: 1.3.1
 
