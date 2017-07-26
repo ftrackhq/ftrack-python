@@ -133,3 +133,36 @@ def test_set_same_metadata_on_retrieved_entity(new_project):
         'key1': 'value1'
     }
     session.commit()
+
+
+def test_refresh_metadata(new_task):
+    '''Fetch metadata, update in separate session and refresh'''
+
+    session = ftrack_api.Session()
+
+    meta_key, meta_value = (
+        'meta_test', 'value_string'
+    )
+
+    task = session.get(
+        'Task', new_task.get('id')
+    )
+
+    task['metadata'].get(
+        meta_key
+    )
+
+    new_task['metadata'][meta_key] = meta_value
+
+    new_task.session.commit()
+
+
+    del task['metadata']
+
+    session.populate(
+        task, 'metadata'
+    )
+
+    assert task['metadata'][meta_key] == meta_value
+
+

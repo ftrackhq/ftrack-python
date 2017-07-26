@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+    .. change:: fixed
+        :tags: metadata
+
+        unable-to-refresh-metadata-relationship-via-API
+
+
 .. release:: 1.2.0
 
     .. change:: changed
