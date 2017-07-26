@@ -20,6 +20,57 @@ Release Notes
         .. seealso::
             :ref:`querying/criteria/relationships`.
 
+.. release:: 1.3.1
+
+    .. change:: fixed
+        :tags: session, events
+
+        Calling disconnect on the event hub is slow.
+
+.. release:: 1.3.0
+
+    .. change:: new
+        :tags: session
+
+        Support using a :class:`Session` as a context manager to aid closing of
+        session after use::
+
+            with ftrack_api.Session() as session:
+                # Perform operations with session.
+
+    .. change:: new
+        :tags: session
+
+        :meth:`Session.close` automatically called on Python exit if session not
+        already closed.
+
+    .. change:: new
+        :tags: session
+
+        Added :meth:`Session.close` to properly close a session's connections to
+        the server(s) as well as ensure event listeners are properly
+        unsubscribed.
+
+    .. change:: new
+
+        Added :exc:`ftrack_api.exception.ConnectionClosedError` to represent
+        error caused when trying to access servers over closed connection.
+
+.. release:: 1.2.0
+
+    .. change:: changed
+        :tags: events
+
+        Updated the websocket-client dependency to version >= 0.40.0 to allow
+        for http proxies.
+
+    .. change:: fixed
+        :tags: documentation
+
+        The :ref:`example/publishing` example incorrectly stated that a
+        location would be automatically picked if the *location* keyword
+        argument was omitted.
+
 .. release:: 1.1.1
     :date: 2017-04-27
 
