@@ -9,6 +9,12 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+    .. change:: new
+        :tags: task template
+
+        Added example for managing task templates through the API. See :ref:`example/task_template` for example usage.
+
 .. release:: 1.3.1
 
     .. change:: fixed
