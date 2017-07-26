@@ -9,6 +9,17 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: upcoming
+
+    .. change:: fixed
+        :tags: session
+
+        The API query parser fails when handeling None/NULL values.
+
+        .. seealso::
+            :ref:`querying/criteria/relationships`.
+
 .. release:: 1.1.1
     :date: 2017-04-27
 
