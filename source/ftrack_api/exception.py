@@ -384,3 +384,9 @@ class StructureError(Error):
     '''Base for errors associated with structures.'''
 
     default_message = 'Unspecified structure error'
+
+
+class ConnectionClosedError(Error):
+    '''Raise when attempt to use closed connection detected.'''
+
+    default_message = "Connection closed."

@@ -46,3 +46,4 @@ already constructed a :class:`Session`::
     web_review
     publishing
     security_roles
+    task_template
