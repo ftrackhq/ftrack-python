@@ -14,7 +14,7 @@ Release Notes
     .. change:: fixed
         :tags: metadata
 
-        Not possible to set metadata on creation
+        Not possible to set metadata on creation.
 
     .. change:: new
         :tags: task template
