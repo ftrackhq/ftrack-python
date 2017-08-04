@@ -143,6 +143,7 @@ class Session(object):
 
         '''
         super(Session, self).__init__()
+
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
@@ -916,6 +917,10 @@ class Session(object):
                     'detected.'
                 )
 
+        attached_entity._entity_refs.update(
+            entity._entity_refs
+        )
+
         return attached_entity
 
     def _merge_references(self, entity, merged=None):
@@ -1261,9 +1266,48 @@ class Session(object):
                     self.merge(entry['data'])
 
                 elif entry['action'] == 'delete':
-                    # TODO: Detach entity - need identity returned?
-                    # TODO: Expunge entity from cache.
-                    pass
+                    try:
+                        # Should be moved out into its own method
+                        cache_key = self.cache_key_maker.key(
+                            (
+                                str(entry['data']['entity_type']),
+                                map(str, entry['data']['entity_key'])
+                            )
+                        )
+
+                        entity = self.cache.get(
+                            cache_key
+                        )
+
+                        self.cache.remove(
+                            self.cache_key_maker.key(cache_key)
+                        )
+
+                        for reference in entity._entity_refs:
+                            # Iterate over all entities that have references
+                            # to the deleted entity.
+                            ref = reference.ref
+                            for attribute in ref.attributes:
+                                # Iterate over all attributes marking attributes
+                                # referencing the deleted attribute as NOT_SET.
+                                if isinstance(attribute,
+                                              ftrack_api.attribute.ReferenceAttribute
+                                ):
+                                    if entity == ref.get(attribute.name):
+                                        attribute.reset_attribute(ref)
+
+                                elif isinstance(attribute,
+                                                ftrack_api.attribute.CollectionAttribute
+                                ):
+                                    if entity in ref.get(attribute.name):
+                                        attribute.reset_attribute(ref)
+
+                    except KeyError:
+                        # Entity did not exist in local cache
+                        self.logger.debug(
+                            'Could not remove entity from cache, not cached.'
+                        )
+                        continue
 
             # Clear remaining local state, including local values for primary
             # keys on entities that were merged.

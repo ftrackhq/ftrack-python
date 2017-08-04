@@ -147,6 +147,12 @@ class Attribute(object):
         self.populate_remote_value(entity)
         return self.get_remote_value(entity)
 
+    def reset_attribute(self, entity):
+        storage = self.get_entity_storage(entity)
+
+        for key in (self._local_key, self._remote_key):
+            storage[self.name][key] = ftrack_api.symbol.NOT_SET
+
     def get_local_value(self, entity):
         '''Return locally set value for *entity*.'''
         storage = self.get_entity_storage(entity)
@@ -197,6 +203,11 @@ class Attribute(object):
             Only set locally stored remote value, do not persist to remote.
 
         '''
+
+        entity.add_reference(
+            value
+        )
+
         storage = self.get_entity_storage(entity)
         storage[self.name][self._remote_key] = value
 
@@ -364,6 +375,11 @@ class AbstractCollectionAttribute(Attribute):
             Only set locally stored remote value, do not persist to remote.
 
         '''
+
+        entity.add_reference(
+            value
+        )
+
         if value is not ftrack_api.symbol.NOT_SET:
             value = self._adapt_to_collection(entity, value)
             value.mutable = False

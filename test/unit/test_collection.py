@@ -483,3 +483,31 @@ def test_mapped_collection_on_create(session, unique_name, project):
         assert value == task['metadata'][key]
 
 
+def test_delete_item_in_collection(new_project, unique_name):
+    '''Test deleting a item in collection'''
+    session = new_project.session
+
+    new_shot = session.create(
+        'Shot', {
+            'name':unique_name,
+            'parent': new_project,
+            'context': new_project
+
+        }
+    )
+
+    session.commit()
+
+    assert unique_name in [
+        child.get('name') for child in new_project.get('children')
+    ]
+
+    session.delete(
+        new_shot
+    )
+
+    session.commit()
+
+    assert unique_name not in [
+        child.get('name') for child in new_project.get('children')
+    ]

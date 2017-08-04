@@ -6,13 +6,14 @@ from __future__ import absolute_import
 import abc
 import collections
 import logging
-
+import weakref
 import ftrack_api.symbol
 import ftrack_api.attribute
 import ftrack_api.inspection
 import ftrack_api.exception
 import ftrack_api.operation
 from ftrack_api.logging import LazyLogMessage as L
+
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -38,6 +39,23 @@ class Entity(collections.MutableMapping):
     primary_key_attributes = None
     default_projections = None
 
+    class DynamicEntityUIDHash(object):
+        '''
+        Allow comparision for each induvidual instance
+        of the same entity.
+        '''
+        def __init__(self, object):
+            self._ref = weakref.ref(
+                object
+            )
+
+        @property
+        def ref(self):
+            return self._ref()
+
+        def __hash__(self):
+            return id(self.ref)
+
     def __init__(self, session, data=None, reconstructing=False):
         '''Initialise entity.
 
@@ -56,6 +74,12 @@ class Entity(collections.MutableMapping):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
+
+        self._entity_refs = weakref.WeakSet()
+        self._unique_instance_hash = self.DynamicEntityUIDHash(
+            self
+        )
+
         self.session = session
 
         if data is None:
@@ -169,6 +193,27 @@ class Entity(collections.MutableMapping):
                 continue
 
             attribute.set_remote_value(self, value)
+
+    def add_reference(self, value):
+        ''' Track the references to the object.'''
+
+        # In order to cleanup after a entity is deleted we need
+        # to keep track of all objects referencing it.
+
+        if not isinstance(value, list):
+            value = [value]
+
+        try:
+            for v in value:
+                if not isinstance(v, Entity):
+                    continue
+
+                v._entity_refs.add(
+                    self._unique_instance_hash
+                )
+
+        except Exception as e:
+            raise
 
     def __repr__(self):
         '''Return representation of instance.'''
