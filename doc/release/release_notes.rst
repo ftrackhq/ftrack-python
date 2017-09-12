@@ -12,6 +12,11 @@ Release Notes
 .. release:: upcoming
 
     .. change:: fixed
+        :tags: test
+
+        Update broken test data that uses incorrect asset version values.
+
+    .. change:: fixed
         :tags: metadata
 
         Not possible to set metadata on creation.

@@ -24,7 +24,7 @@ def test_create_component_specifying_different_version(
         temporary_file, location=None,
         data=dict(
             version_id='this-value-should-be-ignored',
-            version='this-value-should-be-overridden'
+            version=54312
         )
     )
     assert component['version'] is new_asset_version
