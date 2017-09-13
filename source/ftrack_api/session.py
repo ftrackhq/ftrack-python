@@ -417,14 +417,33 @@ class Session(object):
         if not isinstance(attributes, (list, tuple)):
             attributes = [attributes]
 
-        if self.record_operations:
-            self.recorded_operations.push(
-                ftrack_api.operation.ResetEntityOperation(
-                    entity_type,
-                    entity_id,
-                    attributes
-                )
+        entity_data = {
+            # At present, data payload requires duplicating entity
+            # type.
+            '__entity_type__': entity_type
+
+        }
+
+        entity_data.update(
+            dict([(attribute, None) for attribute in attributes])
+        )
+
+        payload = {
+            'action': 'reset',
+            'entity_type': entity_type,
+            'entity_key': entity_id,
+            'entity_data': entity_data
+        }
+
+        try:
+            result = self._call(
+                [payload]
             )
+
+            return result
+
+        except Exception as e:
+            raise
 
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
