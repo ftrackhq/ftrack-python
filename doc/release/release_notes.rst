@@ -11,6 +11,14 @@ Release Notes
 
 .. release:: upcoming
 
+    .. change:: new
+        :tags: users, ldap
+
+        Add support for triggering a synchronization of
+        users between ldap and ftrack::
+
+            ftrack_api.Session().sync_with_ldap()
+
     .. change:: fixed
         :tags: metadata
 

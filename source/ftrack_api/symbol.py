@@ -70,3 +70,6 @@ SERVER_LOCATION_ID = '3a372bde-05bc-11e4-8908-20c9d081909b'
 
 #: Chunk size used when working with data.
 CHUNK_SIZE = 8192
+
+#: Symbol representing syncing users with ldap
+TASK_SYNC_USERS_LDAP = Symbol('SYNC_USERS_LDAP')

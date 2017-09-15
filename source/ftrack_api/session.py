@@ -2070,6 +2070,40 @@ class Session(object):
 
         return availabilities
 
+    def sync_with_ldap(self):
+        '''Execute a sync between ftrack and configured ldap server.
+
+        Returns a `ftrack.entity.job.Job`.
+
+        '''
+
+        return self.__delayed_task(
+            ftrack_api.symbol.TASK_SYNC_USERS_LDAP
+        )
+
+    def __delayed_task(self, job_type):
+        '''Execute a delayed task on the server, a `ftrack.entity.job.Job` is returned.
+
+        *job_type* should be one of the allowed task types. There is currently
+        only one remote task type "SYNC_USERS_LDAP".
+        '''
+
+        operation = {
+            'action': 'delayed_task',
+            'job_type': job_type.name
+        }
+
+        try:
+            result = self._call(
+                [operation]
+            )[0]
+
+        except ftrack_api.exception.ServerError as error:
+            raise
+
+        return result['data']
+
+
     def get_widget_url(self, name, entity=None, theme=None):
         '''Return an authenticated URL for widget with *name* and given options.
 
