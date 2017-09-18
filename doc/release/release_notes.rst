@@ -14,7 +14,7 @@ Release Notes
     .. change:: new
         :tags: session
 
-        New function :meth:`ftrack_api.session.Session.reset_attributes` allows resetting of attributes to their
+        New function :meth:`ftrack_api.session.Session.perform_reset` allows resetting of attributes to their
         default value.
 
         .. seealso:: :ref:`working_with_entities/resetting`.

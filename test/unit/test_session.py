@@ -1152,7 +1152,7 @@ def test_plugin_arguments(mocker):
     mock.assert_called_once_with([], [session], {"test": "value"})
 
 
-def test_reset_attribute(session, user):
+def test_perform_reset(session, user):
     '''Reset user api key.'''
     matching = session.get(
         *ftrack_api.inspection.identity(user)
@@ -1162,7 +1162,7 @@ def test_reset_attribute(session, user):
         'api_key'
     )
 
-    session.reset_attributes(
+    session.perform_reset(
         'User', matching.get('id'), ['api_key']
     )
 
@@ -1179,14 +1179,14 @@ def test_reset_attribute(session, user):
     'Fail resetting primary key',
     'Fail resetting attribute without default value',
 ])
-def test_fail_reset_attribute(session, user, attribute):
+def test_fail_perform_reset(session, user, attribute):
     '''Fail trying to rest invalid attributes.'''
 
     matching = session.get(
         *ftrack_api.inspection.identity(user)
     )
 
-    session.reset_attributes(
+    session.perform_reset(
         'User', matching.get('id'), attribute
     )
 

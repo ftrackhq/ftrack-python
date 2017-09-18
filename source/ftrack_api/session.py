@@ -411,7 +411,7 @@ class Session(object):
             if state is ftrack_api.symbol.DELETED
         ]
 
-    def reset_attributes(self, entity_type, entity_id, attributes):
+    def perform_reset(self, entity_type, entity_id, attributes):
         '''Reset attributes to there default value.'''
 
         if not isinstance(attributes, (list, tuple)):

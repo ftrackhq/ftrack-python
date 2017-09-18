@@ -151,7 +151,7 @@ Resetting entity attributes
 It is also possible to reset a attribute to its default value, for example
 to reset a users api key::
 
-    session.reset_attributes(
+    session.perform_reset(
         'User', entity_id, ['api_key']
     )
 
