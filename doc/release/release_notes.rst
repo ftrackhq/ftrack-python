@@ -12,6 +12,18 @@ Release Notes
 .. release:: upcoming
 
     .. change:: fixed
+        :tags: custom attributes
+
+         Not possible to set hierarchical custom attributes on an entity that
+         has not been committed.
+
+    .. change:: fixed
+        :tags: custom attributes
+
+         Not possible to set custom attributes on an `Asset` that has not been
+         committed.
+
+    .. change:: fixed
         :tags: metadata
 
         Not possible to set metadata on creation.

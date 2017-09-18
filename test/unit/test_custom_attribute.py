@@ -8,7 +8,8 @@ import pytest
 
 @pytest.fixture(
     params=[
-        'AssetVersion', 'Shot', 'AssetVersionList', 'TypedContextList', 'User'
+        'AssetVersion', 'Shot', 'AssetVersionList', 'TypedContextList', 'User',
+        'Asset'
     ]
 )
 def new_entity_and_custom_attribute(request, session):
@@ -31,6 +32,16 @@ def new_entity_and_custom_attribute(request, session):
             }
         )
         return (entity, 'fstart', 1005)
+
+    elif request.param == 'Asset':
+        shot = session.query('Shot').first()
+        entity = session.create(
+            request.param, {
+                'context_id': shot['project_id'],
+                'name': str(uuid.uuid1())
+            }
+        )
+        return (entity, 'htest', 1005)
 
     elif request.param in ('AssetVersionList', 'TypedContextList'):
         entity = session.create(
@@ -194,7 +205,7 @@ def test_set_custom_attribute_on_new_but_persisted_version(
     session.commit()
 
 
-def test_batch_create_entity_and_cust_attributes(
+def test_batch_create_entity_and_custom_attributes(
     new_entity_and_custom_attribute
 ):
     '''Write custom attribute value and entity in the same batch.'''
