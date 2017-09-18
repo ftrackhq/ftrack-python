@@ -9,7 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: upcoming
+.. release:: 1.3.2
+
+    .. change:: new
+        :tags: task template
+
+        Added example for managing task templates through the API. See
+        :ref:`example/task_template` for example usage.
 
     .. change:: fixed
         :tags: custom attributes
@@ -27,12 +33,6 @@ Release Notes
         :tags: metadata
 
         Not possible to set metadata on creation.
-
-    .. change:: new
-        :tags: task template
-
-        Added example for managing task templates through the API. See
-        :ref:`example/task_template` for example usage.
 
 .. release:: 1.3.1
 
