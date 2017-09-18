@@ -15,9 +15,8 @@ Release Notes
         :tags: users, ldap
 
         Add support for triggering a synchronization of
-        users between ldap and ftrack::
-
-            ftrack_api.Session().sync_with_ldap()
+        users between ldap and ftrack. See
+        :ref:`example/sync_with_ldap` for example usage.
 
     .. change:: fixed
         :tags: metadata

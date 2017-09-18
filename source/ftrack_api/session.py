@@ -2070,26 +2070,21 @@ class Session(object):
 
         return availabilities
 
-    def sync_with_ldap(self):
-        '''Execute a sync between ftrack and configured ldap server.
+    def delayed_job(self, job_type):
+        '''Execute a delayed job on the server, a `ftrack.entity.job.Job` is returned.
 
-        Returns a `ftrack.entity.job.Job`.
-
+        *job_type* should be one of the allowed job types. There is currently
+        only one remote job type "SYNC_USERS_LDAP".
         '''
 
-        return self.__delayed_task(
-            ftrack_api.symbol.TASK_SYNC_USERS_LDAP
-        )
 
-    def __delayed_task(self, job_type):
-        '''Execute a delayed task on the server, a `ftrack.entity.job.Job` is returned.
-
-        *job_type* should be one of the allowed task types. There is currently
-        only one remote task type "SYNC_USERS_LDAP".
-        '''
+        if job_type not in (ftrack_api.symbol.JOB_SYNC_USERS_LDAP, ):
+            raise ValueError(
+                u'Invalid Job type : {0}.'.format(job_type)
+            )
 
         operation = {
-            'action': 'delayed_task',
+            'action': 'delayed_job',
             'job_type': job_type.name
         }
 
