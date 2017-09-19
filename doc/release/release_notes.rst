@@ -14,12 +14,71 @@ Release Notes
     .. change:: new
         :tags: session
 
-        New function :meth:`ftrack_api.session.Session.perform_reset` allows resetting of attributes to their
-        default value.
+        New function :meth:`ftrack_api.session.Session.perform_reset` allows
+        resetting of attributes to their default value.
 
         .. seealso:: :ref:`working_with_entities/resetting`.
 
+.. release:: 1.3.2
 
+    .. change:: new
+        :tags: task template
+
+        Added example for managing task templates through the API. See
+        :ref:`example/task_template` for example usage.
+
+    .. change:: fixed
+        :tags: custom attributes
+
+         Not possible to set hierarchical custom attributes on an entity that
+         has not been committed.
+
+    .. change:: fixed
+        :tags: custom attributes
+
+         Not possible to set custom attributes on an `Asset` that has not been
+         committed.
+
+    .. change:: fixed
+        :tags: metadata
+
+        Not possible to set metadata on creation.
+
+.. release:: 1.3.1
+
+    .. change:: fixed
+        :tags: session, events
+
+        Calling disconnect on the event hub is slow.
+
+.. release:: 1.3.0
+
+    .. change:: new
+        :tags: session
+
+        Support using a :class:`Session` as a context manager to aid closing of
+        session after use::
+
+            with ftrack_api.Session() as session:
+                # Perform operations with session.
+
+    .. change:: new
+        :tags: session
+
+        :meth:`Session.close` automatically called on Python exit if session not
+        already closed.
+
+    .. change:: new
+        :tags: session
+
+        Added :meth:`Session.close` to properly close a session's connections to
+        the server(s) as well as ensure event listeners are properly
+        unsubscribed.
+
+    .. change:: new
+
+        Added :exc:`ftrack_api.exception.ConnectionClosedError` to represent
+        error caused when trying to access servers over closed connection.
 
 .. release:: 1.2.0
 

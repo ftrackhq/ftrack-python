@@ -18,8 +18,8 @@ There are two types of entities that can be linked:
     `TypedContextLink`.
 
 Both `AssetVersion` and `TypedContext` objects have the same relations
-`incomging_links` and `outgoing_links`. To list the incoming links to a Shot we
-can use the relationship `incomging_links`::
+`incoming_links` and `outgoing_links`. To list the incoming links to a Shot we
+can use the relationship `incoming_links`::
 
     for link in shot['incoming_links']:
         print link['from'], link['to']

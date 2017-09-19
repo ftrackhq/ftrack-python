@@ -450,3 +450,36 @@ def test_mapped_collection_proxy_count(new_project, unique_name):
     new_project.session.commit()
 
     assert len(metadata) == 3
+
+
+def test_mapped_collection_on_create(session, unique_name, project):
+    '''Test that it is possible to set relational attributes on create'''
+    metadata = {
+        'a': 'value-a',
+        'b': 'value-b',
+        'c': 'value-c'
+    }
+
+    task_id = session.create(
+        'Task', {
+            'name': unique_name,
+            'parent': project,
+            'metadata': metadata,
+
+        }
+    ).get('id')
+
+    session.commit()
+
+    # Reset the session and check that we have the expected
+    # values.
+    session.reset()
+
+    task = session.get(
+        'Task', task_id
+    )
+
+    for key, value in metadata.items():
+        assert value == task['metadata'][key]
+
+
