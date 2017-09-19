@@ -113,22 +113,3 @@ class DeleteEntityOperation(Operation):
         self.entity_type = entity_type
         self.entity_key = entity_key
 
-
-class ResetEntityOperation(Operation):
-    '''Represent reset entity attribute operation'''
-    def __init__(self, entity_type, entity_key, attributes):
-        '''Initialise operation.
-
-        *entity_type* should be the type of entity in string form (as returned
-        from :attr:`ftrack_api.entity.base.Entity.entity_type`).
-
-        *entity_key* should be the unique key for the entity and should follow
-        the form returned from :func:`ftrack_api.inspection.primary_key`.
-
-        *attributes* should be a str, list or tuple of attributes to reset
-        '''
-        super(ResetEntityOperation, self).__init__()
-
-        self.entity_type = entity_type
-        self.entity_key = entity_key
-        self.attributes = attributes

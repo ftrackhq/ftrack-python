@@ -110,11 +110,12 @@ class User(ftrack_api.entity.base.Entity):
     def reset_api_key(self):
         '''Reset the users api key'''
 
-        response = self.session.reset_attributes(
+        response = self.session.perform_reset(
             'User', self.get('id'), 'api_key'
         )
 
         try:
+
             return response[0]['data']['api_key']
 
         except KeyError as error:

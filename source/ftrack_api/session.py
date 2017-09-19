@@ -1085,28 +1085,6 @@ class Session(object):
                     })
 
                 elif isinstance(
-                    operation, ftrack_api.operation.ResetEntityOperation
-                ):
-
-                    entity_data = {
-                        # At present, data payload requires duplicating entity
-                        # type.
-                        '__entity_type__': operation.entity_type
-
-                    }
-
-                    entity_data.update(
-                        dict([(attribute, None) for attribute in operation.attributes])
-                    )
-
-                    payload = OperationPayload({
-                        'action': 'reset',
-                        'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key,
-                        'entity_data': entity_data
-                    })
-
-                elif isinstance(
                     operation, ftrack_api.operation.DeleteEntityOperation
                 ):
                     payload = OperationPayload({
@@ -1161,7 +1139,7 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] in ('update', 'reset'):
+            if payload['action'] in ('update'):
                 for key, value in payload['entity_data'].items():
                     if key == '__entity_type__':
                         continue
