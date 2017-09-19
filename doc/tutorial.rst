@@ -134,6 +134,23 @@ When ready, persist to the server using :meth:`Session.commit`::
 
     >>> session.commit()
 
+When finished with a :class:`Session`, it is important to :meth:`~Session.close`
+it in order to release resources and properly unsubscribe any registered event
+listeners. It is also possible to use the session as a context manager in order
+to have it closed automatically after use::
+
+    >>> with ftrack_api.Session() as session:
+    ...     print session.query('User').first()
+    <User(0154901c-eaf9-11e5-b165-00505681ec7a)>
+    >>> print session.closed
+    True
+
+Once a :class:`Session` is closed, any operations that attempt to use the closed
+connection to the ftrack server will fail::
+
+    >>> session.query('Project').first()
+    ConnectionClosedError: Connection closed.
+
 Continue to the next section to start learning more about the API in greater
 depth or jump over to the :ref:`usage examples <example>` if you prefer to learn
 by example.

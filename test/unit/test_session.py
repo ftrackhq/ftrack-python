@@ -1151,7 +1151,6 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
-
 def test_perform_reset(session, user):
     '''Reset user api key.'''
     matching = session.get(
@@ -1192,3 +1191,34 @@ def test_fail_perform_reset(session, user, attribute):
 
     with pytest.raises(ftrack_api.exception.ServerError):
         session.commit()
+
+def test_close(session):
+    '''Close session.'''
+    assert session.closed is False
+    session.close()
+    assert session.closed is True
+
+
+def test_close_already_closed_session(session):
+    '''Close session that is already closed.'''
+    session.close()
+    assert session.closed is True
+    session.close()
+    assert session.closed is True
+
+
+def test_server_call_after_close(session):
+    '''Fail to issue calls to server after session closed.'''
+    session.close()
+    assert session.closed is True
+
+    with pytest.raises(ftrack_api.exception.ConnectionClosedError):
+        session.query('User').first()
+
+
+def test_context_manager(session):
+    '''Use session as context manager.'''
+    with session:
+        assert session.closed is False
+
+    assert session.closed is True
