@@ -511,15 +511,11 @@ class Session(object):
             'entity_data': entity_data
         }
 
-        try:
-            result = self._call(
-                [payload]
-            )
+        result = self._call(
+            [payload]
+        )
 
-            return result
-
-        except Exception as e:
-            raise
+        return result
 
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.

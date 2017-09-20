@@ -75,8 +75,6 @@ accessing a particular attribute by key:
     >>> new_timelog = session.create('Timelog', {...})
     >>> task['timelogs'].append(new_timelog)
 
-
-
 .. _working_with_entities/attributes/bidirectional:
 
 Bi-directional relationships
