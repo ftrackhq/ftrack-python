@@ -487,29 +487,26 @@ class Session(object):
             if state is ftrack_api.symbol.DELETED
         ]
 
-    def perform_reset(self, entity_type, entity_id, attributes):
-        '''Reset attributes to there default value.'''
+    def reset_remote(self, reset_type, entity=None):
+        '''Perform a server side reset.
 
-        if not isinstance(attributes, (list, tuple)):
-            attributes = [attributes]
+        *reset_type* is a server side supported reset type,
+        passing the optional *entity* to perform the option upon.
 
-        entity_data = {
-            # At present, data payload requires duplicating entity
-            # type.
-            '__entity_type__': entity_type
-
-        }
-
-        entity_data.update(
-            dict([(attribute, None) for attribute in attributes])
-        )
+        Please refer to ftrack documentation for a complete list of
+        supported server side reset types.
+        '''
 
         payload = {
-            'action': 'reset',
-            'entity_type': entity_type,
-            'entity_key': entity_id,
-            'entity_data': entity_data
+            'action': 'reset_remote',
+            'reset_type': reset_type
         }
+
+        if entity is not None:
+            payload.update({
+                'entity_type': entity.entity_type,
+                'entity_key': entity.get('id')
+            })
 
         result = self._call(
             [payload]
@@ -1211,7 +1208,7 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] in ('update'):
+            if payload['action'] in ('update', ):
                 for key, value in payload['entity_data'].items():
                     if key == '__entity_type__':
                         continue

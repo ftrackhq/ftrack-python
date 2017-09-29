@@ -108,10 +108,10 @@ class User(ftrack_api.entity.base.Entity):
         return timelog
 
     def reset_api_key(self):
-        '''Reset the users api key'''
+        '''Reset the users api key.'''
 
-        response = self.session.perform_reset(
-            'User', self.get('id'), 'api_key'
+        response = self.session.reset_remote(
+            'api_key', entity=self
         )
 
         try:

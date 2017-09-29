@@ -12,10 +12,12 @@ Release Notes
 .. release:: upcoming
 
     .. change:: new
-        :tags: session
+        :tags: session, user, api key
 
-        New function :meth:`ftrack_api.session.Session.perform_reset` allows
-        resetting of attributes to their default value.
+        New function :meth:`ftrack_api.session.Session.reset_remote` allows
+        resetting of attributes to their default value. A convenience method
+        for resetting a users api key utalizing this was also added
+        :meth:`ftrack_api.entity.user.User.reset_api_key`.
 
         .. seealso:: :ref:`working_with_entities/resetting`.
 

@@ -143,19 +143,20 @@ first fetching them from the server, turn :ref:`auto-population
 
 .. _working_with_entities/resetting:
 
-Resetting entity attributes
+Server side reset of entity attributes or settings.
 ===========================
 
-It is also possible to reset a attribute to its default value, for example
+Some entities support resetting of attributes, for example
 to reset a users api key::
 
-    session.perform_reset(
-        'User', entity_id, ['api_key']
+
+    session.reset_remote(
+        'api_key', entity=session.query('User where username is "test_user"').one()
     )
 
 .. note::
-    Currently only attributes with default attributes defined on the backend
-    are resettable. This is currently not exposed in the schema.
+    Currently the only attribute possible to reset is 'api_key' on
+    the user entity type.
 
 
 .. _working_with_entities/deleting:

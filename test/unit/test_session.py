@@ -1151,23 +1151,18 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
-def test_perform_reset(session, user):
+def test_remote_reset(session, user):
     '''Reset user api key.'''
-    matching = session.get(
-        *ftrack_api.inspection.identity(user)
+    key_1 = session.reset_remote(
+        'api_key', entity=user
     )
 
-    current_key = matching.get(
-        'api_key'
+    key_2 = session.reset_remote(
+        'api_key', entity=user
     )
 
-    session.perform_reset(
-        'User', matching.get('id'), ['api_key']
-    )
 
-    session.commit()
-
-    assert current_key != matching.get('api_key')
+    assert key_1 != key_2
 
 
 @pytest.mark.parametrize('attribute', [
@@ -1178,19 +1173,14 @@ def test_perform_reset(session, user):
     'Fail resetting primary key',
     'Fail resetting attribute without default value',
 ])
-def test_fail_perform_reset(session, user, attribute):
+def test_fail_remote_reset(session, user, attribute):
     '''Fail trying to rest invalid attributes.'''
 
-    matching = session.get(
-        *ftrack_api.inspection.identity(user)
-    )
-
-    session.perform_reset(
-        'User', matching.get('id'), attribute
-    )
-
     with pytest.raises(ftrack_api.exception.ServerError):
-        session.commit()
+        session.reset_remote(
+            attribute, user
+        )
+
 
 def test_close(session):
     '''Close session.'''

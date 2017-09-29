@@ -38,7 +38,7 @@ def test_timer_creates_timelog(new_user, task, unique_name):
 
 
 def test_reset_user_api_key(new_user):
-    '''Test resetting of api keys'''
+    '''Test resetting of api keys.'''
 
     api_keys = list()
     for i in range(0, 10):
