@@ -3,15 +3,16 @@
 
 .. _example/sync_with_ldap:
 
-*************
+********************
 Sync users with LDAP
-*************
+********************
 
 .. currentmodule:: ftrack_api.session
 
 
-If ftrack is configured to connect to LDAP you may trigger a synchronization through
-the api using the :meth:`ftrack_api.session.Session.delayed_job`::
+If ftrack is configured to connect to LDAP you may trigger a
+synchronization through the api using the
+:meth:`ftrack_api.session.Session.delayed_job`::
 
     job = ftrack_api.Session().delayed_job(
         ftrack_api.symbol.JOB_SYNC_USERS_LDAP
