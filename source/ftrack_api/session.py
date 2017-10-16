@@ -1266,14 +1266,21 @@ class Session(object):
                     self.merge(entry['data'])
 
                 elif entry['action'] == 'delete':
-                    try:
+                    for entity_key in entry['entity_key']:
                         # Should be moved out into its own method
                         cache_key = self.cache_key_maker.key(
                             (
-                                str(entry['data']['entity_type']),
-                                map(str, entry['data']['entity_key'])
+                                (str(entry['entity_type']), map(str, [entity_key]))
+
                             )
                         )
+
+                        if cache_key not in self.cache.keys():
+                            self.logger.debug(
+                                'Could not remove entity from cache, not cached.'
+                            )
+
+                            continue
 
                         entity = self.cache.get(
                             cache_key
@@ -1301,13 +1308,6 @@ class Session(object):
                                 ):
                                     if entity in ref.get(attribute.name):
                                         attribute.reset_attribute(ref)
-
-                    except KeyError:
-                        # Entity did not exist in local cache
-                        self.logger.debug(
-                            'Could not remove entity from cache, not cached.'
-                        )
-                        continue
 
             # Clear remaining local state, including local values for primary
             # keys on entities that were merged.
