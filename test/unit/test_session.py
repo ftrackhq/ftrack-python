@@ -1183,7 +1183,7 @@ def test_context_manager(session):
 
     assert session.closed is True
 
-
+@pytest.mark.slow
 def test_delayed_job(session):
     '''Test the delayed_job action'''
 

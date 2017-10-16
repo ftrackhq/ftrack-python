@@ -2076,11 +2076,9 @@ class Session(object):
         *job_type* should be one of the allowed job types. There is currently
         only one remote job type "SYNC_USERS_LDAP".
         '''
-
-
         if job_type not in (ftrack_api.symbol.JOB_SYNC_USERS_LDAP, ):
             raise ValueError(
-                u'Invalid Job type : {0}.'.format(job_type)
+                u'Invalid Job type: {0}.'.format(job_type)
             )
 
         operation = {
