@@ -9,6 +9,7 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
 .. release:: upcoming
 
     .. change:: new
@@ -23,11 +24,31 @@ Release Notes
 
         Not possible to set metadata on creation.
 
+.. release:: 1.3.2
+
+
     .. change:: new
         :tags: task template
 
         Added example for managing task templates through the API. See
         :ref:`example/task_template` for example usage.
+
+    .. change:: fixed
+        :tags: custom attributes
+
+         Not possible to set hierarchical custom attributes on an entity that
+         has not been committed.
+
+    .. change:: fixed
+        :tags: custom attributes
+
+         Not possible to set custom attributes on an `Asset` that has not been
+         committed.
+
+    .. change:: fixed
+        :tags: metadata
+
+        Not possible to set metadata on creation.
 
 .. release:: 1.3.1
 

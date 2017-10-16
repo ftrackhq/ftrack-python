@@ -208,8 +208,8 @@ def _get_custom_attribute_configurations(session):
 
     '''
     return session.query(
-        'select key, project_id, id, object_type_id, entity_type from '
-        'CustomAttributeConfiguration'
+        'select key, project_id, id, object_type_id, entity_type, '
+        'is_hierarchical from CustomAttributeConfiguration'
     ).all()
 
 
@@ -235,6 +235,9 @@ def _get_entity_configurations(entity):
     if entity.entity_type == 'User':
         entity_type = 'user'
 
+    if entity.entity_type == 'Asset':
+        entity_type = 'asset'
+
     if entity.entity_type in ('TypedContextList', 'AssetVersionList'):
         entity_type = 'list'
 
@@ -252,6 +255,14 @@ def _get_entity_configurations(entity):
             configuration['project_id'] in (project_id, None) and
             configuration['object_type_id'] == object_type_id
         ):
+            # The custom attribute configuration is for the target entity type.
+            configurations.append(configuration)
+        elif (
+            entity_type in ('asset', 'assetversion', 'show', 'task') and
+            configuration['project_id'] in (project_id, None) and
+            configuration['is_hierarchical']
+        ):
+            # The target entity type allows hierarchical attributes.
             configurations.append(configuration)
 
     # Return with global configurations at the end of the list. This is done
