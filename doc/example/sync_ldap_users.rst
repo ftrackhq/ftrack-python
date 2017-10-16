@@ -14,7 +14,8 @@ If ftrack is configured to connect to LDAP you may trigger a
 synchronization through the api using the
 :meth:`ftrack_api.session.Session.delayed_job`::
 
-    job = ftrack_api.Session().delayed_job(
+
+    job = session.delayed_job(
         ftrack_api.symbol.JOB_SYNC_USERS_LDAP
     )
 
