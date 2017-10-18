@@ -2096,7 +2096,6 @@ class Session(object):
 
         return result['data']
 
-
     def get_widget_url(self, name, entity=None, theme=None):
         '''Return an authenticated URL for widget with *name* and given options.
 
