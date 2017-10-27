@@ -21,7 +21,7 @@ Release Notes
 
         .. note::
 
-            This requires a compatible server version.
+            This requires that you run ftrack 3.5.10 or later.
 
     .. change:: fixed
         :tags: metadata
