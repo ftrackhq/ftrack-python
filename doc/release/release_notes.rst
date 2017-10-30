@@ -9,7 +9,27 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: upcoming
+
+    .. change:: new
+        :tags: users, ldap
+
+        Add support for triggering a synchronization of
+        users between ldap and ftrack. See :ref:`example/sync_with_ldap`
+        for example usage.
+
+        .. note::
+
+            This requires that you run ftrack 3.5.10 or later.
+
+    .. change:: fixed
+        :tags: metadata
+
+        Not possible to set metadata on creation.
+
 .. release:: 1.3.2
+
 
     .. change:: new
         :tags: task template
