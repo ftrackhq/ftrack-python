@@ -57,6 +57,7 @@ class Entity(collections.MutableMapping):
             __name__ + '.' + self.__class__.__name__
         )
         self.session = session
+        self.inflated = set()
 
         if data is None:
             data = {}
@@ -215,6 +216,42 @@ class Entity(collections.MutableMapping):
         attribute = self.__class__.attributes.get(key)
         if attribute is None:
             raise KeyError(key)
+
+        if attribute.name not in self.inflated:
+            # Expand references.
+            merged=dict()
+
+            # Local attributes.
+            local_value = attribute.get_local_value(self)
+            if isinstance(
+                    local_value,
+                    (
+                            ftrack_api.entity.base.Entity,
+                            ftrack_api.collection.Collection,
+                            ftrack_api.collection.MappedCollectionProxy
+                    )
+            ):
+                merged_local_value = self.session.merge(local_value, merged=merged)
+                if merged_local_value is not local_value:
+                    attribute.set_local_value(self, merged_local_value)
+
+            # Remote attributes.
+            remote_value = attribute.get_remote_value(self)
+            if isinstance(
+                    remote_value,
+                    (
+                            ftrack_api.entity.base.Entity,
+                            ftrack_api.collection.Collection,
+                            ftrack_api.collection.MappedCollectionProxy
+                    )
+            ):
+                merged_remote_value = self.session.merge(remote_value, merged=merged)
+                if merged_remote_value is not remote_value:
+                    attribute.set_remote_value(self, merged_remote_value)
+
+            self.inflated.add(
+                attribute.name
+            )
 
         return attribute.get_value(self)
 
