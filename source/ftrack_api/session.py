@@ -671,9 +671,6 @@ class Session(object):
         try:
             entity = self._get(entity_type, entity_key)
 
-            # Ensure any references in the retrieved cache object are expanded.
-            self._merge_references(entity)
-
         except KeyError:
 
             # Query for matching entity.
