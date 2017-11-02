@@ -2,9 +2,10 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import uuid
-
+import random
 import pytest
 
+import ftrack_api
 
 @pytest.fixture(
     params=[
@@ -217,3 +218,57 @@ def test_batch_create_entity_and_custom_attributes(
     session.commit()
 
     assert entity['custom_attributes'][name] == value
+
+
+
+def test_custom_attributes_refresh(new_asset_version):
+    '''Test refreshing of custom attribute data.'''
+    session_two = ftrack_api.Session()
+
+    query_string = 'select custom_attributes from AssetVersion where id is "{0}"'.format(
+        new_asset_version.get('id')
+    )
+
+    # Fetch the new asset version in a new session.
+    new_asset_version_two = session_two.query(
+        query_string
+    ).one()
+
+    # Modify our asset version
+    new_asset_version['custom_attributes']['versiontest'] = random.randint(
+        0, 100
+    )
+
+    new_asset_version.session.commit()
+
+    # Query the same asset version again and make sure we get the newly
+    # populated data.
+    session_two.query(
+        query_string
+    ).all()
+
+    assert (
+        new_asset_version['custom_attributes']['versiontest'] ==
+        new_asset_version_two['custom_attributes']['versiontest']
+    )
+
+    local_data = new_asset_version['custom_attributes']['versiontest'] + 1
+
+    new_asset_version_two['custom_attributes']['versiontest'] = local_data
+
+    # Modify our asset version again
+    new_asset_version['custom_attributes']['versiontest'] = local_data + 1
+
+    new_asset_version.session.commit()
+
+    # Query the same asset version again and make sure our local changes
+    # are not overwritten.
+    session_two.query(
+        query_string
+    ).all()
+
+    assert (
+        new_asset_version_two['custom_attributes']['versiontest'] ==
+        local_data
+    )
+
