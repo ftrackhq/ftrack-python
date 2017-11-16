@@ -10,7 +10,7 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
-.. release:: upcoming
+.. release:: 1.3.3
 
     .. change:: new
         :tags: users, ldap
