@@ -671,8 +671,6 @@ class Session(object):
         try:
             entity = self._get(entity_type, entity_key)
 
-            # Ensure any references in the retrieved cache object are expanded.
-            self._merge_references(entity)
 
         except KeyError:
 
@@ -872,7 +870,7 @@ class Session(object):
             )
             try:
                 attached_entity = self.cache.get(entity_key)
-                from_cache = True
+
                 log_debug and self.logger.debug(
                     'Retrieved existing entity from cache: {0} at {1}'
                     .format(attached_entity, id(attached_entity))
@@ -883,7 +881,7 @@ class Session(object):
                 attached_entity = self._create(
                     entity.entity_type, {}, reconstructing=True
                 )
-                from_cache = False
+
                 log_debug and self.logger.debug(
                     'Entity not present in cache. Constructed new instance: '
                     '{0} at {1}'.format(attached_entity, id(attached_entity))
@@ -891,19 +889,6 @@ class Session(object):
 
             # Mark entity as seen to avoid infinite loops.
             merged[entity_key] = attached_entity
-
-            # Expand references when entity instance retrieved from cache.
-            # This is required as a serialised cache might have returned an
-            # entity instance that has references to other entities not yet
-            # merged. The reason this is done here rather in the specific cache
-            # is so that any higher level cache can be taken advantage of when
-            # fetching data for referenced entities.
-            if from_cache:
-                self._merge_references(attached_entity, merged=merged)
-
-            # Merge new entity data into cache entity. If this causes the cache
-            # entity to change then persist those changes back to the cache.
-            self.logger.debug('Merging new data into attached entity.')
 
             changes = attached_entity.merge(entity, merged=merged)
             if changes:
@@ -917,71 +902,6 @@ class Session(object):
                 )
 
         return attached_entity
-
-    def _merge_references(self, entity, merged=None):
-        '''Recursively merge entity references in *entity*.'''
-        # As optimisation, mark inflated entities and avoid inflating more than
-        # once. This is possible because *entity* should always be the same
-        # entity instance retrieved from the top level memory cache.
-        # TODO: Consider refactor API encoding to explicitly mark references
-        # as such, perhaps by a private attribute __is_reference__ in order to
-        # make expansion of references easier to determine and on a
-        # per-reference basis.
-        is_inflated = getattr(entity, '_inflated', False)
-        if is_inflated:
-            self.logger.debug(
-                'Skipping merging references as entity appears to already have '
-                'been inflated.'
-            )
-            return
-
-        else:
-            entity._inflated = True
-
-        log_debug = self.logger.isEnabledFor(logging.DEBUG)
-        self.logger.debug('Merging references.')
-
-        if merged is None:
-            merged = {}
-
-        for attribute in entity.attributes:
-
-            # Local attributes.
-            local_value = attribute.get_local_value(entity)
-            if isinstance(
-                local_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy
-                )
-            ):
-                log_debug and self.logger.debug(
-                    'Merging local value for attribute {0}.'.format(attribute)
-                )
-
-                merged_local_value = self._merge(local_value, merged=merged)
-                if merged_local_value is not local_value:
-                    with self.operation_recording(False):
-                        attribute.set_local_value(entity, merged_local_value)
-
-            # Remote attributes.
-            remote_value = attribute.get_remote_value(entity)
-            if isinstance(
-                remote_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy
-                )
-            ):
-                log_debug and self.logger.debug(
-                    'Merging remote value for attribute {0}.'.format(attribute)
-                )
-
-                merged_remote_value = self._merge(remote_value, merged=merged)
-                if merged_remote_value is not remote_value:
-                    attribute.set_remote_value(entity, merged_remote_value)
 
     def populate(self, entities, projections):
         '''Populate *entities* with attributes specified by *projections*.

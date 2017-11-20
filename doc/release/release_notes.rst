@@ -13,6 +13,11 @@ Release Notes
 .. release:: upcoming
 
     .. change:: new
+        :tags: cache, performance
+
+        Entities fetched from cache are now lazily merged.
+
+    .. change:: new
         :tags: users, ldap
 
         Add support for triggering a synchronization of

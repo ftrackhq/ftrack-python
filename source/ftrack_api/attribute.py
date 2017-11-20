@@ -1,14 +1,86 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
+
 import collections
 import copy
+import logging
+import functools
 
 import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.collection
 import ftrack_api.inspection
 import ftrack_api.operation
+
+logger = logging.getLogger(
+    __name__
+)
+
+
+def merge_references(function):
+    '''Decorator to handle merging of references / collections.'''
+
+    @functools.wraps(function)
+    def get_value(attribute, entity):
+        '''Merge the attribute with the local cache.'''
+
+        logger.debug(
+            'Merging potential new data into attached '
+            'entity for attribute {0}.'.format(
+                attribute.name
+            )
+        )
+
+        # Local attributes.
+        local_value = attribute.get_local_value(entity)
+        if isinstance(
+            local_value,
+            (
+                ftrack_api.entity.base.Entity,
+                ftrack_api.collection.Collection,
+                ftrack_api.collection.MappedCollectionProxy
+            )
+        ):
+            logger.debug(
+                'Merging local value for attribute {0}.'.format(attribute)
+            )
+
+            merged_local_value = entity.session._merge(
+                local_value, merged=dict()
+            )
+
+            if merged_local_value is not local_value:
+                with entity.session.operation_recording(False):
+                    attribute.set_local_value(entity, merged_local_value)
+
+        # Remote attributes.
+        remote_value = attribute.get_remote_value(entity)
+        if isinstance(
+            remote_value,
+            (
+                ftrack_api.entity.base.Entity,
+                ftrack_api.collection.Collection,
+                ftrack_api.collection.MappedCollectionProxy
+            )
+        ):
+            logger.debug(
+                'Merging remote value for attribute {0}.'.format(attribute)
+            )
+
+            merged_remote_value = entity.session._merge(
+                remote_value, merged=dict()
+            )
+
+            if merged_remote_value is not remote_value:
+                attribute.set_remote_value(entity, merged_remote_value)
+
+        return function(
+            attribute, entity
+        )
+
+    return get_value
 
 
 class Attributes(object):
@@ -125,6 +197,7 @@ class Attribute(object):
         '''Return whether attribute is mutable.'''
         return self._mutable
 
+    @merge_references
     def get_value(self, entity):
         '''Return current value for *entity*.
 
@@ -297,6 +370,7 @@ class AbstractCollectionAttribute(Attribute):
     #: Collection class used by attribute.
     collection_class = None
 
+    @merge_references
     def get_value(self, entity):
         '''Return current value for *entity*.
 

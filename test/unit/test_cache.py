@@ -211,6 +211,57 @@ def test_layered_cache_remove_at_depth():
     assert not cache.keys()
 
 
+def test_expand_references():
+    '''Test that references are expanded from serialized cache.'''
+
+    cache_path = os.path.join(
+        tempfile.gettempdir(), '{0}.dbm'.format(uuid.uuid4().hex)
+    )
+
+    # create a serialised file cache.
+    def make_cache(session, cache_path):
+        serialized_file_cache = ftrack_api.cache.SerialisedCache(
+            ftrack_api.cache.FileCache(cache_path),
+            encode=session.encode,
+            decode=session.decode
+        )
+
+        return serialized_file_cache
+
+    # populate the serialized file cache
+    session = ftrack_api.Session(
+        cache=lambda session, cache_path=cache_path:make_cache(
+            session, cache_path
+        )
+    )
+
+    expanded_results = dict()
+
+    query_string = 'select asset.parent from AssetVersion where asset is_not None'
+
+    for sequence in session.query(query_string):
+        asset = sequence.get('asset')
+
+        expanded_results.setdefault(
+            asset.get('id'), asset.get('parent')
+        )
+
+    # fetch the data from cache
+    new_session = ftrack_api.Session(
+        cache=lambda session, cache_path=cache_path:make_cache(
+            session, cache_path
+        )
+    )
+
+    # make sure references are merged
+    for sequence in new_session.query(query_string):
+        asset = sequence.get('asset')
+
+        assert (
+            asset.get('parent') == expanded_results[asset.get('id')]
+        )
+
+
 @pytest.mark.parametrize('items, key', [
     (({},), '{}'),
     (({}, {}), '{}{}')
