@@ -26,55 +26,63 @@ def merge_references(function):
     def get_value(attribute, entity):
         '''Merge the attribute with the local cache.'''
 
-        logger.debug(
-            'Merging potential new data into attached '
-            'entity for attribute {0}.'.format(
+        if attribute.name not in entity._inflated:
+            # Only merge on first access to avoid
+            # inflating them multiple times.
+
+            logger.debug(
+                'Merging potential new data into attached '
+                'entity for attribute {0}.'.format(
+                    attribute.name
+                )
+            )
+
+            # Local attributes.
+            local_value = attribute.get_local_value(entity)
+            if isinstance(
+                local_value,
+                (
+                    ftrack_api.entity.base.Entity,
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
+                )
+            ):
+                logger.debug(
+                    'Merging local value for attribute {0}.'.format(attribute)
+                )
+
+                merged_local_value = entity.session._merge(
+                    local_value, merged=dict()
+                )
+
+                if merged_local_value is not local_value:
+                    with entity.session.operation_recording(False):
+                        attribute.set_local_value(entity, merged_local_value)
+
+            # Remote attributes.
+            remote_value = attribute.get_remote_value(entity)
+            if isinstance(
+                remote_value,
+                (
+                    ftrack_api.entity.base.Entity,
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
+                )
+            ):
+                logger.debug(
+                    'Merging remote value for attribute {0}.'.format(attribute)
+                )
+
+                merged_remote_value = entity.session._merge(
+                    remote_value, merged=dict()
+                )
+
+                if merged_remote_value is not remote_value:
+                    attribute.set_remote_value(entity, merged_remote_value)
+
+            entity._inflated.add(
                 attribute.name
             )
-        )
-
-        # Local attributes.
-        local_value = attribute.get_local_value(entity)
-        if isinstance(
-            local_value,
-            (
-                ftrack_api.entity.base.Entity,
-                ftrack_api.collection.Collection,
-                ftrack_api.collection.MappedCollectionProxy
-            )
-        ):
-            logger.debug(
-                'Merging local value for attribute {0}.'.format(attribute)
-            )
-
-            merged_local_value = entity.session._merge(
-                local_value, merged=dict()
-            )
-
-            if merged_local_value is not local_value:
-                with entity.session.operation_recording(False):
-                    attribute.set_local_value(entity, merged_local_value)
-
-        # Remote attributes.
-        remote_value = attribute.get_remote_value(entity)
-        if isinstance(
-            remote_value,
-            (
-                ftrack_api.entity.base.Entity,
-                ftrack_api.collection.Collection,
-                ftrack_api.collection.MappedCollectionProxy
-            )
-        ):
-            logger.debug(
-                'Merging remote value for attribute {0}.'.format(attribute)
-            )
-
-            merged_remote_value = entity.session._merge(
-                remote_value, merged=dict()
-            )
-
-            if merged_remote_value is not remote_value:
-                attribute.set_remote_value(entity, merged_remote_value)
 
         return function(
             attribute, entity

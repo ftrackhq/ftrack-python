@@ -88,8 +88,6 @@ def test_read_set_custom_attribute(
         )
     ).first()
 
-    print custom_attribute_value['entity_id'], custom_attribute_value['configuration']['key']
-
     entity = session.query(
         'select custom_attributes from {entity_type} where id is '
         '{entity_id}'.format(

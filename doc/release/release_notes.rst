@@ -12,10 +12,11 @@ Release Notes
 
 .. release:: upcoming
 
-    .. change:: new
+    .. change:: changed
         :tags: cache, performance
 
-        Entities fetched from cache are now lazily merged.
+        Entities fetched from cache are now lazily merged. Improved
+        performance when dealing with highly populated caches.
 
     .. change:: new
         :tags: users, ldap

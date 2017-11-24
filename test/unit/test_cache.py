@@ -228,7 +228,7 @@ def test_expand_references():
 
         return serialized_file_cache
 
-    # populate the serialized file cache
+    # Populate the serialized file cache.
     session = ftrack_api.Session(
         cache=lambda session, cache_path=cache_path:make_cache(
             session, cache_path
@@ -246,14 +246,14 @@ def test_expand_references():
             asset.get('id'), asset.get('parent')
         )
 
-    # fetch the data from cache
+    # Fetch the data from cache.
     new_session = ftrack_api.Session(
         cache=lambda session, cache_path=cache_path:make_cache(
             session, cache_path
         )
     )
 
-    # make sure references are merged
+    # Make sure references are merged.
     for sequence in new_session.query(query_string):
         asset = sequence.get('asset')
 
