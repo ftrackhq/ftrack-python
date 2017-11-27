@@ -483,7 +483,7 @@ def test_mapped_collection_on_create(session, unique_name, project):
         assert value == task['metadata'][key]
 
 
-def test_collection_refresh(new_asset_version, new_component, session):
+def test_collection_refresh(new_asset_version, new_component):
     '''Test collection reload.'''
     session_two = ftrack_api.Session(auto_connect_event_hub=False)
 
