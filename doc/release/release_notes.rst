@@ -10,7 +10,8 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
-.. release:: upcoming
+.. release:: 1.3.3
+    :date: 2017-11-16
 
     .. change:: new
         :tags: users, ldap
@@ -29,6 +30,7 @@ Release Notes
         Not possible to set metadata on creation.
 
 .. release:: 1.3.2
+    :date: 2017-09-18
 
 
     .. change:: new
@@ -55,6 +57,7 @@ Release Notes
         Not possible to set metadata on creation.
 
 .. release:: 1.3.1
+    :date: 2017-07-21
 
     .. change:: fixed
         :tags: session, events
@@ -62,6 +65,7 @@ Release Notes
         Calling disconnect on the event hub is slow.
 
 .. release:: 1.3.0
+    :date: 2017-07-17
 
     .. change:: new
         :tags: session
@@ -91,6 +95,7 @@ Release Notes
         error caused when trying to access servers over closed connection.
 
 .. release:: 1.2.0
+    :date: 2017-06-16
 
     .. change:: changed
         :tags: events
