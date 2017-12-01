@@ -26,10 +26,7 @@ def merge_references(function):
     def get_value(attribute, entity):
         '''Merge the attribute with the local cache.'''
 
-        if (attribute.name not in entity._inflated and not isinstance(
-                attribute, ScalarAttribute
-            )
-        ):
+        if attribute.name not in entity._inflated:
             # Only merge on first access to avoid
             # inflating them multiple times.
 
@@ -208,7 +205,6 @@ class Attribute(object):
         '''Return whether attribute is mutable.'''
         return self._mutable
 
-    @merge_references
     def get_value(self, entity):
         '''Return current value for *entity*.
 
@@ -374,6 +370,12 @@ class ReferenceAttribute(Attribute):
 
         return False
 
+
+    @merge_references
+    def get_value(self, entity):
+        return super(ReferenceAttribute, self).get_value(
+            entity
+        )
 
 class AbstractCollectionAttribute(Attribute):
     '''Base class for collection attributes.'''
