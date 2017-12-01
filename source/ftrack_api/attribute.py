@@ -26,7 +26,10 @@ def merge_references(function):
     def get_value(attribute, entity):
         '''Merge the attribute with the local cache.'''
 
-        if attribute.name not in entity._inflated:
+        if (attribute.name not in entity._inflated and not isinstance(
+                attribute, ScalarAttribute
+            )
+        ):
             # Only merge on first access to avoid
             # inflating them multiple times.
 
