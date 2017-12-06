@@ -114,11 +114,4 @@ class User(ftrack_api.entity.base.Entity):
             'api_key', entity=self
         )
 
-        try:
-
-            return response[0]['data']['api_key']
-
-        except KeyError as error:
-            raise ftrack_api.exception.Error(
-                'Failed resetting api key'
-            )
+        return response['api_key']

@@ -512,7 +512,7 @@ class Session(object):
             [payload]
         )
 
-        return result
+        return result[0]['data']
 
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
@@ -1283,7 +1283,7 @@ class Session(object):
             # Process results merging into cache relevant data.
             for entry in result:
 
-                if entry['action'] in ('create', 'update', 'reset'):
+                if entry['action'] in ('create', 'update'):
                     # Merge returned entities into local cache.
                     self.merge(entry['data'])
 
