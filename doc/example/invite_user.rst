@@ -1,5 +1,5 @@
 ..
-    :copyright: Copyright (c) 2015 ftrack
+    :copyright: Copyright (c) 2017 ftrack
 
 .. _example/invite_user:
 
