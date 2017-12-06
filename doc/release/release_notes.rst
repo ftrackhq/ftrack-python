@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: new
+
+       Add support for sending out invitation emails to users.
+       See :ref:`example/invite_user` for example usage.
+
 
 .. release:: 1.3.3
     :date: 2017-11-16
