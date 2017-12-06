@@ -21,7 +21,29 @@ Release Notes
 
         .. seealso:: :ref:`working_with_entities/resetting`.
 
+
+.. release:: 1.3.3
+    :date: 2017-11-16
+
+    .. change:: new
+        :tags: users, ldap
+
+        Add support for triggering a synchronization of
+        users between ldap and ftrack. See :ref:`example/sync_with_ldap`
+        for example usage.
+
+        .. note::
+
+            This requires that you run ftrack 3.5.10 or later.
+
+    .. change:: fixed
+        :tags: metadata
+
+        Not possible to set metadata on creation.
+
 .. release:: 1.3.2
+    :date: 2017-09-18
+
 
     .. change:: new
         :tags: task template
@@ -47,6 +69,7 @@ Release Notes
         Not possible to set metadata on creation.
 
 .. release:: 1.3.1
+    :date: 2017-07-21
 
     .. change:: fixed
         :tags: session, events
@@ -54,6 +77,7 @@ Release Notes
         Calling disconnect on the event hub is slow.
 
 .. release:: 1.3.0
+    :date: 2017-07-17
 
     .. change:: new
         :tags: session
@@ -83,6 +107,7 @@ Release Notes
         error caused when trying to access servers over closed connection.
 
 .. release:: 1.2.0
+    :date: 2017-06-16
 
     .. change:: changed
         :tags: events

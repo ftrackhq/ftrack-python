@@ -47,3 +47,4 @@ already constructed a :class:`Session`::
     publishing
     security_roles
     task_template
+    sync_ldap_users

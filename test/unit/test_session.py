@@ -1212,3 +1212,24 @@ def test_context_manager(session):
         assert session.closed is False
 
     assert session.closed is True
+
+
+def test_delayed_job(session):
+    '''Test the delayed_job action'''
+
+    with pytest.raises(ValueError):
+        session.delayed_job(
+            'DUMMY_JOB'
+        )
+
+
+@pytest.mark.skip(reason='No configured ldap server.')
+def test_delayed_job_ldap_sync(session):
+    '''Test the a delayed_job ldap sync action'''
+    result = session.delayed_job(
+        ftrack_api.symbol.JOB_SYNC_USERS_LDAP
+    )
+
+    assert isinstance(
+        result, ftrack_api.entity.job.Job
+    )
