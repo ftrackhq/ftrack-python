@@ -12,7 +12,7 @@ Here we create a new user and send them a invitation through mail
 
 Create a new user::
 
-    user_email = 'eric.hermelin@gmail.com'
+    user_email = 'artist@mail.vfx-company.com'
 
     new_user = session.create(
         'User', {
