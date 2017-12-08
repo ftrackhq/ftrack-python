@@ -21,6 +21,11 @@ Release Notes
 
         .. seealso:: :ref:`working_with_entities/resetting`.
 
+    .. change:: new
+
+       Add support for sending out invitation emails to users.
+       See :ref:`example/invite_user` for example usage.
+
 
 .. release:: 1.3.3
     :date: 2017-11-16

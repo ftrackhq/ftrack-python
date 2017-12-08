@@ -107,6 +107,12 @@ class User(ftrack_api.entity.base.Entity):
 
         return timelog
 
+    def send_invite(self):
+        '''Send a invation email to the user'''
+
+        self.session.send_user_invite(
+            self
+        )
     def reset_api_key(self):
         '''Reset the users api key.'''
 

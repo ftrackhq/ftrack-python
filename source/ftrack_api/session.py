@@ -2309,6 +2309,50 @@ class Session(object):
 
         return result[0]
 
+    def send_user_invite(self, user):
+        '''Send a invitation to the provided *user*.
+
+        *user* is a User instance
+
+        '''
+
+        self.send_user_invites(
+            [user]
+        )
+
+    def send_user_invites(self, users):
+        '''Send a invitation to the provided *user*.
+
+        *users* is a list of User instances
+
+        '''
+
+        operations = []
+
+        for user in users:
+            operations.append(
+                {
+                    'action':'send_user_invite',
+                    'user_id': user['id']
+                }
+            )
+
+        try:
+            self._call(operations)
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'send_user_invite\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    '"send_user_invite", please update server and '
+                    'try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
+
     def send_review_session_invite(self, invitee):
         '''Send an invite to a review session to *invitee*.
 
