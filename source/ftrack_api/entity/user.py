@@ -113,3 +113,11 @@ class User(ftrack_api.entity.base.Entity):
         self.session.send_user_invite(
             self
         )
+    def reset_api_key(self):
+        '''Reset the users api key.'''
+
+        response = self.session.reset_remote(
+            'api_key', entity=self
+        )
+
+        return response['api_key']

@@ -487,6 +487,33 @@ class Session(object):
             if state is ftrack_api.symbol.DELETED
         ]
 
+    def reset_remote(self, reset_type, entity=None):
+        '''Perform a server side reset.
+
+        *reset_type* is a server side supported reset type,
+        passing the optional *entity* to perform the option upon.
+
+        Please refer to ftrack documentation for a complete list of
+        supported server side reset types.
+        '''
+
+        payload = {
+            'action': 'reset_remote',
+            'reset_type': reset_type
+        }
+
+        if entity is not None:
+            payload.update({
+                'entity_type': entity.entity_type,
+                'entity_key': entity.get('id')
+            })
+
+        result = self._call(
+            [payload]
+        )
+
+        return result[0]['data']
+
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
 
@@ -1181,7 +1208,7 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] == 'update':
+            if payload['action'] in ('update', ):
                 for key, value in payload['entity_data'].items():
                     if key == '__entity_type__':
                         continue
@@ -1264,7 +1291,6 @@ class Session(object):
                     # TODO: Detach entity - need identity returned?
                     # TODO: Expunge entity from cache.
                     pass
-
             # Clear remaining local state, including local values for primary
             # keys on entities that were merged.
             with self.auto_populating(False):
