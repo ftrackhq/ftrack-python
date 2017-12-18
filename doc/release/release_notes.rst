@@ -10,14 +10,17 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
-.. release:: 1.3.3
-    :date: 2017-11-16
+.. release:: upcoming
 
     .. change:: changed
         :tags: cache, performance
 
         Entities fetched from cache are now lazily merged. Improved
         performance when dealing with highly populated caches.
+
+.. release:: 1.3.3
+    :date: 2017-11-16
+
 
     .. change:: new
         :tags: users, ldap
