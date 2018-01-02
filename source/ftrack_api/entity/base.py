@@ -57,6 +57,7 @@ class Entity(collections.MutableMapping):
             __name__ + '.' + self.__class__.__name__
         )
         self.session = session
+        self._inflated = set()
 
         if data is None:
             data = {}
