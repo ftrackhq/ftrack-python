@@ -5,6 +5,7 @@ import uuid
 
 import pytest
 
+import ftrack_api
 
 @pytest.fixture(
     params=[
@@ -86,8 +87,6 @@ def test_read_set_custom_attribute(
             custom_attribute_name=custom_attribute_name
         )
     ).first()
-
-    print custom_attribute_value['entity_id'], custom_attribute_value['configuration']['key']
 
     entity = session.query(
         'select custom_attributes from {entity_type} where id is '
@@ -217,3 +216,32 @@ def test_batch_create_entity_and_custom_attributes(
     session.commit()
 
     assert entity['custom_attributes'][name] == value
+
+
+def test_refresh_custom_attribute(new_asset_version):
+    '''Test custom attribute refresh.'''
+    session_two = ftrack_api.Session()
+
+    query_string = 'select custom_attributes from AssetVersion where id is "{0}"'.format(
+        new_asset_version.get('id')
+    )
+
+    asset_version_two = session_two.query(
+        query_string
+    ).first()
+
+    new_asset_version['custom_attributes']['versiontest'] = 42
+
+    new_asset_version.session.commit()
+
+    asset_version_two = session_two.query(
+        query_string
+    ).first()
+
+    assert (
+        new_asset_version['custom_attributes']['versiontest'] ==
+        asset_version_two['custom_attributes']['versiontest']
+    )
+
+
+

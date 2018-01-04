@@ -140,6 +140,25 @@ first fetching them from the server, turn :ref:`auto-population
     ...    task = session.query('Task').first()
     ...    task['bid'] = 8
 
+
+.. _working_with_entities/resetting:
+
+Server side reset of entity attributes or settings.
+===========================
+
+Some entities support resetting of attributes, for example
+to reset a users api key::
+
+
+    session.reset_remote(
+        'api_key', entity=session.query('User where username is "test_user"').one()
+    )
+
+.. note::
+    Currently the only attribute possible to reset is 'api_key' on
+    the user entity type.
+
+
 .. _working_with_entities/deleting:
 
 Deleting entities

@@ -59,6 +59,7 @@ def cache(request):
     return cache
 
 
+
 class Class(object):
     '''Class for testing.'''
 
@@ -209,6 +210,72 @@ def test_layered_cache_remove_at_depth():
 
     # Ensure key was removed.
     assert not cache.keys()
+
+
+def test_expand_references():
+    '''Test that references are expanded from serialized cache.'''
+
+    cache_path = os.path.join(
+        tempfile.gettempdir(), '{0}.dbm'.format(uuid.uuid4().hex)
+    )
+
+    def make_cache(session, cache_path):
+        '''Create a serialised file cache.'''
+        serialized_file_cache = ftrack_api.cache.SerialisedCache(
+            ftrack_api.cache.FileCache(cache_path),
+            encode=session.encode,
+            decode=session.decode
+        )
+
+        return serialized_file_cache
+
+    # Populate the serialized file cache.
+    session = ftrack_api.Session(
+        cache=lambda session, cache_path=cache_path:make_cache(
+            session, cache_path
+        )
+    )
+
+    expanded_results = dict()
+
+    query_string = 'select asset.parent from AssetVersion where asset is_not None limit 10'
+
+    for sequence in session.query(query_string):
+        asset = sequence.get('asset')
+
+        expanded_results.setdefault(
+            asset.get('id'), asset.get('parent')
+        )
+
+    # Fetch the data from cache.
+    new_session = ftrack_api.Session(
+        cache=lambda session, cache_path=cache_path:make_cache(
+            session, cache_path
+        )
+    )
+
+
+    new_session_two = ftrack_api.Session(
+        cache=lambda session, cache_path=cache_path:make_cache(
+            session, cache_path
+        )
+    )
+
+
+    # Make sure references are merged.
+    for sequence in new_session.query(query_string):
+        asset = sequence.get('asset')
+
+        assert (
+            asset.get('parent') == expanded_results[asset.get('id')]
+        )
+
+        # Use for fetching directly using get.
+        assert (
+            new_session_two.get(asset.entity_type, asset.get('id')).get('parent') ==
+            expanded_results[asset.get('id')]
+        )
+
 
 
 @pytest.mark.parametrize('items, key', [

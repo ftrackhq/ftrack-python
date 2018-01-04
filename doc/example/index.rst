@@ -48,3 +48,5 @@ already constructed a :class:`Session`::
     security_roles
     task_template
     sync_ldap_users
+    invite_user
+

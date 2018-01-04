@@ -1151,6 +1151,36 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
+def test_remote_reset(session, user):
+    '''Reset user api key.'''
+    key_1 = session.reset_remote(
+        'api_key', entity=user
+    )
+
+    key_2 = session.reset_remote(
+        'api_key', entity=user
+    )
+
+
+    assert key_1 != key_2
+
+
+@pytest.mark.parametrize('attribute', [
+    ('id',),
+    ('email',)
+
+], ids=[
+    'Fail resetting primary key',
+    'Fail resetting attribute without default value',
+])
+def test_fail_remote_reset(session, user, attribute):
+    '''Fail trying to rest invalid attributes.'''
+
+    with pytest.raises(ftrack_api.exception.ServerError):
+        session.reset_remote(
+            attribute, user
+        )
+
 
 def test_close(session):
     '''Close session.'''

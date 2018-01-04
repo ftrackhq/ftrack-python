@@ -487,6 +487,33 @@ class Session(object):
             if state is ftrack_api.symbol.DELETED
         ]
 
+    def reset_remote(self, reset_type, entity=None):
+        '''Perform a server side reset.
+
+        *reset_type* is a server side supported reset type,
+        passing the optional *entity* to perform the option upon.
+
+        Please refer to ftrack documentation for a complete list of
+        supported server side reset types.
+        '''
+
+        payload = {
+            'action': 'reset_remote',
+            'reset_type': reset_type
+        }
+
+        if entity is not None:
+            payload.update({
+                'entity_type': entity.entity_type,
+                'entity_key': entity.get('id')
+            })
+
+        result = self._call(
+            [payload]
+        )
+
+        return result[0]['data']
+
     def create(self, entity_type, data=None, reconstructing=False):
         '''Create and return an entity of *entity_type* with initial *data*.
 
@@ -671,8 +698,6 @@ class Session(object):
         try:
             entity = self._get(entity_type, entity_key)
 
-            # Ensure any references in the retrieved cache object are expanded.
-            self._merge_references(entity)
 
         except KeyError:
 
@@ -872,7 +897,7 @@ class Session(object):
             )
             try:
                 attached_entity = self.cache.get(entity_key)
-                from_cache = True
+
                 log_debug and self.logger.debug(
                     'Retrieved existing entity from cache: {0} at {1}'
                     .format(attached_entity, id(attached_entity))
@@ -883,7 +908,7 @@ class Session(object):
                 attached_entity = self._create(
                     entity.entity_type, {}, reconstructing=True
                 )
-                from_cache = False
+
                 log_debug and self.logger.debug(
                     'Entity not present in cache. Constructed new instance: '
                     '{0} at {1}'.format(attached_entity, id(attached_entity))
@@ -891,19 +916,6 @@ class Session(object):
 
             # Mark entity as seen to avoid infinite loops.
             merged[entity_key] = attached_entity
-
-            # Expand references when entity instance retrieved from cache.
-            # This is required as a serialised cache might have returned an
-            # entity instance that has references to other entities not yet
-            # merged. The reason this is done here rather in the specific cache
-            # is so that any higher level cache can be taken advantage of when
-            # fetching data for referenced entities.
-            if from_cache:
-                self._merge_references(attached_entity, merged=merged)
-
-            # Merge new entity data into cache entity. If this causes the cache
-            # entity to change then persist those changes back to the cache.
-            self.logger.debug('Merging new data into attached entity.')
 
             changes = attached_entity.merge(entity, merged=merged)
             if changes:
@@ -917,71 +929,6 @@ class Session(object):
                 )
 
         return attached_entity
-
-    def _merge_references(self, entity, merged=None):
-        '''Recursively merge entity references in *entity*.'''
-        # As optimisation, mark inflated entities and avoid inflating more than
-        # once. This is possible because *entity* should always be the same
-        # entity instance retrieved from the top level memory cache.
-        # TODO: Consider refactor API encoding to explicitly mark references
-        # as such, perhaps by a private attribute __is_reference__ in order to
-        # make expansion of references easier to determine and on a
-        # per-reference basis.
-        is_inflated = getattr(entity, '_inflated', False)
-        if is_inflated:
-            self.logger.debug(
-                'Skipping merging references as entity appears to already have '
-                'been inflated.'
-            )
-            return
-
-        else:
-            entity._inflated = True
-
-        log_debug = self.logger.isEnabledFor(logging.DEBUG)
-        self.logger.debug('Merging references.')
-
-        if merged is None:
-            merged = {}
-
-        for attribute in entity.attributes:
-
-            # Local attributes.
-            local_value = attribute.get_local_value(entity)
-            if isinstance(
-                local_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy
-                )
-            ):
-                log_debug and self.logger.debug(
-                    'Merging local value for attribute {0}.'.format(attribute)
-                )
-
-                merged_local_value = self._merge(local_value, merged=merged)
-                if merged_local_value is not local_value:
-                    with self.operation_recording(False):
-                        attribute.set_local_value(entity, merged_local_value)
-
-            # Remote attributes.
-            remote_value = attribute.get_remote_value(entity)
-            if isinstance(
-                remote_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy
-                )
-            ):
-                log_debug and self.logger.debug(
-                    'Merging remote value for attribute {0}.'.format(attribute)
-                )
-
-                merged_remote_value = self._merge(remote_value, merged=merged)
-                if merged_remote_value is not remote_value:
-                    attribute.set_remote_value(entity, merged_remote_value)
 
     def populate(self, entities, projections):
         '''Populate *entities* with attributes specified by *projections*.
@@ -1181,7 +1128,7 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] == 'update':
+            if payload['action'] in ('update', ):
                 for key, value in payload['entity_data'].items():
                     if key == '__entity_type__':
                         continue
@@ -1264,7 +1211,6 @@ class Session(object):
                     # TODO: Detach entity - need identity returned?
                     # TODO: Expunge entity from cache.
                     pass
-
             # Clear remaining local state, including local values for primary
             # keys on entities that were merged.
             with self.auto_populating(False):
@@ -2282,6 +2228,50 @@ class Session(object):
                 raise
 
         return result[0]
+
+    def send_user_invite(self, user):
+        '''Send a invitation to the provided *user*.
+
+        *user* is a User instance
+
+        '''
+
+        self.send_user_invites(
+            [user]
+        )
+
+    def send_user_invites(self, users):
+        '''Send a invitation to the provided *user*.
+
+        *users* is a list of User instances
+
+        '''
+
+        operations = []
+
+        for user in users:
+            operations.append(
+                {
+                    'action':'send_user_invite',
+                    'user_id': user['id']
+                }
+            )
+
+        try:
+            self._call(operations)
+
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if 'Invalid action u\'send_user_invite\'' in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    'Server version {0!r} does not support '
+                    '"send_user_invite", please update server and '
+                    'try again.'.format(
+                        self.server_information.get('version')
+                    )
+                )
+            else:
+                raise
 
     def send_review_session_invite(self, invitee):
         '''Send an invite to a review session to *invitee*.
