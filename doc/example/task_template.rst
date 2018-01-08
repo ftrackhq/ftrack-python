@@ -1,3 +1,7 @@
+..
+    :copyright: Copyright (c) 2017 ftrack
+
+.. _example/task_template:
 
 ***************************
 Working with Task Templates
@@ -32,7 +36,6 @@ Create all tasks in a random task template directly under the project::
 
 
     project = session.query('Project').first()
-    project['project_schema'].keys()
 
     task_template = random.choice(
         project['project_schema']['task_templates']
@@ -42,7 +45,7 @@ Create all tasks in a random task template directly under the project::
         session.create(
             'Task', {
                 'name': task_type['name'],
-                'task_type': task_type,
+                'type': task_type,
                 'parent': project
             }
         )
