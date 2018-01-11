@@ -483,3 +483,92 @@ def test_mapped_collection_on_create(session, unique_name, project):
         assert value == task['metadata'][key]
 
 
+def test_collection_refresh(new_asset_version, new_component):
+    '''Test collection reload.'''
+    session_two = ftrack_api.Session(auto_connect_event_hub=False)
+
+    query_string = 'select components from AssetVersion where id is "{0}"'.format(
+        new_asset_version.get('id')
+    )
+
+    # Fetch the new asset version in a new session.
+    new_asset_version_two = session_two.query(
+        query_string
+    ).one()
+
+    # Modify our asset version
+    new_asset_version.get('components').append(
+        new_component
+    )
+
+    new_asset_version.session.commit()
+
+    # Query the same asset version again and make sure we get the newly
+    # populated data.
+    session_two.query(
+        query_string
+    ).all()
+
+    assert (
+        new_asset_version.get('components') == new_asset_version_two.get('components')
+    )
+
+    # Make a local change to our asset version
+    new_asset_version_two.get('components').pop()
+
+    # Query the same asset version again and make sure our local changes
+    # are not overwritten.
+
+    session_two.query(
+        query_string
+    ).all()
+
+    assert len(new_asset_version_two.get('components')) == 0
+
+
+def test_mapped_collection_reload(new_asset_version):
+    '''Test mapped collection reload.'''
+    session_two = ftrack_api.Session(auto_connect_event_hub=False)
+
+    query_string = 'select metadata from AssetVersion where id is "{0}"'.format(
+        new_asset_version.get('id')
+    )
+
+    # Fetch the new asset version in a new session.
+    new_asset_version_two = session_two.query(
+        query_string
+    ).one()
+
+    # Modify our asset version
+    new_asset_version['metadata']['test'] = str(uuid.uuid4())
+
+    new_asset_version.session.commit()
+
+    # Query the same asset version again and make sure we get the newly
+    # populated data.
+    session_two.query(
+        query_string
+    ).all()
+
+    assert (
+        new_asset_version['metadata']['test'] == new_asset_version_two['metadata']['test']
+    )
+
+    local_data = str(uuid.uuid4())
+
+    new_asset_version_two['metadata']['test'] = local_data
+
+    # Modify our asset version again
+    new_asset_version['metadata']['test'] = str(uuid.uuid4())
+
+    new_asset_version.session.commit()
+
+    # Query the same asset version again and make sure our local changes
+    # are not overwritten.
+    session_two.query(
+        query_string
+    ).all()
+
+    assert (
+        new_asset_version_two['metadata']['test'] == local_data
+    )

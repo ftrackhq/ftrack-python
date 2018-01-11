@@ -342,16 +342,51 @@ class Entity(collections.MutableMapping):
                         other_remote_value, merged=merged
                     )
 
-                    attribute.set_remote_value(self, merged_remote_value)
+                    attribute.set_remote_value(
+                        self, merged_remote_value
+                    )
+
                     changes.append({
                         'type': 'remote_attribute',
                         'name': attribute.name,
                         'old_value': remote_value,
                         'new_value': merged_remote_value
                     })
+
                     log_debug and self.logger.debug(
                         log_message.format(**changes[-1])
                     )
+
+                    # We need to handle collections separately since
+                    # they may store a local copy of the remote attribute
+                    # even though it may not be modified.
+                    if not isinstance(
+                        attribute, ftrack_api.attribute.AbstractCollectionAttribute
+                    ):
+                        continue
+
+                    local_value = attribute.get_local_value(
+                        self
+                    )
+
+                    # Populated but not modified, update it.
+                    if (
+                        local_value is not ftrack_api.symbol.NOT_SET and
+                        local_value == remote_value
+                    ):
+                        attribute.set_local_value(
+                            self, merged_remote_value
+                        )
+                        changes.append({
+                            'type': 'local_attribute',
+                            'name': attribute.name,
+                            'old_value': local_value,
+                            'new_value': merged_remote_value
+                        })
+
+                        log_debug and self.logger.debug(
+                            log_message.format(**changes[-1])
+                        )
 
         return changes
 
