@@ -1151,14 +1151,14 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
-def test_remote_reset(session, user):
+def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
-        'api_key', entity=user
+        'api_key', entity=new_user
     )
 
     key_2 = session.reset_remote(
-        'api_key', entity=user
+        'api_key', entity=new_user
     )
 
 
