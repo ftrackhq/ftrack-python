@@ -9,7 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: upcoming
+.. release:: 1.3.4
+    :date: 2018-02-05
+
+    .. change:: fixed
+        :tags: session, cache
+
+        Collection attributes not merged correctly when fetched from
+        server.
 
     .. change:: new
         :tags: session, user, api key
@@ -19,15 +26,12 @@ Release Notes
         for resetting a users api key utalizing this was also added
         :meth:`ftrack_api.entity.user.User.reset_api_key`.
 
-        .. seealso:: :ref:`working_with_entities/resetting`.
+        .. seealso:: :ref:`working_with_entities/resetting`
 
     .. change:: new
 
        Add support for sending out invitation emails to users.
        See :ref:`example/invite_user` for example usage.
-
-
-.. release:: upcoming
 
     .. change:: changed
         :tags: cache, performance
