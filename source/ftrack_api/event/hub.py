@@ -14,6 +14,7 @@ import operator
 import functools
 import json
 import socket
+import warnings
 
 import requests
 import requests.exceptions
@@ -75,6 +76,8 @@ class EventHub(object):
         # disconnection. Equates to 5 minutes.
         self._auto_reconnect_attempts = 30
         self._auto_reconnect_delay = 10
+
+        self._deprecation_warning_auto_connect = False
 
         # Mapping of Socket.IO codes to meaning.
         self._code_name_mapping = {
@@ -543,6 +546,16 @@ class EventHub(object):
         event will be caught by this method and ignored.
 
         '''
+        if self._deprecation_warning_auto_connect is None and not synchronous:
+            warnings.warn(
+                'When constructing your Session object you did not explicitly define '
+                'auto_connect_event_hub as True even though you appear to be publishing '
+                'asynchronous events. In version version 2.0 of the ftrack_python_api the '
+                'default behavior will change from True to False. Please make sure to '
+                'update your tools. You can read more at '
+                'https://help.ftrack.com/ftrack_api/deprication',
+                FutureWarning
+            )
         try:
             return self._publish(
                 event, synchronous=synchronous, on_reply=on_reply
@@ -700,18 +713,29 @@ class EventHub(object):
 
             # Automatically publish a non None response as a reply when not in
             # synchronous mode.
-            if not synchronous and response is not None:
-
-                try:
-                    self.publish_reply(
-                        event, data=response, source=subscriber.metadata
+            if not synchronous:
+                if self._deprecation_warning_auto_connect is None:
+                    warnings.warn(
+                        'When constructing your Session object you did not explicitly define '
+                        'auto_connect_event_hub as True even though you appear to be publishing '
+                        'asynchronous events. In version version 2.0 of the ftrack_python_api the '
+                        'default behavior will change from True to False. Please make sure to '
+                        'update your tools. You can read more at '
+                        'https://help.ftrack.com/ftrack_api/deprication',
+                        FutureWarning
                     )
 
-                except Exception:
-                    self.logger.exception(L(
-                        'Error publishing response {0} from subscriber {1} '
-                        'for event {2}.', response, subscriber, event
-                    ))
+                if response is not None:
+                    try:
+                        self.publish_reply(
+                            event, data=response, source=subscriber.metadata
+                        )
+
+                    except Exception:
+                        self.logger.exception(L(
+                            'Error publishing response {0} from subscriber {1} '
+                            'for event {2}.', response, subscriber, event
+                        ))
 
             # Check whether to continue processing topic event.
             if event.is_stopped():
