@@ -137,6 +137,9 @@ class EventHub(object):
         connected or connection fails.
 
         '''
+
+        self._deprecation_warning_auto_connect = False
+
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
                 'Already connected.'

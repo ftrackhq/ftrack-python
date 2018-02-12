@@ -233,9 +233,6 @@ class Session(object):
             self._api_key,
         )
 
-        # To help with migration from auto_connect_event_hub default changing
-        # from True to False.
-        self._event_hub._deprecation_warning_auto_connect = auto_connect_event_hub
 
         if auto_connect_event_hub in ( None, True ):
             # Connect to event hub in background thread so as not to block main
@@ -245,6 +242,10 @@ class Session(object):
             )
             self._auto_connect_event_hub_thread.daemon = True
             self._auto_connect_event_hub_thread.start()
+
+        # To help with migration from auto_connect_event_hub default changing
+        # from True to False.
+        self._event_hub._deprecation_warning_auto_connect = auto_connect_event_hub
 
         # Register to auto-close session on exit.
         atexit.register(self.close)
