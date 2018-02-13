@@ -12,8 +12,8 @@ Migration notes
     Migrating from the old ftrack API? Read the dedicated :ref:`guide
     <release/migrating_from_old_api>`.
 
-Migrate to 2.0.0
-================
+Migrate to upcoming 2.0.0
+=========================
 
 .. _release/migration/2.0.0/event_hub:
 
@@ -27,6 +27,11 @@ to continue functioning as expected you must modify your code
 to explicitly set the argument to True or that you manually call
 `session.event_hub.connect()`.
 
+.. note::
+    If you relay on the `ftrack.location.component-added` or
+    `ftrack.location.component-removed` events to further process created
+    or deleted components remember that your session must be connected
+    to the event hub for the events to be published.
 
 
 Migrate to 1.0.3

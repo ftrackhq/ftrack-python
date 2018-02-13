@@ -41,8 +41,19 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
+
+
 class EventHub(object):
     '''Manage routing of events.'''
+
+    _future_signature_warning = (
+        'When constructing your Session object you did not explicitly define '
+        'auto_connect_event_hub as True even though you appear to be publishing '
+        'and / or subscribing to asynchronous events. In version version 2.0 of '
+        'the ftrack-python-api the default behavior will change from True '
+        'to False. Please make sure to update your tools. You can read more at '
+        'http://ftrack-python-api.rtd.ftrack.com/en/stable/release/migration.html'
+    )
 
     def __init__(self, server_url, api_user, api_key):
         '''Initialise hub, connecting to ftrack *server_url*.
@@ -549,16 +560,11 @@ class EventHub(object):
         event will be caught by this method and ignored.
 
         '''
-        if self._deprecation_warning_auto_connect is None and not synchronous:
+        if self._deprecation_warning_auto_connect and not synchronous:
             warnings.warn(
-                'When constructing your Session object you did not explicitly define '
-                'auto_connect_event_hub as True even though you appear to be publishing '
-                'asynchronous events. In version version 2.0 of the ftrack_python_api the '
-                'default behavior will change from True to False. Please make sure to '
-                'update your tools. You can read more at '
-                'https://help.ftrack.com/ftrack_api/deprication',
-                FutureWarning
+                self._future_signature_warning, FutureWarning
             )
+
         try:
             return self._publish(
                 event, synchronous=synchronous, on_reply=on_reply
@@ -717,15 +723,9 @@ class EventHub(object):
             # Automatically publish a non None response as a reply when not in
             # synchronous mode.
             if not synchronous:
-                if self._deprecation_warning_auto_connect is None:
+                if self._deprecation_warning_auto_connect:
                     warnings.warn(
-                        'When constructing your Session object you did not explicitly define '
-                        'auto_connect_event_hub as True even though you appear to be publishing '
-                        'asynchronous events. In version version 2.0 of the ftrack_python_api the '
-                        'default behavior will change from True to False. Please make sure to '
-                        'update your tools. You can read more at '
-                        'https://help.ftrack.com/ftrack_api/deprication',
-                        FutureWarning
+                        self._future_signature_warning, FutureWarning
                     )
 
                 if response is not None:

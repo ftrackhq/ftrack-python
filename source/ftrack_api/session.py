@@ -234,7 +234,7 @@ class Session(object):
         )
 
 
-        if auto_connect_event_hub in ( None, True ):
+        if auto_connect_event_hub in (None, True):
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
             self._auto_connect_event_hub_thread = threading.Thread(
@@ -245,7 +245,9 @@ class Session(object):
 
         # To help with migration from auto_connect_event_hub default changing
         # from True to False.
-        self._event_hub._deprecation_warning_auto_connect = auto_connect_event_hub
+        self._event_hub._deprecation_warning_auto_connect = (
+            auto_connect_event_hub is None
+        )
 
         # Register to auto-close session on exit.
         atexit.register(self.close)
