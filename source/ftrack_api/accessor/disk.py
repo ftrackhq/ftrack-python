@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from __future__ import absolute_import
 import os
 import sys
 import errno
@@ -19,6 +20,7 @@ from ftrack_api.exception import (
     AccessorContainerNotEmptyError,
     AccessorParentResourceNotFoundError
 )
+import six
 
 
 class DiskAccessor(ftrack_api.accessor.base.Accessor):
@@ -146,7 +148,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                         else:
                             raise
 
-            except OSError, error:
+            except OSError as error:
                 if error.errno != errno.EEXIST:
                     raise
 
@@ -229,22 +231,22 @@ def error_handler(**kw):
 
         error_code = getattr(error, 'errno')
         if not error_code:
-            raise AccessorOperationFailedError(**kw), None, traceback
+            six.reraise(AccessorOperationFailedError(**kw), None, traceback)
 
         if error_code == errno.ENOENT:
-            raise AccessorResourceNotFoundError(**kw), None, traceback
+            six.reraise(AccessorResourceNotFoundError(**kw), None, traceback)
 
         elif error_code == errno.EPERM:
-            raise AccessorPermissionDeniedError(**kw), None, traceback
+            six.reraise(AccessorPermissionDeniedError(**kw), None, traceback)
 
         elif error_code == errno.ENOTEMPTY:
-            raise AccessorContainerNotEmptyError(**kw), None, traceback
+            six.reraise(AccessorContainerNotEmptyError(**kw), None, traceback)
 
         elif error_code in (errno.ENOTDIR, errno.EISDIR, errno.EINVAL):
-            raise AccessorResourceInvalidError(**kw), None, traceback
+            six.reraise(AccessorResourceInvalidError(**kw), None, traceback)
 
         else:
-            raise AccessorOperationFailedError(**kw), None, traceback
+            six.reraise(AccessorOperationFailedError(**kw), None, traceback)
 
     except Exception:
         raise

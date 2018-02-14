@@ -13,6 +13,7 @@ import ftrack_api.exception
 import ftrack_api.collection
 import ftrack_api.inspection
 import ftrack_api.operation
+import six
 
 logger = logging.getLogger(
     __name__
@@ -126,7 +127,7 @@ class Attributes(object):
 
     def keys(self):
         '''Return list of attribute names.'''
-        return self._data.keys()
+        return list(self._data.keys())
 
     def __contains__(self, item):
         '''Return whether *item* present.'''
@@ -137,7 +138,7 @@ class Attributes(object):
 
     def __iter__(self):
         '''Return iterator over attributes.'''
-        return self._data.itervalues()
+        return six.itervalues(self._data)
 
     def __len__(self):
         '''Return count of attributes.'''

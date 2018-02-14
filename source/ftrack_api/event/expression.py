@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
 from operator import eq, ne, ge, le, gt, lt
 
 from pyparsing import (ParserElement, Group, Word, CaselessKeyword, Forward,
@@ -8,6 +9,8 @@ from pyparsing import (ParserElement, Group, Word, CaselessKeyword, Forward,
                        alphanums, quotedString, removeQuotes)
 
 import ftrack_api.exception
+import six
+from six.moves import map
 
 # Optimise parsing using packrat memoisation feature.
 ParserElement.enablePackrat()
@@ -32,7 +35,7 @@ class Parser(object):
     def _construct_parser(self):
         '''Construct and return parser.'''
         field = Word(alphanums + '_.')
-        operator = oneOf(self._operators.keys())
+        operator = oneOf(list(self._operators.keys()))
         value = Word(alphanums + '-_,./*@+')
         quoted_value = quotedString('quoted_value').setParseAction(removeQuotes)
 
@@ -273,7 +276,7 @@ class Condition(Expression):
 
         if (
             self._operator is eq
-            and isinstance(self._value, basestring)
+            and isinstance(self._value, six.string_types)
             and self._value[-1] == self._wildcard
         ):
             return self._value[:-1] in value

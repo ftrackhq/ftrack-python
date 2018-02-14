@@ -1,15 +1,15 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from __future__ import absolute_import
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
+import six
 
 
-class Data(object):
+class Data(six.with_metaclass(ABCMeta, object)):
     '''File-like object for manipulating data.'''
-
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         '''Initialise data access.'''

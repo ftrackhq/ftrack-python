@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from __future__ import absolute_import
 import arrow
 
 import ftrack_api.entity.base

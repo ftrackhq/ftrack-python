@@ -362,7 +362,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         project_id = None
         object_type_id = None
 
-        if 'object_type_id' in entity.keys():
+        if 'object_type_id' in list(entity.keys()):
             project_id = entity['project_id']
             entity_type = 'task'
             object_type_id = entity['object_type_id']

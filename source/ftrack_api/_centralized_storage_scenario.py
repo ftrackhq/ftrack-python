@@ -11,6 +11,7 @@ import os
 import ftrack_api
 import ftrack_api.structure.standard as _standard
 from ftrack_api.logging import LazyLogMessage as L
+import six
 
 
 scenario_name = 'ftrack.centralized-storage'
@@ -58,7 +59,7 @@ class ConfigureCentralizedStorageScenario(object):
         select_mount_point = configuration.get('select_mount_point')
 
         if configure_location:
-            location_text = unicode(
+            location_text = six.text_type(
                 'A new location will be created:\n\n'
                 '* Label: {location_label}\n'
                 '* Name: {location_name}\n'
@@ -74,7 +75,7 @@ class ConfigureCentralizedStorageScenario(object):
                 )
             )
 
-        mount_points_text = unicode(
+        mount_points_text = six.text_type(
             '* Linux: {linux}\n'
             '* OS X: {osx}\n'
             '* Windows: {windows}\n\n'
@@ -96,14 +97,14 @@ class ConfigureCentralizedStorageScenario(object):
             mount_points_not_set.append('Windows')
 
         if mount_points_not_set:
-            mount_points_text += unicode(
+            mount_points_text += six.text_type(
                 'Please be aware that this location will not be working on '
                 '{missing} because the mount points are not set up.'
             ).format(
                 missing=' and '.join(mount_points_not_set)
             )
 
-        text = unicode(
+        text = six.text_type(
             '#Confirm storage setup#\n\n'
             'Almost there! Please take a moment to verify the settings you '
             'are about to save. You can always come back later and update the '
@@ -502,7 +503,7 @@ class ConfigureCentralizedStorageScenario(object):
 
         #: TODO: Move these to a separate function.
         session.event_hub.subscribe(
-            unicode(
+            six.text_type(
                 'topic=ftrack.storage-scenario.discover '
                 'and source.user.username="{0}"'
             ).format(
@@ -511,7 +512,7 @@ class ConfigureCentralizedStorageScenario(object):
             self.discover_centralized_scenario
         )
         session.event_hub.subscribe(
-            unicode(
+            six.text_type(
                 'topic=ftrack.storage-scenario.configure '
                 'and data.scenario_id="{0}" '
                 'and source.user.username="{1}"'
@@ -563,7 +564,7 @@ class ActivateCentralizedStorageScenario(object):
 
             if sys.platform == 'darwin':
                 prefix = mount_points['osx']
-            elif sys.platform == 'linux2':
+            elif sys.platform in ('linux2', 'linux'):
                 prefix = mount_points['linux']
             elif sys.platform == 'win32':
                 prefix = mount_points['windows']
@@ -608,7 +609,7 @@ class ActivateCentralizedStorageScenario(object):
 
         if not os.path.isdir(prefix):
             return (
-                unicode(
+                six.text_type(
                     'The path {0} does not exist. ftrack may not be able to '
                     'store and track files correctly. \n\nIf the storage is '
                     'newly setup you may want to create necessary folder '

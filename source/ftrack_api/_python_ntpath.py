@@ -6,6 +6,7 @@ Instead of importing this module directly, import os and refer to this
 module as os.path.
 """
 
+from __future__ import absolute_import
 import os
 import sys
 import stat
@@ -13,6 +14,8 @@ import genericpath
 import warnings
 
 from genericpath import *
+import six
+from six.moves import zip
 
 __all__ = ["normcase","isabs","join","splitdrive","split","splitext",
            "basename","dirname","commonprefix","getsize","getmtime",
@@ -399,7 +402,7 @@ def expandvars(path):
 def normpath(path):
     """Normalize path, eliminating double slashes, etc."""
     # Preserve unicode (if path is unicode)
-    backslash, dot = (u'\\', u'.') if isinstance(path, unicode) else ('\\', '.')
+    backslash, dot = (u'\\', u'.') if isinstance(path, six.text_type) else ('\\', '.')
     if path.startswith(('\\\\.\\', '\\\\?\\')):
         # in the case of paths with these prefixes:
         # \\.\ -> device names
@@ -456,7 +459,7 @@ except ImportError: # not running on Windows - mock up something sensible
     def abspath(path):
         """Return the absolute version of a path."""
         if not isabs(path):
-            if isinstance(path, unicode):
+            if isinstance(path, six.text_type):
                 cwd = os.getcwdu()
             else:
                 cwd = os.getcwd()
@@ -472,7 +475,7 @@ else:  # use native Windows method on Windows
                 path = _getfullpathname(path)
             except WindowsError:
                 pass # Bad path - return unchanged.
-        elif isinstance(path, unicode):
+        elif isinstance(path, six.text_type):
             path = os.getcwdu()
         else:
             path = os.getcwd()

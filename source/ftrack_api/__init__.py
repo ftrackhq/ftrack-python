@@ -30,3 +30,4 @@ def mixin(instance, mixin_class, name=None):
         ),
         {}
     )
+

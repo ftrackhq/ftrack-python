@@ -1,17 +1,17 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
 from abc import ABCMeta, abstractmethod
+import six
 
 
-class Structure(object):
+class Structure(six.with_metaclass(ABCMeta, object)):
     '''Structure plugin interface.
 
     A structure plugin should compute appropriate paths for data.
 
     '''
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, prefix=''):
         '''Initialise structure.'''

@@ -4,9 +4,9 @@
 from __future__ import absolute_import
 
 import collections
-import urlparse
+import six.moves.urllib.parse
 import threading
-import Queue as queue
+import six.moves.queue as queue
 import logging
 import time
 import uuid
@@ -24,6 +24,7 @@ import ftrack_api.event.base
 import ftrack_api.event.subscriber
 import ftrack_api.event.expression
 from ftrack_api.logging import LazyLogMessage as L
+from six.moves import range
 
 
 SocketIoSession = collections.namedtuple('SocketIoSession', [
@@ -96,7 +97,7 @@ class EventHub(object):
         self._api_key = api_key
 
         # Parse server URL and store server details.
-        url_parse_result = urlparse.urlparse(self._server_url)
+        url_parse_result = six.moves.urllib.parse.urlparse(self._server_url)
         if not url_parse_result.scheme:
             raise ValueError('Could not determine scheme from server url.')
 

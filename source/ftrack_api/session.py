@@ -43,6 +43,9 @@ import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
 from ftrack_api.logging import LazyLogMessage as L
+import six
+from six.moves import map
+from six.moves import zip
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -457,33 +460,33 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
-        entities = self._local_cache.values()
+        entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in itertools.izip(entities, states)
+            entity for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.CREATED
         ]
 
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
-        entities = self._local_cache.values()
+        entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in itertools.izip(entities, states)
+            entity for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.MODIFIED
         ]
 
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
-        entities = self._local_cache.values()
+        entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in itertools.izip(entities, states)
+            entity for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.DELETED
         ]
 
@@ -594,7 +597,7 @@ class Session(object):
 
         '''
         if not identifying_keys:
-            identifying_keys = data.keys()
+            identifying_keys = list(data.keys())
 
         self.logger.debug(L(
             'Ensuring entity {0!r} with data {1!r} using identifying keys '
@@ -613,7 +616,7 @@ class Session(object):
         for identifying_key in identifying_keys:
             value = data[identifying_key]
 
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 value = '"{0}"'.format(value)
 
             elif isinstance(
@@ -681,7 +684,7 @@ class Session(object):
         self.logger.debug(L('Get {0} with key {1}', entity_type, entity_key))
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
-        if isinstance(entity_key, basestring):
+        if isinstance(entity_key, six.string_types):
             entity_key = [entity_key]
 
         if len(entity_key) != len(primary_key_definition):
@@ -728,7 +731,7 @@ class Session(object):
         # Check cache for existing entity emulating
         # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
-            (str(entity_type), map(str, entity_key))
+            (str(entity_type), list(map(str, entity_key)))
         )
         self.logger.debug(L(
             'Checking cache for entity with key {0}', cache_key
@@ -988,7 +991,7 @@ class Session(object):
 
             primary_key_definition = reference_entity.primary_key_attributes
             entity_keys = [
-                ftrack_api.inspection.primary_key(entity).values()
+                list(ftrack_api.inspection.primary_key(entity).values())
                 for entity in entities_to_process
             ]
 
@@ -1052,7 +1055,7 @@ class Session(object):
                     payload = OperationPayload({
                         'action': 'create',
                         'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key.values(),
+                        'entity_key': list(operation.entity_key.values()),
                         'entity_data': entity_data
                     })
 
@@ -1069,7 +1072,7 @@ class Session(object):
                     payload = OperationPayload({
                         'action': 'update',
                         'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key.values(),
+                        'entity_key': list(operation.entity_key.values()),
                         'entity_data': entity_data
                     })
 
@@ -1079,7 +1082,7 @@ class Session(object):
                     payload = OperationPayload({
                         'action': 'delete',
                         'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key.values()
+                        'entity_key': list(operation.entity_key.values())
                     })
 
                 else:
@@ -1153,7 +1156,7 @@ class Session(object):
         for payload in batch:
             entity_data = payload.get('entity_data')
             if entity_data is not None:
-                keys = entity_data.keys()
+                keys = list(entity_data.keys())
                 if not keys or keys == ['__entity_type__']:
                     continue
 
@@ -1245,7 +1248,7 @@ class Session(object):
                     ):
                         entity_key = str((
                             str(operation.entity_type),
-                            operation.entity_key.values()
+                            list(operation.entity_key.values())
                         ))
                         try:
                             self.cache.remove(entity_key)
@@ -1305,11 +1308,14 @@ class Session(object):
 
         with open(schema_cache_path, 'r') as schema_file:
             schemas = json.load(schema_file)
+
+            schemas = json.dumps(schemas, sort_keys=True).encode('utf-8')
+
             hash_ = hashlib.md5(
-                json.dumps(schemas, sort_keys=True)
+                schemas
             ).hexdigest()
 
-        return schemas, hash_
+        return schemas, 'asdf'
 
     def _write_schemas_to_cache(self, schemas, schema_cache_path):
         '''Write *schemas* to *schema_cache_path*.
@@ -1616,7 +1622,7 @@ class Session(object):
             }
 
         if isinstance(item, OperationPayload):
-            data = dict(item.items())
+            data = dict(list(item.items()))
             if "entity_data" in data:
                 for key, value in data["entity_data"].items():
                     if isinstance(value, ftrack_api.entity.base.Entity):
@@ -1720,10 +1726,7 @@ class Session(object):
 
         # Filter.
         if filter_inaccessible:
-            locations = filter(
-                lambda location: location.accessor,
-                locations
-            )
+            locations = [location for location in locations if location.accessor]
 
         # Sort by priority.
         locations = sorted(
@@ -1963,7 +1966,7 @@ class Session(object):
         container_components = []
 
         for component in components:
-            if 'members' in component.keys():
+            if 'members' in list(component.keys()):
                 container_components.append(component)
             else:
                 standard_components.append(component)
@@ -1988,7 +1991,7 @@ class Session(object):
             availability = base_availability.copy()
             availabilities.append(availability)
 
-            is_container = 'members' in component.keys()
+            is_container = 'members' in list(component.keys())
             if is_container and len(component['members']):
                 member_availabilities = self.get_component_availabilities(
                     component['members'], locations=locations
@@ -2066,7 +2069,7 @@ class Session(object):
         if entity:
             operation['entity_type'] = entity.entity_type
             operation['entity_key'] = (
-                ftrack_api.inspection.primary_key(entity).values()
+                list(ftrack_api.inspection.primary_key(entity).values())
             )
 
         try:
@@ -2129,7 +2132,7 @@ class Session(object):
         is a FileComponent, and deleted if it is a file path. You can specify
         True or False to change this behavior.
         '''
-        if isinstance(media, basestring):
+        if isinstance(media, six.string_types):
             # Media is a path to a file.
             server_location = self.get(
                 'Location', ftrack_api.symbol.SERVER_LOCATION_ID

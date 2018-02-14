@@ -15,16 +15,23 @@ memoisation of function using a global cache and standard key maker.
 
 '''
 
+from __future__ import absolute_import
 import collections
 import functools
 import abc
 import copy
 import inspect
 import re
-import anydbm
-import contextlib
+
 try:
-    import cPickle as pickle
+    import dbm as anydbm
+except ImportError:
+    import anydbm
+
+import contextlib
+import six
+try:
+    import six.moves.cPickle as pickle
 except ImportError:  # pragma: no cover
     import pickle
 
@@ -32,7 +39,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 
 
-class Cache(object):
+class Cache(six.with_metaclass(abc.ABCMeta, object)):
     '''Cache interface.
 
     Derive from this to define concrete cache implementations. A cache is
@@ -40,8 +47,6 @@ class Cache(object):
     across the cache.
 
     '''
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get(self, key):
@@ -144,7 +149,7 @@ class ProxyCache(Cache):
             Actual keys may differ from those returned due to timing of access.
 
         '''
-        return self.proxied.keys()
+        return list(self.proxied.keys())
 
 
 class LayeredCache(Cache):
@@ -219,7 +224,7 @@ class LayeredCache(Cache):
         '''
         keys = []
         for cache in self.caches:
-            keys.extend(cache.keys())
+            keys.extend(list(cache.keys()))
 
         return list(set(keys))
 
@@ -260,7 +265,7 @@ class MemoryCache(Cache):
             Actual keys may differ from those returned due to timing of access.
 
         '''
-        return self._cache.keys()
+        return list(self._cache.keys())
 
 
 class FileCache(Cache):
@@ -323,7 +328,7 @@ class FileCache(Cache):
 
         '''
         with self._database() as cache:
-            return cache.keys()
+            return list(cache.keys())
 
 
 class SerialisedCache(ProxyCache):
@@ -359,10 +364,8 @@ class SerialisedCache(ProxyCache):
         super(SerialisedCache, self).set(key, value)
 
 
-class KeyMaker(object):
+class KeyMaker(six.with_metaclass(abc.ABCMeta, object)):
     '''Generate unique keys.'''
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         '''Initialise key maker.'''
@@ -431,7 +434,7 @@ class ObjectKeyMaker(KeyMaker):
         # TODO: Consider using a more robust and comprehensive solution such as
         # dill (https://github.com/uqfoundation/dill).
         if isinstance(item, collections.Iterable):
-            if isinstance(item, basestring):
+            if isinstance(item, six.string_types):
                 return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)
 
             if isinstance(item, collections.Mapping):
@@ -464,7 +467,7 @@ class ObjectKeyMaker(KeyMaker):
                 self.name_identifier,
                 item.__name__,
                 self.item_separator,
-                item.im_class.__name__,
+                item.__self__.__class__.__name__,
                 self.item_separator,
                 item.__module__
             ))

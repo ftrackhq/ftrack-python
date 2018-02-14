@@ -1,10 +1,12 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from __future__ import absolute_import
 import sys
 import traceback
 
 import ftrack_api.entity.base
+import six
 
 
 class Error(Exception):
@@ -34,8 +36,8 @@ class Error(Exception):
     def __str__(self):
         '''Return string representation.'''
         keys = {}
-        for key, value in self.details.iteritems():
-            if isinstance(value, unicode):
+        for key, value in six.iteritems(self.details):
+            if isinstance(value, six.text_type):
                 value = value.encode(sys.getfilesystemencoding())
             keys[key] = value
 

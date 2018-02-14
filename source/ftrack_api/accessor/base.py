@@ -1,12 +1,14 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from __future__ import absolute_import
 import abc
 
 import ftrack_api.exception
+import six
 
 
-class Accessor(object):
+class Accessor(six.with_metaclass(abc.ABCMeta, object)):
     '''Provide data access to a location.
 
     A location represents a specific storage, but access to that storage may
@@ -25,8 +27,6 @@ class Accessor(object):
     argument.
 
     '''
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         '''Initialise location accessor.'''

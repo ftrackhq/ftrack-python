@@ -13,6 +13,12 @@ import ftrack_api.inspection
 import ftrack_api.exception
 import ftrack_api.operation
 from ftrack_api.logging import LazyLogMessage as L
+import six
+
+
+class _EntityBase(object):
+    '''Base class to allow for mixins, we need a common base.'''
+    pass
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
@@ -28,10 +34,10 @@ class DynamicEntityTypeMetaclass(abc.ABCMeta):
         return '<dynamic ftrack class \'{0}\'>'.format(self.__name__)
 
 
-class Entity(collections.MutableMapping):
+class Entity(six.with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections.MutableMapping)):
     '''Base class for all entities.'''
 
-    __metaclass__ = DynamicEntityTypeMetaclass
+    __slots__ = ()
 
     entity_type = 'Entity'
     attributes = None
@@ -182,7 +188,7 @@ class Entity(collections.MutableMapping):
         with self.session.auto_populating(False):
             primary_key = ['Unknown']
             try:
-                primary_key = ftrack_api.inspection.primary_key(self).values()
+                primary_key = list(ftrack_api.inspection.primary_key(self).values())
             except KeyError:
                 pass
 
@@ -253,7 +259,7 @@ class Entity(collections.MutableMapping):
         if self.session.auto_populate:
             self._populate_unset_scalar_attributes()
 
-        return super(Entity, self).values()
+        return list(super(Entity, self).values())
 
     def items(self):
         '''Return list of tuples of (key, value) pairs.
@@ -267,7 +273,7 @@ class Entity(collections.MutableMapping):
         if self.session.auto_populate:
             self._populate_unset_scalar_attributes()
 
-        return super(Entity, self).items()
+        return list(super(Entity, self).items())
 
     def clear(self):
         '''Reset all locally modified attribute values.'''

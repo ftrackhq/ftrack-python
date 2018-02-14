@@ -219,7 +219,7 @@ def _get_entity_configurations(entity):
     project_id = None
     object_type_id = None
 
-    if 'object_type_id' in entity.keys():
+    if 'object_type_id' in list(entity.keys()):
         project_id = entity['project_id']
         entity_type = 'task'
         object_type_id = entity['object_type_id']
@@ -396,7 +396,7 @@ class StandardFactory(Factory):
                         .format(data)
                     )
 
-                create_data = dict(data.items())
+                create_data = dict(list(data.items()))
                 create_data['configuration_id'] = configuration['id']
                 create_data['entity_id'] = entity['id']
 
