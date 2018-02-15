@@ -2,7 +2,14 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 from __future__ import absolute_import
+from __future__ import division
 
+from builtins import zip
+from builtins import map
+from builtins import str
+from past.builtins import basestring
+from builtins import object
+from past.utils import old_div
 import json
 import logging
 import collections
@@ -457,33 +464,33 @@ class Session(object):
     @property
     def created(self):
         '''Return list of newly created entities.'''
-        entities = self._local_cache.values()
+        entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in itertools.izip(entities, states)
+            entity for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.CREATED
         ]
 
     @property
     def modified(self):
         '''Return list of locally modified entities.'''
-        entities = self._local_cache.values()
+        entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in itertools.izip(entities, states)
+            entity for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.MODIFIED
         ]
 
     @property
     def deleted(self):
         '''Return list of deleted entities.'''
-        entities = self._local_cache.values()
+        entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in itertools.izip(entities, states)
+            entity for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.DELETED
         ]
 
@@ -594,7 +601,7 @@ class Session(object):
 
         '''
         if not identifying_keys:
-            identifying_keys = data.keys()
+            identifying_keys = list(data.keys())
 
         self.logger.debug(L(
             'Ensuring entity {0!r} with data {1!r} using identifying keys '
@@ -648,7 +655,7 @@ class Session(object):
 
             # Update entity if required.
             updated = False
-            for key, target_value in data.items():
+            for key, target_value in list(data.items()):
                 if entity[key] != target_value:
                     entity[key] = target_value
                     updated = True
@@ -728,7 +735,7 @@ class Session(object):
         # Check cache for existing entity emulating
         # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
-            (str(entity_type), map(str, entity_key))
+            (str(entity_type), list(map(str, entity_key)))
         )
         self.logger.debug(L(
             'Checking cache for entity with key {0}', cache_key
@@ -988,7 +995,7 @@ class Session(object):
 
             primary_key_definition = reference_entity.primary_key_attributes
             entity_keys = [
-                ftrack_api.inspection.primary_key(entity).values()
+                list(ftrack_api.inspection.primary_key(entity).values())
                 for entity in entities_to_process
             ]
 
@@ -1052,7 +1059,7 @@ class Session(object):
                     payload = OperationPayload({
                         'action': 'create',
                         'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key.values(),
+                        'entity_key': list(operation.entity_key.values()),
                         'entity_data': entity_data
                     })
 
@@ -1069,7 +1076,7 @@ class Session(object):
                     payload = OperationPayload({
                         'action': 'update',
                         'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key.values(),
+                        'entity_key': list(operation.entity_key.values()),
                         'entity_data': entity_data
                     })
 
@@ -1079,7 +1086,7 @@ class Session(object):
                     payload = OperationPayload({
                         'action': 'delete',
                         'entity_type': operation.entity_type,
-                        'entity_key': operation.entity_key.values()
+                        'entity_key': list(operation.entity_key.values())
                     })
 
                 else:
@@ -1129,7 +1136,7 @@ class Session(object):
         updates_map = set()
         for payload in reversed(batch):
             if payload['action'] in ('update', ):
-                for key, value in payload['entity_data'].items():
+                for key, value in list(payload['entity_data'].items()):
                     if key == '__entity_type__':
                         continue
 
@@ -1144,7 +1151,7 @@ class Session(object):
         # Remove NOT_SET values from entity_data.
         for payload in batch:
             entity_data = payload.get('entity_data', {})
-            for key, value in entity_data.items():
+            for key, value in list(entity_data.items()):
                 if value is ftrack_api.symbol.NOT_SET:
                     del entity_data[key]
 
@@ -1153,7 +1160,7 @@ class Session(object):
         for payload in batch:
             entity_data = payload.get('entity_data')
             if entity_data is not None:
-                keys = entity_data.keys()
+                keys = list(entity_data.keys())
                 if not keys or keys == ['__entity_type__']:
                     continue
 
@@ -1195,7 +1202,7 @@ class Session(object):
             # remain as needed for cache retrieval on new entities.
             with self.auto_populating(False):
                 with self.operation_recording(False):
-                    for entity in self._local_cache.values():
+                    for entity in list(self._local_cache.values()):
                         for attribute in entity:
                             if attribute not in entity.primary_key_attributes:
                                 del entity[attribute]
@@ -1215,7 +1222,7 @@ class Session(object):
             # keys on entities that were merged.
             with self.auto_populating(False):
                 with self.operation_recording(False):
-                    for entity in self._local_cache.values():
+                    for entity in list(self._local_cache.values()):
                         entity.clear()
 
     def rollback(self):
@@ -1245,7 +1252,7 @@ class Session(object):
                     ):
                         entity_key = str((
                             str(operation.entity_type),
-                            operation.entity_key.values()
+                            list(operation.entity_key.values())
                         ))
                         try:
                             self.cache.remove(entity_key)
@@ -1253,7 +1260,7 @@ class Session(object):
                             pass
 
                 # Clear locally stored modifications on remaining entities.
-                for entity in self._local_cache.values():
+                for entity in list(self._local_cache.values()):
                     entity.clear()
 
         self.recorded_operations.clear()
@@ -1616,9 +1623,9 @@ class Session(object):
             }
 
         if isinstance(item, OperationPayload):
-            data = dict(item.items())
+            data = dict(list(item.items()))
             if "entity_data" in data:
-                for key, value in data["entity_data"].items():
+                for key, value in list(data["entity_data"].items()):
                     if isinstance(value, ftrack_api.entity.base.Entity):
                         data["entity_data"][key] = self._entity_reference(value)
 
@@ -1720,10 +1727,7 @@ class Session(object):
 
         # Filter.
         if filter_inaccessible:
-            locations = filter(
-                lambda location: location.accessor,
-                locations
-            )
+            locations = [location for location in locations if location.accessor]
 
         # Sort by priority.
         locations = sorted(
@@ -1855,7 +1859,7 @@ class Session(object):
             if container_size is not None:
                 if len(collection.indexes) > 0:
                     member_size = int(
-                        round(container_size / len(collection.indexes))
+                        round(old_div(container_size, len(collection.indexes)))
                     )
                     for item in collection:
                         member_sizes[item] = member_size
@@ -1963,7 +1967,7 @@ class Session(object):
         container_components = []
 
         for component in components:
-            if 'members' in component.keys():
+            if 'members' in list(component.keys()):
                 container_components.append(component)
             else:
                 standard_components.append(component)
@@ -1988,16 +1992,16 @@ class Session(object):
             availability = base_availability.copy()
             availabilities.append(availability)
 
-            is_container = 'members' in component.keys()
+            is_container = 'members' in list(component.keys())
             if is_container and len(component['members']):
                 member_availabilities = self.get_component_availabilities(
                     component['members'], locations=locations
                 )
-                multiplier = 1.0 / len(component['members'])
+                multiplier = old_div(1.0, len(component['members']))
                 for member, member_availability in zip(
                     component['members'], member_availabilities
                 ):
-                    for location_id, ratio in member_availability.items():
+                    for location_id, ratio in list(member_availability.items()):
                         availability[location_id] += (
                             ratio * multiplier
                         )
@@ -2007,7 +2011,7 @@ class Session(object):
                     if location_id in availability:
                         availability[location_id] = 100.0
 
-            for location_id, percentage in availability.items():
+            for location_id, percentage in list(availability.items()):
                 # Avoid quantization error by rounding percentage and clamping
                 # to range 0-100.
                 adjusted_percentage = round(percentage, 9)
@@ -2066,7 +2070,7 @@ class Session(object):
         if entity:
             operation['entity_type'] = entity.entity_type
             operation['entity_key'] = (
-                ftrack_api.inspection.primary_key(entity).values()
+                list(ftrack_api.inspection.primary_key(entity).values())
             )
 
         try:

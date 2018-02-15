@@ -146,7 +146,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                         else:
                             raise
 
-            except OSError, error:
+            except OSError as error:
                 if error.errno != errno.EEXIST:
                     raise
 

@@ -15,6 +15,11 @@ memoisation of function using a global cache and standard key maker.
 
 '''
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.builtins import basestring
+from builtins import object
 import collections
 import functools
 import abc
@@ -23,8 +28,9 @@ import inspect
 import re
 import anydbm
 import contextlib
+from future.utils import with_metaclass
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:  # pragma: no cover
     import pickle
 
@@ -32,7 +38,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 
 
-class Cache(object):
+class Cache(with_metaclass(abc.ABCMeta, object)):
     '''Cache interface.
 
     Derive from this to define concrete cache implementations. A cache is
@@ -40,8 +46,6 @@ class Cache(object):
     across the cache.
 
     '''
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def get(self, key):
@@ -76,7 +80,7 @@ class Cache(object):
     def values(self):
         '''Return values for current keys.'''
         values = []
-        for key in self.keys():
+        for key in list(self.keys()):
             try:
                 value = self.get(key)
             except KeyError:
@@ -97,7 +101,7 @@ class Cache(object):
         if pattern is not None:
             pattern = re.compile(pattern)
 
-        for key in self.keys():
+        for key in list(self.keys()):
             if pattern is not None:
                 if not pattern.search(key):
                     continue
@@ -144,7 +148,7 @@ class ProxyCache(Cache):
             Actual keys may differ from those returned due to timing of access.
 
         '''
-        return self.proxied.keys()
+        return list(self.proxied.keys())
 
 
 class LayeredCache(Cache):
@@ -219,7 +223,7 @@ class LayeredCache(Cache):
         '''
         keys = []
         for cache in self.caches:
-            keys.extend(cache.keys())
+            keys.extend(list(cache.keys()))
 
         return list(set(keys))
 
@@ -260,7 +264,7 @@ class MemoryCache(Cache):
             Actual keys may differ from those returned due to timing of access.
 
         '''
-        return self._cache.keys()
+        return list(self._cache.keys())
 
 
 class FileCache(Cache):
@@ -323,7 +327,7 @@ class FileCache(Cache):
 
         '''
         with self._database() as cache:
-            return cache.keys()
+            return list(cache.keys())
 
 
 class SerialisedCache(ProxyCache):
@@ -359,10 +363,8 @@ class SerialisedCache(ProxyCache):
         super(SerialisedCache, self).set(key, value)
 
 
-class KeyMaker(object):
+class KeyMaker(with_metaclass(abc.ABCMeta, object)):
     '''Generate unique keys.'''
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         '''Initialise key maker.'''
@@ -464,7 +466,7 @@ class ObjectKeyMaker(KeyMaker):
                 self.name_identifier,
                 item.__name__,
                 self.item_separator,
-                item.im_class.__name__,
+                item.__self__.__class__.__name__,
                 self.item_separator,
                 item.__module__
             ))

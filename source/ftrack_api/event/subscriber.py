@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from builtins import object
 import ftrack_api.event.subscription
 
 

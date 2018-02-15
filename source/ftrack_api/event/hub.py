@@ -3,10 +3,15 @@
 
 from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 import collections
-import urlparse
+import urllib.parse
 import threading
-import Queue as queue
+import queue as queue
 import logging
 import time
 import uuid
@@ -88,7 +93,7 @@ class EventHub(object):
             '7': 'error'
         }
         self._code_name_mapping.update(
-            dict((name, code) for code, name in self._code_name_mapping.items())
+            dict((name, code) for code, name in list(self._code_name_mapping.items()))
         )
 
         self._server_url = server_url
@@ -96,7 +101,7 @@ class EventHub(object):
         self._api_key = api_key
 
         # Parse server URL and store server details.
-        url_parse_result = urlparse.urlparse(self._server_url)
+        url_parse_result = urllib.parse.urlparse(self._server_url)
         if not url_parse_result.scheme:
             raise ValueError('Could not determine scheme from server url.')
 

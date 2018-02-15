@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 
+from builtins import object
 class ResourceIdentifierTransformer(object):
     '''Transform resource identifiers.
 

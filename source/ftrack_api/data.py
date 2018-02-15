@@ -1,15 +1,15 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from builtins import object
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
+from future.utils import with_metaclass
 
 
-class Data(object):
+class Data(with_metaclass(ABCMeta, object)):
     '''File-like object for manipulating data.'''
-
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         '''Initialise data access.'''

@@ -1,6 +1,9 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from builtins import zip
+from past.builtins import basestring
+from builtins import object
 import collections
 import functools
 
@@ -181,7 +184,7 @@ class Location(ftrack_api.entity.base.Entity):
                     source = sources[index]
 
                 # Add members first for container components.
-                is_container = 'members' in component.keys()
+                is_container = 'members' in list(component.keys())
                 if is_container and recursive:
                     self.add_components(
                         component['members'], source, recursive=recursive,
@@ -254,10 +257,10 @@ class Location(ftrack_api.entity.base.Entity):
         # Publish events.
         for component in components_to_register:
 
-            component_id = ftrack_api.inspection.primary_key(
+            component_id = list(ftrack_api.inspection.primary_key(
                 component
-            ).values()[0]
-            location_id = ftrack_api.inspection.primary_key(self).values()[0]
+            ).values())[0]
+            location_id = list(ftrack_api.inspection.primary_key(self).values())[0]
 
             self.session.event_hub.publish(
                 ftrack_api.event.base.Event(
@@ -313,7 +316,7 @@ class Location(ftrack_api.entity.base.Entity):
                 details=dict(location=self)
             )
 
-        is_container = 'members' in component.keys()
+        is_container = 'members' in list(component.keys())
         if is_container:
             # TODO: Improve this check. Possibly introduce an inspection
             # such as ftrack_api.inspection.is_sequence_component.
@@ -421,7 +424,7 @@ class Location(ftrack_api.entity.base.Entity):
             self.get_resource_identifier(component)
 
             # Remove members first for container components.
-            is_container = 'members' in component.keys()
+            is_container = 'members' in list(component.keys())
             if is_container and recursive:
                 self.remove_components(
                     component['members'], recursive=recursive
@@ -434,10 +437,10 @@ class Location(ftrack_api.entity.base.Entity):
             self._deregister_component_in_location(component)
 
             # Emit event.
-            component_id = ftrack_api.inspection.primary_key(
+            component_id = list(ftrack_api.inspection.primary_key(
                 component
-            ).values()[0]
-            location_id = ftrack_api.inspection.primary_key(self).values()[0]
+            ).values())[0]
+            location_id = list(ftrack_api.inspection.primary_key(self).values())[0]
             self.session.event_hub.publish(
                 ftrack_api.event.base.Event(
                     topic=ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC,
@@ -470,8 +473,8 @@ class Location(ftrack_api.entity.base.Entity):
 
     def _deregister_component_in_location(self, component):
         '''Deregister *component* from location.'''
-        component_id = ftrack_api.inspection.primary_key(component).values()[0]
-        location_id = ftrack_api.inspection.primary_key(self).values()[0]
+        component_id = list(ftrack_api.inspection.primary_key(component).values())[0]
+        location_id = list(ftrack_api.inspection.primary_key(self).values())[0]
 
         # TODO: Use session.get for optimisation.
         component_location = self.session.query(
@@ -541,17 +544,17 @@ class Location(ftrack_api.entity.base.Entity):
         '''
         component_ids_mapping = collections.OrderedDict()
         for component in components:
-            component_id = ftrack_api.inspection.primary_key(
+            component_id = list(ftrack_api.inspection.primary_key(
                 component
-            ).values()[0]
+            ).values())[0]
             component_ids_mapping[component_id] = component
 
         component_locations = self.session.query(
             'select component_id, resource_identifier from ComponentLocation '
             'where location_id is {0} and component_id in ({1})'
             .format(
-                ftrack_api.inspection.primary_key(self).values()[0],
-                ', '.join(component_ids_mapping.keys())
+                list(ftrack_api.inspection.primary_key(self).values())[0],
+                ', '.join(list(component_ids_mapping.keys()))
             )
         )
 
@@ -563,7 +566,7 @@ class Location(ftrack_api.entity.base.Entity):
 
         resource_identifiers = []
         missing = []
-        for component_id, component in component_ids_mapping.items():
+        for component_id, component in list(component_ids_mapping.items()):
             if component_id not in resource_identifiers_map:
                 missing.append(component)
             else:
@@ -627,7 +630,7 @@ class MemoryLocationMixin(object):
 
     def _register_component_in_location(self, component, resource_identifier):
         '''Register *component* in location with *resource_identifier*.'''
-        component_id = ftrack_api.inspection.primary_key(component).values()[0]
+        component_id = list(ftrack_api.inspection.primary_key(component).values())[0]
         self._cache[component_id] = resource_identifier
 
     def _register_components_in_location(
@@ -645,7 +648,7 @@ class MemoryLocationMixin(object):
 
     def _deregister_component_in_location(self, component):
         '''Deregister *component* in location.'''
-        component_id = ftrack_api.inspection.primary_key(component).values()[0]
+        component_id = list(ftrack_api.inspection.primary_key(component).values())[0]
         self._cache.pop(component_id)
 
     def _get_resource_identifiers(self, components):
@@ -658,9 +661,9 @@ class MemoryLocationMixin(object):
         resource_identifiers = []
         missing = []
         for component in components:
-            component_id = ftrack_api.inspection.primary_key(
+            component_id = list(ftrack_api.inspection.primary_key(
                 component
-            ).values()[0]
+            ).values())[0]
             resource_identifier = self._cache.get(component_id)
             if resource_identifier is None:
                 missing.append(component)

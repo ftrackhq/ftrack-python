@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from builtins import str
 import os
 import re
 import unicodedata
@@ -142,7 +143,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
         value = re.sub('[^\w\.-]', self.illegal_character_substitute, value)
-        return unicode(value.strip().lower())
+        return str(value.strip().lower())
 
     def get_resource_identifier(self, entity, context=None):
         '''Return a resource identifier for supplied *entity*.

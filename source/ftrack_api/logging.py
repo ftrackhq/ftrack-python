@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2016 ftrack
 
 
+from builtins import object
 class LazyLogMessage(object):
     '''A log message that can be evaluated lazily for improved performance.
 

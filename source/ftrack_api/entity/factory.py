@@ -3,6 +3,8 @@
 
 from __future__ import absolute_import
 
+from builtins import str
+from builtins import object
 import logging
 import uuid
 import functools
@@ -50,7 +52,7 @@ class Factory(object):
         # Build attributes for class.
         attributes = ftrack_api.attribute.Attributes()
         immutable = schema.get('immutable', [])
-        for name, fragment in schema.get('properties', {}).items():
+        for name, fragment in list(schema.get('properties', {}).items()):
             mutable = name not in immutable
 
             default = fragment.get('default', ftrack_api.symbol.NOT_SET)
@@ -219,7 +221,7 @@ def _get_entity_configurations(entity):
     project_id = None
     object_type_id = None
 
-    if 'object_type_id' in entity.keys():
+    if 'object_type_id' in list(entity.keys()):
         project_id = entity['project_id']
         entity_type = 'task'
         object_type_id = entity['object_type_id']
@@ -396,7 +398,7 @@ class StandardFactory(Factory):
                         .format(data)
                     )
 
-                create_data = dict(data.items())
+                create_data = dict(list(data.items()))
                 create_data['configuration_id'] = configuration['id']
                 create_data['entity_id'] = entity['id']
 

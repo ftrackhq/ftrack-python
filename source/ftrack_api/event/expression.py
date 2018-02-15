@@ -1,6 +1,9 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from builtins import map
+from past.builtins import basestring
+from builtins import object
 from operator import eq, ne, ge, le, gt, lt
 
 from pyparsing import (ParserElement, Group, Word, CaselessKeyword, Forward,
@@ -32,7 +35,7 @@ class Parser(object):
     def _construct_parser(self):
         '''Construct and return parser.'''
         field = Word(alphanums + '_.')
-        operator = oneOf(self._operators.keys())
+        operator = oneOf(list(self._operators.keys()))
         value = Word(alphanums + '-_,./*@+')
         quoted_value = quotedString('quoted_value').setParseAction(removeQuotes)
 

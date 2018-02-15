@@ -1,17 +1,17 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from builtins import object
 from abc import ABCMeta, abstractmethod
+from future.utils import with_metaclass
 
 
-class Structure(object):
+class Structure(with_metaclass(ABCMeta, object)):
     '''Structure plugin interface.
 
     A structure plugin should compute appropriate paths for data.
 
     '''
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, prefix=''):
         '''Initialise structure.'''
