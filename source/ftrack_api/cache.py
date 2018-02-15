@@ -26,7 +26,11 @@ import abc
 import copy
 import inspect
 import re
-import anydbm
+try:
+    import dbm as anydbm
+except ImportError:
+    import anydbm
+
 import contextlib
 from future.utils import with_metaclass
 try:

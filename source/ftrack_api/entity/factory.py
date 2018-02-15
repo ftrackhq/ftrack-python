@@ -3,8 +3,10 @@
 
 from __future__ import absolute_import
 
+
 from builtins import str
 from builtins import object
+
 import logging
 import uuid
 import functools
@@ -132,8 +134,12 @@ class Factory(object):
         class_namespace['primary_key_attributes'] = schema['primary_key'][:]
         class_namespace['default_projections'] = default_projections
 
+        from future.utils import (
+            native_str
+        )
+
         cls = type(
-            str(class_name),  # type doesn't accept unicode.
+            native_str(class_name),  # type doesn't accept unicode.
             tuple(class_bases),
             class_namespace
         )

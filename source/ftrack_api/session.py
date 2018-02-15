@@ -1313,7 +1313,7 @@ class Session(object):
         with open(schema_cache_path, 'r') as schema_file:
             schemas = json.load(schema_file)
             hash_ = hashlib.md5(
-                json.dumps(schemas, sort_keys=True)
+                json.dumps(schemas, sort_keys=True).encode('utf-8')
             ).hexdigest()
 
         return schemas, hash_

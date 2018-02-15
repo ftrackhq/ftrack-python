@@ -17,6 +17,11 @@ from ftrack_api.logging import LazyLogMessage as L
 from future.utils import with_metaclass
 
 
+class _EntityBase(object):
+    '''Base class to allow for mixins, we need a common base.'''
+    pass
+
+
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
     '''Custom metaclass to customise representation of dynamic classes.
 
@@ -30,7 +35,7 @@ class DynamicEntityTypeMetaclass(abc.ABCMeta):
         return '<dynamic ftrack class \'{0}\'>'.format(self.__name__)
 
 
-class Entity(with_metaclass(DynamicEntityTypeMetaclass, collections.MutableMapping)):
+class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections.MutableMapping)):
     '''Base class for all entities.'''
 
     entity_type = 'Entity'

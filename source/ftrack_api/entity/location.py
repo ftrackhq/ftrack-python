@@ -366,7 +366,7 @@ class Location(ftrack_api.entity.base.Entity):
             chunked_read = functools.partial(
                 source_data.read, ftrack_api.symbol.CHUNK_SIZE
             )
-            for chunk in iter(chunked_read, ''):
+            for chunk in iter(chunked_read, b''):
                 target_data.write(chunk)
 
             target_data.close()
