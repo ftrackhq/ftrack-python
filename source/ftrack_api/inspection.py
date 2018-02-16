@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 from builtins import str
+from future.utils import native_str
 import collections
 
 import ftrack_api.symbol
@@ -33,7 +34,11 @@ def primary_key(entity):
                 'entity {1!r}.'.format(name, entity)
             )
 
-        primary_key[str(name)] = str(value)
+
+        # This is something I am not happy about.
+        # COMPAT!
+
+        primary_key[native_str(name)] = native_str(value)
 
     return primary_key
 

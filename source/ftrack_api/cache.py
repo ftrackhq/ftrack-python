@@ -27,15 +27,18 @@ import copy
 import inspect
 import re
 try:
-    import dbm as anydbm
-except ImportError:
+    # Python 2.x
     import anydbm
+except ImportError:
+    import dbm as anydbm
+
 
 import contextlib
 from future.utils import with_metaclass
 try:
-    import pickle as pickle
-except ImportError:  # pragma: no cover
+    import cPickle as pickle
+
+except:
     import pickle
 
 import ftrack_api.inspection
@@ -102,6 +105,7 @@ class Cache(with_metaclass(abc.ABCMeta, object)):
         If *pattern* is None then all keys will be removed.
 
         '''
+
         if pattern is not None:
             pattern = re.compile(pattern)
 
@@ -306,12 +310,12 @@ class FileCache(Cache):
 
         '''
         with self._database() as cache:
-            return cache[key]
+            return cache[key.encode('ascii')].decode('utf-8')
 
     def set(self, key, value):
         '''Set *value* for *key*.'''
         with self._database() as cache:
-            cache[key] = value
+            cache[key.encode('ascii')] = value
 
     def remove(self, key):
         '''Remove *key*.
@@ -320,7 +324,7 @@ class FileCache(Cache):
 
         '''
         with self._database() as cache:
-            del cache[key]
+            del cache[key.encode('ascii')]
 
     def keys(self):
         '''Return list of keys at this current time.
@@ -331,7 +335,8 @@ class FileCache(Cache):
 
         '''
         with self._database() as cache:
-            return list(cache.keys())
+            return [s.decode('utf-8') for s in cache.keys()]
+            #return list(map(str, cache.keys()))
 
 
 class SerialisedCache(ProxyCache):
@@ -402,13 +407,16 @@ class ObjectKeyMaker(KeyMaker):
     def __init__(self):
         '''Initialise key maker.'''
         super(ObjectKeyMaker, self).__init__()
-        self.item_separator = '\0'
-        self.mapping_identifier = '\1'
-        self.mapping_pair_separator = '\2'
-        self.iterable_identifier = '\3'
-        self.name_identifier = '\4'
+        self.item_separator = b'\0'
+        self.mapping_identifier = b'\1'
+        self.mapping_pair_separator = b'\2'
+        self.iterable_identifier = b'\3'
+        self.name_identifier = b'\4'
 
     def _key(self, item):
+        return self.__key(item)
+
+    def __key(self, item):
         '''Return key for *item*.
 
         Returned key will be a pickle like string representing the *item*. This
@@ -434,9 +442,12 @@ class ObjectKeyMaker(KeyMaker):
             '\x04add\x00__main__\x00\x03\x80\x02K\x01.\x00\x80\x02K\x03.\x03'
 
         '''
+
+
         # TODO: Consider using a more robust and comprehensive solution such as
         # dill (https://github.com/uqfoundation/dill).
         if isinstance(item, collections.Iterable):
+
             if isinstance(item, basestring):
                 return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)
 
@@ -449,12 +460,12 @@ class ObjectKeyMaker(KeyMaker):
                     )
                     for key, value in sorted(item.items())
                 ])
+
                 return (
                     self.mapping_identifier +
                     contents +
                     self.mapping_identifier
                 )
-
             else:
                 contents = self.item_separator.join([
                     self._key(item) for item in item
@@ -466,25 +477,26 @@ class ObjectKeyMaker(KeyMaker):
                 )
 
         elif inspect.ismethod(item):
-            return ''.join((
+
+            return b''.join((
                 self.name_identifier,
-                item.__name__,
+                item.__name__.encode(),
                 self.item_separator,
-                item.__self__.__class__.__name__,
+                item.__self__.__class__.__name__.encode(),
                 self.item_separator,
-                item.__module__
+                item.__module__.encode()
             ))
 
         elif inspect.isfunction(item) or inspect.isclass(item):
-            return ''.join((
+            return b''.join((
                 self.name_identifier,
-                item.__name__,
+                item.__name__.encode(),
                 self.item_separator,
-                item.__module__
+                item.__module__.encode()
             ))
 
         elif inspect.isbuiltin(item):
-            return self.name_identifier + item.__name__
+            return self.name_identifier + item.__name__.encode()
 
         else:
             return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)

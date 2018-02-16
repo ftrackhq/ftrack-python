@@ -308,6 +308,12 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
 
         return len(keys)
 
+    def keys(self):
+        # COMPAT for unit tests..
+        return list(super(
+            KeyValueMappedCollectionProxy, self
+        ).keys())
+
 
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     '''Generate key for session.'''

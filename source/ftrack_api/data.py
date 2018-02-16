@@ -115,5 +115,19 @@ class String(FileWrapper):
         )
 
         if content is not None:
-            self.wrapped_file.write(content)
+            self.wrapped_file.write(content.encode())
             self.wrapped_file.seek(0)
+
+
+    def write(self, content):
+        if not isinstance(content, bytes):
+            content = content.encode()
+
+        super(String, self).write(
+            content
+        )
+
+    def read(self, limit=None):
+        return super(String, self).read(
+            limit
+        ).decode('utf-8')
