@@ -1,10 +1,21 @@
 # Test configuration for bitbucket pipelines.
-image: python:2.7.11
 
 pipelines:
   default:
     - step:
+        name: python-2.7.11
+        image: python:2.7.11
         script:
           - pip install -e .
-          - pip install 'pytest >= 2.7, < 3' 'pytest-mock >= 0.4, < 1' 'pytest-catchlog >= 1, <=2'
+          - pip install 'pytest >= 2.7, < 3' 'pytest-mock >= 0.4, < 1' 'pytest-catchlog >= 1, <=2' 'six'
           - py.test test/unit -vv -k-slow
+
+  custom:
+    python-3:
+      - step:
+          name: python-3.6.3
+          image: python:3.6.3
+          script:
+            - pip install -e .
+            - pip install 'pytest >= 2.7, < 3' 'pytest-mock >= 0.4, < 1' 'pytest-catchlog >= 1, <=2' 'six'
+            - py.test test/unit -vv -k-slow

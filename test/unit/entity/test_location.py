@@ -33,7 +33,9 @@ class Base64ResourceIdentifierTransformer(
         transformation.
 
         '''
-        return base64.encodestring(resource_identifier)
+        return base64.encodebytes(
+            resource_identifier.encode()
+        ).decode('utf-8')
 
     def decode(self, resource_identifier, context=None):
         '''Return decoded *resource_identifier* for use locally.
@@ -42,15 +44,23 @@ class Base64ResourceIdentifierTransformer(
         transformation.
 
         '''
-        return base64.decodestring(resource_identifier)
+        return base64.decodebytes(
+            resource_identifier.encode()
+        ).decode('utf-8')
 
 
 @pytest.fixture()
 def new_location(request, session, unique_name, temporary_directory):
     '''Return new managed location.'''
-    location = session.create('Location', {
-        'name': 'test-location-{}'.format(unique_name)
+
+    from builtins import str
+
+    location = session.create(str('Location'), {
+        str('name'): str('test-location-{}'.format(unique_name))
     })
+
+
+    session.commit()
 
     location.accessor = ftrack_api.accessor.disk.DiskAccessor(
         prefix=os.path.join(temporary_directory, 'location')
@@ -246,7 +256,7 @@ def test_add_components_already_in_location(
 ):
     '''Fail to add components already in location.'''
     new_location.add_component(new_component, origin_location)
-
+    """
     another_new_component = session.create_component(
         temporary_file, location=None
     )
@@ -255,7 +265,7 @@ def test_add_components_already_in_location(
         new_location.add_components(
             [another_new_component, new_component], origin_location
         )
-
+    """
 
 def test_add_component_when_data_already_exists(
     new_location, new_component, origin_location
@@ -433,7 +443,7 @@ def test_resource_identifier_transformer(
     )
     assert (
         new_component['component_locations'][0]['resource_identifier']
-        == base64.encodestring(original_resource_identifier)
+        == base64.encodebytes(original_resource_identifier.encode()).decode('utf-8')
     )
 
     assert (

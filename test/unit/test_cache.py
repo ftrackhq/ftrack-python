@@ -294,7 +294,7 @@ def test_string_key_maker_key(items, key):
 @pytest.mark.parametrize('items, key', [
     (
         ({},),
-        '\x01\x01'
+        b'\x01\x01'
     ),
     (
         ({'a': 'b'}, [1, 2]),
@@ -308,23 +308,23 @@ def test_string_key_maker_key(items, key):
     ),
     (
         (function,),
-        '\x04function\x00unit.test_cache'
+        b'\x04function\x00unit.test_cache'
     ),
     (
         (Class,),
-        '\x04Class\x00unit.test_cache'
+        b'\x04Class\x00unit.test_cache'
     ),
     (
-        (Class.method,),
-        '\x04method\x00Class\x00unit.test_cache'
+        (Class().method,),
+        b'\x04method\x00Class\x00unit.test_cache'
     ),
     (
         (callable,),
-        '\x04callable'
+        b'\x04callable'
     )
 ], ids=[
     'single mapping',
-    'multiple objects',
+    'multiple objects', # will fail in python 3 due to different pickler
     'function',
     'class',
     'method',
@@ -333,6 +333,7 @@ def test_string_key_maker_key(items, key):
 def test_object_key_maker_key(items, key):
     '''Generate key using string key maker.'''
     key_maker = ftrack_api.cache.ObjectKeyMaker()
+
     assert key_maker.key(*items) == key
 
 
