@@ -65,7 +65,8 @@ setup(
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
         'clique >= 1.2.0, < 2',
-        'websocket-client >= 0.40.0, < 1'
+        'websocket-client >= 0.40.0, < 1',
+        'future >=0.16.0, < 1'
     ],
     tests_require=[
         'pytest >= 2.7, < 3',
