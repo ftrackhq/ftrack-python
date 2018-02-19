@@ -522,5 +522,8 @@ def test_get_thumbnail_url(server_location, server_image_component):
             'image-resized-10.png'
         )
     )
-    expected_image_contents = open(image_file).read()
+    expected_image_contents = open(
+        image_file, 'rb'
+    ).read()
+
     assert response.content == expected_image_contents
