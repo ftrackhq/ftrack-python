@@ -17,5 +17,5 @@ pipelines:
           image: python:3.6.3
           script:
             - pip install -e .
-            - pip install 'pytest >= 2.7, < 3' 'pytest-mock >= 0.4, < 1' 'pytest-catchlog >= 1, <=2' 'six'
+            - pip install 'pytest >= 2.7, < 3' 'pytest-mock >= 0.4, < 1' 'pytest-catchlog >= 1, <=2' 'six' 'mock'
             - py.test test/unit -vv -k-slow
