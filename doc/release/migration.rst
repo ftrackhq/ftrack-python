@@ -28,7 +28,7 @@ to explicitly set the argument to True or that you manually call
 `session.event_hub.connect()`.
 
 .. note::
-    If you relay on the `ftrack.location.component-added` or
+    If you rely on the `ftrack.location.component-added` or
     `ftrack.location.component-removed` events to further process created
     or deleted components remember that your session must be connected
     to the event hub for the events to be published.
