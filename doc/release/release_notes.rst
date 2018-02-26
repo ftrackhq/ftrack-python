@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: fixed
+       :tags: session, cache
+
+       Cached entities not updated correctly when fetched in a nested
+       query.
+
 .. release:: 1.4.0
     :date: 2018-02-05
 

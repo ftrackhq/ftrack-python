@@ -8,6 +8,7 @@ import uuid
 import textwrap
 import datetime
 import json
+import random
 
 import pytest
 import mock
@@ -1233,3 +1234,43 @@ def test_delayed_job_ldap_sync(session):
     assert isinstance(
         result, ftrack_api.entity.job.Job
     )
+
+
+def test_query_nested(session, new_asset_version):
+    session_two = ftrack_api.Session(
+        auto_connect_event_hub=False
+    )
+
+    asset_version = session.query(
+        'select asset, custom_attributes from AssetVersion where id is "{0}"'.format(
+            new_asset_version.get('id')
+        )
+    ).first()
+
+    assets = session_two.query(
+        'select versions.custom_attributes from Asset where id is "{0}"'.format(
+            asset_version.get('asset_id')
+        )
+    ).first()
+
+    new_asset_version['custom_attributes']['versiontest'] = random.randint(
+        0, 99999
+    )
+
+    session.commit()
+
+    versions = session_two.query(
+        'select versions.custom_attributes from Asset where id is "{0}"'.format(
+            asset_version.get('asset_id')
+        )
+    ).first().get('versions')
+
+    asset_version = [
+        version for version in versions if version.get('id') == new_asset_version.get('id')
+    ][0]
+
+    assert (
+        asset_version['custom_attributes']['versiontest'] ==
+        new_asset_version['custom_attributes']['versiontest']
+    )
+
