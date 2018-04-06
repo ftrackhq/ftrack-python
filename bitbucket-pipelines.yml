@@ -6,6 +6,7 @@ pipelines:
         name: python-2.7.11
         image: python:2.7.11
         script:
+          - pip install -e .
           - python setup.py test
 
   custom:
@@ -14,4 +15,5 @@ pipelines:
           name: python-3.6.3
           image: python:3.6.3
           script:
+            - pip install -e .
             - python setup.py test
