@@ -1236,41 +1236,119 @@ def test_delayed_job_ldap_sync(session):
     )
 
 
-def test_query_nested(session, new_asset_version):
+def test_query_nested_custom_attributes(session, new_asset_version):
+    '''Query custom attributes nested and update a value and query again.
+
+    This test will query custom attributes via 2 relations, then update the
+    value in one API session and read it back in another to verify that it gets
+    the new value.
+
+    '''
+    session_one = session
     session_two = ftrack_api.Session(
         auto_connect_event_hub=False
     )
 
-    asset_version = session.query(
-        'select asset, custom_attributes from AssetVersion where id is "{0}"'.format(
-            new_asset_version.get('id')
-        )
-    ).first()
+    # Read the version via a relation in both sessions.
+    def get_versions(sessions):
+        versions = []
+        for _session in sessions:
+            asset = _session.query(
+                'select versions.custom_attributes from Asset where id is "{0}"'.format(
+                    new_asset_version.get('asset_id')
+                )
+            ).first()
 
-    assets = session_two.query(
-        'select versions.custom_attributes from Asset where id is "{0}"'.format(
-            asset_version.get('asset_id')
-        )
-    ).first()
+            for version in asset['versions']:
+                if version.get('id') == new_asset_version.get('id'):
+                    versions.append(version)
 
-    new_asset_version['custom_attributes']['versiontest'] = random.randint(
+        return versions
+
+    # Get version from both sessions.
+    versions = get_versions((session_one, session_two))
+
+    # Read attribute for both sessions.
+    for version in versions:
+        version['custom_attributes']['versiontest']
+
+    # Set attribute on session_one.
+    versions[0]['custom_attributes']['versiontest'] = random.randint(
         0, 99999
     )
 
     session.commit()
 
-    versions = session_two.query(
-        'select versions.custom_attributes from Asset where id is "{0}"'.format(
-            asset_version.get('asset_id')
-        )
-    ).first().get('versions')
+    # Read version from server for session_two.
+    session_two_version = get_versions((session_two, ))[0]
 
-    asset_version = [
-        version for version in versions if version.get('id') == new_asset_version.get('id')
-    ][0]
-
+    # Verify that value in session 2 is the same as set and committed in
+    # session 1.
     assert (
-        asset_version['custom_attributes']['versiontest'] ==
-        new_asset_version['custom_attributes']['versiontest']
+        session_two_version['custom_attributes']['versiontest'] ==
+        versions[0]['custom_attributes']['versiontest']
     )
 
+
+def test_query_nested(session):
+    '''Query components nested and update a value and query again.
+
+    This test will query components via 2 relations, then update the
+    value in one API session and read it back in another to verify that it gets
+    the new value.
+
+    '''
+    session_one = session
+    session_two = ftrack_api.Session(
+        auto_connect_event_hub=False
+    )
+
+    query = (
+        'select versions.components.name from Asset where id is '
+        '"12939d0c-6766-11e1-8104-f23c91df25eb"'
+    )
+
+    def get_version(session):
+        '''Return the test version from *session*.'''
+        asset = session.query(query).first()
+        asset_version = None
+        for version in asset['versions']:
+            if version['version'] == 8:
+                asset_version = version
+                break
+
+        return asset_version
+
+    asset_version = get_version(session_one)
+    asset_version2 = get_version(session_two)
+
+    # This assert is not needed, but reading the collections are to ensure they
+    # are inflated.
+    assert (
+        asset_version2['components'][0]['name'] ==
+        asset_version['components'][0]['name']
+    )
+
+    asset_version['components'][0]['name'] = str(uuid.uuid4())
+
+    session.commit()
+
+    asset_version2 = get_version(session_two)
+
+    assert (
+        asset_version['components'][0]['name'] ==
+        asset_version2['components'][0]['name']
+    )
+
+
+def test_merge_iterations(session, mocker, project):
+    '''Ensure merge does not happen to many times when querying.'''
+    mocker.spy(session, '_merge')
+
+    session.query(
+        'select status from Task where project_id is {} limit 10'.format(
+            project['id']
+        )
+    ).all()
+
+    assert session._merge.call_count < 75
