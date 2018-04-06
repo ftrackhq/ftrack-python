@@ -614,7 +614,7 @@ class Session(object):
             value = data[identifying_key]
 
             if isinstance(value, basestring):
-                value = '"{0}"'.format(value)
+                value = '"{0}"'.format(value.replace('"', r'\"'))
 
             elif isinstance(
                 value, (arrow.Arrow, datetime.datetime, datetime.date)
