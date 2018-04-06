@@ -241,6 +241,30 @@ def test_ensure_update_existing_entity(session, unique_name):
     assert retrieved['email'] == 'test@example.com'
 
 
+def test_ensure_value_with_quotes(session, user):
+    '''Ensure with JSON-encoded values.'''
+    job_data = json.dumps({'test': uuid.uuid4().hex})
+
+    # Ensure creates new entity with JSON-encoded value
+    new_entity = session.ensure('Job', {
+        'data': job_data,
+        'user_id': user['id'],
+        'type': 'api_job'
+    })
+    assert new_entity['data'] == job_data
+
+    # The existing entity is returned when ensure is called again.
+    existing_entity = session.ensure('Job', {
+        'data': job_data,
+        'user_id': user['id'],
+        'type': 'api_job'
+    })
+    assert new_entity == existing_entity
+
+    # Clean up
+    session.delete(new_entity)
+
+
 def test_reconstruct_entity(session):
     '''Reconstruct entity.'''
     uid = str(uuid.uuid4())
@@ -1151,6 +1175,7 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
+
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
@@ -1160,7 +1185,6 @@ def test_remote_reset(session, new_user):
     key_2 = session.reset_remote(
         'api_key', entity=new_user
     )
-
 
     assert key_1 != key_2
 
