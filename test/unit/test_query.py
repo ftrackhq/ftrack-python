@@ -1,5 +1,6 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
+from __future__ import division
 
 import math
 import decimal
@@ -8,7 +9,6 @@ import pytest
 import ftrack_api
 import ftrack_api.query
 import ftrack_api.exception
-from __future__ import division
 
 
 def test_index(session):
