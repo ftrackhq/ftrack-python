@@ -8,6 +8,7 @@ import pytest
 import ftrack_api
 import ftrack_api.query
 import ftrack_api.exception
+from __future__ import division
 
 
 def test_index(session):
@@ -124,14 +125,6 @@ def test_paging(session, mocker):
     page_size = 5
     query = session.query('User', page_size=page_size)
     records = query.all()
-
-    records = decimal.Decimal(
-        records
-    ).quantize(decimal.Decimal('1'), rounding=decimal.ROUND_HALF_DOWN)
-
-    page_size = decimal.Decimal(
-        page_size
-    ).quantize(decimal.Decimal('1'), rounding=decimal.ROUND_HALF_DOWN)
 
     assert session._call.call_count == (
         math.ceil(len(records) / float(page_size))
