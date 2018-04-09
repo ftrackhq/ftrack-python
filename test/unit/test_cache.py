@@ -277,7 +277,6 @@ def test_expand_references():
         )
 
 
-
 @pytest.mark.parametrize('items, key', [
     (({},), '{}'),
     (({}, {}), '{}{}')
@@ -289,6 +288,7 @@ def test_string_key_maker_key(items, key):
     '''Generate key using string key maker.'''
     key_maker = ftrack_api.cache.StringKeyMaker()
     assert key_maker.key(*items) == key
+
 
 @pytest.mark.skipif(sys.version_info > (3, 0), reason="requires Python2")
 @pytest.mark.parametrize('items, key', [
@@ -336,6 +336,7 @@ def test_object_key_maker_key_py2k(items, key):
 
     assert key_maker.key(*items) == key
 
+
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 @pytest.mark.parametrize('items, key', [
     (
@@ -344,13 +345,10 @@ def test_object_key_maker_key_py2k(items, key):
     ),
     (
         ({'a': 'b'}, [1, 2]),
-        '\x01'
-            '\x80\x02U\x01a.' '\x02' '\x80\x02U\x01b.'
-        '\x01'
-        '\x00'
-        '\x03'
-            '\x80\x02K\x01.' '\x00' '\x80\x02K\x02.'
-        '\x03'
+        b'\x01\x80\x04\x95\x05\x00\x00\x00\x00\x00\x00\x00\x8c\x01a\x94.'
+        '\x02\x80\x04\x95\x05\x00\x00\x00\x00\x00\x00\x00\x8c\x01b\x94.'
+        '\x01\x00\x03\x80\x04\x95\x03\x00\x00\x00\x00\x00\x00\x00K\x01.'
+        '\x00\x80\x04\x95\x03\x00\x00\x00\x00\x00\x00\x00K\x02.\x03'
     ),
     (
         (function,),
