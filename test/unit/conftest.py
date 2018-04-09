@@ -5,7 +5,7 @@ import uuid
 import tempfile
 import shutil
 import os
-
+import sys
 import pytest
 import clique
 
