@@ -2,7 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import math
-
+import decimal
 import pytest
 
 import ftrack_api
@@ -124,6 +124,14 @@ def test_paging(session, mocker):
     page_size = 5
     query = session.query('User', page_size=page_size)
     records = query.all()
+
+    records = decimal.Decimal(
+        records
+    ).quantize(decimal.Decimal('1'), rounding=decimal.ROUND_HALF_DOWN)
+
+    page_size = decimal.Decimal(
+        page_size
+    ).quantize(decimal.Decimal('1'), rounding=decimal.ROUND_HALF_DOWN)
 
     assert session._call.call_count == (
         math.ceil(len(records) / float(page_size))
