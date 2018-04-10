@@ -271,6 +271,13 @@ class Session(object):
         ftrack_api._centralized_storage_scenario.register(self)
 
         self._configure_locations()
+        self.event_hub.publish(
+            ftrack_api.event.base.Event(
+                topic='ftrack.api.session.initialized',
+                data=dict()
+            ),
+            synchronous=True
+        )
 
     def __enter__(self):
         '''Return session as context manager.'''
