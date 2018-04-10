@@ -25,6 +25,7 @@ pip-log.txt
 .coverage
 .tox
 .cache
+test-reports/*
 
 # Caches
 Thumbs.db

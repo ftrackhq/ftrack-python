@@ -72,7 +72,6 @@ setup(
         'pytest >= 2.7, < 3',
         'pytest-mock >= 0.4, < 1',
         'pytest-catchlog >= 1, <=2',
-        'pytest-cov >=2, <3',
         'mock'
     ],
     cmdclass={
