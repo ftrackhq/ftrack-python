@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: documentation
+
+        Event payload not same as what is being emitted for
+        :ref:`event_list/ftrack.location.component-added` and
+        :ref:`event_list/ftrack.location.component-removed`.
+
 .. release:: 1.4.0
     :date: 2018-02-05
 
