@@ -274,7 +274,9 @@ class Session(object):
         self.event_hub.publish(
             ftrack_api.event.base.Event(
                 topic='ftrack.api.session.initialized',
-                data=dict()
+                data=dict(
+                    session=self
+                )
             ),
             synchronous=True
         )
