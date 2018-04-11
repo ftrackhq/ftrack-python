@@ -60,7 +60,7 @@ def assert_callbacks(hub, callbacks):
             )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture()
 def event_hub(request, session):
     '''Return event hub to test against.
 
