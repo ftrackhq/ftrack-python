@@ -1352,3 +1352,44 @@ def test_merge_iterations(session, mocker, project):
     ).all()
 
     assert session._merge.call_count < 75
+
+
+def test_query_nested2(session):
+    '''Query version.asset.versions from component and then add new version.
+
+    This test will query versions via multiple relations and ensure a new
+    version appears when added to a different session and then is queried
+    again.
+
+    '''
+    session_one = session
+    session_two = ftrack_api.Session(
+        auto_connect_event_hub=False
+    )
+
+    # Get a random component that is linked to a version and asset.
+    component_id = session_two.query(
+        'FileComponent where version.asset_id != None'
+    ).first()['id']
+
+    query = (
+        'select version.asset.versions from Component where id is "{}"'.format(
+            component_id
+        )
+    )
+
+    component = session_one.query(query).one()
+    asset = component['version']['asset']
+    versions = component['version']['asset']['versions']
+    length = len(versions)
+
+    session_two.create('AssetVersion', {
+        'asset': asset
+    })
+
+    session_two.commit()
+
+    component = session_one.query(query).one()
+    new_length = len(component['version']['asset']['versions'])
+
+    assert length + 1 == new_length
