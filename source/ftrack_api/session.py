@@ -801,8 +801,9 @@ class Session(object):
 
         # Merge entities into local cache and return merged entities.
         data = []
+        merged = dict()
         for entity in results[0]['data']:
-            data.append(self.merge(entity))
+            data.append(self._merge_recursive(entity, merged))
 
         return data, results[0]['metadata']
 
@@ -862,6 +863,48 @@ class Session(object):
 
         else:
             return value
+
+    def _merge_recursive(self, entity, merged=None):
+        '''Merge *entity* and all its attributes recursivly.'''
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
+
+        if merged is None:
+            merged = {}
+
+        attached = self.merge(entity, merged)
+
+        for attribute in entity.attributes:
+            # Remote attributes.
+            remote_value = attribute.get_remote_value(entity)
+
+            if isinstance(
+                remote_value,
+                (
+                    ftrack_api.entity.base.Entity,
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
+                )
+            ):
+                log_debug and self.logger.debug(
+                    'Merging remote value for attribute {0}.'.format(attribute)
+                )
+
+                if isinstance(remote_value, ftrack_api.entity.base.Entity):
+                    self._merge_recursive(remote_value, merged=merged)
+
+                elif isinstance(
+                    remote_value, ftrack_api.collection.Collection
+                ):
+                    for entry in remote_value:
+                        self._merge_recursive(entry, merged=merged)
+
+                elif isinstance(
+                    remote_value, ftrack_api.collection.MappedCollectionProxy
+                ):
+                    for entry in remote_value.collection:
+                        self._merge_recursive(entry, merged=merged)
+
+        return attached
 
     def _merge_entity(self, entity, merged=None):
         '''Merge *entity* into session returning merged entity.
