@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: upcoming
+.. release:: 1.5.0
+    :date: 2018-04-19
 
     .. change:: fixed
        :tags: session, cache
