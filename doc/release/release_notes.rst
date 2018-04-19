@@ -18,6 +18,15 @@ Release Notes
         :ref:`event_list/ftrack.location.component-added` and
         :ref:`event_list/ftrack.location.component-removed`.
 
+.. release:: 1.5.0
+    :date: 2018-04-19
+
+    .. change:: fixed
+       :tags: session, cache
+
+       Cached entities not updated correctly when fetched in a nested
+       query.
+
 .. release:: 1.4.0
     :date: 2018-02-05
 
