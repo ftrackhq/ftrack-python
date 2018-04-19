@@ -1398,7 +1398,7 @@ def test_query_nested2(session, get_versions):
     length = len(versions)
 
     session_two.create('AssetVersion', {
-        'asset': asset
+        'asset_id': asset['id']
     })
 
     session_two.commit()
