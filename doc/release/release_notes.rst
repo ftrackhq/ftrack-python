@@ -9,7 +9,6 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-
 .. release:: Upcoming
 
     .. change:: new
