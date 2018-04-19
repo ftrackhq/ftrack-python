@@ -1354,7 +1354,20 @@ def test_merge_iterations(session, mocker, project):
     assert session._merge.call_count < 75
 
 
-def test_query_nested2(session):
+@pytest.mark.parametrize(
+    'get_versions',
+    [
+        lambda component, asset_version, asset: component['version']['asset']['versions'],
+        lambda component, asset_version, asset: asset_version['asset']['versions'],
+        lambda component, asset_version, asset: asset['versions'],
+    ],
+    ids=[
+        'from_component',
+        'from_asset_version',
+        'from_asset',
+    ]
+)
+def test_query_nested2(session, get_versions):
     '''Query version.asset.versions from component and then add new version.
 
     This test will query versions via multiple relations and ensure a new
@@ -1379,6 +1392,7 @@ def test_query_nested2(session):
     )
 
     component = session_one.query(query).one()
+    asset_version = component['version']
     asset = component['version']['asset']
     versions = component['version']['asset']['versions']
     length = len(versions)
@@ -1390,6 +1404,7 @@ def test_query_nested2(session):
     session_two.commit()
 
     component = session_one.query(query).one()
-    new_length = len(asset['versions'])
+    versions = get_versions(component, asset_version, asset)
+    new_length = len(versions)
 
     assert length + 1 == new_length
