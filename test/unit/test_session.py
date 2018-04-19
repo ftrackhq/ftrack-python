@@ -1390,6 +1390,6 @@ def test_query_nested2(session):
     session_two.commit()
 
     component = session_one.query(query).one()
-    new_length = len(component['version']['asset']['versions'])
+    new_length = len(asset['versions'])
 
     assert length + 1 == new_length
