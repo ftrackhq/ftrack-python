@@ -122,7 +122,7 @@ def test_paging(session, mocker):
     mocker.patch.object(session, '_call', wraps=session._call)
 
     page_size = 5
-    query = session.query('User', page_size=page_size)
+    query = session.query('User limit 50', page_size=page_size)
     records = query.all()
 
     assert session._call.call_count == (
