@@ -69,7 +69,7 @@ class Session(object):
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=True, schema_cache_path=None,
+        auto_connect_event_hub=None, schema_cache_path=None,
         plugin_arguments=None
     ):
         '''Initialise session.
@@ -230,10 +230,11 @@ class Session(object):
         self._event_hub = ftrack_api.event.hub.EventHub(
             self._server_url,
             self._api_user,
-            self._api_key
+            self._api_key,
         )
 
-        if auto_connect_event_hub:
+
+        if auto_connect_event_hub in (None, True):
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
             self._auto_connect_event_hub_thread = threading.Thread(
@@ -241,6 +242,12 @@ class Session(object):
             )
             self._auto_connect_event_hub_thread.daemon = True
             self._auto_connect_event_hub_thread.start()
+
+        # To help with migration from auto_connect_event_hub default changing
+        # from True to False.
+        self._event_hub._deprecation_warning_auto_connect = (
+            auto_connect_event_hub is None
+        )
 
         # Register to auto-close session on exit.
         atexit.register(self.close)
@@ -803,8 +810,9 @@ class Session(object):
 
         # Merge entities into local cache and return merged entities.
         data = []
+        merged = dict()
         for entity in results[0]['data']:
-            data.append(self.merge(entity))
+            data.append(self._merge_recursive(entity, merged))
 
         return data, results[0]['metadata']
 
@@ -864,6 +872,48 @@ class Session(object):
 
         else:
             return value
+
+    def _merge_recursive(self, entity, merged=None):
+        '''Merge *entity* and all its attributes recursivly.'''
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
+
+        if merged is None:
+            merged = {}
+
+        attached = self.merge(entity, merged)
+
+        for attribute in entity.attributes:
+            # Remote attributes.
+            remote_value = attribute.get_remote_value(entity)
+
+            if isinstance(
+                remote_value,
+                (
+                    ftrack_api.entity.base.Entity,
+                    ftrack_api.collection.Collection,
+                    ftrack_api.collection.MappedCollectionProxy
+                )
+            ):
+                log_debug and self.logger.debug(
+                    'Merging remote value for attribute {0}.'.format(attribute)
+                )
+
+                if isinstance(remote_value, ftrack_api.entity.base.Entity):
+                    self._merge_recursive(remote_value, merged=merged)
+
+                elif isinstance(
+                    remote_value, ftrack_api.collection.Collection
+                ):
+                    for entry in remote_value:
+                        self._merge_recursive(entry, merged=merged)
+
+                elif isinstance(
+                    remote_value, ftrack_api.collection.MappedCollectionProxy
+                ):
+                    for entry in remote_value.collection:
+                        self._merge_recursive(entry, merged=merged)
+
+        return attached
 
     def _merge_entity(self, entity, merged=None):
         '''Merge *entity* into session returning merged entity.
