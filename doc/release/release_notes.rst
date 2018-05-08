@@ -24,6 +24,13 @@ Release Notes
 
         .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
 
+    .. change:: new
+        :tags: session, events
+
+        Added new events :ref`ftrack.api.session.ready` and
+        :ref:`ftrack.api.session.reset` which can be used to perform operations
+        after the session is ready or has been reset, respectively.
+
     .. change:: fixed
         :tags: documentation
 

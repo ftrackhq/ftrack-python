@@ -92,3 +92,46 @@ Published whenever a component is removed from a location::
             location_id='07b82a97-8cf9-11e3-9383-20c9d081909b'
         )
     )
+
+.. _event_list/ftrack.api.session.ready:
+
+ftrack.api.session.ready
+========================
+
+:ref:`Synchronous <handling_events/publishing/synchronously>`. Published after
+a :class:`~ftrack_api.session.Session` has been initialized and
+is ready to be used::
+
+    Event(
+        topic='ftrack.api.session.ready',
+        data=dict(
+            session=<Session instance>,
+        )
+    )
+
+.. warning::
+
+    Since the event is synchronous and blocking, avoid doing any unnecessary
+    work as it will slow down session initialization.
+
+.. seealso::
+
+    Also see example usage in :download:`example_plugin_using_session.py
+    </resource/example_plugin_using_session.py>`.
+
+
+.. _event_list/ftrack.api.session.reset:
+
+ftrack.api.session.reset
+========================
+
+:ref:`Synchronous <handling_events/publishing/synchronously>`. Published after
+a :class:`~ftrack_api.session.Session` has been reset and is ready to be used
+again::
+
+    Event(
+        topic='ftrack.api.session.reset',
+        data=dict(
+            session=<Session instance>,
+        )
+    )
