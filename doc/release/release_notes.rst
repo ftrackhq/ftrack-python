@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.6.0
+    :date: 2018-05-17
 
     .. change:: new
         :tags: depreciation, events
