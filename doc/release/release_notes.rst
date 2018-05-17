@@ -31,6 +31,11 @@ Release Notes
         :ref:`event_list/ftrack.location.component-added` and
         :ref:`event_list/ftrack.location.component-removed`.
 
+    .. change:: fixed
+        :tags: events
+
+        Pyparsing is causing random errors in a threaded environment.
+
 .. release:: 1.5.0
     :date: 2018-04-19
 
