@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: session, events
+
+        Added new events :ref`ftrack.api.session.ready` and
+        :ref:`ftrack.api.session.reset` which can be used to perform operations
+        after the session is ready or has been reset, respectively.
+
 .. release:: 1.6.0
     :date: 2018-05-17
 
@@ -24,13 +33,6 @@ Release Notes
         set to True.
 
         .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
-
-    .. change:: new
-        :tags: session, events
-
-        Added new events :ref`ftrack.api.session.ready` and
-        :ref:`ftrack.api.session.reset` which can be used to perform operations
-        after the session is ready or has been reset, respectively.
 
     .. change:: fixed
         :tags: documentation
