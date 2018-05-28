@@ -1408,3 +1408,18 @@ def test_query_nested2(session, get_versions):
     new_length = len(versions)
 
     assert length + 1 == new_length
+
+
+def test_session_ready_reset_events(mocker):
+    '''Session ready and reset events.'''
+    plugin_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'fixture', 'plugin')
+    )
+    session = ftrack_api.Session(plugin_paths=[plugin_path])
+
+    assert session._test_called_events['ftrack.api.session.ready'] is 1
+    assert session._test_called_events['ftrack.api.session.reset'] is 0
+
+    session.reset()
+    assert session._test_called_events['ftrack.api.session.ready'] is 1
+    assert session._test_called_events['ftrack.api.session.reset'] is 1
