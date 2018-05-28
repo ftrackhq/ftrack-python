@@ -5,6 +5,7 @@ import ftrack_api.session
 
 
 def register_with_session_ready(event):
+    '''Called when session is ready to be used.'''
     logger = logging.getLogger('com.example.example-plugin')
     logger.debug('Session ready.')
     session = event['data']['session']
