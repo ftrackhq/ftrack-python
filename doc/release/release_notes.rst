@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.6.0
+    :date: 2018-05-17
 
     .. change:: new
         :tags: depreciation, events
@@ -37,6 +38,11 @@ Release Notes
         Event payload not same as what is being emitted for
         :ref:`event_list/ftrack.location.component-added` and
         :ref:`event_list/ftrack.location.component-removed`.
+
+    .. change:: fixed
+        :tags: events
+
+        Pyparsing is causing random errors in a threaded environment.
 
 .. release:: 1.5.0
     :date: 2018-04-19
