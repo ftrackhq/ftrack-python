@@ -278,6 +278,15 @@ class Session(object):
         ftrack_api._centralized_storage_scenario.register(self)
 
         self._configure_locations()
+        self.event_hub.publish(
+            ftrack_api.event.base.Event(
+                topic='ftrack.api.session.ready',
+                data=dict(
+                    session=self
+                )
+            ),
+            synchronous=True
+        )
 
     def __enter__(self):
         '''Return session as context manager.'''
@@ -434,6 +443,16 @@ class Session(object):
 
         # Re-configure certain session aspects that may be dependant on cache.
         self._configure_locations()
+
+        self.event_hub.publish(
+            ftrack_api.event.base.Event(
+                topic='ftrack.api.session.reset',
+                data=dict(
+                    session=self
+                )
+            ),
+            synchronous=True
+        )
 
     def auto_populating(self, auto_populate):
         '''Temporarily set auto populate to *auto_populate*.
