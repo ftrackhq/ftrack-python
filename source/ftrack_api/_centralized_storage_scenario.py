@@ -563,11 +563,11 @@ class ActivateCentralizedStorageScenario(object):
                 reconstructing=True
             )
 
-            if sys.platform == 'darwin':
+            if 'darwin' in sys.platform:
                 prefix = mount_points['osx']
-            elif sys.platform == 'linux2':
+            elif 'linux' in sys.platform:
                 prefix = mount_points['linux']
-            elif sys.platform == 'win32':
+            elif 'win' in sys.platform:
                 prefix = mount_points['windows']
             else:
                 raise ftrack_api.exception.LocationError(
@@ -594,11 +594,11 @@ class ActivateCentralizedStorageScenario(object):
         mount_points = location_data['accessor']['mount_points']
 
         prefix = None
-        if sys.platform == 'darwin':
+        if 'darwin' in sys.platform:
             prefix = mount_points['osx']
-        elif sys.platform == 'linux2':
+        elif 'linux' in sys.platform:
             prefix = mount_points['linux']
-        elif sys.platform == 'win32':
+        elif 'win' in sys.platform:
             prefix = mount_points['windows']
 
         if not prefix:
