@@ -9,6 +9,52 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: session, events
+
+        Added new events :ref`ftrack.api.session.ready` and
+        :ref:`ftrack.api.session.reset` which can be used to perform operations
+        after the session is ready or has been reset, respectively.
+
+.. release:: 1.6.0
+    :date: 2018-05-17
+
+    .. change:: new
+        :tags: depreciation, events
+
+        In version 2.0.0 of the `ftrack-python-api` the default behavior for
+        the `ftrack_api.Session` class will change for the argument
+        `auto_connect_event_hub`, the default value will switch from True to False.
+
+        A warning will now be emitted if async events are published or
+        subscribed to without auto_connect_event_hub has not explicitly been
+        set to True.
+
+        .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Event payload not same as what is being emitted for
+        :ref:`event_list/ftrack.location.component-added` and
+        :ref:`event_list/ftrack.location.component-removed`.
+
+    .. change:: fixed
+        :tags: events
+
+        Pyparsing is causing random errors in a threaded environment.
+
+.. release:: 1.5.0
+    :date: 2018-04-19
+
+    .. change:: fixed
+       :tags: session, cache
+
+       Cached entities not updated correctly when fetched in a nested
+       query.
+
 .. release:: 1.4.0
     :date: 2018-02-05
 
