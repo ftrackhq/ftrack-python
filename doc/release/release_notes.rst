@@ -12,7 +12,7 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: new
+    .. change:: fixed
         :tags: session, events
 
         Session hub autoconnect breaks due to not intialised variable.
