@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: session, events
+
+        Session hub autoconnect breaks due to not intialised variable.
+
 .. release:: Upcoming
 
     .. change:: new

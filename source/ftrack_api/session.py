@@ -233,7 +233,7 @@ class Session(object):
             self._api_key,
         )
 
-
+        self._auto_connect_event_hub_thread = None
         if auto_connect_event_hub in (None, True):
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
@@ -405,7 +405,8 @@ class Session(object):
 
         try:
             self.event_hub.disconnect()
-            self._auto_connect_event_hub_thread.join()
+            if self._auto_connect_event_hub_thread:
+                self._auto_connect_event_hub_thread.join()
         except ftrack_api.exception.EventHubConnectionError:
             pass
 
