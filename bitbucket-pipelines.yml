@@ -2,19 +2,20 @@
 
 pipelines:
   default:
-    - step:
-        name: python-2.7.11
-        image: python:2.7.11
-        caches:
-          - pip
-        script:
-          - python setup.py test
+    - parallel:  
+      - step:
+          name: python-2.7.11
+          image: python:2.7.11
+          caches:
+            - pip
+          script:
+            - python setup.py test
 
-    - step:
-        name: python-3.6.3
-        image: python:3.6.3
-        caches:
-          - pip
-        script:
-          - export FTRACK_SERVER=$SERVER_TWO
-          - python setup.py test
+      - step:
+          name: python-3.6.3
+          image: python:3.6.3
+          caches:
+            - pip
+          script:
+            - export FTRACK_SERVER=$SERVER_TWO
+            - python setup.py test
