@@ -16,4 +16,5 @@ pipelines:
         caches:
           - pip
         script:
+          - export FTRACK_SERVER=$SERVER_TWO
           - python setup.py test
