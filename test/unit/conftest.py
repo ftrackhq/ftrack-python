@@ -116,10 +116,17 @@ def video_path():
 
 
 @pytest.fixture()
-def session():
+def session(request):
     '''Return session instance.'''
-    return ftrack_api.Session()
+    session = ftrack_api.Session()
 
+    def cleanup():
+        session.close()
+
+    request.addfinalizer(cleanup)
+
+    return session
+    
 
 @pytest.fixture()
 def unique_name():
