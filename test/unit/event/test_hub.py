@@ -223,14 +223,9 @@ def test_connect_missing_required_transport(session, mocker, caplog):
 
     with pytest.raises(ftrack_api.exception.EventHubConnectionError):
         event_hub.connect()
-
-    if not isinstance(caplog.records, list):
-        logs = caplog.records()
-    else:
-        logs = caplog.records
-
+    
     assert (
-        'Server does not support websocket sessions.' in str(logs[-1].exc_info)
+        'Server does not support websocket sessions.' in str(caplog.text())
     )
 
 
