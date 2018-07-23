@@ -19,6 +19,15 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+
+        Private method :meth:`Session._entity_reference` has been converted to
+        a public method, :meth:`Session.entity_reference`.
+
+        The private method will continue to work, but a pending deprecation
+        warning will be issued when used. The private method will be removed
+        entirely in version 2.0.
+
     .. change:: new
         :tags: session, events
 
