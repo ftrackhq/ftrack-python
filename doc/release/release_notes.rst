@@ -9,14 +9,6 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-
-.. release:: Upcoming
-
-    .. change:: fixed
-        :tags: session, events
-
-        Session hub autoconnect breaks due to not intialised variable.
-
 .. release:: Upcoming
 
     .. change:: changed
@@ -34,6 +26,12 @@ Release Notes
         Added new events :ref`ftrack.api.session.ready` and
         :ref:`ftrack.api.session.reset` which can be used to perform operations
         after the session is ready or has been reset, respectively.
+
+    .. change:: fixed
+        :tags: session, events
+
+        :meth:`Session.close` raises an exception if event hub was explicitly
+        connected after session initialization.
 
 .. release:: 1.6.0
     :date: 2018-05-17
