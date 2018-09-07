@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session, events
+
+        Meta events for event hub connect and disconnect does not include
+        source.
+
 .. release:: 1.7.0
     :date: 2018-07-27
 
