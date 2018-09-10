@@ -1,5 +1,6 @@
 # Test configuration for bitbucket pipelines.
-
+options:
+  max-time: 20
 definitions:
   services:
     ftrack:
