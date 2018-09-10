@@ -19,7 +19,7 @@ pipelines:
           services:
             - ftrack
           script:
-            - sleep 10
+            - bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' 127.0.0.1)" != "200" ]]; do sleep 1; done'
             - python setup.py test
       - step:
           name: run tests against python 3.6.x
@@ -29,5 +29,5 @@ pipelines:
           services:
             - ftrack
           script:
-            - sleep 10
+            - bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' 127.0.0.1)" != "200" ]]; do sleep 1; done'
             - python setup.py test
