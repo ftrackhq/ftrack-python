@@ -4,7 +4,7 @@ definitions:
   services:
     ftrack:
       image:
-        name: ftrackdocker/test-server:3.6.4
+        name: ftrackdocker/test-server:latest
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
         email: $DOCKER_HUB_EMAIL
@@ -19,4 +19,13 @@ pipelines:
           services:
             - ftrack
           script:
+            - sleep 10
+            - python setup.py test
+      - step:
+          name: run tests against python 3.6.x
+          image: python:3.6
+          caches:
+            - pip
+          script:
+            - sleep 10
             - python setup.py test
