@@ -26,6 +26,8 @@ pipelines:
           image: python:3.6
           caches:
             - pip
+          services:
+            - ftrack
           script:
             - sleep 10
             - python setup.py test
