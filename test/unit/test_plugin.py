@@ -200,6 +200,5 @@ def test_discover_plugin_varying_signatures(temporary_path, capsys):
 
 
     output, error = capsys.readouterr()
-    splitted_output = output.split('\n')
-    assert '(True,)' == splitted_output[0].strip()
-    assert '(True,) {\'b\': True}' == splitted_output[1].strip()
+    assert '(True,)' in output
+    assert '(True,) {\'b\': True}' in output
