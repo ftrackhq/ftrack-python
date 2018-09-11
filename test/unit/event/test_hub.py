@@ -243,6 +243,13 @@ def test_disconnect_without_unsubscribing(event_hub):
     assert event_hub.connected is False
 
 
+def test_close_connection_from_manually_connected_hub(session_no_autoconnect_hub):
+    '''Close connection from manually connected hub.'''
+    session_no_autoconnect_hub.event_hub.connect()
+    session_no_autoconnect_hub.close()
+    assert session_no_autoconnect_hub.event_hub.connected is False
+
+
 def test_disconnect_when_not_connected(session):
     '''Fail to disconnect when not connected'''
     event_hub = ftrack_api.event.hub.EventHub(
