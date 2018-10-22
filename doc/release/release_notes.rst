@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session, location
+
+        Restore missing context argument to 
+        :meth:`ResourceIdentifierTransformer.decode` 
+        in :meth:`Location.get_resource_identifier`.
+
 .. release:: 1.7.0
     :date: 2018-07-27
 
