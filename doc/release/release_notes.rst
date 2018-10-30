@@ -14,7 +14,7 @@ Release Notes
     .. change:: fixed
         :tags: session, location
 
-        Restore missing context argument to 
+        Missing context argument to 
         :meth:`ResourceIdentifierTransformer.decode` 
         in :meth:`Location.get_resource_identifier`.
 
