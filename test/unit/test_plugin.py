@@ -180,8 +180,6 @@ def test_discover_plugin_with_specific_signature(
 def test_discover_plugin_varying_signatures(temporary_path, capsys):
     '''Discover multiple plugins with varying signatures.'''
 
-
-
     with open(os.path.join(temporary_path, 'plugin_a.py'), 'w') as file_object:
         file_object.write(textwrap.dedent('''
             from __future__ import print_function
@@ -202,5 +200,5 @@ def test_discover_plugin_varying_signatures(temporary_path, capsys):
 
 
     output, error = capsys.readouterr()
-
-    assert '(True,)\n(True,) {\'b\': True}' in output
+    assert '(True,)' in output
+    assert '(True,) {\'b\': True}' in output
