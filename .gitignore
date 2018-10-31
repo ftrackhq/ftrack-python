@@ -35,3 +35,8 @@ Thumbs.db
 .idea/
 .history/
 .vscode/
+
+# Testing
+.cache
+test-reports/*
+.pytest_cache/*
