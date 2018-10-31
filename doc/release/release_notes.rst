@@ -11,12 +11,37 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: session, location
+
+        Missing context argument to 
+        :meth:`ResourceIdentifierTransformer.decode` 
+        in :meth:`Location.get_resource_identifier`.
+
+.. release:: 1.7.0
+    :date: 2018-07-27
+
     .. change:: new
         :tags: session, events
 
-        Added new events :ref`ftrack.api.session.ready` and
-        :ref:`ftrack.api.session.reset` which can be used to perform operations
-        after the session is ready or has been reset, respectively.
+        Added new events :ref:`event_list/ftrack.api.session.ready` and
+        :ref:`event_list/ftrack.api.session.reset` which can be used to perform
+        operations after the session is ready or has been reset, respectively.
+
+    .. change:: changed
+
+        Private method :meth:`Session._entity_reference` has been converted to
+        a public method, :meth:`Session.entity_reference`.
+
+        The private method will continue to work, but a pending deprecation
+        warning will be issued when used. The private method will be removed
+        entirely in version 2.0.
+
+    .. change:: fixed
+        :tags: session, events
+
+        :meth:`Session.close` raises an exception if event hub was explicitly
+        connected after session initialization.
 
 .. release:: 1.6.0
     :date: 2018-05-17
@@ -25,12 +50,13 @@ Release Notes
         :tags: depreciation, events
 
         In version 2.0.0 of the `ftrack-python-api` the default behavior for
-        the `ftrack_api.Session` class will change for the argument
-        `auto_connect_event_hub`, the default value will switch from True to False.
+        the :class:`Session` class will change for the argument
+        *auto_connect_event_hub*, the default value will switch from *True* to
+        *False*.
 
         A warning will now be emitted if async events are published or
-        subscribed to without auto_connect_event_hub has not explicitly been
-        set to True.
+        subscribed to without *auto_connect_event_hub* has not explicitly been
+        set to *True*.
 
         .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
 

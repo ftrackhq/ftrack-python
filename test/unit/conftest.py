@@ -129,6 +129,12 @@ def session(request):
     
 
 @pytest.fixture()
+def session_no_autoconnect_hub():
+    '''Return session instance not auto connected to hub.'''
+    return ftrack_api.Session(auto_connect_event_hub=False)
+
+
+@pytest.fixture()
 def unique_name():
     '''Return a unique name.'''
     return 'test-{0}'.format(uuid.uuid4())
