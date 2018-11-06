@@ -256,7 +256,7 @@ def test_add_components_already_in_location(
 ):
     '''Fail to add components already in location.'''
     new_location.add_component(new_component, origin_location)
-    """
+
     another_new_component = session.create_component(
         temporary_file, location=None
     )
@@ -265,7 +265,6 @@ def test_add_components_already_in_location(
         new_location.add_components(
             [another_new_component, new_component], origin_location
         )
-    """
 
 def test_add_component_when_data_already_exists(
     new_location, new_component, origin_location
