@@ -34,10 +34,7 @@ def primary_key(entity):
                 'entity {1!r}.'.format(name, entity)
             )
 
-
-        # This is something I am not happy about.
-        # COMPAT!
-
+        # todo: Compatiblity fix, review for better implementation.
         primary_key[native_str(name)] = native_str(value)
 
     return primary_key
