@@ -118,7 +118,11 @@ def video_path():
 @pytest.fixture()
 def session(request):
     '''Return session instance.'''
-    session = ftrack_api.Session()
+    session = ftrack_api.Session(
+        schema_cache_path=tempfile.mkdtemp(
+            suffix='ftrack_cache'
+        )
+    )
 
     def cleanup():
         session.close()
