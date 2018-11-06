@@ -266,6 +266,7 @@ def test_add_components_already_in_location(
             [another_new_component, new_component], origin_location
         )
 
+
 def test_add_component_when_data_already_exists(
     new_location, new_component, origin_location
 ):

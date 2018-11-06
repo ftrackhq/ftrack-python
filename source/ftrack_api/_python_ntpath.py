@@ -5,7 +5,9 @@
 Instead of importing this module directly, import os and refer to this
 module as os.path.
 """
+from __future__ import unicode_literals
 
+from builtins import str
 from builtins import zip
 import os
 import sys

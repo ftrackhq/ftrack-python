@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2016 ftrack
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from builtins import str
 from builtins import object
