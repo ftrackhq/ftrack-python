@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: session, events
+
+        Meta events for event hub connect and disconnect does not include
+        source.
+
+    .. change:: fixed
         :tags: session, location
 
         Missing context argument to 

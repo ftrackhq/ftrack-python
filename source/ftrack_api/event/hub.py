@@ -908,6 +908,7 @@ class EventHub(object):
         if code_name == 'connect':
             self.logger.debug('Connected to event server.')
             event = ftrack_api.event.base.Event('ftrack.meta.connected')
+            self._prepare_event(event)
             self._event_queue.put(event)
 
         elif code_name == 'disconnect':
@@ -928,6 +929,7 @@ class EventHub(object):
 
             if not self.connected:
                 event = ftrack_api.event.base.Event('ftrack.meta.disconnected')
+                self._prepare_event(event)
                 self._event_queue.put(event)
 
         elif code_name == 'heartbeat':
