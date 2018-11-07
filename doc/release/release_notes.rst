@@ -9,7 +9,6 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-
 .. release:: Upcoming
 
     .. change:: fixed
@@ -17,6 +16,13 @@ Release Notes
 
         Meta events for event hub connect and disconnect does not include
         source.
+
+    .. change:: fixed
+        :tags: session, location
+
+        Missing context argument to 
+        :meth:`ResourceIdentifierTransformer.decode` 
+        in :meth:`Location.get_resource_identifier`.
 
 .. release:: 1.7.0
     :date: 2018-07-27
