@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.7.1
+    :date: 2018-11-13
 
     .. change:: fixed
         :tags: session, events
