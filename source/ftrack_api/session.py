@@ -1717,7 +1717,8 @@ class Session(object):
                             value = attribute.get_local_value(item)
 
                     elif entity_attribute_strategy == 'persisted_only':
-                        value = attribute.get_remote_value(item)
+                        if not attribute.computed:
+                            value = attribute.get_remote_value(item)
 
                     if value is not ftrack_api.symbol.NOT_SET:
                         if isinstance(

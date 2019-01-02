@@ -167,3 +167,9 @@ settings for the file cache:
 And use the updated cache maker for your session::
 
     session = ftrack_api.Session(cache=cache_maker)
+
+.. note::
+
+    For some type of attributes that are computed, long term caching is not
+    recommended and such values will not be encoded with the `persisted_only`
+    strategy.
