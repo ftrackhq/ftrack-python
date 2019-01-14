@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session, events
+
+        Event server connection error is generic,
+        now the actual error information is always shown to users.
+
 .. release:: 1.7.1
     :date: 2018-11-13
 
