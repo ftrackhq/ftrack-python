@@ -181,17 +181,17 @@ class EventHub(object):
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(url, timeout=60)
 
-        except Exception:
+        except Exception as error:
             self.logger.debug(
                 L(
-                    'Error connecting to event server at {0}.',
-                    self.get_server_url()
+                    'Failed to connect to event server at {0}.'
+                    'Error: {1}', (self.get_server_url(), str(error))
                 ),
                 exc_info=1
             )
             raise ftrack_api.exception.EventHubConnectionError(
                 'Failed to connect to event server at {0}.'
-                .format(self.get_server_url())
+                'Error: {1}'.format(self.get_server_url(), str(error))
             )
 
         # Start background processing thread.
