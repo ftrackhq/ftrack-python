@@ -184,8 +184,11 @@ class EventHub(object):
         except Exception as error:
             self.logger.debug(
                 L(
-                    'Failed to connect to event server at {0} with '
-                    'error: "{1}".', (self.get_server_url(), unicode(error))
+                    'Failed to connect to event server at {server_url} with '
+                    'error: "{error}".', **{
+                        'error': unicode(error),
+                        'server_url': self.get_server_url(),
+                    }
                 ),
                 exc_info=1
             )
