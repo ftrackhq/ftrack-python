@@ -184,14 +184,18 @@ class EventHub(object):
         except Exception as error:
             self.logger.debug(
                 L(
-                    'Failed to connect to event server at {0}.'
-                    'Error: {1}', (self.get_server_url(), str(error))
+                    'Failed to connect to event server at {0} with '
+                    'error: "{1}".', (self.get_server_url(), unicode(error))
                 ),
                 exc_info=1
             )
             raise ftrack_api.exception.EventHubConnectionError(
-                'Failed to connect to event server at {0}.'
-                'Error: {1}'.format(self.get_server_url(), str(error))
+                'Failed to connect to event server at {server_url} with '
+                'error: "{error}".',
+                details={
+                    'error': unicode(error),
+                    'server_url': self.get_server_url(),
+                }
             )
 
         # Start background processing thread.
