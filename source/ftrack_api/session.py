@@ -1602,7 +1602,7 @@ class Session(object):
         'private method will be removed in version 2.0.'
     )
     def _call(self, data):
-        '''Make request to server with *data*.
+        '''Make request to server with *data* batch describing the actions.
 
         .. note::
 
@@ -1614,7 +1614,7 @@ class Session(object):
         return self.call(data)
 
     def call(self, data):
-        '''Make request to server with *data*.'''
+        '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'
         headers = {
             'content-type': 'application/json',

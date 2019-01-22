@@ -11,14 +11,20 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: new
-        :tags: session, events
+    .. change:: changed
 
-        Add support for triggering a review session feedback export.
-       
-        .. note::
+        The `delayed_job` method has been deprecated in favour of a direct
+        `Session.call` see  See :ref:`example/sync_with_ldap` for example
+        usage. 
 
-            This requires that you run ftrack 4.2.0 or later.
+    .. change:: changed
+
+        Private method :meth:`Session._call` has been converted to
+        a public method, :meth:`Session.call`.
+
+        The private method will continue to work, but a pending deprecation
+        warning will be issued when used. The private method will be removed
+        entirely in version 2.0.
 
     .. change:: changed
         :tags: session, events
