@@ -1598,9 +1598,8 @@ class Session(object):
         )
 
     @ftrack_api.logging.deprecation_warning(
-        'Session._call is now available as public method '
-        'Session.call. The private method will be removed '
-        'in version 2.0.'
+        'Session._call is now available as public method Session.call. The '
+        'private method will be removed in version 2.0.'
     )
     def _call(self, data):
         '''Make request to server with *data*.
