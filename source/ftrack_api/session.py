@@ -43,6 +43,7 @@ import ftrack_api.structure.origin
 import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
+import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
 
 
@@ -536,7 +537,7 @@ class Session(object):
                 'entity_key': entity.get('id')
             })
 
-        result = self._call(
+        result = self.call(
             [payload]
         )
 
@@ -818,7 +819,7 @@ class Session(object):
         }]
 
         # TODO: When should this execute? How to handle background=True?
-        results = self._call(batch)
+        results = self.call(batch)
 
         # Merge entities into local cache and return merged entities.
         data = []
@@ -1256,7 +1257,7 @@ class Session(object):
 
         # Process batch.
         if batch:
-            result = self._call(batch)
+            result = self.call(batch)
 
             # Clear recorded operations.
             self.recorded_operations.clear()
@@ -1331,7 +1332,7 @@ class Session(object):
 
     def _fetch_server_information(self):
         '''Return server information.'''
-        result = self._call([{'action': 'query_server_information'}])
+        result = self.call([{'action': 'query_server_information'}])
         return result[0]
 
     def _discover_plugins(self, plugin_arguments=None):
@@ -1433,7 +1434,7 @@ class Session(object):
                 'Loading schemas from server due to hash not matching.'
                 'Local: {0!r} != Server: {1!r}', local_schema_hash, server_hash
             ))
-            schemas = self._call([{'action': 'query_schemas'}])[0]
+            schemas = self.call([{'action': 'query_schemas'}])[0]
 
             if schema_cache_path:
                 try:
@@ -1596,7 +1597,24 @@ class Session(object):
             synchronous=True
         )
 
+    @ftrack_api.logging.deprecation_warning(
+        'Session._call is now available as public method '
+        'Session.call. The private method will be removed '
+        'in version 2.0.'
+    )
     def _call(self, data):
+        '''Make request to server with *data*.
+
+        .. note::
+
+            This private method is now available as public method
+            :meth:`entity_reference`. This alias remains for backwards
+            compatibility, but will be removed in version 2.0.
+
+        '''
+        return self.call(data)
+
+    def call(self, data):
         '''Make request to server with *data*.'''
         url = self._server_url + '/api'
         headers = {
@@ -1760,11 +1778,16 @@ class Session(object):
 
         return reference
 
+    @ftrack_api.logging.deprecation_warning(
+        'Session._entity_reference is now available as public method '
+        'Session.entity_reference. The private method will be removed '
+        'in version 2.0.'
+    )
     def _entity_reference(self, entity):
         '''Return entity reference that uniquely identifies *entity*.
 
-        Return a mapping containing the __entity_type__ of the entity along with
-        the key, value pairs that make up it's primary key.
+        Return a mapping containing the __entity_type__ of the entity along
+        with the key, value pairs that make up it's primary key.
 
         .. note::
 
@@ -1773,14 +1796,6 @@ class Session(object):
             compatibility, but will be removed in version 2.0.
 
         '''
-        warnings.warn(
-            (
-                "Session._entity_reference is now available as public method "
-                "Session.entity_reference. The private method will be removed "
-                "in version 2.0."
-            ),
-            PendingDeprecationWarning
-        )
         return self.entity_reference(entity)
 
     def decode(self, string):
@@ -2110,6 +2125,10 @@ class Session(object):
 
         return availabilities
 
+    @ftrack_api.logging.deprecation_warning(
+        'Session.delayed_job has been deprecated in favour of session.call. '
+        'Please refer to the release notes for more information.'
+    )
     def delayed_job(self, job_type):
         '''Execute a delayed job on the server, a `ftrack.entity.job.Job` is returned.
 
@@ -2127,7 +2146,7 @@ class Session(object):
         }
 
         try:
-            result = self._call(
+            result = self.call(
                 [operation]
             )[0]
 
@@ -2164,7 +2183,7 @@ class Session(object):
             )
 
         try:
-            result = self._call([operation])
+            result = self.call([operation])
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
@@ -2266,7 +2285,7 @@ class Session(object):
         }
 
         try:
-            result = self._call([operation])
+            result = self.call([operation])
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
@@ -2306,7 +2325,7 @@ class Session(object):
         }
 
         try:
-            result = self._call([operation])
+            result = self.call([operation])
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
@@ -2352,7 +2371,7 @@ class Session(object):
             )
 
         try:
-            self._call(operations)
+            self.call(operations)
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
@@ -2400,7 +2419,7 @@ class Session(object):
             )
 
         try:
-            self._call(operations)
+            self.call(operations)
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
             if 'Invalid action u\'send_review_session_invite\'' in error.message:
