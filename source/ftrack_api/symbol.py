@@ -73,3 +73,6 @@ CHUNK_SIZE = 8192
 
 #: Symbol representing syncing users with ldap
 JOB_SYNC_USERS_LDAP = Symbol('SYNC_USERS_LDAP')
+
+#: Symbol representing exporting review session feedback.
+JOB_EXPORT_REVIEW_SESSION_FEEDBACK = Symbol('EXPORT_REVIEW_SESSION_FEEDBACK')

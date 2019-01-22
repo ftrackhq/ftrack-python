@@ -11,6 +11,15 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: session, events
+
+        Add support for triggering a review session feedback export.
+       
+        .. note::
+
+            This requires that you run ftrack 4.2.0 or later.
+
     .. change:: changed
         :tags: session, events
 
