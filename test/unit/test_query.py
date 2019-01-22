@@ -154,7 +154,7 @@ def test_paging_respects_limit_smaller_than_page_size(session, mocker):
     records = query.all()
 
     assert session.call.call_count == 1
-    session.call.assertcalled_once_with(
+    session.call.assert_called_once_with(
         [{
             'action': 'query',
             'expression': 'select id from User offset 0 limit 10'
