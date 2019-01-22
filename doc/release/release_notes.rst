@@ -14,8 +14,8 @@ Release Notes
     .. change:: changed
 
         The `delayed_job` method has been deprecated in favour of a direct
-        `Session.call` see  See :ref:`example/sync_with_ldap` for example
-        usage. 
+        `Session.call`. See :ref:`example/sync_with_ldap` for example
+        usage.
 
     .. change:: changed
 
