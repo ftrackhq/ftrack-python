@@ -12,6 +12,21 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+
+        The `delayed_job` method has been deprecated in favour of a direct
+        `Session.call`. See :ref:`example/sync_with_ldap` for example
+        usage.
+
+    .. change:: changed
+
+        Private method :meth:`Session._call` has been converted to
+        a public method, :meth:`Session.call`.
+
+        The private method will continue to work, but a pending deprecation
+        warning will be issued when used. The private method will be removed
+        entirely in version 2.0.
+
+    .. change:: changed
         :tags: session, events
 
         Event server connection error is too generic,
