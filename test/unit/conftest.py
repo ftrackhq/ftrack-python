@@ -503,9 +503,9 @@ def mocked_schemas():
                 'type': 'string',
             }
         },
-        'computed': {
+        'computed': [
             'computed_value'
-        },
+        ],
         'immutable': [
             'id'
         ],
