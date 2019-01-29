@@ -612,6 +612,31 @@ def test_encode_entity_using_only_set_attributes_strategy(
     ''').replace('\n', '')
 
 
+def test_encode_computed_attribute_using_persisted_only_attributes_strategy(
+    mocked_schema_session
+):
+    '''Encode computed attribute, "persisted_only" entity_attribute_strategy.'''
+    new_bar = mocked_schema_session._create(
+        'Bar',
+        {
+            'name': 'myBar',
+            'id': 'bar_unique_id',
+            'computed_value': 'FOO'
+        },
+        reconstructing=True
+    )
+
+    encoded = mocked_schema_session.encode(
+        new_bar, entity_attribute_strategy='persisted_only'
+    )
+
+    assert encoded == textwrap.dedent('''
+        {"__entity_type__": "Bar",
+         "id": "bar_unique_id",
+         "name": "myBar"}
+    ''').replace('\n', '')
+
+
 def test_encode_entity_using_only_modified_attributes_strategy(
     mocked_schema_session
 ):
