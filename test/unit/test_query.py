@@ -119,13 +119,13 @@ def test_first_with_prefetched_data(session):
 
 def test_paging(session, mocker):
     '''Page through results.'''
-    mocker.patch.object(session, '_call', wraps=session._call)
+    mocker.patch.object(session, 'call', wraps=session.call)
 
     page_size = 5
     query = session.query('User limit 50', page_size=page_size)
     records = query.all()
 
-    assert session._call.call_count == (
+    assert session.call.call_count == (
         math.ceil(len(records) / float(page_size))
     )
 
@@ -134,27 +134,27 @@ def test_paging_respects_offset_and_limit(session, mocker):
     '''Page through results respecting offset and limit.'''
     users = session.query('User').all()
 
-    mocker.patch.object(session, '_call', wraps=session._call)
+    mocker.patch.object(session, 'call', wraps=session.call)
 
     page_size = 6
     query = session.query('User offset 2 limit 8', page_size=page_size)
     records = query.all()
 
-    assert session._call.call_count == 2
+    assert session.call.call_count == 2
     assert len(records) == 8
     assert records == users[2:10]
 
 
 def test_paging_respects_limit_smaller_than_page_size(session, mocker):
     '''Use initial limit when less than page size.'''
-    mocker.patch.object(session, '_call', wraps=session._call)
+    mocker.patch.object(session, 'call', wraps=session.call)
 
     page_size = 100
     query = session.query('User limit 10', page_size=page_size)
     records = query.all()
 
-    assert session._call.call_count == 1
-    session._call.assert_called_once_with(
+    assert session.call.call_count == 1
+    session.call.assert_called_once_with(
         [{
             'action': 'query',
             'expression': 'select id from User offset 0 limit 10'

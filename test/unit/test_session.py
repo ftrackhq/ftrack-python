@@ -328,7 +328,7 @@ def test_ignore_in_create_entity_payload_values_set_to_not_set(
     mocker, unique_name, session
 ):
     '''Ignore in commit, created entity data set to NOT_SET'''
-    mocked = mocker.patch.object(session, '_call')
+    mocked = mocker.patch.object(session, 'call')
 
     # Should ignore 'email' attribute in payload.
     new_user = session.create(
@@ -344,7 +344,7 @@ def test_ignore_operation_that_modifies_attribute_to_not_set(
     mocker, session, user
 ):
     '''Ignore in commit, operation that sets attribute value to NOT_SET'''
-    mocked = mocker.patch.object(session, '_call')
+    mocked = mocker.patch.object(session, 'call')
 
     # Should result in no call to server.
     user['email'] = ftrack_api.symbol.NOT_SET
@@ -355,7 +355,7 @@ def test_ignore_operation_that_modifies_attribute_to_not_set(
 
 def test_operation_optimisation_on_commit(session, mocker):
     '''Optimise operations on commit.'''
-    mocked = mocker.patch.object(session, '_call')
+    mocked = mocker.patch.object(session, 'call')
 
     user_a = session.create('User', {'username': 'bob'})
     user_a['username'] = 'foo'
@@ -830,7 +830,7 @@ def test_rollback_entity_deletion(session, new_user):
 
 def test_get_entity_bypassing_cache(session, user, mocker):
     '''Retrieve an entity by type and id bypassing cache.'''
-    mocker.patch.object(session, '_call', wraps=session._call)
+    mocker.patch.object(session, 'call', wraps=session.call)
 
     session.cache.remove(
         session.cache_key_maker.key(ftrack_api.inspection.identity(user))
@@ -845,7 +845,7 @@ def test_get_entity_bypassing_cache(session, user, mocker):
     assert matching == user
 
     # Check cache was bypassed and server was called.
-    assert session._call.called
+    assert session.call.called
 
 
 def test_get_entity_from_cache(cache, task, mocker):
@@ -856,7 +856,7 @@ def test_get_entity_from_cache(cache, task, mocker):
     session.merge(task)
 
     # Disable server calls.
-    mocker.patch.object(session, '_call')
+    mocker.patch.object(session, 'call')
 
     # Retrieve entity from cache.
     entity = session.get(*ftrack_api.inspection.identity(task))
@@ -866,7 +866,7 @@ def test_get_entity_from_cache(cache, task, mocker):
     assert entity is not task
 
     # Check that no call was made to server.
-    assert not session._call.called
+    assert not session.call.called
 
 
 def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
@@ -884,7 +884,7 @@ def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
     ).one()
 
     # Disable server calls.
-    mocker.patch.object(session, '_call')
+    mocker.patch.object(session, 'call')
 
     # Retrieve entity from cache.
     entity = session.get(*ftrack_api.inspection.identity(new_project_tree))
@@ -905,7 +905,7 @@ def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
                         assert resource is not ftrack_api.symbol.NOT_SET
 
     # Check that no call was made to server.
-    assert not session._call.called
+    assert not session.call.called
 
 
 def test_get_metadata_from_cache(session, mocker, cache, new_task):
@@ -923,7 +923,7 @@ def test_get_metadata_from_cache(session, mocker, cache, new_task):
     ).all()
 
     # Disable server calls.
-    mocker.patch.object(fresh_session, '_call')
+    mocker.patch.object(fresh_session, 'call')
 
     # Retrieve entity from cache.
     entity = fresh_session.get(*ftrack_api.inspection.identity(new_task))
@@ -937,7 +937,7 @@ def test_get_metadata_from_cache(session, mocker, cache, new_task):
         metadata = entity['metadata']
         assert metadata['key'] == 'value'
 
-    assert not fresh_session._call.called
+    assert not fresh_session.call.called
 
 
 def test_merge_circular_reference(cache, temporary_file):
@@ -1037,7 +1037,7 @@ def test_load_schemas_from_valid_cache(
     '''Load schemas from cache.'''
     expected_schemas = session._load_schemas(temporary_valid_schema_cache)
 
-    mocked = mocker.patch.object(session, '_call')
+    mocked = mocker.patch.object(session, 'call')
     schemas = session._load_schemas(temporary_valid_schema_cache)
 
     assert schemas == expected_schemas
@@ -1048,7 +1048,7 @@ def test_load_schemas_from_server_when_cache_invalid(
     mocker, session, temporary_invalid_schema_cache
 ):
     '''Load schemas from server when cache invalid.'''
-    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    mocked = mocker.patch.object(session, 'call', wraps=session.call)
 
     session._load_schemas(temporary_invalid_schema_cache)
     assert mocked.called
@@ -1064,7 +1064,7 @@ def test_load_schemas_from_server_when_cache_outdated(
     })
     session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
 
-    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    mocked = mocker.patch.object(session, 'call', wraps=session.call)
     session._load_schemas(temporary_valid_schema_cache)
 
     assert mocked.called
@@ -1090,7 +1090,7 @@ def test_load_schemas_from_server_not_reporting_schema_hash(
     # Cache still written even if hash not reported.
     assert mocked_write.called
 
-    mocked = mocker.patch.object(session, '_call', wraps=session._call)
+    mocked = mocker.patch.object(session, 'call', wraps=session.call)
     session._load_schemas(temporary_valid_schema_cache)
 
     # No hash reported by server so cache should have been bypassed.
@@ -1101,13 +1101,13 @@ def test_load_schemas_bypassing_cache(
     mocker, session, temporary_valid_schema_cache
 ):
     '''Load schemas bypassing cache when set to False.'''
-    with mocker.patch.object(session, '_call', wraps=session._call):
+    with mocker.patch.object(session, 'call', wraps=session.call):
 
         session._load_schemas(temporary_valid_schema_cache)
-        assert session._call.call_count == 1
+        assert session.call.call_count == 1
 
         session._load_schemas(False)
-        assert session._call.call_count == 2
+        assert session.call.call_count == 2
 
 
 def test_get_tasks_widget_url(session):
