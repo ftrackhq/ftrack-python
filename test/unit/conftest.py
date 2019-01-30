@@ -498,8 +498,14 @@ def mocked_schemas():
             },
             'name': {
                 'type': 'string'
+            },
+            'computed_value': {
+                'type': 'string',
             }
         },
+        'computed': [
+            'computed_value'
+        ],
         'immutable': [
             'id'
         ],

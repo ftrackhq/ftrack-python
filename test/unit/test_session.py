@@ -612,6 +612,31 @@ def test_encode_entity_using_only_set_attributes_strategy(
     ''').replace('\n', '')
 
 
+def test_encode_computed_attribute_using_persisted_only_attributes_strategy(
+    mocked_schema_session
+):
+    '''Encode computed attribute, "persisted_only" entity_attribute_strategy.'''
+    new_bar = mocked_schema_session._create(
+        'Bar',
+        {
+            'name': 'myBar',
+            'id': 'bar_unique_id',
+            'computed_value': 'FOO'
+        },
+        reconstructing=True
+    )
+
+    encoded = mocked_schema_session.encode(
+        new_bar, entity_attribute_strategy='persisted_only'
+    )
+
+    assert encoded == textwrap.dedent('''
+        {"__entity_type__": "Bar",
+         "id": "bar_unique_id",
+         "name": "myBar"}
+    ''').replace('\n', '')
+
+
 def test_encode_entity_using_only_modified_attributes_strategy(
     mocked_schema_session
 ):
@@ -958,7 +983,7 @@ def test_read_schemas_from_cache(
     session, temporary_valid_schema_cache
 ):
     '''Read valid content from schema cache.'''
-    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+    expected_hash = 'a98d0627b5e33966e43e1cb89b082db7'
 
     schemas, hash_ = session._read_schemas_from_cache(
         temporary_valid_schema_cache
@@ -981,7 +1006,7 @@ def test_write_schemas_to_cache(
     session, temporary_valid_schema_cache
 ):
     '''Write valid content to schema cache.'''
-    expected_hash = 'ccf8eae8775640c7d23c93e7bcef4284'
+    expected_hash = 'a98d0627b5e33966e43e1cb89b082db7'
     schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
     session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)

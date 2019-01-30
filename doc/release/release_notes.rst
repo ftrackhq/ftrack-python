@@ -11,6 +11,20 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: session, attribute
+
+        Add new scalar type `object` to factory.
+
+    .. change:: new
+        :tags: session, attribute
+
+        Add support for list of `computed` attributes as part of schema
+        definition. A computed attribute is derived on the server side, and can
+        be time dependentant and differ between users. As such a computed
+        attribute is not suitable for long term encoding and will not be encoded
+        with the `persisted_only` stragey.
+
     .. change:: changed
 
         The `delayed_job` method has been deprecated in favour of a direct
