@@ -193,7 +193,7 @@ class EventHub(object):
             )
 
             error_details = {
-                'error': unicode(error),
+                'error': str(error),
                 'server_url': self.get_server_url()
             }
 
