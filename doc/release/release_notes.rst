@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: documentation
+
+        Event description component-removed report component-added event signature.
+
     .. change:: new
         :tags: session, attribute
 
