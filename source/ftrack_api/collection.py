@@ -382,6 +382,12 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         if entity.entity_type == 'User':
             entity_type = 'user'
 
+        if entity.entity_type == 'ListObject':
+            entity_type = 'listobject'
+
+        if entity.entity_type == 'List':
+            entity_type = 'list'
+
         if entity_type is None:
             raise ValueError(
                 'Entity {!r} not supported.'.format(entity)
