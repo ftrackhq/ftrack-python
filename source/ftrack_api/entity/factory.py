@@ -242,8 +242,11 @@ def _get_entity_configurations(entity):
     if entity.entity_type == 'Asset':
         entity_type = 'asset'
 
-    if entity.entity_type in ('TypedContextList', 'AssetVersionList'):
+    if entity.entity_type in ('TypedContextList', 'AssetVersionList', 'List'):
         entity_type = 'list'
+
+    if entity.entity_type == 'ListObject':
+        entity_type = 'listobject'
 
     if entity_type is None:
         raise ValueError(
