@@ -1632,7 +1632,7 @@ class Session(object):
 
         self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
 
-        self.logger.debug(L('Response: {0!r}', response.text))
+        self.logger.debug('Response: {0!r}', response.text)
         try:
             result = self.decode(response.text)
 

@@ -9,7 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
 .. release:: Upcoming
+
+    .. change:: changed
+        :tags: session
+
+        Remove LazyLogger wrapper from debug call function to ensure errors are properly formatted. 
 
     .. change:: changed
         :tags: session
