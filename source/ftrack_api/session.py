@@ -1641,7 +1641,7 @@ class Session(object):
                 'Server reported error in unexpected format. Raw error was: {0}'
                 .format(response.text)
             )
-            self.logger.error(error_message)
+            self.logger.exception(error_message)
             raise ftrack_api.exception.ServerError(error_message)
 
         else:
@@ -1650,7 +1650,7 @@ class Session(object):
                 error_message = 'Server reported error: {0}({1})'.format(
                     result['exception'], result['content']
                 )
-                self.logger.error(error_message)
+                self.logger.exception(error_message)
                 raise ftrack_api.exception.ServerError(error_message)
 
         return result

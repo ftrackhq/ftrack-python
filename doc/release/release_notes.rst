@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: session
+
+        Ensure errors from server are fully reported with stack trace. 
+
 .. release:: 1.8.0
     :date: 2019-02-21
 
