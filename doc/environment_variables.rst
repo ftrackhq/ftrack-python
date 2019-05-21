@@ -13,7 +13,7 @@ can reference:
 .. envvar:: FTRACK_SERVER
 
     The full url of the ftrack server to connect to. For example
-    "http://mycompany.ftrackapp.com"
+    "https://mycompany.ftrackapp.com"
 
 .. envvar:: FTRACK_API_USER
 

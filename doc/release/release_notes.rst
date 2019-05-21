@@ -11,6 +11,19 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: session
+
+        Ensure errors from server are fully reported with stack trace. 
+
+.. release:: 1.8.0
+    :date: 2019-02-21
+
+    .. change:: fixed
+        :tags: documentation
+
+        Event description component-removed report component-added event signature.
+
     .. change:: new
         :tags: session, attribute
 

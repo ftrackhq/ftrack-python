@@ -86,7 +86,7 @@ ftrack.location.component-removed
 Published whenever a component is removed from a location::
 
     Event(
-        topic='ftrack.location.component-added',
+        topic='ftrack.location.component-removed',
         data=dict(
             component_id='e2dc0524-b576-11d3-9612-080027331d74',
             location_id='07b82a97-8cf9-11e3-9383-20c9d081909b'
