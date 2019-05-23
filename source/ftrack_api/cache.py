@@ -18,7 +18,7 @@ memoisation of function using a global cache and standard key maker.
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
-from past.builtins import basestring
+from six import string_types
 from builtins import object
 import collections
 import functools
@@ -459,7 +459,7 @@ class ObjectKeyMaker(KeyMaker):
         # dill (https://github.com/uqfoundation/dill).
         if isinstance(item, collections.Iterable):
 
-            if isinstance(item, basestring):
+            if isinstance(item, string_types):
                 return pickle.dumps(item, pickle_protocol)
 
             if isinstance(item, collections.Mapping):
