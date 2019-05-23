@@ -26,6 +26,8 @@ import abc
 import copy
 import inspect
 import re
+import six
+
 try:
     # Python 2.x
     import anydbm
@@ -35,11 +37,18 @@ except ImportError:
 
 import contextlib
 from future.utils import with_metaclass
-try:
-    import cPickle as pickle
 
+try:
+    try:
+        import _pickle as pickle
+    except:
+        import six
+        from six.moves import cPickle as pickle
 except:
-    import pickle
+    try:
+        import cPickle as pickle
+    except:
+        import pickle
 
 import ftrack_api.inspection
 import ftrack_api.symbol
@@ -443,13 +452,15 @@ class ObjectKeyMaker(KeyMaker):
 
         '''
 
+        # Ensure p3k uses a protocol available in py2 so can decode it.
+        pickle_protocol = 2
 
         # TODO: Consider using a more robust and comprehensive solution such as
         # dill (https://github.com/uqfoundation/dill).
         if isinstance(item, collections.Iterable):
 
             if isinstance(item, basestring):
-                return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)
+                return pickle.dumps(item, pickle_protocol)
 
             if isinstance(item, collections.Mapping):
                 contents = self.item_separator.join([
@@ -499,7 +510,7 @@ class ObjectKeyMaker(KeyMaker):
             return self.name_identifier + item.__name__.encode()
 
         else:
-            return pickle.dumps(item, pickle.HIGHEST_PROTOCOL)
+            return pickle.dumps(item, pickle_protocol)
 
 
 class Memoiser(object):
