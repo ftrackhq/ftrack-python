@@ -7,9 +7,8 @@ from __future__ import division
 from builtins import zip
 from builtins import map
 from builtins import str
-from past.builtins import basestring
+from six import string_types
 from builtins import object
-from past.utils import old_div
 import json
 import logging
 import collections
@@ -649,7 +648,7 @@ class Session(object):
         for identifying_key in identifying_keys:
             value = data[identifying_key]
 
-            if isinstance(value, basestring):
+            if isinstance(value, string_types):
                 value = '"{0}"'.format(value)
 
             elif isinstance(
@@ -717,7 +716,7 @@ class Session(object):
         self.logger.debug(L('Get {0} with key {1}', entity_type, entity_key))
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
-        if isinstance(entity_key, basestring):
+        if isinstance(entity_key, string_types):
             entity_key = [entity_key]
 
         if len(entity_key) != len(primary_key_definition):
@@ -1968,7 +1967,7 @@ class Session(object):
             if container_size is not None:
                 if len(collection.indexes) > 0:
                     member_size = int(
-                        round(old_div(container_size, len(collection.indexes)))
+                        round(container_size / len(collection.indexes))
                     )
                     for item in collection:
                         member_sizes[item] = member_size
@@ -2106,7 +2105,7 @@ class Session(object):
                 member_availabilities = self.get_component_availabilities(
                     component['members'], locations=locations
                 )
-                multiplier = old_div(1.0, len(component['members']))
+                multiplier = 1.0 / len(component['members'])
                 for member, member_availability in zip(
                     component['members'], member_availabilities
                 ):
@@ -2246,7 +2245,7 @@ class Session(object):
         is a FileComponent, and deleted if it is a file path. You can specify
         True or False to change this behavior.
         '''
-        if isinstance(media, basestring):
+        if isinstance(media, string_types):
             # Media is a path to a file.
             server_location = self.get(
                 'Location', ftrack_api.symbol.SERVER_LOCATION_ID

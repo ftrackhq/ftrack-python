@@ -2,7 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 from builtins import zip
-from past.builtins import basestring
+from six import string_types
 from builtins import object
 import collections
 import functools
@@ -124,7 +124,7 @@ class Location(ftrack_api.entity.base.Entity):
 
         '''
         if (
-            isinstance(sources, basestring)
+            isinstance(sources, string_types)
             or not isinstance(sources, collections.Sequence)
         ):
             sources = [sources]
