@@ -841,7 +841,7 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        with self.operation_recording(False), self._lock:
+        with self.operation_recording(False) as a, self._lock as b:
             return self._merge(value, merged)
 
     def _merge(self, value, merged):
