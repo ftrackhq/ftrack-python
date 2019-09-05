@@ -2440,18 +2440,21 @@ class AutoPopulatingContext(object):
     def __init__(self, session, auto_populate):
         '''Initialise context.'''
         super(AutoPopulatingContext, self).__init__()
+        self._lock = threading.Lock()
         self._session = session
         self._auto_populate = auto_populate
         self._current_auto_populate = None
 
     def __enter__(self):
         '''Enter context switching to desired auto populate setting.'''
+        self._lock.acquire()
         self._current_auto_populate = self._session.auto_populate
         self._session.auto_populate = self._auto_populate
 
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context resetting auto populate to original setting.'''
         self._session.auto_populate = self._current_auto_populate
+        self._lock.release()
 
 
 class OperationRecordingContext(object):
