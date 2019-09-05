@@ -148,7 +148,6 @@ class Session(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._lock = threading.RLock()
         self._closed = False
 
         if server_url is None:
@@ -841,7 +840,7 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        with self.operation_recording(False) as a, self._lock as b:
+        with self.operation_recording(False):
             return self._merge(value, merged)
 
     def _merge(self, value, merged):
