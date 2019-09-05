@@ -231,7 +231,6 @@ class MemoryCache(Cache):
     def __init__(self):
         '''Initialise cache.'''
         self._cache = {}
-        self._lock = threading.RLock()
         super(MemoryCache, self).__init__()
 
     def get(self, key):
@@ -244,9 +243,7 @@ class MemoryCache(Cache):
 
     def set(self, key, value):
         '''Set *value* for *key*.'''
-        self._lock.acquire()
         self._cache[key] = value
-        self._lock.release()
 
     def remove(self, key):
         '''Remove *key*.
