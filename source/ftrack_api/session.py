@@ -2443,7 +2443,7 @@ class AutoPopulatingContext(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._lock = threading.RLock()
+        self._lock = threading.Lock()
         self._session = session
         self._auto_populate = auto_populate
         self.logger.info('-'*50)
