@@ -2443,7 +2443,6 @@ class AutoPopulatingContext(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._lock = threading.Lock()
         self._session = session
         self._auto_populate = auto_populate
         self.logger.info('-'*50)
@@ -2453,7 +2452,6 @@ class AutoPopulatingContext(object):
 
     def __enter__(self):
         '''Enter context switching to desired auto populate setting.'''
-        self._lock.acquire()
         self.logger.info('session {} , storing current auto_populate session status as: {}'.format(self._session, self._session.auto_populate))
 
         self._current_auto_populate = self._session.auto_populate
@@ -2464,7 +2462,6 @@ class AutoPopulatingContext(object):
         self.logger.info('session {} , restoring auto_poulate to: {}'.format(self._session, self._current_auto_populate))
         self._session.auto_populate = self._current_auto_populate
         self.logger.info('-'*50)
-        self._lock.release()
 
 
 
