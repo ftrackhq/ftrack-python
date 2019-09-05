@@ -148,6 +148,7 @@ class Session(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
+        self._lock = threading.Lock()
         self._closed = False
 
         if server_url is None:
@@ -845,46 +846,48 @@ class Session(object):
 
     def _merge(self, value, merged):
         '''Return merged *value*.'''
-        log_debug = self.logger.isEnabledFor(logging.DEBUG)
+        with self._lock:
 
-        if isinstance(value, ftrack_api.entity.base.Entity):
-            log_debug and self.logger.debug(
-                'Merging entity into session: {0} at {1}'
-                .format(value, id(value))
-            )
+            log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
-            return self._merge_entity(value, merged=merged)
-
-        elif isinstance(value, ftrack_api.collection.Collection):
-            log_debug and self.logger.debug(
-                'Merging collection into session: {0!r} at {1}'
-                .format(value, id(value))
-            )
-
-            merged_collection = []
-            for entry in value:
-                merged_collection.append(
-                    self._merge(entry, merged=merged)
+            if isinstance(value, ftrack_api.entity.base.Entity):
+                log_debug and self.logger.debug(
+                    'Merging entity into session: {0} at {1}'
+                    .format(value, id(value))
                 )
 
-            return merged_collection
+                return self._merge_entity(value, merged=merged)
 
-        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-            log_debug and self.logger.debug(
-                'Merging mapped collection into session: {0!r} at {1}'
-                .format(value, id(value))
-            )
-
-            merged_collection = []
-            for entry in value.collection:
-                merged_collection.append(
-                    self._merge(entry, merged=merged)
+            elif isinstance(value, ftrack_api.collection.Collection):
+                log_debug and self.logger.debug(
+                    'Merging collection into session: {0!r} at {1}'
+                    .format(value, id(value))
                 )
 
-            return merged_collection
+                merged_collection = []
+                for entry in value:
+                    merged_collection.append(
+                        self._merge(entry, merged=merged)
+                    )
 
-        else:
-            return value
+                return merged_collection
+
+            elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+                log_debug and self.logger.debug(
+                    'Merging mapped collection into session: {0!r} at {1}'
+                    .format(value, id(value))
+                )
+
+                merged_collection = []
+                for entry in value.collection:
+                    merged_collection.append(
+                        self._merge(entry, merged=merged)
+                    )
+
+                return merged_collection
+
+            else:
+                return value
 
     def _merge_recursive(self, entity, merged=None):
         '''Merge *entity* and all its attributes recursivly.'''
@@ -2440,21 +2443,18 @@ class AutoPopulatingContext(object):
     def __init__(self, session, auto_populate):
         '''Initialise context.'''
         super(AutoPopulatingContext, self).__init__()
-        self._lock = threading.Lock()
         self._session = session
         self._auto_populate = auto_populate
         self._current_auto_populate = None
 
     def __enter__(self):
         '''Enter context switching to desired auto populate setting.'''
-        self._lock.acquire()
         self._current_auto_populate = self._session.auto_populate
         self._session.auto_populate = self._auto_populate
 
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context resetting auto populate to original setting.'''
         self._session.auto_populate = self._current_auto_populate
-        self._lock.release()
 
 
 class OperationRecordingContext(object):
