@@ -148,7 +148,7 @@ class Session(object):
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._closed = False
 
         if server_url is None:
