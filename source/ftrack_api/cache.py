@@ -23,7 +23,7 @@ import inspect
 import re
 import anydbm
 import contextlib
-import threading
+
 try:
     import cPickle as pickle
 except ImportError:  # pragma: no cover
