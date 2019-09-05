@@ -2447,21 +2447,21 @@ class AutoPopulatingContext(object):
         self._session = session
         self._auto_populate = auto_populate
         self.logger.info('-'*50)
-        self.logger.info('setting auto_populate to: {}'.format(self._auto_populate))
+        self.logger.info('session {} , setting auto_populate to: {}'.format(session, self._auto_populate))
 
         self._current_auto_populate = None
 
     def __enter__(self):
         '''Enter context switching to desired auto populate setting.'''
         self._lock.acquire()
-        self.logger.info('storing current auto_populate session status as: {}'.format(self._session.auto_populate))
+        self.logger.info('session {} , storing current auto_populate session status as: {}'.format(self._session, self._session.auto_populate))
 
         self._current_auto_populate = self._session.auto_populate
         self._session.auto_populate = self._auto_populate
 
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context resetting auto populate to original setting.'''
-        self.logger.info('restoring auto_poulate to: {}'.format(self._current_auto_populate))
+        self.logger.info('session {} , restoring auto_poulate to: {}'.format(self._session, self._current_auto_populate))
         self._session.auto_populate = self._current_auto_populate
         self.logger.info('-'*50)
         self._lock.release()
