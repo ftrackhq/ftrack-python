@@ -841,53 +841,51 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        with self.operation_recording(False):
+        with self.operation_recording(False), self._lock:
             return self._merge(value, merged)
 
     def _merge(self, value, merged):
         '''Return merged *value*.'''
-        with self._lock:
+        log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
-            log_debug = self.logger.isEnabledFor(logging.DEBUG)
+        if isinstance(value, ftrack_api.entity.base.Entity):
+            log_debug and self.logger.debug(
+                'Merging entity into session: {0} at {1}'
+                .format(value, id(value))
+            )
 
-            if isinstance(value, ftrack_api.entity.base.Entity):
-                log_debug and self.logger.debug(
-                    'Merging entity into session: {0} at {1}'
-                    .format(value, id(value))
+            return self._merge_entity(value, merged=merged)
+
+        elif isinstance(value, ftrack_api.collection.Collection):
+            log_debug and self.logger.debug(
+                'Merging collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
+
+            merged_collection = []
+            for entry in value:
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
                 )
 
-                return self._merge_entity(value, merged=merged)
+            return merged_collection
 
-            elif isinstance(value, ftrack_api.collection.Collection):
-                log_debug and self.logger.debug(
-                    'Merging collection into session: {0!r} at {1}'
-                    .format(value, id(value))
+        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+            log_debug and self.logger.debug(
+                'Merging mapped collection into session: {0!r} at {1}'
+                .format(value, id(value))
+            )
+
+            merged_collection = []
+            for entry in value.collection:
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
                 )
 
-                merged_collection = []
-                for entry in value:
-                    merged_collection.append(
-                        self._merge(entry, merged=merged)
-                    )
+            return merged_collection
 
-                return merged_collection
-
-            elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-                log_debug and self.logger.debug(
-                    'Merging mapped collection into session: {0!r} at {1}'
-                    .format(value, id(value))
-                )
-
-                merged_collection = []
-                for entry in value.collection:
-                    merged_collection.append(
-                        self._merge(entry, merged=merged)
-                    )
-
-                return merged_collection
-
-            else:
-                return value
+        else:
+            return value
 
     def _merge_recursive(self, entity, merged=None):
         '''Merge *entity* and all its attributes recursivly.'''
