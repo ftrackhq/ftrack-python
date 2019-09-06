@@ -304,8 +304,8 @@ class Session(object):
     def auto_populate(self):
         while (
             self._auto_populate_lock._RLock__owner and
-            self._auto_populate_lock._RLock__owner is not
-            threading.current_thread()
+            self._auto_populate_lock._RLock__owner !=
+            threading.current_thread().ident
         ):
             time.sleep(0.001)
 
