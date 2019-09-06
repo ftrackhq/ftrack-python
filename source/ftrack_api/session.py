@@ -17,6 +17,7 @@ import tempfile
 import threading
 import atexit
 import warnings
+import time
 
 import requests
 import requests.auth
@@ -149,6 +150,7 @@ class Session(object):
             __name__ + '.' + self.__class__.__name__
         )
         self._closed = False
+        self._auto_populate_lock = threading.RLock()
 
         if server_url is None:
             server_url = os.environ.get('FTRACK_SERVER')
@@ -220,7 +222,7 @@ class Session(object):
             self._api_key, self._api_user
         )
 
-        self.auto_populate = auto_populate
+        self._auto_populate = auto_populate
 
         # Fetch server information and in doing so also check credentials.
         self._server_information = self._fetch_server_information()
@@ -297,6 +299,21 @@ class Session(object):
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit session context, closing session in process.'''
         self.close()
+
+    @property
+    def auto_populate(self):
+        while (
+            self._auto_populate_lock._RLock__owner and
+            self._auto_populate_lock._RLock__owner is not
+            threading.current_thread()
+        ):
+            time.sleep(0.001)
+
+        return self._auto_populate
+
+    @auto_populate.setter
+    def auto_populate(self, value):
+        self._auto_populate = value
 
     @property
     def _request(self):
@@ -2448,10 +2465,12 @@ class AutoPopulatingContext(object):
         '''Enter context switching to desired auto populate setting.'''
         self._current_auto_populate = self._session.auto_populate
         self._session.auto_populate = self._auto_populate
+        self._session._auto_populate_lock.acquire()
 
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context resetting auto populate to original setting.'''
         self._session.auto_populate = self._current_auto_populate
+        self._session._auto_populate_lock.release()
 
 
 class OperationRecordingContext(object):
