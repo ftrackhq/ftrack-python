@@ -69,6 +69,40 @@ using :meth:`Session.create`::
     
     first_note_on_task.replies.append(reply)
 
+Notes can have labels. Use the label argument to set labels on the
+note using the helper method::
+
+    label = session.query(
+        'NoteLabel where name is "External Note"'
+    ).first()
+
+    note = task.create_note(
+        'New note with external category', author=user, labels=[category]
+    )
+
+Or add labels to notes when creating a note manually::
+
+    label = session.query(
+        'NoteLabel where name is "External Note"'
+    ).first()
+
+    note = session.create('Note', {
+        'content': 'New note with external category',
+        'author': user
+    })
+
+    session.create('NoteLabelLink', {
+        'note_id': note['id],
+        'label_id': label['id']
+    })
+
+    task['notes'].append(note)
+
+.. note::
+
+    Support for labels on notes was added in ftrack server version 4.3. For
+    older versions of the server, NoteCategory can be used instead.
+
 To specify a category when creating a note simply pass a `NoteCategory` instance
 to the helper method::
 
@@ -79,25 +113,6 @@ to the helper method::
     note = task.create_note(
         'New note with external category', author=user, category=category
     )
-
-You can also set the category when creating a note manually::
-
-    category = session.query(
-        'NoteCategory where name is "External Note"'
-    ).first()
-
-    note = session.create('Note', {
-        'content': 'New note with external category',
-        'author': user,
-        'category': category
-    })
-
-    task['notes'].append(note)
-
-.. note::
-
-    The category is specified for an entire notes thread. Therefore categories
-    can only be set on new notes and not on replies.
 
 When writing notes you might want to direct the note to someone. This is done
 by adding users as recipients. If a user is added as a recipient the user will
