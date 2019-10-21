@@ -77,7 +77,7 @@ note using the helper method::
     ).first()
 
     note = task.create_note(
-        'New note with external category', author=user, labels=[category]
+        'New note with external category', author=user, labels=[label]
     )
 
 Or add labels to notes when creating a note manually::
