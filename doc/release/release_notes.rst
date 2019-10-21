@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: Notes
+
+        Add support for note labels in create_note helper method.
+
     .. change:: changed
         :tags: session
 
