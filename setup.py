@@ -51,6 +51,10 @@ setup(
     author_email='support@ftrack.com',
     license='Apache License (2.0)',
     packages=find_packages(SOURCE_PATH),
+    project_urls={
+        "Documentation": "http://ftrack-python-api.rtd.ftrack.com/en/{}/".format(VERSION),
+        "Source Code": "https://bitbucket.org/ftrack/ftrack-python-api/src/{}".format(VERSION),
+    },
     package_dir={
         '': 'source'
     },
