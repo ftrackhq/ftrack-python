@@ -12,6 +12,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tag: setup
+
+        Add check for correct python version when installing with pip.
+
+    .. change:: new
         :tags: Notes
 
         Add support for note labels in create_note helper method.

@@ -75,5 +75,7 @@ setup(
     cmdclass={
         'test': PyTest
     },
-    zip_safe=False
+    zip_safe=False,
+    python_requires=">=2.7.9, <3.0"
+
 )
