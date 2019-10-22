@@ -88,5 +88,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3'
     ],
-    zip_safe=False
+    zip_safe=False,
+    python_requires=">=2.7.9, <4.0"
 )
