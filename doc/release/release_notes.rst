@@ -11,19 +11,18 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed 
+        :tags: symbols
+
+        Increase chunk size for file operations to 1 Megabyte.
+        This value can now also be set from the environment variable :
+
+        :envvar:`FTRACK_API_FILE_CHUNK_SIZE`
+
     .. change:: changed
         :tags: session
 
         Ensure errors from server are fully reported with stack trace. 
-
-    .. change:: changed 
-        :tags: symbols
-
-        Increase chunk size for file opereations to 1 Megabyte.
-        This value can now also be set from the environment variable :
-
-        FTRACK_API_FILE_CHUNK_SIZE
-
 
 .. release:: 1.8.0
     :date: 2019-02-21
