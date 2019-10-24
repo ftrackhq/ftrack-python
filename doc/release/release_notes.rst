@@ -12,12 +12,22 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed 
-        :tags: symbols
+        :tags: Location
 
         Increase chunk size for file operations to 1 Megabyte.
         This value can now also be set from the environment variable :
 
         :envvar:`FTRACK_API_FILE_CHUNK_SIZE`
+
+    .. change:: new
+        :tag: setup
+
+        Add check for correct python version when installing with pip.
+
+    .. change:: new
+        :tags: Notes
+
+        Add support for note labels in create_note helper method.
 
     .. change:: changed
         :tags: session
