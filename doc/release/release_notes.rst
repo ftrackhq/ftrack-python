@@ -15,7 +15,7 @@ Release Notes
         :tags: Location
 
         Increase chunk size for file operations to 1 Megabyte.
-        This value can now also be set from the environment variable :
+        This value can now also be set from the environment variable:
 
         :envvar:`FTRACK_API_FILE_CHUNK_SIZE`
 
