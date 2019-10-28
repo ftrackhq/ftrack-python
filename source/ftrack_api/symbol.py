@@ -3,6 +3,7 @@
 
 import os
 
+
 class Symbol(object):
     '''A constant symbol.'''
 
