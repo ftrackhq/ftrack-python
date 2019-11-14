@@ -9,7 +9,16 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.8.1
+    :date: 2019-10-30
+
+    .. change:: changed 
+        :tags: Location
+
+        Increase chunk size for file operations to 1 Megabyte.
+        This value can now also be set from the environment variable:
+
+        :envvar:`FTRACK_API_FILE_CHUNK_SIZE`
 
     .. change:: new
         :tag: setup
