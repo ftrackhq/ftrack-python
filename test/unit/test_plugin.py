@@ -16,8 +16,9 @@ def valid_plugin(temporary_path):
     '''Return path to directory containing a valid plugin.'''
     with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
         file_object.write(textwrap.dedent('''
+            from __future__ import print_function
             def register(*args, **kw):
-                print "Registered", args, kw
+                print("Registered", args, kw)
         '''))
 
     return temporary_path
@@ -28,10 +29,12 @@ def python_non_plugin(temporary_path):
     '''Return path to directory containing Python file that is non plugin.'''
     with open(os.path.join(temporary_path, 'non.py'), 'w') as file_object:
         file_object.write(textwrap.dedent('''
-            print "Not a plugin"
+            from __future__ import print_function
+            
+            print("Not a plugin")
 
             def not_called():
-                print "Not called"
+                print("Not called")
         '''))
 
     return temporary_path
@@ -65,8 +68,9 @@ def plugin(request, temporary_path):
 
     with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
         content = textwrap.dedent('''
+            from __future__ import print_function
             def register({}):
-                print {}
+                print({})
         '''.format(specification, output))
         file_object.write(content)
 
@@ -108,7 +112,11 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     '''Discover broken plugin.'''
     ftrack_api.plugin.discover([broken_plugin])
 
-    records = caplog.records()
+    if not isinstance(caplog.records, list):
+        records = caplog.records()
+
+    else:
+        records = caplog.records
     assert len(records) == 1
     assert records[0].levelno is logging.WARNING
     assert 'Failed to load plugin' in records[0].message
@@ -171,22 +179,26 @@ def test_discover_plugin_with_specific_signature(
 
 def test_discover_plugin_varying_signatures(temporary_path, capsys):
     '''Discover multiple plugins with varying signatures.'''
+
     with open(os.path.join(temporary_path, 'plugin_a.py'), 'w') as file_object:
         file_object.write(textwrap.dedent('''
+            from __future__ import print_function
             def register(a):
-                print (a,)
+                print((a,))
         '''))
 
     with open(os.path.join(temporary_path, 'plugin_b.py'), 'w') as file_object:
         file_object.write(textwrap.dedent('''
+            from __future__ import print_function
             def register(a, b=False):
-                print (a,), {'b': b}
+                print((a,), {'b': b})
         '''))
 
     ftrack_api.plugin.discover(
         [temporary_path], (True,), {'b': True}
     )
 
+
     output, error = capsys.readouterr()
-    assert '(True,)'in output
+    assert '(True,)' in output
     assert '(True,) {\'b\': True}' in output

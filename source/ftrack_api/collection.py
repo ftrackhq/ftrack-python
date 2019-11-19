@@ -2,7 +2,9 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
+from builtins import str
 import logging
 
 import collections
@@ -307,6 +309,12 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
 
         return len(keys)
 
+    def keys(self):
+        # COMPAT for unit tests..
+        return list(super(
+            KeyValueMappedCollectionProxy, self
+        ).keys())
+
 
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
     '''Generate key for session.'''
@@ -362,7 +370,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
         project_id = None
         object_type_id = None
 
-        if 'object_type_id' in entity.keys():
+        if 'object_type_id' in list(entity.keys()):
             project_id = entity['project_id']
             entity_type = 'task'
             object_type_id = entity['object_type_id']

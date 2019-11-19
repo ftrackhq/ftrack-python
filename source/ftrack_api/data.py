@@ -1,15 +1,15 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from builtins import object
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
+from future.utils import with_metaclass
 
 
-class Data(object):
+class Data(with_metaclass(ABCMeta, object)):
     '''File-like object for manipulating data.'''
-
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         '''Initialise data access.'''
@@ -115,5 +115,19 @@ class String(FileWrapper):
         )
 
         if content is not None:
-            self.wrapped_file.write(content)
+            self.wrapped_file.write(content.encode())
             self.wrapped_file.seek(0)
+
+
+    def write(self, content):
+        if not isinstance(content, bytes):
+            content = content.encode()
+
+        super(String, self).write(
+            content
+        )
+
+    def read(self, limit=None):
+        return super(String, self).read(
+            limit
+        ).decode('utf-8')

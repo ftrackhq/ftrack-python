@@ -223,10 +223,9 @@ def test_connect_missing_required_transport(session, mocker, caplog):
 
     with pytest.raises(ftrack_api.exception.EventHubConnectionError):
         event_hub.connect()
-
-    logs = caplog.records()
+    
     assert (
-        'Server does not support websocket sessions.' in str(logs[-1].exc_info)
+        'Server does not support websocket sessions.' in str(caplog.text())
     )
 
 
@@ -558,7 +557,14 @@ def test_publish_logs_other_errors(event_hub, caplog, mocker):
     event_hub.publish(event)
 
     expected = 'Error sending event {0}.'.format(event)
-    messages = [record.getMessage().strip() for record in caplog.records()]
+
+
+    if not isinstance(caplog.records, list):
+        records = caplog.records()
+    else:
+        records = caplog.records
+
+    messages = [record.getMessage().strip() for record in records]
     assert expected in messages, 'Expected log message missing in output.'
 
 

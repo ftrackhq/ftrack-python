@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2016 ftrack
 
+from past.builtins import long
 
 def test_force_start_timer(new_user, task):
     '''Successfully force starting a timer when another timer is running.'''

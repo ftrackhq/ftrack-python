@@ -111,7 +111,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                             )
                             selected_keyword_arguments = {
                                 key: value
-                                for key, value in keyword_arguments.items()
+                                for key, value in list(keyword_arguments.items())
                                 if key in remaining_keyword_arguments
                             }
 

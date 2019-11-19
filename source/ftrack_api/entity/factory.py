@@ -3,6 +3,10 @@
 
 from __future__ import absolute_import
 
+
+from builtins import str
+from builtins import object
+
 import logging
 import uuid
 import functools
@@ -51,7 +55,7 @@ class Factory(object):
         attributes = ftrack_api.attribute.Attributes()
         immutable_properties = schema.get('immutable', [])
         computed_properties = schema.get('computed', [])
-        for name, fragment in schema.get('properties', {}).items():
+        for name, fragment in  list(schema.get('properties', {}).items()):
             mutable = name not in immutable_properties
             computed = name in computed_properties
 
@@ -133,8 +137,12 @@ class Factory(object):
         class_namespace['primary_key_attributes'] = schema['primary_key'][:]
         class_namespace['default_projections'] = default_projections
 
+        from future.utils import (
+            native_str
+        )
+
         cls = type(
-            str(class_name),  # type doesn't accept unicode.
+            native_str(class_name),  # type doesn't accept unicode.
             tuple(class_bases),
             class_namespace
         )
@@ -400,7 +408,7 @@ class StandardFactory(Factory):
                         .format(data)
                     )
 
-                create_data = dict(data.items())
+                create_data = dict(list(data.items()))
                 create_data['configuration_id'] = configuration['id']
                 create_data['entity_id'] = entity['id']
 

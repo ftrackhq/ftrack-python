@@ -51,11 +51,15 @@ setup(
     author_email='support@ftrack.com',
     license='Apache License (2.0)',
     packages=find_packages(SOURCE_PATH),
+    project_urls={
+        "Documentation": "http://ftrack-python-api.rtd.ftrack.com/en/{}/".format(VERSION),
+        "Source Code": "https://bitbucket.org/ftrack/ftrack-python-api/src/{}".format(VERSION),
+    },
     package_dir={
         '': 'source'
     },
     setup_requires=[
-        'sphinx >= 1.2.2, < 2',
+        'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2'
     ],
@@ -65,17 +69,25 @@ setup(
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
         'clique >= 1.2.0, < 2',
-        'websocket-client >= 0.40.0, < 1'
+        'websocket-client >= 0.40.0, < 1',
+        'future >=0.16.0, < 1',
+        'six >= 1, < 2'
     ],
     tests_require=[
         'pytest >= 2.7, < 3',
         'pytest-mock >= 0.4, < 1',
-        'pytest-catchlog >= 1, <=2'
+        'pytest-catchlog >= 1, <=2',
+        'mock'
     ],
     cmdclass={
         'test': PyTest
     },
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3'
+    ],
     zip_safe=False,
-    python_requires=">=2.7.9, <3.0"
-
+    python_requires=">=2.7.9, <4.0"
 )

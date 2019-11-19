@@ -1,6 +1,8 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from builtins import str
+from future.utils import native_str
 import collections
 
 import ftrack_api.symbol
@@ -11,7 +13,7 @@ def identity(entity):
     '''Return unique identity of *entity*.'''
     return (
         str(entity.entity_type),
-        primary_key(entity).values()
+        list(primary_key(entity).values())
     )
 
 
@@ -32,7 +34,8 @@ def primary_key(entity):
                 'entity {1!r}.'.format(name, entity)
             )
 
-        primary_key[str(name)] = str(value)
+        # todo: Compatiblity fix, review for better implementation.
+        primary_key[native_str(name)] = native_str(value)
 
     return primary_key
 
@@ -111,7 +114,7 @@ def states(entities):
 
     entities_by_identity = collections.OrderedDict()
     for entity in entities:
-        key = (entity.entity_type, str(primary_key(entity).values()))
+        key = (entity.entity_type, str(list(primary_key(entity).values())))
         entities_by_identity[key] = ftrack_api.symbol.NOT_SET
 
     for operation in session.recorded_operations:
@@ -125,11 +128,11 @@ def states(entities):
                 )
             )
         ):
-            key = (operation.entity_type, str(operation.entity_key.values()))
+            key = (operation.entity_type, str(list(operation.entity_key.values())))
             if key not in entities_by_identity:
                 continue
 
             value = _state(operation, entities_by_identity[key])
             entities_by_identity[key] = value
 
-    return entities_by_identity.values()
+    return list(entities_by_identity.values())

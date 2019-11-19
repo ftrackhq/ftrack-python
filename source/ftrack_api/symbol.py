@@ -4,6 +4,7 @@
 import os
 
 
+from builtins import object
 class Symbol(object):
     '''A constant symbol.'''
 
@@ -24,7 +25,7 @@ class Symbol(object):
         '''Return representation.'''
         return '{0}({1})'.format(self.__class__.__name__, self.name)
 
-    def __nonzero__(self):
+    def __bool__(self):
         '''Return whether symbol represents non-zero value.'''
         return bool(self.value)
 
