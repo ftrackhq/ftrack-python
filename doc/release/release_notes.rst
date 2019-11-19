@@ -15,6 +15,11 @@ Release Notes
     
         Provide support for python3.X.
 
+    .. change:: change
+        :tags: session
+
+        Do not auto connect by default to event server hub.
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
