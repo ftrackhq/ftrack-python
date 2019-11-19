@@ -11,8 +11,13 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: session
+        
+        Private method :meth:`Session._call` has been removed.
+
     .. change:: new 
-    
+
         Provide support for python3.X.
 
 .. release:: 1.8.1
