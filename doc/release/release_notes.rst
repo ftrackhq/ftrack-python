@@ -9,6 +9,12 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new 
+    
+        Provide support for python3.X.
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
