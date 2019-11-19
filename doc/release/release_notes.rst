@@ -20,6 +20,10 @@ Release Notes
 
         Public method :meth:`Session.delayed_job` has been deprecated.
 
+        .. note:: 
+
+            Use :meth:`Session.call` instead.
+ 
 .. release:: 1.8.1
     :date: 2019-10-30
 
