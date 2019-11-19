@@ -15,6 +15,11 @@ Release Notes
     
         Provide support for python3.X.
 
+    .. change:: changed
+        :tag: session
+
+        Public method :meth:`Session.delayed_job` has been deprecated.
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
