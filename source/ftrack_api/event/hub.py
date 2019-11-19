@@ -93,8 +93,6 @@ class EventHub(object):
         self._auto_reconnect_attempts = 30
         self._auto_reconnect_delay = 10
 
-        self._deprecation_warning_auto_connect = False
-
         # Mapping of Socket.IO codes to meaning.
         self._code_name_mapping = {
             '0': 'disconnect',
@@ -153,8 +151,6 @@ class EventHub(object):
         connected or connection fails.
 
         '''
-
-        self._deprecation_warning_auto_connect = False
 
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -574,10 +570,6 @@ class EventHub(object):
         event will be caught by this method and ignored.
 
         '''
-        if self._deprecation_warning_auto_connect and not synchronous:
-            warnings.warn(
-                self._future_signature_warning, FutureWarning
-            )
 
         try:
             return self._publish(
@@ -737,10 +729,6 @@ class EventHub(object):
             # Automatically publish a non None response as a reply when not in
             # synchronous mode.
             if not synchronous:
-                if self._deprecation_warning_auto_connect:
-                    warnings.warn(
-                        self._future_signature_warning, FutureWarning
-                    )
 
                 if response is not None:
                     try:
