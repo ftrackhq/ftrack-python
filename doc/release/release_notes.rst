@@ -14,7 +14,7 @@ Release Notes
     .. change:: changed
         :tags: session
         
-        Private method :meth:`Session._call` has been removed.
+        Private method :meth:`Session._call` has been deprecated.
 
     .. change:: new 
 
