@@ -51,15 +51,6 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 class EventHub(object):
     '''Manage routing of events.'''
 
-    _future_signature_warning = (
-        'When constructing your Session object you did not explicitly define '
-        'auto_connect_event_hub as True even though you appear to be publishing '
-        'and / or subscribing to asynchronous events. In version version 2.0 of '
-        'the ftrack-python-api the default behavior will change from True '
-        'to False. Please make sure to update your tools. You can read more at '
-        'http://ftrack-python-api.rtd.ftrack.com/en/stable/release/migration.html'
-    )
-
     def __init__(self, server_url, api_user, api_key):
         '''Initialise hub, connecting to ftrack *server_url*.
 
