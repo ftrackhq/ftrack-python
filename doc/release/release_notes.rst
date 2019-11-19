@@ -20,6 +20,11 @@ Release Notes
 
         Private method :meth:`Session._entity_reference` has been deprecated.
 
+        .. note::
+
+            You can now use the public method :meth:`Session.entity_reference`.
+
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
