@@ -16,6 +16,10 @@ Release Notes
         
         Private method :meth:`Session._call` has been deprecated.
 
+        .. note::
+
+            You can now use the public method :meth:`Session.call`.
+            
     .. change:: new 
 
         Provide support for python3.X.
