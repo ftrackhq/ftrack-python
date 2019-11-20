@@ -2092,36 +2092,6 @@ class Session(object):
 
         return availabilities
 
-    @ftrack_api.logging.deprecation_warning(
-        'Session.delayed_job has been deprecated in favour of session.call. '
-        'Please refer to the release notes for more information.'
-    )
-    def delayed_job(self, job_type):
-        '''Execute a delayed job on the server, a `ftrack.entity.job.Job` is returned.
-
-        *job_type* should be one of the allowed job types. There is currently
-        only one remote job type "SYNC_USERS_LDAP".
-        '''
-        if job_type not in (ftrack_api.symbol.JOB_SYNC_USERS_LDAP, ):
-            raise ValueError(
-                u'Invalid Job type: {0}.'.format(job_type)
-            )
-
-        operation = {
-            'action': 'delayed_job',
-            'job_type': job_type.name
-        }
-
-        try:
-            result = self.call(
-                [operation]
-            )[0]
-
-        except ftrack_api.exception.ServerError as error:
-            raise
-
-        return result['data']
-
     def get_widget_url(self, name, entity=None, theme=None):
         '''Return an authenticated URL for widget with *name* and given options.
 
