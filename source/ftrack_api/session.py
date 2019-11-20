@@ -1603,22 +1603,6 @@ class Session(object):
             synchronous=True
         )
 
-    @ftrack_api.logging.deprecation_warning(
-        'Session._call is now available as public method Session.call. The '
-        'private method will be removed in version 2.0.'
-    )
-    def _call(self, data):
-        '''Make request to server with *data* batch describing the actions.
-
-        .. note::
-
-            This private method is now available as public method
-            :meth:`entity_reference`. This alias remains for backwards
-            compatibility, but will be removed in version 2.0.
-
-        '''
-        return self.call(data)
-
     def call(self, data):
         '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'
