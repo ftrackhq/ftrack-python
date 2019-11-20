@@ -22,7 +22,7 @@ Release Notes
 
         .. note::
 
-            You can now use the public method :meth:`Session.entity_reference`.
+            You should now use the public method :meth:`Session.entity_reference`.
 
 
 .. release:: 1.8.1
