@@ -12,17 +12,27 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new 
-
+    
         Provide support for python3.X.
 
     .. change:: changed
-        :tags: session
+        :tags: Session
+
+        Private method :meth:`Session._entity_reference` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.entity_reference`.
+
+    .. change:: changed
+        :tags: Session
         
         Private method :meth:`Session._call` has been deprecated.
 
         .. note::
 
             You can now use the public method :meth:`Session.call`.
+
 
 .. release:: 1.8.1
     :date: 2019-10-30
