@@ -31,7 +31,7 @@ Release Notes
 
         .. note::
 
-            You can now use the public method :meth:`Session.call`.
+            You should now use the public method :meth:`Session.call`.
 
 
 .. release:: 1.8.1
