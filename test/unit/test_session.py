@@ -1446,31 +1446,3 @@ def test_entity_reference(mocker, session):
 
     mock_auto_populating.assert_called_once_with(False)
     mock_primary_key.assert_called_once_with(mock_entity)
-
-
-def test__entity_reference(mocker, session):
-    '''Act as alias to entity_reference.'''
-    mock_entity = mocker.Mock(entity_type="MockEntityType")
-    mock_entity_reference = mocker.patch.object(session, "entity_reference")
-    mocker.patch("warnings.warn")
-
-    session._entity_reference(mock_entity)
-
-    mock_entity_reference.assert_called_once_with(mock_entity)
-
-
-def test__entity_reference_issues_deprecation_warning(mocker, session):
-    '''Issue deprecation warning for usage of _entity_reference.'''
-    mocker.patch.object(session, "entity_reference")
-    mock_warn = mocker.patch("warnings.warn")
-
-    session._entity_reference({})
-
-    mock_warn.assert_called_once_with(
-        (
-            "Session._entity_reference is now available as public method "
-            "Session.entity_reference. The private method will be removed "
-            "in version 2.0."
-        ),
-        PendingDeprecationWarning
-    )

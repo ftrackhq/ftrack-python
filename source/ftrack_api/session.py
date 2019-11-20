@@ -1603,22 +1603,6 @@ class Session(object):
             synchronous=True
         )
 
-    @ftrack_api.logging.deprecation_warning(
-        'Session._call is now available as public method Session.call. The '
-        'private method will be removed in version 2.0.'
-    )
-    def _call(self, data):
-        '''Make request to server with *data* batch describing the actions.
-
-        .. note::
-
-            This private method is now available as public method
-            :meth:`entity_reference`. This alias remains for backwards
-            compatibility, but will be removed in version 2.0.
-
-        '''
-        return self.call(data)
-
     def call(self, data):
         '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'
@@ -1783,26 +1767,6 @@ class Session(object):
             reference.update(ftrack_api.inspection.primary_key(entity))
 
         return reference
-
-    @ftrack_api.logging.deprecation_warning(
-        'Session._entity_reference is now available as public method '
-        'Session.entity_reference. The private method will be removed '
-        'in version 2.0.'
-    )
-    def _entity_reference(self, entity):
-        '''Return entity reference that uniquely identifies *entity*.
-
-        Return a mapping containing the __entity_type__ of the entity along
-        with the key, value pairs that make up it's primary key.
-
-        .. note::
-
-            This private method is now available as public method
-            :meth:`entity_reference`. This alias remains for backwards
-            compatibility, but will be removed in version 2.0.
-
-        '''
-        return self.entity_reference(entity)
 
     def decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
