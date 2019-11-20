@@ -46,8 +46,6 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
-
-
 class EventHub(object):
     '''Manage routing of events.'''
 
