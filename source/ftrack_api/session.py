@@ -1762,26 +1762,6 @@ class Session(object):
 
         return reference
 
-    @ftrack_api.logging.deprecation_warning(
-        'Session._entity_reference is now available as public method '
-        'Session.entity_reference. The private method will be removed '
-        'in version 2.0.'
-    )
-    def _entity_reference(self, entity):
-        '''Return entity reference that uniquely identifies *entity*.
-
-        Return a mapping containing the __entity_type__ of the entity along
-        with the key, value pairs that make up it's primary key.
-
-        .. note::
-
-            This private method is now available as public method
-            :meth:`entity_reference`. This alias remains for backwards
-            compatibility, but will be removed in version 2.0.
-
-        '''
-        return self.entity_reference(entity)
-
     def decode(self, string):
         '''Return decoded JSON *string* as Python object.'''
         with self.operation_recording(False):
@@ -2105,36 +2085,6 @@ class Session(object):
                 availability[location_id] = adjusted_percentage
 
         return availabilities
-
-    @ftrack_api.logging.deprecation_warning(
-        'Session.delayed_job has been deprecated in favour of session.call. '
-        'Please refer to the release notes for more information.'
-    )
-    def delayed_job(self, job_type):
-        '''Execute a delayed job on the server, a `ftrack.entity.job.Job` is returned.
-
-        *job_type* should be one of the allowed job types. There is currently
-        only one remote job type "SYNC_USERS_LDAP".
-        '''
-        if job_type not in (ftrack_api.symbol.JOB_SYNC_USERS_LDAP, ):
-            raise ValueError(
-                u'Invalid Job type: {0}.'.format(job_type)
-            )
-
-        operation = {
-            'action': 'delayed_job',
-            'job_type': job_type.name
-        }
-
-        try:
-            result = self.call(
-                [operation]
-            )[0]
-
-        except ftrack_api.exception.ServerError as error:
-            raise
-
-        return result['data']
 
     def get_widget_url(self, name, entity=None, theme=None):
         '''Return an authenticated URL for widget with *name* and given options.
