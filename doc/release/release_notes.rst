@@ -15,11 +15,37 @@ Release Notes
     
         Provide support for python3.X.
 
+    .. change:: changed
+        :tags: Session
+
+        Private method :meth:`Session._entity_reference` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.entity_reference`.
+
+    .. change:: changed
+        :tags: Session
+        
+        Private method :meth:`Session._call` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.call`.
+
+    .. change:: changed
+        :tag: Session
+
+        Public method :meth:`Session.delayed_job` has been deprecated.
+
+        .. note:: 
+
+           You should now use :meth:`Session.call`.
+ 
     .. change:: change
-        :tags: session
+        :tags: Session
 
-        Do not auto connect by default to event server hub.
-
+        Do not auto connect by default to event server hub
 .. release:: 1.8.1
     :date: 2019-10-30
 

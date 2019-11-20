@@ -242,7 +242,7 @@ class Session(object):
         )
 
         self._auto_connect_event_hub_thread = None
-        if auto_connect_event_hub is True:
+        if auto_connect_event_hub:
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
             self._auto_connect_event_hub_thread = threading.Thread(
@@ -1597,21 +1597,6 @@ class Session(object):
             synchronous=True
         )
 
-    @ftrack_api.logging.deprecation_warning(
-        'Session._call is now available as public method Session.call. The '
-        'private method will be removed in version 2.0.'
-    )
-    def _call(self, data):
-        '''Make request to server with *data* batch describing the actions.
-
-        .. note::
-
-            This private method is now available as public method
-            :meth:`entity_reference`. This alias remains for backwards
-            compatibility, but will be removed in version 2.0.
-
-        '''
-        return self.call(data)
     def call(self, data):
         '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'
