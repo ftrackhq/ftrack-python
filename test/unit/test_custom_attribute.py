@@ -204,7 +204,10 @@ def test_set_custom_attribute_on_new_but_persisted_version(
     session.commit()
 
 
-@pytest.mark.xfail(raises=ftrack_api.exception.ServerError)
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError, 
+    reason='Require update permissions on testing user.'
+)
 def test_batch_create_entity_and_custom_attributes(
     new_entity_and_custom_attribute
 ):
