@@ -41,7 +41,13 @@ Release Notes
         .. note:: 
 
            You should now use :meth:`Session.call`.
- 
+
+    .. change:: fix
+        :tag: Location, api
+
+        Location are not inheriting from same base class.
+
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
