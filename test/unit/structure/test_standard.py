@@ -289,6 +289,10 @@ def test_component_without_committed_version_relation():
         structure.get_resource_identifier(file_component)
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError, 
+    reason='Due to user permission errors.'
+)
 def test_component_without_committed_asset_relation():
     '''Fail to get an identifer for component without a committed asset.'''
     file_component = new_file_component()
