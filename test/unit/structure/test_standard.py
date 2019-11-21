@@ -288,7 +288,7 @@ def test_component_without_committed_version_relation():
     with pytest.raises(ftrack_api.exception.StructureError):
         structure.get_resource_identifier(file_component)
 
-
+@pytest.mark.xfail(raises=ftrack_api.exception.ServerError)
 def test_component_without_committed_asset_relation():
     '''Fail to get an identifer for component without a committed asset.'''
     file_component = new_file_component()
