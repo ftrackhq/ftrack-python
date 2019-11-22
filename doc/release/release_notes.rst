@@ -18,6 +18,33 @@ Release Notes
     .. change:: changed
         :tags: session
 
+        Private method :meth:`Session._entity_reference` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.entity_reference`.
+
+    .. change:: changed
+        :tags: session
+        
+        Private method :meth:`Session._call` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.call`.
+
+    .. change:: changed
+        :tag: session
+
+        Public method :meth:`Session.delayed_job` has been deprecated.
+
+        .. note:: 
+
+           You should now use :meth:`Session.call`.
+ 
+    .. change:: changed
+        :tags: session
+
         Do not auto connect by default to event server hub.
 
 .. release:: 1.8.1
