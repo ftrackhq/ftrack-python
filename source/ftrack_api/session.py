@@ -77,7 +77,7 @@ class Session(object):
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=None, schema_cache_path=None,
+        auto_connect_event_hub=False, schema_cache_path=None,
         plugin_arguments=None
     ):
         '''Initialise session.
