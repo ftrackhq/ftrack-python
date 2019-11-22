@@ -15,7 +15,7 @@ Release Notes
     
         Provide support for python3.X.
 
-    .. change:: change
+    .. change:: changed
         :tags: session
 
         Do not auto connect by default to event server hub.
