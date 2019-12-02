@@ -181,16 +181,19 @@ def test_ensure_new_entity(session, unique_name):
 def test_ensure_entity_with_non_string_data_types(session):
     '''Ensure entity against non-string data types, creating first.'''
     datetime = arrow.get()
+
     task = session.query('Task').first()
-    user = session.get('User', session.api_user)
+    user = session.query(
+        'User where username is {}'.format(session.api_user)
+    ).first()
 
     first = session.ensure(
         'Timelog', 
         {
-            'start': datetime, 
-            'duration': 10, 
-            'user': user,
-            'context': task 
+            'start': datetime,
+            'duration': 10,
+            'user_id': user['id'],
+            'context_id': task['id']
         }
     )
 
@@ -200,8 +203,8 @@ def test_ensure_entity_with_non_string_data_types(session):
             {
                 'start': datetime, 
                 'duration': 10, 
-                'user': user,
-                'context': task 
+                'user_id': user['id'],
+                'context_id': task['id']
             }
         )
         assert not mocked.called
