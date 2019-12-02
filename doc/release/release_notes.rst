@@ -42,10 +42,10 @@ Release Notes
 
            You should now use :meth:`Session.call`.
 
-    .. change:: fix
-        :tag: Location, api
+    .. change:: new
+        :tag: Tests
 
-        Location are not inheriting from same base class.
+        Add support for flaky tests to improve test reliability.
 
 
 .. release:: 1.8.1
