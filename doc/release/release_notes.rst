@@ -42,7 +42,7 @@ Release Notes
 
            You should now use :meth:`Session.call`.
 
-    .. change:: fix
+    .. change:: fixed
         :tag: Location, Api
 
         Location Entities do not inherit from Location base class.
