@@ -611,7 +611,7 @@ class Location(ftrack_api.entity.base.Entity):
         return self.accessor.get_url(resource_identifier)
 
 
-class MemoryLocationMixin(Location):
+class MemoryLocationMixin(collections.MutableMapping):
     '''Represent storage for components.
 
     Unlike a standard location, only store metadata for components in this
@@ -679,7 +679,7 @@ class MemoryLocationMixin(Location):
         return resource_identifiers
 
 
-class UnmanagedLocationMixin(Location):
+class UnmanagedLocationMixin(collections.MutableMapping):
     '''Location that does not manage data.'''
 
     def _add_data(self, component, resource_identifier, source):
@@ -716,7 +716,7 @@ class OriginLocationMixin(MemoryLocationMixin, UnmanagedLocationMixin):
         return context
 
 
-class ServerLocationMixin(Location):
+class ServerLocationMixin(collections.MutableMapping):
     '''Location representing ftrack server.
 
     Adds convenience methods to location, specific to ftrack server.
