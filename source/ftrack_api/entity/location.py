@@ -14,6 +14,8 @@ import ftrack_api.symbol
 import ftrack_api.inspection
 from ftrack_api.logging import LazyLogMessage as L
 
+from future.utils import with_metaclass
+
 
 class Location(ftrack_api.entity.base.Entity):
     '''Represent storage for components.'''
@@ -611,7 +613,12 @@ class Location(ftrack_api.entity.base.Entity):
         return self.accessor.get_url(resource_identifier)
 
 
-class MemoryLocationMixin(collections.MutableMapping):
+class MemoryLocationMixin(
+    with_metaclass(
+        ftrack_api.entity.base.DynamicEntityTypeMetaclass, 
+        ftrack_api.entity.base._EntityBase, 
+        collections.MutableMapping
+    )):
     '''Represent storage for components.
 
     Unlike a standard location, only store metadata for components in this
@@ -679,7 +686,12 @@ class MemoryLocationMixin(collections.MutableMapping):
         return resource_identifiers
 
 
-class UnmanagedLocationMixin(collections.MutableMapping):
+class UnmanagedLocationMixin(    
+    with_metaclass(
+        ftrack_api.entity.base.DynamicEntityTypeMetaclass, 
+        ftrack_api.entity.base._EntityBase, 
+        collections.MutableMapping
+    )):
     '''Location that does not manage data.'''
 
     def _add_data(self, component, resource_identifier, source):
@@ -716,7 +728,12 @@ class OriginLocationMixin(MemoryLocationMixin, UnmanagedLocationMixin):
         return context
 
 
-class ServerLocationMixin(collections.MutableMapping):
+class ServerLocationMixin(    
+    with_metaclass(
+        ftrack_api.entity.base.DynamicEntityTypeMetaclass, 
+        ftrack_api.entity.base._EntityBase, 
+        collections.MutableMapping
+    )):
     '''Location representing ftrack server.
 
     Adds convenience methods to location, specific to ftrack server.
