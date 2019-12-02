@@ -45,7 +45,7 @@ Release Notes
     .. change:: fixed
         :tag: Location, Api
 
-        Location Entities do not inherit from Location base class.
+        Location entities do not inherit from same base class.
 
 
 .. release:: 1.8.1
