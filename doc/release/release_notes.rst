@@ -45,7 +45,7 @@ Release Notes
     .. change:: fixed
         :tag: Location, Api
 
-        Location entities do not inherit from same base class.
+        LocationMixins is not compatible with Python 3.
 
 
 .. release:: 1.8.1
