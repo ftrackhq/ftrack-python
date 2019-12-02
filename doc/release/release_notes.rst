@@ -42,6 +42,12 @@ Release Notes
 
            You should now use :meth:`Session.call`.
  
+    .. change:: fixed
+        :tag: Test
+
+        test_ensure_entity_with_non_string_data_types test fails due to missing parents.
+
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
