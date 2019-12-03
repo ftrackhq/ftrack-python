@@ -45,7 +45,7 @@ Release Notes
     .. change:: fixed
         :tag: Location, Api
 
-        LocationMixins is not compatible with Python 3.
+        LocationMixins are not compatible with Python 3.
 
 
 .. release:: 1.8.1
