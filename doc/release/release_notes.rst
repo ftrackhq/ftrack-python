@@ -41,7 +41,13 @@ Release Notes
         .. note:: 
 
            You should now use :meth:`Session.call`.
- 
+
+    .. change:: fixed
+        :tag: Location, Api
+
+        LocationMixins are not compatible with Python 3.
+
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
