@@ -16,7 +16,7 @@ Release Notes
         Provide support for python3.X.
 
     .. change:: changed
-        :tags: session
+        :tags: Session
 
         Private method :meth:`Session._entity_reference` has been deprecated.
 
@@ -25,7 +25,7 @@ Release Notes
             You should now use the public method :meth:`Session.entity_reference`.
 
     .. change:: changed
-        :tags: session
+        :tags: Session
         
         Private method :meth:`Session._call` has been deprecated.
 
@@ -34,16 +34,21 @@ Release Notes
             You should now use the public method :meth:`Session.call`.
 
     .. change:: changed
-        :tag: session
+        :tag: Session
 
         Public method :meth:`Session.delayed_job` has been deprecated.
 
         .. note:: 
 
            You should now use :meth:`Session.call`.
- 
+
+    .. change:: fixed
+        :tag: Location, Api
+
+        LocationMixins are not compatible with Python 3.
+
     .. change:: changed
-        :tags: session
+        :tags: Session
 
         Do not auto connect by default to event server hub.
 
