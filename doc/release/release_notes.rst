@@ -42,10 +42,16 @@ Release Notes
 
            You should now use :meth:`Session.call`.
 
+    .. change:: fixed
+        :tag: Location, Api
+
+        LocationMixins are not compatible with Python 3.
+    
     .. change:: new
         :tag: Tests
 
         Add support for flaky tests to improve test reliability.
+
 
 
 .. release:: 1.8.1
