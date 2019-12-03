@@ -41,11 +41,16 @@ Release Notes
         .. note:: 
 
            You should now use :meth:`Session.call`.
- 
+
+    .. change:: fixed
+        :tag: Location, Api
+
+        LocationMixins are not compatible with Python 3.
+    
     .. change:: fixed
         :tag: Test
 
-        test_ensure_entity_with_non_string_data_types test fails due to missing parents.
+        Entity test fails due to missing parents.
 
 
 .. release:: 1.8.1
