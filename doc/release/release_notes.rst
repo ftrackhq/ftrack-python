@@ -46,6 +46,11 @@ Release Notes
         :tag: Location, Api
 
         LocationMixins are not compatible with Python 3.
+    
+    .. change:: fixed
+        :tag: Test
+
+        Entity test fails due to missing parents.
 
 
 .. release:: 1.8.1
