@@ -46,6 +46,16 @@ Release Notes
         :tag: Location, Api
 
         LocationMixins are not compatible with Python 3.
+    
+    .. change:: fixed
+        :tag: Test
+
+        Entity test fails due to missing parents.
+
+    .. change:: new
+        :tag: Tests
+
+        Add support for flaky tests to improve test reliability.
 
     .. change:: changed
         :tags: Session
