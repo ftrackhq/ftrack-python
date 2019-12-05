@@ -52,6 +52,11 @@ Release Notes
 
         Entity test fails due to missing parents.
 
+    .. change:: new
+        :tag: Tests
+
+        Add support for flaky tests to improve test reliability.
+
 
 .. release:: 1.8.1
     :date: 2019-10-30
