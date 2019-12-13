@@ -12,17 +12,17 @@ Migration notes
     Migrating from the old ftrack API? Read the dedicated :ref:`guide
     <release/migrating_from_old_api>`.
 
-Migrate to upcoming 2.0.0
-=========================
+Migrate to 2.0.0
+================
 
 .. _release/migration/2.0.0/event_hub:
 
 Default behavior for connecting to event hub
 --------------------------------------------
 
-The default behavior for the `ftrack_api.Session` class will change
-for the argument `auto_connect_event_hub`, the default value will
-switch from True to False. In order for code relying on the event hub
+The default behavior for the `ftrack_api.Session` class has changed
+for the argument `auto_connect_event_hub`, the default value has
+switched from True to False. In order for code relying on the event hub
 to continue functioning as expected you must modify your code
 to explicitly set the argument to True or that you manually call
 `session.event_hub.connect()`.
