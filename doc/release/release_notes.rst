@@ -15,6 +15,11 @@ Release Notes
 
         Use WeakMethod when registering atexit handler to prevent memory leak.
 
+    .. change:: fixed
+        :tag: Test
+
+        test_ensure_entity_with_non_string_data_types test fails due to missing parents.
+
 .. release:: 1.8.1
     :date: 2019-10-30
 
