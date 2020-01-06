@@ -77,7 +77,7 @@ class Session(object):
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=None, schema_cache_path=None,
+        auto_connect_event_hub=False, schema_cache_path=None,
         plugin_arguments=None
     ):
         '''Initialise session.
@@ -242,7 +242,7 @@ class Session(object):
         )
 
         self._auto_connect_event_hub_thread = None
-        if auto_connect_event_hub in (None, True):
+        if auto_connect_event_hub:
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
             self._auto_connect_event_hub_thread = threading.Thread(
@@ -250,12 +250,6 @@ class Session(object):
             )
             self._auto_connect_event_hub_thread.daemon = True
             self._auto_connect_event_hub_thread.start()
-
-        # To help with migration from auto_connect_event_hub default changing
-        # from True to False.
-        self._event_hub._deprecation_warning_auto_connect = (
-            auto_connect_event_hub is None
-        )
 
         # Register to auto-close session on exit.
         atexit.register(self.close)

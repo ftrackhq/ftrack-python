@@ -57,6 +57,13 @@ Release Notes
 
         Add support for flaky tests to improve test reliability.
 
+    .. change:: changed
+        :tags: Session
+
+        Do not auto connect by default to event server hub.
+
+        .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
+
 
 .. release:: 1.8.1
     :date: 2019-10-30
