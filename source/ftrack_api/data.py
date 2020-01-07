@@ -115,9 +115,11 @@ class String(FileWrapper):
         )
 
         if content is not None:
-            self.wrapped_file.write(content.encode())
+            if not isinstance(content, bytes):
+                content = content.encode()
+    
+            self.wrapped_file.write(content)
             self.wrapped_file.seek(0)
-
 
     def write(self, content):
         if not isinstance(content, bytes):
@@ -128,6 +130,12 @@ class String(FileWrapper):
         )
 
     def read(self, limit=None):
-        return super(String, self).read(
+
+        content = super(String, self).read(
             limit
-        ).decode('utf-8')
+        )
+
+        if not isinstance(content, bytes):
+            content = content.decode('utf-8')
+
+        return content
