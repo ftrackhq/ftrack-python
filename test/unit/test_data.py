@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import sys
 import os
 import tempfile
 
@@ -12,7 +13,12 @@ import ftrack_api.data
 @pytest.fixture()
 def content():
     '''Return initial content.'''
-    return 'test data'
+    test_data = 'test data'
+
+    if sys.version_info[0] >= 3:
+        test_data = test_data.encode('ISO-8859-1') 
+
+    return test_data
 
 
 @pytest.fixture(params=['file', 'file_wrapper', 'string'])
