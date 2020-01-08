@@ -21,9 +21,6 @@ def data(request, content):
     '''Return cache.'''
 
     if request.param == 'string':
-        if sys.version_info > (3, 0):
-            content = content.encode('ISO-8859-1')
-
         data_object = ftrack_api.data.String(content)
 
     elif request.param == 'file':
