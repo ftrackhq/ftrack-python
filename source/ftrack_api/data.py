@@ -135,6 +135,7 @@ class String(FileWrapper):
             limit
         )
 
-        content = content.decode()
+        if not isinstance(content, bytes):
+            content = content.decode('utf-8')
 
         return content
