@@ -13,12 +13,7 @@ import ftrack_api.data
 @pytest.fixture()
 def content():
     '''Return initial content.'''
-    test_data = 'test data'
-
-    if sys.version_info[0] >= 3:
-        test_data = test_data.encode('ISO-8859-1') 
-
-    return test_data
+    return 'test data'
 
 
 @pytest.fixture(params=['file', 'file_wrapper', 'string'])
@@ -26,6 +21,9 @@ def data(request, content):
     '''Return cache.'''
 
     if request.param == 'string':
+        if sys.version_info > (3, 0):
+            content = content.encode('ISO-8859-1')
+
         data_object = ftrack_api.data.String(content)
 
     elif request.param == 'file':
