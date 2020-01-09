@@ -1,5 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
+from __future__ import unicode_literals
+from builtins import str
 
 import uuid
 
@@ -13,7 +15,7 @@ import ftrack_api.data
 
 def test_read_and_write(new_component, session):
     '''Read and write data from server accessor.'''
-    random_data = uuid.uuid1().hex
+    random_data = str(uuid.uuid1().hex).encode('utf-8')
 
     accessor = ftrack_api.accessor.server._ServerAccessor(session)
     http_file = accessor.open(new_component['id'], mode='wb')
