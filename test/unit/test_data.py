@@ -1,6 +1,9 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from __future__ import unicode_literals
+from builtins import str
+
 import sys
 import os
 import tempfile
@@ -13,7 +16,7 @@ import ftrack_api.data
 @pytest.fixture()
 def content():
     '''Return initial content.'''
-    return 'test data'
+    return str(u'test data')
 
 
 @pytest.fixture(params=['file', 'file_wrapper', 'string'])
@@ -62,16 +65,16 @@ def data(request, content):
 
 def test_read(data, content):
     '''Return content from current position up to *limit*.'''
-    assert data.read(5) == content[:5]
-    assert data.read() == content[5:]
+    assert data.read(5) == str(content[:5])
+    assert data.read() == str(content[5:])
 
 
 def test_write(data, content):
     '''Write content at current position.'''
-    assert data.read() == content
-    data.write('more test data')
+    assert data.read() == str(content)
+    data.write(str('more test data'))
     data.seek(0)
-    assert data.read() == content + 'more test data'
+    assert data.read() == str(content) + str('more test data')
 
 
 def test_flush(data):
@@ -83,7 +86,7 @@ def test_flush(data):
 def test_seek(data, content):
     '''Move internal pointer to *position*.'''
     data.seek(5)
-    assert data.read() == content[5:]
+    assert data.read() == str(content[5:]
 
 
 def test_tell(data):
