@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 1.8.2
+    :date: 2020-01-14
 
     .. change:: fixed
         :tag: Test
