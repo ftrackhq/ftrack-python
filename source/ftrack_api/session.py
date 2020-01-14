@@ -52,6 +52,11 @@ import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
 
+try:
+    from weakref import WeakMethod
+except ImportError:
+    from ftrack_api._weakref import WeakMethod
+
 
 class SessionAuthentication(requests.auth.AuthBase):
     '''Attach ftrack session authentication information to requests.'''
@@ -252,7 +257,7 @@ class Session(object):
             self._auto_connect_event_hub_thread.start()
 
         # Register to auto-close session on exit.
-        atexit.register(self.close)
+        atexit.register(WeakMethod(self.close))
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:

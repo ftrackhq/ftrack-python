@@ -9,6 +9,7 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
 .. release:: Upcoming
 
     .. change:: new 
@@ -64,6 +65,19 @@ Release Notes
 
         .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
 
+
+.. release:: 1.8.2
+    :date: 2020-01-14
+
+    .. change:: fixed
+        :tag: Test
+
+        test_ensure_entity_with_non_string_data_types test fails due to missing parents.
+
+    .. change:: changed
+        :tags: session
+
+        Use WeakMethod when registering atexit handler to prevent memory leak.
 
 .. release:: 1.8.1
     :date: 2019-10-30
