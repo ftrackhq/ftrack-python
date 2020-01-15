@@ -19,7 +19,13 @@ def content():
     return str(u'test data')
 
 
-@pytest.fixture(params=['file', 'file_wrapper', 'string'])
+@pytest.fixture(params=[
+    'file',
+    'file_wrapper',
+    pytest.mark.skipif(
+        sys.version_info > (3, 0), 
+        reason="Different String representation from Python2")('string')
+    ])
 def data(request, content):
     '''Return cache.'''
 
