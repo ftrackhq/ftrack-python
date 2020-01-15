@@ -63,7 +63,9 @@ class FileWrapper(Data):
         if limit is None:
             limit = -1
 
-        return self.wrapped_file.read(limit)
+        content = self.wrapped_file.read(limit)
+
+        return content
 
     def write(self, content):
         '''Write content at current position.'''
@@ -114,6 +116,28 @@ class String(FileWrapper):
             tempfile.TemporaryFile()
         )
 
-        if content is not None:
+        if content is not None:       
+            if not isinstance(content, bytes):
+                content = content.encode()
+
             self.wrapped_file.write(content)
             self.wrapped_file.seek(0)
+
+    def write(self, content):
+        if not isinstance(content, bytes):
+            content = content.encode()
+
+        super(String, self).write(
+            content
+        )
+
+    def read(self, limit=None):
+
+        content = super(String, self).read(
+            limit
+        )
+        
+        # if not isinstance(content, bytes):
+        #     content = content.decode('utf-8')
+
+        return content
