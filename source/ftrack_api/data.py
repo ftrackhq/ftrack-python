@@ -63,9 +63,7 @@ class FileWrapper(Data):
         if limit is None:
             limit = -1
 
-        content = self.wrapped_file.read(limit)
-
-        return content
+        return self.wrapped_file.read(limit)
 
     def write(self, content):
         '''Write content at current position.'''
