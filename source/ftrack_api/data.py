@@ -110,6 +110,9 @@ class String(FileWrapper):
 
     def __init__(self, content=None):
         '''Initialise data with *content*.'''
+
+        # Temporary file is binary by default which requires encoding and
+        # decoding.
         super(String, self).__init__(
             tempfile.TemporaryFile()
         )
@@ -130,9 +133,5 @@ class String(FileWrapper):
         )
 
     def read(self, limit=None):
-
-        content = super(String, self).read(
-            limit
-        )
-
+        content = super(String, self).read(limit)
         return content.decode('utf-8')
