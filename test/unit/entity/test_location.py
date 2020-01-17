@@ -527,3 +527,15 @@ def test_get_thumbnail_url(server_location, server_image_component):
     ).read()
 
     assert response.content == expected_image_contents
+
+
+def test_transfer_component_from_server(
+    server_location, server_image_component, new_location
+):
+    '''Test add component to new location from server location'''
+    new_location.add_component(server_image_component, server_location)
+
+    assert (
+        new_location.get_component_availability(server_image_component)
+        == 100.0
+    )
