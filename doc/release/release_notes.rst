@@ -12,6 +12,10 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fix 
+    
+        Transfer component from server storage breaks due to different string/byte handling 
+
     .. change:: new 
     
         Provide support for python3.X.
