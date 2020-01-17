@@ -15,7 +15,7 @@ import ftrack_api.data
 
 def test_read_and_write(new_component, session):
     '''Read and write data from server accessor.'''
-    random_data = str(uuid.uuid1().hex).encode('utf-8')
+    random_data = uuid.uuid1().hex
 
     accessor = ftrack_api.accessor.server._ServerAccessor(session)
     http_file = accessor.open(new_component['id'], mode='wb')
