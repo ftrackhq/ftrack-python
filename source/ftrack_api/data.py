@@ -110,17 +110,26 @@ class String(FileWrapper):
 
     def __init__(self, content=None):
         '''Initialise data with *content*.'''
+
+        # Track if data is binary or not. If it is binary then read should also
+        # return binary.
+        self.is_binary = True
+
         super(String, self).__init__(
             tempfile.TemporaryFile()
         )
 
         if content is not None:
-            self.wrapped_file.write(content.encode())
-            self.wrapped_file.seek(0)
+            if not isinstance(content, bytes):
+                self.is_binary = False
+                content = content.encode()
 
+            self.wrapped_file.write(content)
+            self.wrapped_file.seek(0)
 
     def write(self, content):
         if not isinstance(content, bytes):
+            self.is_binary = False
             content = content.encode()
 
         super(String, self).write(
@@ -128,6 +137,9 @@ class String(FileWrapper):
         )
 
     def read(self, limit=None):
-        return super(String, self).read(
-            limit
-        ).decode('utf-8')
+        content = super(String, self).read(limit)
+
+        if not self.is_binary:
+            content = content.decode('utf-8')
+
+        return content

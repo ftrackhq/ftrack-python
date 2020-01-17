@@ -527,3 +527,26 @@ def test_get_thumbnail_url(server_location, server_image_component):
     ).read()
 
     assert response.content == expected_image_contents
+
+
+# meta fixture to parametrise location fixtures
+# https://github.com/pytest-dev/pytest/issues/349
+@pytest.fixture(params=[
+    'new_location',
+    'new_unmanaged_location',
+    ]
+)
+def multi_location(request):
+    return request.getfuncargvalue(request.param)
+
+
+def test_transfer_component_from_server(
+    server_location, server_image_component, multi_location
+):
+    '''Test add component to new location from server location'''
+    multi_location.add_component(server_image_component, server_location)
+
+    assert (
+        multi_location.get_component_availability(server_image_component)
+        == 100.0
+    )

@@ -13,7 +13,7 @@ import ftrack_api.data
 
 def test_read_and_write(new_component, session):
     '''Read and write data from server accessor.'''
-    random_data = uuid.uuid1().hex
+    random_data = uuid.uuid1().hex.encode()
 
     accessor = ftrack_api.accessor.server._ServerAccessor(session)
     http_file = accessor.open(new_component['id'], mode='wb')
