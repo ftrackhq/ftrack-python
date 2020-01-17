@@ -116,7 +116,7 @@ class String(FileWrapper):
             tempfile.TemporaryFile()
         )
 
-        if content is not None:       
+        if content is not None:
             if not isinstance(content, bytes):
                 content = content.encode()
 
@@ -136,8 +136,5 @@ class String(FileWrapper):
         content = super(String, self).read(
             limit
         )
-        
-        # if not isinstance(content, bytes):
-        #     content = content.decode('utf-8')
 
-        return content
+        return content.decode('utf-8')
