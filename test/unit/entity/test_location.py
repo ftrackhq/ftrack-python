@@ -536,18 +536,32 @@ def test_get_thumbnail_url(server_location, server_image_component):
     'new_unmanaged_location',
     ]
 )
-def local_locations(request):
+def multi_location(request):
     return request.getfuncargvalue(request.param)
 
 
 def test_transfer_component_from_server(
-    server_location, server_image_component, local_locations
+    server_location, server_image_component, multi_location
 ):
     '''Test add component to new location from server location'''
-    local_locations.add_component(server_image_component, server_location)
+    multi_location.add_component(server_image_component, server_location)
 
     assert (
-        local_locations.get_component_availability(server_image_component)
+        multi_location.get_component_availability(server_image_component)
         == 100.0
     )
 
+def test_transfer_component_to_server(
+    session, server_location, temporary_file, multi_location
+):
+    '''Test add component to new server location from another location'''
+    new_location_component = session.create_component(
+        temporary_file, location=multi_location
+    )
+    session.commit()
+    server_location.add_component(new_location_component, multi_location)
+
+    assert (
+        server_location.get_component_availability(new_location_component)
+        == 100.0
+    )
