@@ -14,7 +14,7 @@ Release Notes
 
     .. change:: fix 
     
-        Transfer component from server storage breaks due to different string/byte handling 
+        Transfer component from server storage breaks due to different string/byte handling.
 
     .. change:: new 
     
