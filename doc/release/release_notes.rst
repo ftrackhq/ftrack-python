@@ -16,10 +16,6 @@ Release Notes
     
         Transfer component from server storage breaks due to different string/byte handling.
 
-    .. change:: new 
-    
-        Provide support for python3.X.
-
     .. change:: changed
         :tags: Session
 
@@ -69,6 +65,9 @@ Release Notes
 
         .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
 
+    .. change:: new 
+    
+        Provide support for python3.X.
 
 .. release:: 1.8.2
     :date: 2020-01-14
