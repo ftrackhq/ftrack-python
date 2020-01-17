@@ -1,7 +1,6 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import sys
 import os
 import tempfile
 
@@ -83,7 +82,7 @@ def test_flush(data):
 def test_seek(data, content):
     '''Move internal pointer to *position*.'''
     data.seek(5)
-    assert data.read() == str(content[5:])
+    assert data.read() == content[5:]
 
 
 def test_tell(data):
