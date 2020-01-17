@@ -550,18 +550,3 @@ def test_transfer_component_from_server(
         multi_location.get_component_availability(server_image_component)
         == 100.0
     )
-
-def test_transfer_component_to_server(
-    session, server_location, temporary_file, multi_location
-):
-    '''Test add component to new server location from another location'''
-    new_location_component = session.create_component(
-        temporary_file, location=multi_location
-    )
-    session.commit()
-    server_location.add_component(new_location_component, multi_location)
-
-    assert (
-        server_location.get_component_availability(new_location_component)
-        == 100.0
-    )
