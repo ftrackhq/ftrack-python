@@ -12,6 +12,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: events
+
+        Notify users on remote event server connection status when subscribing to events.
+
     .. change:: fix 
     
         Transfer component from server storage breaks due to different string/byte handling.
