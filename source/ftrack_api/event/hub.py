@@ -316,6 +316,16 @@ class EventHub(object):
         smaller values.
 
         '''
+
+        if not self._connection:
+            self.logger.debug(
+                'Event hub does not have a connection to the event server and '
+                'will therefore only be able to receive syncronous events.'
+                'Please see http://ftrack-python-api.rtd.ftrack.com/en/stable/'
+                'release/migration.html#default-behavior-for-connecting-to-event-hub'
+                ' for further information.'
+            )
+
         started = time.time()
 
         while True:
@@ -395,14 +405,6 @@ class EventHub(object):
         subscriber = self._add_subscriber(
             subscription, callback, subscriber, priority
         )
-
-        if not self.connected:
-            self.logger.warning(
-                'Cannot receive asynchronous events as not connected to '
-                'server. Please see http://ftrack-python-api.rtd.ftrack.com/en/'
-                'stable/release/migration.html#default-behavior-for-connecting-to-event-hub'
-                'for further information.'
-            )
 
         # Notify server now if possible.
         try:
