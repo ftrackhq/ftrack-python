@@ -396,6 +396,12 @@ class EventHub(object):
             subscription, callback, subscriber, priority
         )
 
+        if not self.connected:
+            self.logger.warning(
+                'Cannot receive asynchronous events as not connected to '
+                'server.'
+            )
+
         # Notify server now if possible.
         try:
             self._notify_server_about_subscriber(subscriber)
