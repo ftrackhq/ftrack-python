@@ -15,7 +15,7 @@ Release Notes
     .. change:: changed
         :tags: events
 
-        Notify users on remote event server connection status when waiting.
+        Notify users on remote event server connection status while waiting.
 
     .. change:: fix 
     
