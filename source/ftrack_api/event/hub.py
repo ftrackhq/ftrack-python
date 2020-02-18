@@ -317,8 +317,8 @@ class EventHub(object):
 
         '''
 
-        if not self._connection:
-            self.logger.warning(
+        if self._connection is None:
+            raise ftrack_api.exception.EventHubConnectionError(
                 'Event hub does not have a connection to the event server and '
                 'will therefore only be able to receive syncronous events.'
                 'Please see http://ftrack-python-api.rtd.ftrack.com/en/stable/'
