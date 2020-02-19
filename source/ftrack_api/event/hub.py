@@ -316,6 +316,16 @@ class EventHub(object):
         smaller values.
 
         '''
+
+        if self._connection is None:
+            raise ftrack_api.exception.EventHubConnectionError(
+                'Event hub does not have a connection to the event server and '
+                'will therefore only be able to receive syncronous events.'
+                'Please see http://ftrack-python-api.rtd.ftrack.com/en/stable/'
+                'release/migration.html#default-behavior-for-connecting-to-event-hub'
+                ' for further information.'
+            )
+
         started = time.time()
 
         while True:
