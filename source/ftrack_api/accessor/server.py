@@ -51,9 +51,9 @@ class ServerFile(String):
             params={
                 'id': self.resource_identifier,
                 'username': self._session.api_user,
-                'apiKey': self._session.api_key
+                'apiKey': self._session.api_key,
             },
-            stream=True
+            stream=True,
         )
 
         try:
@@ -75,7 +75,9 @@ class ServerFile(String):
         self.seek(0)
 
         # Retrieve component from cache to construct a filename.
-        component = self._session.get('FileComponent', self.resource_identifier)
+        component = self._session.get(
+            'FileComponent', self.resource_identifier
+        )
         if not component:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 'Unable to retrieve component with id: {0}.'.format(
@@ -86,17 +88,14 @@ class ServerFile(String):
         # Construct a name from component name and file_type.
         name = component['name']
         if component['file_type']:
-            name = u'{0}.{1}'.format(
-                name,
-                component['file_type'].lstrip('.')
-            )
+            name = u'{0}.{1}'.format(name, component['file_type'].lstrip('.'))
 
         try:
             metadata = self._session.get_upload_metadata(
                 component_id=self.resource_identifier,
                 file_name=name,
                 file_size=self._get_size(),
-                checksum=self._compute_checksum()
+                checksum=self._compute_checksum(),
             )
         except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
@@ -110,7 +109,7 @@ class ServerFile(String):
         response = requests.put(
             metadata['url'],
             data=self.wrapped_file,
-            headers=metadata['headers']
+            headers=metadata['headers'],
         )
 
         try:
@@ -161,7 +160,9 @@ class _ServerAccessor(Accessor):
 
     def open(self, resource_identifier, mode='rb'):
         '''Return :py:class:`~ftrack_api.Data` for *resource_identifier*.'''
-        return ServerFile(resource_identifier, session=self._session, mode=mode)
+        return ServerFile(
+            resource_identifier, session=self._session, mode=mode
+        )
 
     def remove(self, resourceIdentifier):
         '''Remove *resourceIdentifier*.'''
@@ -170,8 +171,8 @@ class _ServerAccessor(Accessor):
             params={
                 'id': resourceIdentifier,
                 'username': self._session.api_user,
-                'apiKey': self._session.api_key
-            }
+                'apiKey': self._session.api_key,
+            },
         )
         if response.status_code != 200:
             raise ftrack_api.exception.AccessorOperationFailedError(
@@ -215,7 +216,7 @@ class _ServerAccessor(Accessor):
             url=self._session.server_url,
             id=resource_identifier,
             username=self._session.api_user,
-            apiKey=self._session.api_key
+            apiKey=self._session.api_key,
         )
 
     def get_thumbnail_url(self, resource_identifier, size=None):
@@ -232,7 +233,7 @@ class _ServerAccessor(Accessor):
             url=self._session.server_url,
             id=resource_identifier,
             username=self._session.api_user,
-            apiKey=self._session.api_key
+            apiKey=self._session.api_key,
         )
         if size:
             url += u'&size={0}'.format(size)

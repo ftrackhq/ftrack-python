@@ -115,9 +115,7 @@ class String(FileWrapper):
         # return binary.
         self.is_binary = True
 
-        super(String, self).__init__(
-            tempfile.TemporaryFile()
-        )
+        super(String, self).__init__(tempfile.TemporaryFile())
 
         if content is not None:
             if not isinstance(content, bytes):
@@ -132,9 +130,7 @@ class String(FileWrapper):
             self.is_binary = False
             content = content.encode()
 
-        super(String, self).write(
-            content
-        )
+        super(String, self).write(content)
 
     def read(self, limit=None):
         content = super(String, self).read(limit)

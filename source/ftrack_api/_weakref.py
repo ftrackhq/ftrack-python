@@ -53,7 +53,9 @@ class WeakMethod(ref):
         if isinstance(other, WeakMethod):
             if not self._alive or not other._alive:
                 return self is other
-            return ref.__eq__(self, other) and self._func_ref == other._func_ref
+            return (
+                ref.__eq__(self, other) and self._func_ref == other._func_ref
+            )
         return NotImplemented
 
     def __ne__(self, other):

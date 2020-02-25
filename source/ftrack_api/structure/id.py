@@ -61,7 +61,7 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
             else:
                 name = entity['id'][4:] + entity['file_type']
-                parts = ([self.prefix] + list(entity['id'][:4]) + [name])
+                parts = [self.prefix] + list(entity['id'][:4]) + [name]
 
         elif entity.entity_type in ('SequenceComponent',):
             name = 'file'
@@ -71,21 +71,26 @@ class IdStructure(ftrack_api.structure.base.Structure):
             name += '.{0}'.format(sequence_expression)
 
             if (
-                entity['file_type'] and
-                entity['file_type'] is not ftrack_api.symbol.NOT_SET
+                entity['file_type']
+                and entity['file_type'] is not ftrack_api.symbol.NOT_SET
             ):
                 name += entity['file_type']
 
-            parts = ([self.prefix] + list(entity['id'][:4])
-                     + [entity['id'][4:]] + [name])
+            parts = (
+                [self.prefix]
+                + list(entity['id'][:4])
+                + [entity['id'][4:]]
+                + [name]
+            )
 
         elif entity.entity_type in ('ContainerComponent',):
             # Just an id directory
-            parts = ([self.prefix] +
-                     list(entity['id'][:4]) + [entity['id'][4:]])
+            parts = [self.prefix] + list(entity['id'][:4]) + [entity['id'][4:]]
 
         else:
-            raise NotImplementedError('Cannot generate path for unsupported '
-                                      'entity {0}'.format(entity))
+            raise NotImplementedError(
+                'Cannot generate path for unsupported '
+                'entity {0}'.format(entity)
+            )
 
         return self.path_separator.join(parts).strip('/')

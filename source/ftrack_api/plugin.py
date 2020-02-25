@@ -48,8 +48,9 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                     module = imp.load_source(unique_name, module_path)
                 except Exception as error:
                     logger.warning(
-                        'Failed to load plugin from "{0}": {1}'
-                        .format(module_path, error)
+                        'Failed to load plugin from "{0}": {1}'.format(
+                            module_path, error
+                        )
                     )
                     continue
 
@@ -58,8 +59,9 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                 except AttributeError:
                     logger.warning(
                         'Failed to load plugin that did not define a '
-                        '"register" function at the module level: {0}'
-                        .format(module_path)
+                        '"register" function at the module level: {0}'.format(
+                            module_path
+                        )
                     )
                 else:
                     # Attempt to only pass arguments that are accepted by the
@@ -69,38 +71,39 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                     selected_positional_arguments = positional_arguments
                     selected_keyword_arguments = keyword_arguments
 
-                    if (
-                        not specification.varargs and
-                        len(positional_arguments) > len(specification.args)
-                    ):
+                    if not specification.varargs and len(
+                        positional_arguments
+                    ) > len(specification.args):
                         logger.warning(
                             'Culling passed arguments to match register '
                             'function signature.'
                         )
 
                         selected_positional_arguments = positional_arguments[
-                            len(specification.args):
+                            len(specification.args) :
                         ]
                         selected_keyword_arguments = {}
 
                     elif not specification.keywords:
                         # Remove arguments that have been passed as positionals.
                         remainder = specification.args[
-                            len(positional_arguments):
+                            len(positional_arguments) :
                         ]
 
                         # Determine remaining available keyword arguments.
                         defined_keyword_arguments = []
                         if specification.defaults:
                             defined_keyword_arguments = specification.args[
-                                -len(specification.defaults):
+                                -len(specification.defaults) :
                             ]
 
-                        remaining_keyword_arguments = set([
-                            keyword_argument for keyword_argument
-                            in defined_keyword_arguments
-                            if keyword_argument in remainder
-                        ])
+                        remaining_keyword_arguments = set(
+                            [
+                                keyword_argument
+                                for keyword_argument in defined_keyword_arguments
+                                if keyword_argument in remainder
+                            ]
+                        )
 
                         if not set(keyword_arguments.keys()).issubset(
                             remaining_keyword_arguments
@@ -111,11 +114,13 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                             )
                             selected_keyword_arguments = {
                                 key: value
-                                for key, value in list(keyword_arguments.items())
+                                for key, value in list(
+                                    keyword_arguments.items()
+                                )
                                 if key in remaining_keyword_arguments
                             }
 
                     module.register(
                         *selected_positional_arguments,
-                        **selected_keyword_arguments
+                        **selected_keyword_arguments,
                     )

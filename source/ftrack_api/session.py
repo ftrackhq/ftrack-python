@@ -69,10 +69,9 @@ class SessionAuthentication(requests.auth.AuthBase):
 
     def __call__(self, request):
         '''Modify *request* to have appropriate headers.'''
-        request.headers.update({
-            'ftrack-api-key': self.api_key,
-            'ftrack-user': self.api_user
-        })
+        request.headers.update(
+            {'ftrack-api-key': self.api_key, 'ftrack-user': self.api_user}
+        )
         return request
 
 
@@ -80,10 +79,17 @@ class Session(object):
     '''An isolated session for interaction with an ftrack server.'''
 
     def __init__(
-        self, server_url=None, api_key=None, api_user=None, auto_populate=True,
-        plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None
+        self,
+        server_url=None,
+        api_key=None,
+        api_user=None,
+        auto_populate=True,
+        plugin_paths=None,
+        cache=None,
+        cache_key_maker=None,
+        auto_connect_event_hub=False,
+        schema_cache_path=None,
+        plugin_arguments=None,
     ):
         '''Initialise session.
 
@@ -176,7 +182,7 @@ class Session(object):
             api_key = os.environ.get(
                 'FTRACK_API_KEY',
                 # Backwards compatibility
-                os.environ.get('FTRACK_APIKEY')
+                os.environ.get('FTRACK_APIKEY'),
             )
 
         if not api_key:
@@ -214,9 +220,9 @@ class Session(object):
 
         # Enforce always having a memory cache at top level so that the same
         # in-memory instance is returned from session.
-        self.cache = ftrack_api.cache.LayeredCache([
-            ftrack_api.cache.MemoryCache()
-        ])
+        self.cache = ftrack_api.cache.LayeredCache(
+            [ftrack_api.cache.MemoryCache()]
+        )
 
         if cache is not None:
             if callable(cache):
@@ -241,9 +247,7 @@ class Session(object):
 
         # Construct event hub and load plugins.
         self._event_hub = ftrack_api.event.hub.EventHub(
-            self._server_url,
-            self._api_user,
-            self._api_key,
+            self._server_url, self._api_user, self._api_key,
         )
 
         self._auto_connect_event_hub_thread = None
@@ -287,12 +291,9 @@ class Session(object):
         self._configure_locations()
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.ready',
-                data=dict(
-                    session=self
-                )
+                topic='ftrack.api.session.ready', data=dict(session=self)
             ),
-            synchronous=True
+            synchronous=True,
         )
 
     def __enter__(self):
@@ -367,15 +368,13 @@ class Session(object):
         # Perform basic version check.
         if server_version != 'dev':
             min_server_version = '3.3.11'
-            if (
-                distutils.version.LooseVersion(min_server_version)
-                > distutils.version.LooseVersion(server_version)
-            ):
+            if distutils.version.LooseVersion(
+                min_server_version
+            ) > distutils.version.LooseVersion(server_version):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0} incompatible with this version of the '
                     'API which requires a server version >= {1}'.format(
-                        server_version,
-                        min_server_version
+                        server_version, min_server_version
                     )
                 )
 
@@ -454,12 +453,9 @@ class Session(object):
 
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.reset',
-                data=dict(
-                    session=self
-                )
+                topic='ftrack.api.session.reset', data=dict(session=self)
             ),
-            synchronous=True
+            synchronous=True,
         )
 
     def auto_populating(self, auto_populate):
@@ -495,7 +491,8 @@ class Session(object):
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in zip(entities, states)
+            entity
+            for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.CREATED
         ]
 
@@ -506,7 +503,8 @@ class Session(object):
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in zip(entities, states)
+            entity
+            for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.MODIFIED
         ]
 
@@ -517,7 +515,8 @@ class Session(object):
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in zip(entities, states)
+            entity
+            for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.DELETED
         ]
 
@@ -531,20 +530,17 @@ class Session(object):
         supported server side reset types.
         '''
 
-        payload = {
-            'action': 'reset_remote',
-            'reset_type': reset_type
-        }
+        payload = {'action': 'reset_remote', 'reset_type': reset_type}
 
         if entity is not None:
-            payload.update({
-                'entity_type': entity.entity_type,
-                'entity_key': entity.get('id')
-            })
+            payload.update(
+                {
+                    'entity_type': entity.entity_type,
+                    'entity_key': entity.get('id'),
+                }
+            )
 
-        result = self.call(
-            [payload]
-        )
+        result = self.call([payload])
 
         return result[0]['data']
 
@@ -630,16 +626,22 @@ class Session(object):
         if not identifying_keys:
             identifying_keys = list(data.keys())
 
-        self.logger.debug(L(
-            'Ensuring entity {0!r} with data {1!r} using identifying keys '
-            '{2!r}', entity_type, data, identifying_keys
-        ))
+        self.logger.debug(
+            L(
+                'Ensuring entity {0!r} with data {1!r} using identifying keys '
+                '{2!r}',
+                entity_type,
+                data,
+                identifying_keys,
+            )
+        )
 
         if not identifying_keys:
             raise ValueError(
                 'Could not determine any identifying data to check against '
-                'when ensuring {0!r} with data {1!r}. Identifying keys: {2!r}'
-                .format(entity_type, data, identifying_keys)
+                'when ensuring {0!r} with data {1!r}. Identifying keys: {2!r}'.format(
+                    entity_type, data, identifying_keys
+                )
             )
 
         expression = '{0} where'.format(entity_type)
@@ -663,9 +665,7 @@ class Session(object):
 
             criteria.append('{0} is {1}'.format(identifying_key, value))
 
-        expression = '{0} {1}'.format(
-            expression, ' and '.join(criteria)
-        )
+        expression = '{0} {1}'.format(expression, ' and '.join(criteria))
 
         try:
             entity = self.query(expression).one()
@@ -688,7 +688,9 @@ class Session(object):
                     updated = True
 
             if updated:
-                self.logger.debug('Updating existing entity to match new data.')
+                self.logger.debug(
+                    'Updating existing entity to match new data.'
+                )
                 self.commit()
 
         return entity
@@ -699,7 +701,7 @@ class Session(object):
             self.recorded_operations.push(
                 ftrack_api.operation.DeleteEntityOperation(
                     entity.entity_type,
-                    ftrack_api.inspection.primary_key(entity)
+                    ftrack_api.inspection.primary_key(entity),
                 )
             )
 
@@ -721,17 +723,17 @@ class Session(object):
         if len(entity_key) != len(primary_key_definition):
             raise ValueError(
                 'Incompatible entity_key {0!r} supplied. Entity type {1} '
-                'expects a primary key composed of {2} values ({3}).'
-                .format(
-                    entity_key, entity_type, len(primary_key_definition),
-                    ', '.join(primary_key_definition)
+                'expects a primary key composed of {2} values ({3}).'.format(
+                    entity_key,
+                    entity_type,
+                    len(primary_key_definition),
+                    ', '.join(primary_key_definition),
                 )
             )
 
         entity = None
         try:
             entity = self._get(entity_type, entity_key)
-
 
         except KeyError:
 
@@ -764,14 +766,17 @@ class Session(object):
         cache_key = self.cache_key_maker.key(
             (str(entity_type), list(map(str, entity_key)))
         )
-        self.logger.debug(L(
-            'Checking cache for entity with key {0}', cache_key
-        ))
+        self.logger.debug(
+            L('Checking cache for entity with key {0}', cache_key)
+        )
         entity = self.cache.get(cache_key)
-        self.logger.debug(L(
-            'Retrieved existing entity from cache: {0} at {1}',
-            entity, id(entity)
-        ))
+        self.logger.debug(
+            L(
+                'Retrieved existing entity from cache: {0} at {1}',
+                entity,
+                id(entity),
+            )
+        )
 
         return entity
 
@@ -800,8 +805,7 @@ class Session(object):
             projections = EntityTypeClass.default_projections
 
             expression = 'select {0} from {1}'.format(
-                ', '.join(projections),
-                expression
+                ', '.join(projections), expression
             )
 
         query_result = ftrack_api.query.QueryResult(
@@ -818,10 +822,7 @@ class Session(object):
         '''
         # TODO: Actually support batching several queries together.
         # TODO: Should batches have unique ids to match them up later.
-        batch = [{
-            'action': 'query',
-            'expression': expression
-        }]
+        batch = [{'action': 'query', 'expression': expression}]
 
         # TODO: When should this execute? How to handle background=True?
         results = self.call(batch)
@@ -854,37 +855,36 @@ class Session(object):
 
         if isinstance(value, ftrack_api.entity.base.Entity):
             log_debug and self.logger.debug(
-                'Merging entity into session: {0} at {1}'
-                .format(value, id(value))
+                'Merging entity into session: {0} at {1}'.format(
+                    value, id(value)
+                )
             )
 
             return self._merge_entity(value, merged=merged)
 
         elif isinstance(value, ftrack_api.collection.Collection):
             log_debug and self.logger.debug(
-                'Merging collection into session: {0!r} at {1}'
-                .format(value, id(value))
+                'Merging collection into session: {0!r} at {1}'.format(
+                    value, id(value)
+                )
             )
 
             merged_collection = []
             for entry in value:
-                merged_collection.append(
-                    self._merge(entry, merged=merged)
-                )
+                merged_collection.append(self._merge(entry, merged=merged))
 
             return merged_collection
 
         elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
             log_debug and self.logger.debug(
-                'Merging mapped collection into session: {0!r} at {1}'
-                .format(value, id(value))
+                'Merging mapped collection into session: {0!r} at {1}'.format(
+                    value, id(value)
+                )
             )
 
             merged_collection = []
             for entry in value.collection:
-                merged_collection.append(
-                    self._merge(entry, merged=merged)
-                )
+                merged_collection.append(self._merge(entry, merged=merged))
 
             return merged_collection
 
@@ -909,8 +909,8 @@ class Session(object):
                 (
                     ftrack_api.entity.base.Entity,
                     ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy
-                )
+                    ftrack_api.collection.MappedCollectionProxy,
+                ),
             ):
                 log_debug and self.logger.debug(
                     'Merging remote value for attribute {0}.'.format(attribute)
@@ -957,15 +957,17 @@ class Session(object):
             attached_entity = merged.get(entity_key)
             if attached_entity is not None:
                 log_debug and self.logger.debug(
-                    'Entity already processed for key {0} as {1} at {2}'
-                    .format(entity_key, attached_entity, id(attached_entity))
+                    'Entity already processed for key {0} as {1} at {2}'.format(
+                        entity_key, attached_entity, id(attached_entity)
+                    )
                 )
 
                 return attached_entity
             else:
                 log_debug and self.logger.debug(
-                    'Entity not already processed for key {0}.'
-                    .format(entity_key)
+                    'Entity not already processed for key {0}.'.format(
+                        entity_key
+                    )
                 )
 
             # Check for existing instance of entity in cache.
@@ -976,8 +978,9 @@ class Session(object):
                 attached_entity = self.cache.get(entity_key)
 
                 log_debug and self.logger.debug(
-                    'Retrieved existing entity from cache: {0} at {1}'
-                    .format(attached_entity, id(attached_entity))
+                    'Retrieved existing entity from cache: {0} at {1}'.format(
+                        attached_entity, id(attached_entity)
+                    )
                 )
 
             except KeyError:
@@ -1028,9 +1031,9 @@ class Session(object):
             skipped as they have no remote values to fetch.
 
         '''
-        self.logger.debug(L(
-            'Populate {0!r} projections for {1}.', projections, entities
-        ))
+        self.logger.debug(
+            L('Populate {0!r} projections for {1}.', projections, entities)
+        )
 
         if not isinstance(
             entities, (list, tuple, ftrack_api.query.QueryResult)
@@ -1045,15 +1048,21 @@ class Session(object):
         entities_to_process = []
 
         for entity in entities:
-            if ftrack_api.inspection.state(entity) is ftrack_api.symbol.CREATED:
+            if (
+                ftrack_api.inspection.state(entity)
+                is ftrack_api.symbol.CREATED
+            ):
                 # Created entities that are not yet persisted have no remote
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
                 # are NOT_SET.
-                self.logger.debug(L(
-                    'Skipping newly created entity {0!r} for population as no '
-                    'data will exist in the remote for this entity yet.', entity
-                ))
+                self.logger.debug(
+                    L(
+                        'Skipping newly created entity {0!r} for population as no '
+                        'data will exist in the remote for this entity yet.',
+                        entity,
+                    )
+                )
                 continue
 
             entities_to_process.append(entity)
@@ -1086,10 +1095,11 @@ class Session(object):
 
                 if len(entity_keys) > 1:
                     query = '{0} where {1} in ({2})'.format(
-                        query, primary_key,
-                        ','.join([
-                            str(entity_key[0]) for entity_key in entity_keys
-                        ])
+                        query,
+                        primary_key,
+                        ','.join(
+                            [str(entity_key[0]) for entity_key in entity_keys]
+                        ),
                     )
                 else:
                     query = '{0} where {1} is {2}'.format(
@@ -1126,12 +1136,14 @@ class Session(object):
                     entity_data.update(operation.entity_key)
                     entity_data.update(operation.entity_data)
 
-                    payload = OperationPayload({
-                        'action': 'create',
-                        'entity_type': operation.entity_type,
-                        'entity_key': list(operation.entity_key.values()),
-                        'entity_data': entity_data
-                    })
+                    payload = OperationPayload(
+                        {
+                            'action': 'create',
+                            'entity_type': operation.entity_type,
+                            'entity_key': list(operation.entity_key.values()),
+                            'entity_data': entity_data,
+                        }
+                    )
 
                 elif isinstance(
                     operation, ftrack_api.operation.UpdateEntityOperation
@@ -1140,24 +1152,28 @@ class Session(object):
                         # At present, data payload requires duplicating entity
                         # type.
                         '__entity_type__': operation.entity_type,
-                        operation.attribute_name: operation.new_value
+                        operation.attribute_name: operation.new_value,
                     }
 
-                    payload = OperationPayload({
-                        'action': 'update',
-                        'entity_type': operation.entity_type,
-                        'entity_key': list(operation.entity_key.values()),
-                        'entity_data': entity_data
-                    })
+                    payload = OperationPayload(
+                        {
+                            'action': 'update',
+                            'entity_type': operation.entity_type,
+                            'entity_key': list(operation.entity_key.values()),
+                            'entity_data': entity_data,
+                        }
+                    )
 
                 elif isinstance(
                     operation, ftrack_api.operation.DeleteEntityOperation
                 ):
-                    payload = OperationPayload({
-                        'action': 'delete',
-                        'entity_type': operation.entity_type,
-                        'entity_key': list(operation.entity_key.values())
-                    })
+                    payload = OperationPayload(
+                        {
+                            'action': 'delete',
+                            'entity_type': operation.entity_type,
+                            'entity_key': list(operation.entity_key.values()),
+                        }
+                    )
 
                 else:
                     raise ValueError(
@@ -1205,13 +1221,15 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] in ('update', ):
+            if payload['action'] in ('update',):
                 for key, value in list(payload['entity_data'].items()):
                     if key == '__entity_type__':
                         continue
 
                     identity = (
-                        payload['entity_type'], str(payload['entity_key']), key
+                        payload['entity_type'],
+                        str(payload['entity_key']),
+                        key,
                     )
                     if identity in updates_map:
                         del payload['entity_data'][key]
@@ -1320,10 +1338,12 @@ class Session(object):
                     if isinstance(
                         operation, ftrack_api.operation.CreateEntityOperation
                     ):
-                        entity_key = str((
-                            str(operation.entity_type),
-                            list(operation.entity_key.values())
-                        ))
+                        entity_key = str(
+                            (
+                                str(operation.entity_type),
+                                list(operation.entity_key.values()),
+                            )
+                        )
                         try:
                             self.cache.remove(entity_key)
                         except KeyError:
@@ -1369,14 +1389,14 @@ class Session(object):
         schemas in JSON format.
 
         '''
-        self.logger.debug(L(
-            'Reading schemas from cache {0!r}', schema_cache_path
-        ))
+        self.logger.debug(
+            L('Reading schemas from cache {0!r}', schema_cache_path)
+        )
 
         if not os.path.exists(schema_cache_path):
-            self.logger.info(L(
-                'Cache file not found at {0!r}.', schema_cache_path
-            ))
+            self.logger.info(
+                L('Cache file not found at {0!r}.', schema_cache_path)
+            )
 
             return [], None
 
@@ -1395,9 +1415,12 @@ class Session(object):
         written to in JSON format.
 
         '''
-        self.logger.debug(L(
-            'Updating schema cache {0!r} with new schemas.', schema_cache_path
-        ))
+        self.logger.debug(
+            L(
+                'Updating schema cache {0!r} with new schemas.',
+                schema_cache_path,
+            )
+        )
 
         with open(schema_cache_path, 'w') as local_cache_file:
             json.dump(schemas, local_cache_file, indent=4)
@@ -1424,36 +1447,42 @@ class Session(object):
             except (IOError, TypeError, AttributeError, ValueError):
                 # Catch any known exceptions when trying to read the local
                 # schema cache to prevent API from being unusable.
-                self.logger.exception(L(
-                    'Schema cache could not be loaded from {0!r}',
-                    schema_cache_path
-                ))
+                self.logger.exception(
+                    L(
+                        'Schema cache could not be loaded from {0!r}',
+                        schema_cache_path,
+                    )
+                )
 
         # Use `dictionary.get` to retrieve hash to support older version of
         # ftrack server not returning a schema hash.
-        server_hash = self._server_information.get(
-            'schema_hash', False
-        )
+        server_hash = self._server_information.get('schema_hash', False)
         if local_schema_hash != server_hash:
-            self.logger.debug(L(
-                'Loading schemas from server due to hash not matching.'
-                'Local: {0!r} != Server: {1!r}', local_schema_hash, server_hash
-            ))
+            self.logger.debug(
+                L(
+                    'Loading schemas from server due to hash not matching.'
+                    'Local: {0!r} != Server: {1!r}',
+                    local_schema_hash,
+                    server_hash,
+                )
+            )
             schemas = self.call([{'action': 'query_schemas'}])[0]
 
             if schema_cache_path:
                 try:
                     self._write_schemas_to_cache(schemas, schema_cache_path)
                 except (IOError, TypeError):
-                    self.logger.exception(L(
-                        'Failed to update schema cache {0!r}.',
-                        schema_cache_path
-                    ))
+                    self.logger.exception(
+                        L(
+                            'Failed to update schema cache {0!r}.',
+                            schema_cache_path,
+                        )
+                    )
 
         else:
-            self.logger.debug(L(
-                'Using cached schemas from {0!r}', schema_cache_path
-            ))
+            self.logger.debug(
+                L('Using cached schemas from {0!r}', schema_cache_path)
+            )
 
         return schemas
 
@@ -1466,28 +1495,29 @@ class Session(object):
             results = self.event_hub.publish(
                 ftrack_api.event.base.Event(
                     topic='ftrack.api.session.construct-entity-type',
-                    data=dict(
-                        schema=schema,
-                        schemas=schemas
-                    )
+                    data=dict(schema=schema, schemas=schemas),
                 ),
-                synchronous=True
+                synchronous=True,
             )
 
             results = [result for result in results if result is not None]
 
             if not results:
-                self.logger.debug(L(
-                    'Using default StandardFactory to construct entity type '
-                    'class for "{0}"', schema['id']
-                ))
+                self.logger.debug(
+                    L(
+                        'Using default StandardFactory to construct entity type '
+                        'class for "{0}"',
+                        schema['id'],
+                    )
+                )
                 entity_type_class = fallback_factory.create(schema)
 
             elif len(results) > 1:
                 raise ValueError(
                     'Expected single entity type to represent schema "{0}" but '
-                    'received {1} entity types instead.'
-                    .format(schema['id'], len(results))
+                    'received {1} entity types instead.'.format(
+                        schema['id'], len(results)
+                    )
                 )
 
             else:
@@ -1505,14 +1535,14 @@ class Session(object):
         location = self.create(
             'Location',
             data=dict(
-                name='ftrack.origin',
-                id=ftrack_api.symbol.ORIGIN_LOCATION_ID
+                name='ftrack.origin', id=ftrack_api.symbol.ORIGIN_LOCATION_ID
             ),
-            reconstructing=True
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.OriginLocationMixin,
-            name='OriginLocation'
+            location,
+            ftrack_api.entity.location.OriginLocationMixin,
+            name='OriginLocation',
         )
         location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
         location.structure = ftrack_api.structure.origin.OriginStructure()
@@ -1523,13 +1553,14 @@ class Session(object):
             'Location',
             data=dict(
                 name='ftrack.unmanaged',
-                id=ftrack_api.symbol.UNMANAGED_LOCATION_ID
+                id=ftrack_api.symbol.UNMANAGED_LOCATION_ID,
             ),
-            reconstructing=True
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.UnmanagedLocationMixin,
-            name='UnmanagedLocation'
+            location,
+            ftrack_api.entity.location.UnmanagedLocationMixin,
+            name='UnmanagedLocation',
         )
         location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
         location.structure = ftrack_api.structure.origin.OriginStructure()
@@ -1542,14 +1573,14 @@ class Session(object):
         location = self.create(
             'Location',
             data=dict(
-                name='ftrack.review',
-                id=ftrack_api.symbol.REVIEW_LOCATION_ID
+                name='ftrack.review', id=ftrack_api.symbol.REVIEW_LOCATION_ID
             ),
-            reconstructing=True
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.UnmanagedLocationMixin,
-            name='UnmanagedLocation'
+            location,
+            ftrack_api.entity.location.UnmanagedLocationMixin,
+            name='UnmanagedLocation',
         )
         location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
         location.structure = ftrack_api.structure.origin.OriginStructure()
@@ -1559,14 +1590,14 @@ class Session(object):
         location = self.create(
             'Location',
             data=dict(
-                name='ftrack.server',
-                id=ftrack_api.symbol.SERVER_LOCATION_ID
+                name='ftrack.server', id=ftrack_api.symbol.SERVER_LOCATION_ID
             ),
-            reconstructing=True
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.ServerLocationMixin,
-            name='ServerLocation'
+            location,
+            ftrack_api.entity.location.ServerLocationMixin,
+            name='ServerLocation',
         )
         location.accessor = ftrack_api.accessor.server._ServerAccessor(
             session=self
@@ -1577,29 +1608,22 @@ class Session(object):
         # Master location based on server scenario.
         storage_scenario = self.server_information.get('storage_scenario')
 
-        if (
-            storage_scenario and
-            storage_scenario.get('scenario')
-        ):
+        if storage_scenario and storage_scenario.get('scenario'):
             self.event_hub.publish(
                 ftrack_api.event.base.Event(
                     topic='ftrack.storage-scenario.activate',
-                    data=dict(
-                        storage_scenario=storage_scenario
-                    )
+                    data=dict(storage_scenario=storage_scenario),
                 ),
-                synchronous=True
+                synchronous=True,
             )
 
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
                 topic='ftrack.api.session.configure-location',
-                data=dict(
-                    session=self
-                )
+                data=dict(session=self),
             ),
-            synchronous=True
+            synchronous=True,
         )
 
     def call(self, data):
@@ -1607,28 +1631,25 @@ class Session(object):
         url = self._server_url + '/api'
         headers = {
             'content-type': 'application/json',
-            'accept': 'application/json'
+            'accept': 'application/json',
         }
         data = self.encode(data, entity_attribute_strategy='modified_only')
 
         self.logger.debug(L('Calling server {0} with {1!r}', url, data))
 
-        response = self._request.post(
-            url,
-            headers=headers,
-            data=data
-        )
+        response = self._request.post(url, headers=headers, data=data)
 
-        self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
+        self.logger.debug(
+            L('Call took: {0}', response.elapsed.total_seconds())
+        )
 
         self.logger.debug(L('Response: {0!r}', response.text))
         try:
             result = self.decode(response.text)
 
         except Exception:
-            error_message = (
-                'Server reported error in unexpected format. Raw error was: {0}'
-                .format(response.text)
+            error_message = 'Server reported error in unexpected format. Raw error was: {0}'.format(
+                response.text
             )
             self.logger.exception(error_message)
             raise ftrack_api.exception.ServerError(error_message)
@@ -1659,14 +1680,17 @@ class Session(object):
 
         '''
         entity_attribute_strategies = (
-            'all', 'set_only', 'modified_only', 'persisted_only'
+            'all',
+            'set_only',
+            'modified_only',
+            'persisted_only',
         )
         if entity_attribute_strategy not in entity_attribute_strategies:
             raise ValueError(
                 'Unsupported entity_attribute_strategy "{0}". Must be one of '
                 '{1}'.format(
                     entity_attribute_strategy,
-                    ', '.join(entity_attribute_strategies)
+                    ', '.join(entity_attribute_strategies),
                 )
             )
 
@@ -1675,8 +1699,8 @@ class Session(object):
             sort_keys=True,
             default=functools.partial(
                 self._encode,
-                entity_attribute_strategy=entity_attribute_strategy
-            )
+                entity_attribute_strategy=entity_attribute_strategy,
+            ),
         )
 
     def _encode(self, item, entity_attribute_strategy='set_only'):
@@ -1687,10 +1711,7 @@ class Session(object):
 
         '''
         if isinstance(item, (arrow.Arrow, datetime.datetime, datetime.date)):
-            return {
-                '__type__': 'datetime',
-                'value': item.isoformat()
-            }
+            return {'__type__': 'datetime', 'value': item.isoformat()}
 
         if isinstance(item, OperationPayload):
             data = dict(list(item.items()))
@@ -1730,16 +1751,16 @@ class Session(object):
                         if isinstance(
                             attribute, ftrack_api.attribute.ReferenceAttribute
                         ):
-                            if isinstance(value, ftrack_api.entity.base.Entity):
+                            if isinstance(
+                                value, ftrack_api.entity.base.Entity
+                            ):
                                 value = self.entity_reference(value)
 
                         data[attribute.name] = value
 
             return data
 
-        if isinstance(
-            item, ftrack_api.collection.MappedCollectionProxy
-        ):
+        if isinstance(item, ftrack_api.collection.MappedCollectionProxy):
             # Use proxied collection for serialisation.
             item = item.collection
 
@@ -1759,9 +1780,7 @@ class Session(object):
         the key, value pairs that make up it's primary key.
 
         '''
-        reference = {
-            '__entity_type__': entity.entity_type
-        }
+        reference = {'__entity_type__': entity.entity_type}
         with self.auto_populating(False):
             reference.update(ftrack_api.inspection.primary_key(entity))
 
@@ -1798,12 +1817,12 @@ class Session(object):
 
         # Filter.
         if filter_inaccessible:
-            locations = [location for location in locations if location.accessor]
+            locations = [
+                location for location in locations if location.accessor
+            ]
 
         # Sort by priority.
-        locations = sorted(
-            locations, key=lambda location: location.priority
-        )
+        locations = sorted(locations, key=lambda location: location.priority)
 
         return locations
 
@@ -1854,9 +1873,7 @@ class Session(object):
 
         return locations
 
-    def create_component(
-        self, path, data=None, location='auto'
-    ):
+    def create_component(self, path, data=None, location='auto'):
         '''Create a new component from *path* with additional *data*
 
         .. note::
@@ -1899,7 +1916,9 @@ class Session(object):
             # specific names. Add the component to the ftrack.review location if
             # so. This is used to not break backwards compatibility.
             if data.get('name') in (
-                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
+                'ftrackreview-mp4',
+                'ftrackreview-webm',
+                'ftrackreview-image',
             ):
                 location = self.get(
                     'Location', ftrack_api.symbol.REVIEW_LOCATION_ID
@@ -1957,7 +1976,7 @@ class Session(object):
                     'name': collection.match(member_path).group('index'),
                     'container': container,
                     'size': member_sizes[member_path],
-                    'file_type': os.path.splitext(member_path)[-1]
+                    'file_type': os.path.splitext(member_path)[-1],
                 }
 
                 component = self._create_component(
@@ -2052,7 +2071,7 @@ class Session(object):
         if container_components:
             self.populate(
                 container_components,
-                'members, component_locations.location_id'
+                'members, component_locations.location_id',
             )
 
         base_availability = {}
@@ -2072,10 +2091,10 @@ class Session(object):
                 for member, member_availability in zip(
                     component['members'], member_availabilities
                 ):
-                    for location_id, ratio in list(member_availability.items()):
-                        availability[location_id] += (
-                            ratio * multiplier
-                        )
+                    for location_id, ratio in list(
+                        member_availability.items()
+                    ):
+                        availability[location_id] += ratio * multiplier
             else:
                 for component_location in component['component_locations']:
                     location_id = component_location['location_id']
@@ -2107,15 +2126,11 @@ class Session(object):
         (defaulting to 'dark' if an invalid option given).
 
         '''
-        operation = {
-            'action': 'get_widget_url',
-            'name': name,
-            'theme': theme
-        }
+        operation = {'action': 'get_widget_url', 'name': name, 'theme': theme}
         if entity:
             operation['entity_type'] = entity.entity_type
-            operation['entity_key'] = (
-                list(ftrack_api.inspection.primary_key(entity).values())
+            operation['entity_key'] = list(
+                ftrack_api.inspection.primary_key(entity).values()
             )
 
         try:
@@ -2191,17 +2206,14 @@ class Session(object):
                 component_data = dict(version_id=version_id)
 
             component = self.create_component(
-                path=media,
-                data=component_data,
-                location=server_location
+                path=media, data=component_data, location=server_location
             )
 
             # Auto commit to ensure component exists when sent to server.
             self.commit()
 
-        elif (
-            hasattr(media, 'entity_type') and
-            media.entity_type in ('FileComponent',)
+        elif hasattr(media, 'entity_type') and media.entity_type in (
+            'FileComponent',
         ):
             # Existing file component.
             component = media
@@ -2217,7 +2229,7 @@ class Session(object):
             'action': 'encode_media',
             'component_id': component['id'],
             'version_id': version_id,
-            'keep_original': keep_original
+            'keep_original': keep_original,
         }
 
         try:
@@ -2257,7 +2269,7 @@ class Session(object):
             'component_id': component_id,
             'file_name': file_name,
             'file_size': file_size,
-            'checksum': checksum
+            'checksum': checksum,
         }
 
         try:
@@ -2269,9 +2281,7 @@ class Session(object):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support '
                     '"get_upload_metadata", please update server and try '
-                    'again.'.format(
-                        self.server_information.get('version')
-                    )
+                    'again.'.format(self.server_information.get('version'))
                 )
             else:
                 raise
@@ -2285,9 +2295,7 @@ class Session(object):
 
         '''
 
-        self.send_user_invites(
-            [user]
-        )
+        self.send_user_invites([user])
 
     def send_user_invites(self, users):
         '''Send a invitation to the provided *user*.
@@ -2300,10 +2308,7 @@ class Session(object):
 
         for user in users:
             operations.append(
-                {
-                    'action':'send_user_invite',
-                    'user_id': user['id']
-                }
+                {'action': 'send_user_invite', 'user_id': user['id']}
             )
 
         try:
@@ -2315,9 +2320,7 @@ class Session(object):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support '
                     '"send_user_invite", please update server and '
-                    'try again.'.format(
-                        self.server_information.get('version')
-                    )
+                    'try again.'.format(self.server_information.get('version'))
                 )
             else:
                 raise
@@ -2350,7 +2353,7 @@ class Session(object):
             operations.append(
                 {
                     'action': 'send_review_session_invite',
-                    'review_session_invitee_id': invitee['id']
+                    'review_session_invitee_id': invitee['id'],
                 }
             )
 
@@ -2358,13 +2361,14 @@ class Session(object):
             self.call(operations)
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'send_review_session_invite\'' in error.message:
+            if (
+                'Invalid action u\'send_review_session_invite\''
+                in error.message
+            ):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support '
                     '"send_review_session_invite", please update server and '
-                    'try again.'.format(
-                        self.server_information.get('version')
-                    )
+                    'try again.'.format(self.server_information.get('version'))
                 )
             else:
                 raise
@@ -2421,9 +2425,7 @@ class OperationPayload(collections.MutableMapping):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} {1}>'.format(
-            self.__class__.__name__, str(self._data)
-        )
+        return '<{0} {1}>'.format(self.__class__.__name__, str(self._data))
 
     def __getitem__(self, key):
         '''Return value for *key*.'''

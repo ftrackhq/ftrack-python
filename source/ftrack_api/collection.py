@@ -74,7 +74,7 @@ class Collection(collections.MutableSequence):
                     ftrack_api.inspection.primary_key(self.entity),
                     self.attribute.name,
                     old_value,
-                    self
+                    self,
                 )
             )
 
@@ -224,9 +224,7 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
 
     '''
 
-    def __init__(
-        self, collection, creator, key_attribute, value_attribute
-    ):
+    def __init__(self, collection, creator, key_attribute, value_attribute):
         '''Initialise collection.'''
         self.creator = creator
         self.key_attribute = key_attribute
@@ -251,15 +249,12 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
         try:
             entity = self._get_entity_by_key(key)
         except KeyError:
-            data = {
-                self.key_attribute: key,
-                self.value_attribute: value
-            }
+            data = {self.key_attribute: key, self.value_attribute: value}
             entity = self.creator(self, data)
 
             if (
-                ftrack_api.inspection.state(entity) is
-                ftrack_api.symbol.CREATED
+                ftrack_api.inspection.state(entity)
+                is ftrack_api.symbol.CREATED
             ):
                 # Persisting this entity will be handled here, record the
                 # operation.
@@ -311,9 +306,7 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
 
     def keys(self):
         # COMPAT for unit tests..
-        return list(super(
-            KeyValueMappedCollectionProxy, self
-        ).keys())
+        return list(super(KeyValueMappedCollectionProxy, self).keys())
 
 
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
@@ -355,9 +348,7 @@ def _get_custom_attribute_configurations(session):
 class CustomAttributeCollectionProxy(MappedCollectionProxy):
     '''A mapped collection of custom attribute value entities.'''
 
-    def __init__(
-        self, collection
-    ):
+    def __init__(self, collection):
         '''Initialise collection.'''
         self.key_attribute = 'configuration_id'
         self.value_attribute = 'value'
@@ -391,18 +382,16 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             entity_type = 'user'
 
         if entity_type is None:
-            raise ValueError(
-                'Entity {!r} not supported.'.format(entity)
-            )
+            raise ValueError('Entity {!r} not supported.'.format(entity))
 
         configurations = []
         for configuration in _get_custom_attribute_configurations(
             entity.session
         ):
             if (
-                configuration['entity_type'] == entity_type and
-                configuration['project_id'] in (project_id, None) and
-                configuration['object_type_id'] == object_type_id
+                configuration['entity_type'] == entity_type
+                and configuration['project_id'] in (project_id, None)
+                and configuration['object_type_id'] == object_type_id
             ):
                 configurations.append(configuration)
 
@@ -467,7 +456,7 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             data = {
                 self.key_attribute: self.get_configuration_id_from_key(key),
                 self.value_attribute: value,
-                'entity_id': entity['id']
+                'entity_id': entity['id'],
             }
 
             # Make sure to use the currently active collection. This is
@@ -492,10 +481,13 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
 
             custom_attribute_value.session.delete(custom_attribute_value)
         else:
-            self.logger.warning(L(
-                'Cannot delete {0!r} on {1!r}, no custom attribute value set.',
-                key, self.collection.entity
-            ))
+            self.logger.warning(
+                L(
+                    'Cannot delete {0!r} on {1!r}, no custom attribute value set.',
+                    key,
+                    self.collection.entity,
+                )
+            )
 
     def __eq__(self, collection):
         '''Return True if *collection* equals proxy collection.'''

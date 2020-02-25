@@ -7,9 +7,7 @@ import ftrack_api.entity.base
 class AssetVersion(ftrack_api.entity.base.Entity):
     '''Represent asset version.'''
 
-    def create_component(
-        self, path, data=None, location=None
-    ):
+    def create_component(self, path, data=None, location=None):
         '''Create a new component from *path* with additional *data*
 
         .. note::
@@ -44,7 +42,9 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         data.pop('version_id', None)
         data['version'] = self
 
-        return self.session.create_component(path, data=data, location=location)
+        return self.session.create_component(
+            path, data=data, location=location
+        )
 
     def encode_media(self, media, keep_original='auto'):
         '''Return a new Job that encode *media* to make it playable in browsers.

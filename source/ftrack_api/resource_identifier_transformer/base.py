@@ -3,6 +3,8 @@
 
 
 from builtins import object
+
+
 class ResourceIdentifierTransformer(object):
     '''Transform resource identifiers.
 

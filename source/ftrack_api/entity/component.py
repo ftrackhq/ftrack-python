@@ -59,16 +59,16 @@ class CreateThumbnailMixin(object):
         )
         server_location.add_component(thumbnail_component, [origin_location])
 
-        # TODO: This commit can be avoided by reordering the operations in 
+        # TODO: This commit can be avoided by reordering the operations in
         # this method so that the component is transferred to ftrack.server
         # after the thumbnail has been set.
-        # 
+        #
         # There is currently a bug in the API backend, causing the operations
         # to *some* times be ordered wrongly, where the update occurs before
         # the component has been created, causing an integrity error.
-        # 
+        #
         # Once this issue has been resolved, this commit can be removed and
-        # and the update placed between component creation and registration. 
+        # and the update placed between component creation and registration.
         self['thumbnail_id'] = thumbnail_component['id']
         self.session.commit()
 

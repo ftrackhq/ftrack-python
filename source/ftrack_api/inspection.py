@@ -11,10 +11,7 @@ import ftrack_api.operation
 
 def identity(entity):
     '''Return unique identity of *entity*.'''
-    return (
-        str(entity.entity_type),
-        list(primary_key(entity).values())
-    )
+    return (str(entity.entity_type), list(primary_key(entity).values()))
 
 
 def primary_key(entity):
@@ -43,24 +40,18 @@ def primary_key(entity):
 def _state(operation, state):
     '''Return state following *operation* against current *state*.'''
     if (
-        isinstance(
-            operation, ftrack_api.operation.CreateEntityOperation
-        )
+        isinstance(operation, ftrack_api.operation.CreateEntityOperation)
         and state is ftrack_api.symbol.NOT_SET
     ):
         state = ftrack_api.symbol.CREATED
 
     elif (
-        isinstance(
-            operation, ftrack_api.operation.UpdateEntityOperation
-        )
+        isinstance(operation, ftrack_api.operation.UpdateEntityOperation)
         and state is ftrack_api.symbol.NOT_SET
     ):
         state = ftrack_api.symbol.MODIFIED
 
-    elif isinstance(
-        operation, ftrack_api.operation.DeleteEntityOperation
-    ):
+    elif isinstance(operation, ftrack_api.operation.DeleteEntityOperation):
         state = ftrack_api.symbol.DELETED
 
     return state
@@ -83,8 +74,8 @@ def state(entity):
                 (
                     ftrack_api.operation.CreateEntityOperation,
                     ftrack_api.operation.UpdateEntityOperation,
-                    ftrack_api.operation.DeleteEntityOperation
-                )
+                    ftrack_api.operation.DeleteEntityOperation,
+                ),
             )
             and operation.entity_type == entity.entity_type
             and operation.entity_key == primary_key(entity)
@@ -118,17 +109,18 @@ def states(entities):
         entities_by_identity[key] = ftrack_api.symbol.NOT_SET
 
     for operation in session.recorded_operations:
-        if (
-            isinstance(
-                operation,
-                (
-                    ftrack_api.operation.CreateEntityOperation,
-                    ftrack_api.operation.UpdateEntityOperation,
-                    ftrack_api.operation.DeleteEntityOperation
-                )
-            )
+        if isinstance(
+            operation,
+            (
+                ftrack_api.operation.CreateEntityOperation,
+                ftrack_api.operation.UpdateEntityOperation,
+                ftrack_api.operation.DeleteEntityOperation,
+            ),
         ):
-            key = (operation.entity_type, str(list(operation.entity_key.values())))
+            key = (
+                operation.entity_type,
+                str(list(operation.entity_key.values())),
+            )
             if key not in entities_by_identity:
                 continue
 

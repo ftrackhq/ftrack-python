@@ -41,7 +41,7 @@ class QueryResult(collections.Sequence):
         (
             self._expression,
             self._offset,
-            self._limit
+            self._limit,
         ) = self._extract_offset_and_limit(expression)
 
         self._page_size = page_size
@@ -66,8 +66,8 @@ class QueryResult(collections.Sequence):
         if match:
             offset = int(match.group('value'))
             expression = (
-                expression[:match.start('offset')] +
-                expression[match.end('offset'):]
+                expression[: match.start('offset')]
+                + expression[match.end('offset') :]
             )
 
         limit = None
@@ -75,8 +75,8 @@ class QueryResult(collections.Sequence):
         if match:
             limit = int(match.group('value'))
             expression = (
-                expression[:match.start('limit')] +
-                expression[match.end('limit'):]
+                expression[: match.start('limit')]
+                + expression[match.end('limit') :]
             )
 
         return expression.strip(), offset, limit
@@ -113,7 +113,7 @@ class QueryResult(collections.Sequence):
         if self._limit is not None and (len(self._results) >= self._limit):
             # Original limit reached.
             self._next_offset = None
-            del self._results[self._limit:]
+            del self._results[self._limit :]
         else:
             # Retrieve next page offset from returned metadata.
             self._next_offset = metadata.get('next', {}).get('offset', None)
@@ -146,9 +146,7 @@ class QueryResult(collections.Sequence):
         expression = self._expression
 
         if self._limit is not None:
-            raise ValueError(
-                'Expression already contains a limit clause.'
-            )
+            raise ValueError('Expression already contains a limit clause.')
 
         if self._offset is not None:
             raise ValueError(
@@ -183,9 +181,7 @@ class QueryResult(collections.Sequence):
         expression = self._expression
 
         if self._limit is not None:
-            raise ValueError(
-                'Expression already contains a limit clause.'
-            )
+            raise ValueError('Expression already contains a limit clause.')
 
         # Apply custom offset if present.
         if self._offset is not None:

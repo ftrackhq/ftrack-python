@@ -17,7 +17,7 @@ from ftrack_api.exception import (
     AccessorPermissionDeniedError,
     AccessorResourceInvalidError,
     AccessorContainerNotEmptyError,
-    AccessorParentResourceNotFoundError
+    AccessorParentResourceNotFoundError,
 )
 
 
@@ -166,12 +166,12 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                 raise AccessorParentResourceNotFoundError(
                     resource_identifier=resource_identifier,
                     message='Could not determine container for '
-                            '{resource_identifier} as container falls outside '
-                            'of configured prefix.'
+                    '{resource_identifier} as container falls outside '
+                    'of configured prefix.',
                 )
 
             # Convert container filesystem path into resource identifier.
-            container = container[len(self.prefix):]
+            container = container[len(self.prefix) :]
             if ntpath.isabs(container):
                 # Ensure that resulting path is relative by stripping any
                 # leftover prefixed slashes from string.
@@ -210,8 +210,8 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                 raise AccessorFilesystemPathError(
                     resource_identifier=resource_identifier,
                     message='Could not determine access path for '
-                            'resource_identifier outside of configured prefix: '
-                            '{resource_identifier}.'
+                    'resource_identifier outside of configured prefix: '
+                    '{resource_identifier}.',
                 )
 
         return filesystem_path
@@ -226,7 +226,6 @@ def error_handler(**kw):
     except (OSError, IOError) as error:
         (exception_type, exception_value, traceback) = sys.exc_info()
         kw.setdefault('error', error)
-
 
         error_code = getattr(error, 'errno')
         if not error_code:

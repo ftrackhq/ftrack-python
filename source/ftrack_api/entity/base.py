@@ -19,6 +19,7 @@ from future.utils import with_metaclass
 
 class _EntityBase(object):
     '''Base class to allow for mixins, we need a common base.'''
+
     pass
 
 
@@ -30,12 +31,17 @@ class DynamicEntityTypeMetaclass(abc.ABCMeta):
         Derive from same metaclass as derived bases to avoid conflicts.
 
     '''
+
     def __repr__(self):
         '''Return representation of class.'''
         return '<dynamic ftrack class \'{0}\'>'.format(self.__name__)
 
 
-class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections.MutableMapping)):
+class Entity(
+    with_metaclass(
+        DynamicEntityTypeMetaclass, _EntityBase, collections.MutableMapping
+    )
+):
     '''Base class for all entities.'''
 
     entity_type = 'Entity'
@@ -67,10 +73,13 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         if data is None:
             data = {}
 
-        self.logger.debug(L(
-            '{0} entity from {1!r}.',
-            ('Reconstructing' if reconstructing else 'Constructing'), data
-        ))
+        self.logger.debug(
+            L(
+                '{0} entity from {1!r}.',
+                ('Reconstructing' if reconstructing else 'Constructing'),
+                data,
+            )
+        )
 
         self._ignore_data_keys = ['__entity_type__']
         if not reconstructing:
@@ -96,7 +105,6 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
                     attribute.set_local_value(self, default_value)
 
-
             # Data represents locally set values.
             for key, value in list(data.items()):
                 if key in self._ignore_data_keys:
@@ -104,16 +112,20 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
                 attribute = self.__class__.attributes.get(key)
                 if attribute is None:
-                    self.logger.debug(L(
-                        'Cannot populate {0!r} attribute as no such '
-                        'attribute found on entity {1!r}.', key, self
-                    ))
+                    self.logger.debug(
+                        L(
+                            'Cannot populate {0!r} attribute as no such '
+                            'attribute found on entity {1!r}.',
+                            key,
+                            self,
+                        )
+                    )
                     continue
 
-                if not isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                    relational_attributes.setdefault(
-                        attribute, value
-                    )
+                if not isinstance(
+                    attribute, ftrack_api.attribute.ScalarAttribute
+                ):
+                    relational_attributes.setdefault(attribute, value)
 
                 else:
                     attribute.set_local_value(self, value)
@@ -145,7 +157,7 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                 ftrack_api.operation.CreateEntityOperation(
                     self.entity_type,
                     ftrack_api.inspection.primary_key(self),
-                    entity_data
+                    entity_data,
                 )
             )
 
@@ -155,9 +167,7 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
             # in the correct order as the newly created attributes might
             # contain references to the newly created entity.
 
-            attribute.set_local_value(
-                self, value
-            )
+            attribute.set_local_value(self, value)
 
     def _reconstruct(self, data):
         '''Reconstruct from *data*.'''
@@ -168,10 +178,14 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
             attribute = self.__class__.attributes.get(key)
             if attribute is None:
-                self.logger.debug(L(
-                    'Cannot populate {0!r} attribute as no such attribute '
-                    'found on entity {1!r}.', key, self
-                ))
+                self.logger.debug(
+                    L(
+                        'Cannot populate {0!r} attribute as no such attribute '
+                        'found on entity {1!r}.',
+                        key,
+                        self,
+                    )
+                )
                 continue
 
             attribute.set_remote_value(self, value)
@@ -187,7 +201,9 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         with self.session.auto_populating(False):
             primary_key = ['Unknown']
             try:
-                primary_key = list(ftrack_api.inspection.primary_key(self).values())
+                primary_key = list(
+                    ftrack_api.inspection.primary_key(self).values()
+                )
             except KeyError:
                 pass
 
@@ -209,10 +225,9 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
         '''
         try:
-            return (
-                ftrack_api.inspection.identity(other)
-                == ftrack_api.inspection.identity(self)
-            )
+            return ftrack_api.inspection.identity(
+                other
+            ) == ftrack_api.inspection.identity(self)
         except (AttributeError, KeyError):
             return False
 
@@ -328,12 +343,14 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                     )
 
                     attribute.set_local_value(self, merged_local_value)
-                    changes.append({
-                        'type': 'local_attribute',
-                        'name': attribute.name,
-                        'old_value': local_value,
-                        'new_value': merged_local_value
-                    })
+                    changes.append(
+                        {
+                            'type': 'local_attribute',
+                            'name': attribute.name,
+                            'old_value': local_value,
+                            'new_value': merged_local_value,
+                        }
+                    )
                     log_debug and self.logger.debug(
                         log_message.format(**changes[-1])
                     )
@@ -347,16 +364,16 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                         other_remote_value, merged=merged
                     )
 
-                    attribute.set_remote_value(
-                        self, merged_remote_value
-                    )
+                    attribute.set_remote_value(self, merged_remote_value)
 
-                    changes.append({
-                        'type': 'remote_attribute',
-                        'name': attribute.name,
-                        'old_value': remote_value,
-                        'new_value': merged_remote_value
-                    })
+                    changes.append(
+                        {
+                            'type': 'remote_attribute',
+                            'name': attribute.name,
+                            'old_value': remote_value,
+                            'new_value': merged_remote_value,
+                        }
+                    )
 
                     log_debug and self.logger.debug(
                         log_message.format(**changes[-1])
@@ -366,28 +383,27 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                     # they may store a local copy of the remote attribute
                     # even though it may not be modified.
                     if not isinstance(
-                        attribute, ftrack_api.attribute.AbstractCollectionAttribute
+                        attribute,
+                        ftrack_api.attribute.AbstractCollectionAttribute,
                     ):
                         continue
 
-                    local_value = attribute.get_local_value(
-                        self
-                    )
+                    local_value = attribute.get_local_value(self)
 
                     # Populated but not modified, update it.
                     if (
-                        local_value is not ftrack_api.symbol.NOT_SET and
-                        local_value == remote_value
+                        local_value is not ftrack_api.symbol.NOT_SET
+                        and local_value == remote_value
                     ):
-                        attribute.set_local_value(
-                            self, merged_remote_value
+                        attribute.set_local_value(self, merged_remote_value)
+                        changes.append(
+                            {
+                                'type': 'local_attribute',
+                                'name': attribute.name,
+                                'old_value': local_value,
+                                'new_value': merged_remote_value,
+                            }
                         )
-                        changes.append({
-                            'type': 'local_attribute',
-                            'name': attribute.name,
-                            'old_value': local_value,
-                            'new_value': merged_remote_value
-                        })
 
                         log_debug and self.logger.debug(
                             log_message.format(**changes[-1])
@@ -400,7 +416,10 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         projections = []
         for attribute in self.attributes:
             if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                if attribute.get_remote_value(self) is ftrack_api.symbol.NOT_SET:
+                if (
+                    attribute.get_remote_value(self)
+                    is ftrack_api.symbol.NOT_SET
+                ):
                     projections.append(attribute.name)
 
         if projections:

@@ -71,20 +71,17 @@ class ConfigureCentralizedStorageScenario(object):
             location = self.session.get(
                 'Location', select_location['location_id']
             )
-            location_text = (
-                u'You have choosen to use an existing location: {0}'.format(
-                    location['label']
-                )
+            location_text = u'You have choosen to use an existing location: {0}'.format(
+                location['label']
             )
 
         mount_points_text = str(
-            '* Linux: {linux}\n'
-            '* OS X: {osx}\n'
-            '* Windows: {windows}\n\n'
+            '* Linux: {linux}\n' '* OS X: {osx}\n' '* Windows: {windows}\n\n'
         ).format(
             linux=select_mount_point.get('linux_mount_point') or '*Not set*',
             osx=select_mount_point.get('osx_mount_point') or '*Not set*',
-            windows=select_mount_point.get('windows_mount_point') or '*Not set*'
+            windows=select_mount_point.get('windows_mount_point')
+            or '*Not set*',
         )
 
         mount_points_not_set = []
@@ -102,9 +99,7 @@ class ConfigureCentralizedStorageScenario(object):
             mount_points_text += str(
                 'Please be aware that this location will not be working on '
                 '{missing} because the mount points are not set up.'
-            ).format(
-                missing=' and '.join(mount_points_not_set)
-            )
+            ).format(missing=' and '.join(mount_points_not_set))
 
         text = str(
             '#Confirm storage setup#\n\n'
@@ -115,10 +110,7 @@ class ConfigureCentralizedStorageScenario(object):
             '{location}\n'
             '##Mount points##\n\n'
             '{mount_points}'
-        ).format(
-            location=location_text,
-            mount_points=mount_points_text
-        )
+        ).format(location=location_text, mount_points=mount_points_text)
 
         return text
 
@@ -131,7 +123,7 @@ class ConfigureCentralizedStorageScenario(object):
             'select_structure',
             'select_mount_point',
             'confirm_summary',
-            'save_configuration'
+            'save_configuration',
         )
 
         warning_message = ''
@@ -142,11 +134,15 @@ class ConfigureCentralizedStorageScenario(object):
         next_step = steps[steps.index(previous_step) + 1]
         state = 'configuring'
 
-        self.logger.info(L(
-            u'Configuring scenario, previous step: {0}, next step: {1}. '
-            u'Values {2!r}.',
-            previous_step, next_step, values
-        ))
+        self.logger.info(
+            L(
+                u'Configuring scenario, previous step: {0}, next step: {1}. '
+                u'Values {2!r}.',
+                previous_step,
+                next_step,
+                values,
+            )
+        )
 
         if 'configuration' in values:
             configuration = values.pop('configuration')
@@ -174,30 +170,37 @@ class ConfigureCentralizedStorageScenario(object):
 
         if next_step == 'select_location':
             try:
-                location_id = (
-                    self.existing_centralized_storage_configuration['location_id']
-                )
+                location_id = self.existing_centralized_storage_configuration[
+                    'location_id'
+                ]
             except (KeyError, TypeError):
                 location_id = None
 
-            options = [{
-                'label': 'Create new location',
-                'value': 'create_new_location'
-            }]
+            options = [
+                {
+                    'label': 'Create new location',
+                    'value': 'create_new_location',
+                }
+            ]
             for location in self.session.query(
                 'select name, label, description from Location'
             ):
                 if location['name'] not in (
-                    'ftrack.origin', 'ftrack.unmanaged', 'ftrack.connect',
-                    'ftrack.server', 'ftrack.review'
+                    'ftrack.origin',
+                    'ftrack.unmanaged',
+                    'ftrack.connect',
+                    'ftrack.server',
+                    'ftrack.review',
                 ):
-                    options.append({
-                        'label': u'{label} ({name})'.format(
-                            label=location['label'], name=location['name']
-                        ),
-                        'description': location['description'],
-                        'value': location['id']
-                    })
+                    options.append(
+                        {
+                            'label': u'{label} ({name})'.format(
+                                label=location['label'], name=location['name']
+                            ),
+                            'description': location['description'],
+                            'value': location['id'],
+                        }
+                    )
 
             warning = ''
             if location_id is not None:
@@ -218,34 +221,34 @@ class ConfigureCentralizedStorageScenario(object):
                 # are currently active in the centralized storage scenario.
                 default_value = None
 
-            items = [{
-                'type': 'label',
-                'value': (
-                    '#Select location#\n'
-                    'Choose an already existing location or create a new one '
-                    'to represent your centralized storage. {0}'.format(
-                        warning
-                    )
-                )
-            }, {
-                'type': 'enumerator',
-                'label': 'Location',
-                'name': 'location_id',
-                'value': default_value,
-                'data': options
-            }]
+            items = [
+                {
+                    'type': 'label',
+                    'value': (
+                        '#Select location#\n'
+                        'Choose an already existing location or create a new one '
+                        'to represent your centralized storage. {0}'.format(
+                            warning
+                        )
+                    ),
+                },
+                {
+                    'type': 'enumerator',
+                    'label': 'Location',
+                    'name': 'location_id',
+                    'value': default_value,
+                    'data': options,
+                },
+            ]
 
         default_location_name = 'studio.central-storage-location'
         default_location_label = 'Studio location'
         default_location_description = (
-            'The studio central location where all components are '
-            'stored.'
+            'The studio central location where all components are ' 'stored.'
         )
 
         if previous_step == 'configure_location':
-            configure_location = configuration.get(
-                'configure_location'
-            )
+            configure_location = configuration.get('configure_location')
 
             if configure_location:
                 try:
@@ -254,7 +257,7 @@ class ConfigureCentralizedStorageScenario(object):
                             configure_location.get('location_name')
                         )
                     ).first()
-                except UnicodeEncodeError:                
+                except UnicodeEncodeError:
                     next_step = 'configure_location'
                     warning_message += (
                         '**The location name contains non-ascii characters. '
@@ -273,9 +276,9 @@ class ConfigureCentralizedStorageScenario(object):
                         values = configuration['select_location']
 
                 if (
-                    not configure_location.get('location_name') or
-                    not configure_location.get('location_label') or
-                    not configure_location.get('location_description')
+                    not configure_location.get('location_name')
+                    or not configure_location.get('location_label')
+                    or not configure_location.get('location_description')
                 ):
                     next_step = 'configure_location'
                     warning_message += (
@@ -288,41 +291,46 @@ class ConfigureCentralizedStorageScenario(object):
                 # Populate form with previous configuration.
                 default_location_label = configure_location['location_label']
                 default_location_name = configure_location['location_name']
-                default_location_description = (
-                    configure_location['location_description']
-                )
+                default_location_description = configure_location[
+                    'location_description'
+                ]
 
         if next_step == 'configure_location':
 
             if values.get('location_id') == 'create_new_location':
                 # Add options to create a new location.
-                items = [{
-                    'type': 'label',
-                    'value': (
-                        '#Create location#\n'
-                        'Here you will create a new location to be used '
-                        'with your new Storage scenario. For your '
-                        'convenience we have already filled in some default '
-                        'values. If this is the first time you are configuring '
-                        'a storage scenario in ftrack we recommend that you '
-                        'stick with these settings.'
-                    )
-                }, {
-                    'label': 'Label',
-                    'name': 'location_label',
-                    'value': default_location_label,
-                    'type': 'text'
-                }, {
-                    'label': 'Name',
-                    'name': 'location_name',
-                    'value': default_location_name,
-                    'type': 'text'
-                }, {
-                    'label': 'Description',
-                    'name': 'location_description',
-                    'value': default_location_description,
-                    'type': 'text'
-                }]
+                items = [
+                    {
+                        'type': 'label',
+                        'value': (
+                            '#Create location#\n'
+                            'Here you will create a new location to be used '
+                            'with your new Storage scenario. For your '
+                            'convenience we have already filled in some default '
+                            'values. If this is the first time you are configuring '
+                            'a storage scenario in ftrack we recommend that you '
+                            'stick with these settings.'
+                        ),
+                    },
+                    {
+                        'label': 'Label',
+                        'name': 'location_label',
+                        'value': default_location_label,
+                        'type': 'text',
+                    },
+                    {
+                        'label': 'Name',
+                        'name': 'location_name',
+                        'value': default_location_name,
+                        'type': 'text',
+                    },
+                    {
+                        'label': 'Description',
+                        'name': 'location_description',
+                        'value': default_location_description,
+                        'type': 'text',
+                    },
+                ]
 
             else:
                 # The user selected an existing location. Move on to next
@@ -360,9 +368,9 @@ class ConfigureCentralizedStorageScenario(object):
 
         if next_step == 'select_mount_point':
             try:
-                mount_points = (
-                    self.existing_centralized_storage_configuration['accessor']['mount_points']
-                )
+                mount_points = self.existing_centralized_storage_configuration[
+                    'accessor'
+                ]['mount_points']
             except (KeyError, TypeError):
                 mount_points = dict()
 
@@ -377,33 +385,38 @@ class ConfigureCentralizedStorageScenario(object):
                         'be accessible. If not set correctly files will not be '
                         'saved or read.'
                     ),
-                    'type': 'label'
-                }, {
+                    'type': 'label',
+                },
+                {
                     'type': 'text',
                     'label': 'Linux',
                     'name': 'linux_mount_point',
                     'empty_text': 'E.g. /usr/mnt/MyStorage ...',
-                    'value': mount_points.get('linux', '')
-                }, {
+                    'value': mount_points.get('linux', ''),
+                },
+                {
                     'type': 'text',
                     'label': 'OS X',
                     'name': 'osx_mount_point',
                     'empty_text': 'E.g. /Volumes/MyStorage ...',
-                    'value': mount_points.get('osx', '')
-                }, {
+                    'value': mount_points.get('osx', ''),
+                },
+                {
                     'type': 'text',
                     'label': 'Windows',
                     'name': 'windows_mount_point',
                     'empty_text': 'E.g. \\\\MyStorage ...',
-                    'value': mount_points.get('windows', '')
-                }
+                    'value': mount_points.get('windows', ''),
+                },
             ]
 
         if next_step == 'confirm_summary':
-            items = [{
-                'type': 'label',
-                'value': self._get_confirmation_text(configuration)
-            }]
+            items = [
+                {
+                    'type': 'label',
+                    'value': self._get_confirmation_text(configuration),
+                }
+            ]
             state = 'confirm'
 
         if next_step == 'save_configuration':
@@ -419,8 +432,8 @@ class ConfigureCentralizedStorageScenario(object):
                         'label': configure_location['location_label'],
                         'description': (
                             configure_location['location_description']
-                        )
-                    }
+                        ),
+                    },
                 )
 
             else:
@@ -430,20 +443,22 @@ class ConfigureCentralizedStorageScenario(object):
                     )
                 ).one()
 
-            setting_value = json.dumps({
-                'scenario': scenario_name,
-                'data': {
-                    'location_id': location['id'],
-                    'location_name': location['name'],
-                    'accessor': {
-                        'mount_points': {
-                            'linux': mount_points['linux_mount_point'],
-                            'osx': mount_points['osx_mount_point'],
-                            'windows': mount_points['windows_mount_point']
-                        }
-                    }
+            setting_value = json.dumps(
+                {
+                    'scenario': scenario_name,
+                    'data': {
+                        'location_id': location['id'],
+                        'location_name': location['name'],
+                        'accessor': {
+                            'mount_points': {
+                                'linux': mount_points['linux_mount_point'],
+                                'osx': mount_points['osx_mount_point'],
+                                'windows': mount_points['windows_mount_point'],
+                            }
+                        },
+                    },
                 }
-            })
+            )
 
             self.storage_scenario['value'] = setting_value
             self.session.commit()
@@ -454,38 +469,28 @@ class ConfigureCentralizedStorageScenario(object):
             )
             self.session.event_hub.publish(event)
 
-            items = [{
-                'type': 'label',
-                'value': (
-                    '#Done!#\n'
-                    'Your storage scenario is now configured and ready '
-                    'to use. **Note that you may have to restart Connect and '
-                    'other applications to start using it.**'
-                )
-            }]
+            items = [
+                {
+                    'type': 'label',
+                    'value': (
+                        '#Done!#\n'
+                        'Your storage scenario is now configured and ready '
+                        'to use. **Note that you may have to restart Connect and '
+                        'other applications to start using it.**'
+                    ),
+                }
+            ]
             state = 'done'
 
         if warning_message:
-            items.insert(0, {
-                'type': 'label',
-                'value': warning_message
-            })
+            items.insert(0, {'type': 'label', 'value': warning_message})
 
-        items.append({
-            'type': 'hidden',
-            'value': configuration,
-            'name': 'configuration'
-        })
-        items.append({
-            'type': 'hidden',
-            'value': next_step,
-            'name': 'step'
-        })
+        items.append(
+            {'type': 'hidden', 'value': configuration, 'name': 'configuration'}
+        )
+        items.append({'type': 'hidden', 'value': next_step, 'name': 'step'})
 
-        return {
-            'items': items,
-            'state': state
-        }
+        return {'items': items, 'state': state}
 
     def discover_centralized_scenario(self, event):
         '''Return action discover dictionary for *event*.'''
@@ -496,7 +501,7 @@ class ConfigureCentralizedStorageScenario(object):
                 '(Recommended) centralized storage scenario where all files '
                 'are kept on a storage that is mounted and available to '
                 'everyone in the studio.'
-            )
+            ),
         }
 
     def register(self, session):
@@ -508,21 +513,16 @@ class ConfigureCentralizedStorageScenario(object):
             str(
                 'topic=ftrack.storage-scenario.discover '
                 'and source.user.username="{0}"'
-            ).format(
-                session.api_user
-            ),
-            self.discover_centralized_scenario
+            ).format(session.api_user),
+            self.discover_centralized_scenario,
         )
         session.event_hub.subscribe(
             str(
                 'topic=ftrack.storage-scenario.configure '
                 'and data.scenario_id="{0}" '
                 'and source.user.username="{1}"'
-            ).format(
-                scenario_name,
-                session.api_user
-            ),
-            self.configure_scenario
+            ).format(scenario_name, session.api_user),
+            self.configure_scenario,
         )
 
 
@@ -546,9 +546,7 @@ class ActivateCentralizedStorageScenario(object):
             mount_points = location_data['accessor']['mount_points']
 
         except KeyError:
-            error_message = (
-                'Unable to read storage scenario data.'
-            )
+            error_message = 'Unable to read storage scenario data.'
             self.logger.error(L(error_message))
             raise ftrack_api.exception.LocationError(
                 'Unable to configure location based on scenario.'
@@ -557,11 +555,8 @@ class ActivateCentralizedStorageScenario(object):
         else:
             location = self.session.create(
                 'Location',
-                data=dict(
-                    name=location_name,
-                    id=location_id
-                ),
-                reconstructing=True
+                data=dict(name=location_name, id=location_id),
+                reconstructing=True,
             )
 
             if 'darwin' in sys.platform:
@@ -582,11 +577,14 @@ class ActivateCentralizedStorageScenario(object):
             )
             location.structure = _standard.StandardStructure()
             location.priority = 1
-            self.logger.info(L(
-                u'Storage scenario activated. Configured {0!r} from '
-                u'{1!r}',
-                location, storage_scenario
-            ))
+            self.logger.info(
+                L(
+                    u'Storage scenario activated. Configured {0!r} from '
+                    u'{1!r}',
+                    location,
+                    storage_scenario,
+                )
+            )
 
     def _verify_startup(self, event):
         '''Verify the storage scenario configuration.'''
@@ -610,15 +608,13 @@ class ActivateCentralizedStorageScenario(object):
             )
 
         if not os.path.isdir(prefix):
-            return (
-                str(
-                    'The path {0} does not exist. ftrack may not be able to '
-                    'store and track files correctly. \n\nIf the storage is '
-                    'newly setup you may want to create necessary folder '
-                    'structures. If the storage is a network drive you should '
-                    'make sure that it is mounted correctly.'
-                ).format(prefix)
-            )
+            return str(
+                'The path {0} does not exist. ftrack may not be able to '
+                'store and track files correctly. \n\nIf the storage is '
+                'newly setup you may want to create necessary folder '
+                'structures. If the storage is a network drive you should '
+                'make sure that it is mounted correctly.'
+            ).format(prefix)
 
     def register(self, session):
         '''Subscribe to events on *session*.'''
@@ -631,7 +627,7 @@ class ActivateCentralizedStorageScenario(object):
                     scenario_name
                 )
             ),
-            self.activate
+            self.activate,
         )
 
         # Listen to verify startup event from ftrack connect to allow responding
@@ -644,8 +640,9 @@ class ActivateCentralizedStorageScenario(object):
                     scenario_name
                 )
             ),
-            self._verify_startup
+            self._verify_startup,
         )
+
 
 def register(session):
     '''Register storage scenario.'''

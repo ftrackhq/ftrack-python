@@ -55,7 +55,7 @@ class Factory(object):
         attributes = ftrack_api.attribute.Attributes()
         immutable_properties = schema.get('immutable', [])
         computed_properties = schema.get('computed', [])
-        for name, fragment in  list(schema.get('properties', {}).items()):
+        for name, fragment in list(schema.get('properties', {}).items()):
             mutable = name not in immutable_properties
             computed = name in computed_properties
 
@@ -68,8 +68,12 @@ class Factory(object):
             if data_type is not ftrack_api.symbol.NOT_SET:
 
                 if data_type in (
-                    'string', 'boolean', 'integer', 'number', 'variable',
-                    'object'
+                    'string',
+                    'boolean',
+                    'integer',
+                    'number',
+                    'variable',
+                    'object',
                 ):
                     # Basic scalar attribute.
                     if data_type == 'number':
@@ -96,10 +100,14 @@ class Factory(object):
                 elif data_type == 'mapped_array':
                     reference = fragment.get('items', {}).get('$ref')
                     if not reference:
-                        self.logger.debug(L(
-                            'Skipping {0}.{1} mapped_array attribute that does '
-                            'not define a schema reference.', class_name, name
-                        ))
+                        self.logger.debug(
+                            L(
+                                'Skipping {0}.{1} mapped_array attribute that does '
+                                'not define a schema reference.',
+                                class_name,
+                                name,
+                            )
+                        )
                         continue
 
                     attribute = self.create_mapped_collection_attribute(
@@ -109,18 +117,27 @@ class Factory(object):
                         attributes.add(attribute)
 
                 else:
-                    self.logger.debug(L(
-                        'Skipping {0}.{1} attribute with unrecognised data '
-                        'type {2}', class_name, name, data_type
-                    ))
+                    self.logger.debug(
+                        L(
+                            'Skipping {0}.{1} attribute with unrecognised data '
+                            'type {2}',
+                            class_name,
+                            name,
+                            data_type,
+                        )
+                    )
             else:
                 # Reference attribute.
                 reference = fragment.get('$ref', ftrack_api.symbol.NOT_SET)
                 if reference is ftrack_api.symbol.NOT_SET:
-                    self.logger.debug(L(
-                        'Skipping {0}.{1} mapped_array attribute that does '
-                        'not define a schema reference.', class_name, name
-                    ))
+                    self.logger.debug(
+                        L(
+                            'Skipping {0}.{1} mapped_array attribute that does '
+                            'not define a schema reference.',
+                            class_name,
+                            name,
+                        )
+                    )
                     continue
 
                 attribute = self.create_reference_attribute(
@@ -137,14 +154,12 @@ class Factory(object):
         class_namespace['primary_key_attributes'] = schema['primary_key'][:]
         class_namespace['default_projections'] = default_projections
 
-        from future.utils import (
-            native_str
-        )
+        from future.utils import native_str
 
         cls = type(
             native_str(class_name),  # type doesn't accept unicode.
             tuple(class_bases),
-            class_namespace
+            class_namespace,
         )
 
         return cls
@@ -154,8 +169,11 @@ class Factory(object):
     ):
         '''Return appropriate scalar attribute instance.'''
         return ftrack_api.attribute.ScalarAttribute(
-            name, data_type=data_type, default_value=default, mutable=mutable,
-            computed=computed
+            name,
+            data_type=data_type,
+            default_value=default,
+            mutable=mutable,
+            computed=computed,
         )
 
     def create_reference_attribute(self, class_name, name, mutable, reference):
@@ -166,19 +184,21 @@ class Factory(object):
 
     def create_collection_attribute(self, class_name, name, mutable):
         '''Return appropriate collection attribute instance.'''
-        return ftrack_api.attribute.CollectionAttribute(
-            name, mutable=mutable
-        )
+        return ftrack_api.attribute.CollectionAttribute(name, mutable=mutable)
 
     def create_mapped_collection_attribute(
         self, class_name, name, mutable, reference
     ):
         '''Return appropriate mapped collection attribute instance.'''
-        self.logger.debug(L(
-            'Skipping {0}.{1} mapped_array attribute that has '
-            'no implementation defined for reference {2}.',
-            class_name, name, reference
-        ))
+        self.logger.debug(
+            L(
+                'Skipping {0}.{1} mapped_array attribute that has '
+                'no implementation defined for reference {2}.',
+                class_name,
+                name,
+                reference,
+            )
+        )
 
 
 class PerSessionDefaultKeyMaker(ftrack_api.cache.KeyMaker):
@@ -254,25 +274,21 @@ def _get_entity_configurations(entity):
         entity_type = 'list'
 
     if entity_type is None:
-        raise ValueError(
-            'Entity {!r} not supported.'.format(entity)
-        )
+        raise ValueError('Entity {!r} not supported.'.format(entity))
 
     configurations = []
-    for configuration in _get_custom_attribute_configurations(
-        entity.session
-    ):
+    for configuration in _get_custom_attribute_configurations(entity.session):
         if (
-            configuration['entity_type'] == entity_type and
-            configuration['project_id'] in (project_id, None) and
-            configuration['object_type_id'] == object_type_id
+            configuration['entity_type'] == entity_type
+            and configuration['project_id'] in (project_id, None)
+            and configuration['object_type_id'] == object_type_id
         ):
             # The custom attribute configuration is for the target entity type.
             configurations.append(configuration)
         elif (
-            entity_type in ('asset', 'assetversion', 'show', 'task') and
-            configuration['project_id'] in (project_id, None) and
-            configuration['is_hierarchical']
+            entity_type in ('asset', 'assetversion', 'show', 'task')
+            and configuration['project_id'] in (project_id, None)
+            and configuration['is_hierarchical']
         ):
             # The target entity type allows hierarchical attributes.
             configurations.append(configuration)
@@ -280,9 +296,7 @@ def _get_entity_configurations(entity):
     # Return with global configurations at the end of the list. This is done
     # so that global conigurations are shadowed by project specific if the
     # configurations list is looped when looking for a matching `key`.
-    return sorted(
-        configurations, key=lambda item: item['project_id'] is None
-    )
+    return sorted(configurations, key=lambda item: item['project_id'] is None)
 
 
 class StandardFactory(Factory):
@@ -324,14 +338,10 @@ class StandardFactory(Factory):
 
         # Add mixins.
         if 'notes' in schema.get('properties', {}):
-            bases.append(
-                ftrack_api.entity.note.CreateNoteMixin
-            )
+            bases.append(ftrack_api.entity.note.CreateNoteMixin)
 
         if 'thumbnail_id' in schema.get('properties', {}):
-            bases.append(
-                ftrack_api.entity.component.CreateThumbnailMixin
-            )
+            bases.append(ftrack_api.entity.component.CreateThumbnailMixin)
 
         cls = super(StandardFactory, self).create(schema, bases=bases)
 
@@ -347,15 +357,15 @@ class StandardFactory(Factory):
                 '''Return metadata for *data*.'''
                 entity = proxy.collection.entity
                 session = entity.session
-                data.update({
-                    'parent_id': entity['id'],
-                    'parent_type': entity.entity_type
-                })
+                data.update(
+                    {
+                        'parent_id': entity['id'],
+                        'parent_type': entity.entity_type,
+                    }
+                )
                 return session.create(reference, data)
 
-            creator = functools.partial(
-                create_metadata, reference=reference
-            )
+            creator = functools.partial(create_metadata, reference=reference)
             key_attribute = 'key'
             value_attribute = 'value'
 
@@ -364,13 +374,12 @@ class StandardFactory(Factory):
             )
 
         elif reference == 'CustomAttributeValue':
-            return (
-                ftrack_api.attribute.CustomAttributeCollectionAttribute(
-                    name, mutable=mutable
-                )
+            return ftrack_api.attribute.CustomAttributeCollectionAttribute(
+                name, mutable=mutable
             )
 
         elif reference.endswith('CustomAttributeValue'):
+
             def creator(proxy, data):
                 '''Create a custom attribute based on *proxy* and *data*.
 
@@ -388,8 +397,8 @@ class StandardFactory(Factory):
                 '''
                 entity = proxy.collection.entity
                 if (
-                    ftrack_api.inspection.state(entity) is not
-                    ftrack_api.symbol.CREATED
+                    ftrack_api.inspection.state(entity)
+                    is not ftrack_api.symbol.CREATED
                 ):
                     raise KeyError(
                         'Custom attributes must be created explicitly for the '
@@ -404,8 +413,9 @@ class StandardFactory(Factory):
 
                 if configuration is None:
                     raise ValueError(
-                        u'No valid custom attribute for data {0!r} was found.'
-                        .format(data)
+                        u'No valid custom attribute for data {0!r} was found.'.format(
+                            data
+                        )
                     )
 
                 create_data = dict(list(data.items()))
@@ -420,9 +430,7 @@ class StandardFactory(Factory):
                 # allowed. Instead an update operation will be recorded.
                 value = create_data.pop('value')
                 item = session.create(
-                    reference,
-                    create_data,
-                    reconstructing=True
+                    reference, create_data, reconstructing=True
                 )
 
                 # Record update operation.
@@ -437,7 +445,12 @@ class StandardFactory(Factory):
                 name, creator, key_attribute, value_attribute, mutable=mutable
             )
 
-        self.logger.debug(L(
-            'Skipping {0}.{1} mapped_array attribute that has no configuration '
-            'for reference {2}.', class_name, name, reference
-        ))
+        self.logger.debug(
+            L(
+                'Skipping {0}.{1} mapped_array attribute that has no configuration '
+                'for reference {2}.',
+                class_name,
+                name,
+                reference,
+            )
+        )

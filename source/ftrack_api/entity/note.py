@@ -9,9 +9,7 @@ import ftrack_api.entity.base
 class Note(ftrack_api.entity.base.Entity):
     '''Represent a note.'''
 
-    def create_reply(
-        self, content, author
-    ):
+    def create_reply(self, content, author):
         '''Create a reply with *content* and *author*.
 
         .. note::
@@ -21,10 +19,7 @@ class Note(ftrack_api.entity.base.Entity):
 
         '''
         reply = self.session.create(
-            'Note', {
-                'author': author,
-                'content': content
-            }
+            'Note', {'author': author, 'content': content}
         )
 
         self['replies'].append(reply)
@@ -65,10 +60,7 @@ class CreateNoteMixin(object):
         if not recipients:
             recipients = []
 
-        data = {
-            'content': content,
-            'author': author
-        }
+        data = {'content': content, 'author': author}
 
         if category:
             if note_label_support:
@@ -76,7 +68,7 @@ class CreateNoteMixin(object):
                 warnings.warn(
                     'category argument will be removed in an upcoming version, '
                     'please use labels instead.',
-                    PendingDeprecationWarning
+                    PendingDeprecationWarning,
                 )
             else:
                 data['category_id'] = category['id']
@@ -86,20 +78,17 @@ class CreateNoteMixin(object):
         self['notes'].append(note)
 
         for resource in recipients:
-            recipient = self.session.create('Recipient', {
-                'note_id': note['id'],
-                'resource_id': resource['id']
-            })
+            recipient = self.session.create(
+                'Recipient',
+                {'note_id': note['id'], 'resource_id': resource['id']},
+            )
 
             note['recipients'].append(recipient)
 
         for label in labels:
             self.session.create(
                 'NoteLabelLink',
-                {
-                    'label_id': label['id'],
-                    'note_id': note['id']
-                }
+                {'label_id': label['id'], 'note_id': note['id']},
             )
 
         return note

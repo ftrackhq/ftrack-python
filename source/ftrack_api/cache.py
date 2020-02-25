@@ -16,6 +16,7 @@ memoisation of function using a global cache and standard key maker.
 '''
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from six import string_types
@@ -345,7 +346,7 @@ class FileCache(Cache):
         '''
         with self._database() as cache:
             return [s.decode('utf-8') for s in cache.keys()]
-            #return list(map(str, cache.keys()))
+            # return list(map(str, cache.keys()))
 
 
 class SerialisedCache(ProxyCache):
@@ -463,48 +464,54 @@ class ObjectKeyMaker(KeyMaker):
                 return pickle.dumps(item, pickle_protocol)
 
             if isinstance(item, collections.Mapping):
-                contents = self.item_separator.join([
-                    (
-                        self._key(key) +
-                        self.mapping_pair_separator +
-                        self._key(value)
-                    )
-                    for key, value in sorted(item.items())
-                ])
+                contents = self.item_separator.join(
+                    [
+                        (
+                            self._key(key)
+                            + self.mapping_pair_separator
+                            + self._key(value)
+                        )
+                        for key, value in sorted(item.items())
+                    ]
+                )
 
                 return (
-                    self.mapping_identifier +
-                    contents +
                     self.mapping_identifier
+                    + contents
+                    + self.mapping_identifier
                 )
             else:
-                contents = self.item_separator.join([
-                    self._key(item) for item in item
-                ])
+                contents = self.item_separator.join(
+                    [self._key(item) for item in item]
+                )
                 return (
-                    self.iterable_identifier +
-                    contents +
                     self.iterable_identifier
+                    + contents
+                    + self.iterable_identifier
                 )
 
         elif inspect.ismethod(item):
 
-            return b''.join((
-                self.name_identifier,
-                item.__name__.encode(),
-                self.item_separator,
-                item.__self__.__class__.__name__.encode(),
-                self.item_separator,
-                item.__module__.encode()
-            ))
+            return b''.join(
+                (
+                    self.name_identifier,
+                    item.__name__.encode(),
+                    self.item_separator,
+                    item.__self__.__class__.__name__.encode(),
+                    self.item_separator,
+                    item.__module__.encode(),
+                )
+            )
 
         elif inspect.isfunction(item) or inspect.isclass(item):
-            return b''.join((
-                self.name_identifier,
-                item.__name__.encode(),
-                self.item_separator,
-                item.__module__.encode()
-            ))
+            return b''.join(
+                (
+                    self.name_identifier,
+                    item.__name__.encode(),
+                    self.item_separator,
+                    item.__module__.encode(),
+                )
+            )
 
         elif inspect.isbuiltin(item):
             return self.name_identifier + item.__name__.encode()
@@ -590,8 +597,8 @@ class Memoiser(object):
 
 def memoise_decorator(memoiser):
     '''Decorator to memoise function calls using *memoiser*.'''
-    def outer(function):
 
+    def outer(function):
         @functools.wraps(function)
         def inner(*args, **kw):
             return memoiser.call(function, args, kw)
