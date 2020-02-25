@@ -122,5 +122,5 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
 
                     module.register(
                         *selected_positional_arguments,
-                        **selected_keyword_arguments,
+                        **selected_keyword_arguments
                     )
