@@ -57,7 +57,9 @@ class CreateThumbnailMixin(object):
         server_location = self.session.get(
             'Location', ftrack_api.symbol.SERVER_LOCATION_ID
         )
-        server_location.add_component(thumbnail_component, [origin_location])
+        server_location.add_component(
+            thumbnail_component, [origin_location]
+        )
 
         # TODO: This commit can be avoided by reordering the operations in
         # this method so that the component is transferred to ftrack.server

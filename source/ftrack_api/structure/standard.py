@@ -46,7 +46,9 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     '''
 
     def __init__(
-        self, project_versions_prefix=None, illegal_character_substitute='_'
+        self,
+        project_versions_prefix=None,
+        illegal_character_substitute='_',
     ):
         '''Initialise structure.
 
@@ -73,7 +75,10 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         version = entity['version']
 
-        if version is ftrack_api.symbol.NOT_SET and entity['version_id']:
+        if (
+            version is ftrack_api.symbol.NOT_SET
+            and entity['version_id']
+        ):
             version = session.get('AssetVersion', entity['version_id'])
 
         error_message = (
@@ -83,7 +88,10 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             )
         )
 
-        if version is ftrack_api.symbol.NOT_SET or version in session.created:
+        if (
+            version is ftrack_api.symbol.NOT_SET
+            or version in session.created
+        ):
             raise ftrack_api.exception.StructureError(error_message)
 
         link = version['link']
@@ -166,7 +174,9 @@ class StandardStructure(ftrack_api.structure.base.Structure):
                     # container and back the correct filename, i.e.
                     # /sequence/component/sequence_component_name.0012.exr.
                     name = '{0}.{1}{2}'.format(
-                        container['name'], entity['name'], entity['file_type']
+                        container['name'],
+                        entity['name'],
+                        entity['file_type'],
                     )
                     parts = [
                         os.path.dirname(container_path),

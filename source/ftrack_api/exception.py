@@ -88,7 +88,9 @@ class NoResultFoundError(IncorrectResultError):
 class MultipleResultsFoundError(IncorrectResultError):
     '''Raise when a single result expected, but multiple results found.'''
 
-    default_message = 'Expected single result, but received multiple results.'
+    default_message = (
+        'Expected single result, but received multiple results.'
+    )
 
 
 class EntityTypeError(Error):
@@ -104,7 +106,9 @@ class UnrecognisedEntityTypeError(EntityTypeError):
 
     def __init__(self, entity_type, **kw):
         '''Initialise with *entity_type* that is unrecognised.'''
-        kw.setdefault('details', {}).update(dict(entity_type=entity_type))
+        kw.setdefault('details', {}).update(
+            dict(entity_type=entity_type)
+        )
         super(UnrecognisedEntityTypeError, self).__init__(**kw)
 
 
@@ -188,7 +192,9 @@ class DuplicateItemInCollectionError(CollectionError):
     def __init__(self, item, collection, **kw):
         '''Initialise error.'''
         kw.setdefault('details', {}).update(dict(item=item))
-        super(DuplicateItemInCollectionError, self).__init__(collection, **kw)
+        super(DuplicateItemInCollectionError, self).__init__(
+            collection, **kw
+        )
 
 
 class ParseError(Error):
@@ -236,9 +242,7 @@ class ComponentNotInAnyLocationError(LocationError):
 class ComponentNotInLocationError(LocationError):
     '''Raise when component(s) not in location.'''
 
-    default_message = (
-        'Component(s) {formatted_components} not found in location {location}.'
-    )
+    default_message = 'Component(s) {formatted_components} not found in location {location}.'
 
     def __init__(self, components, location, **kw):
         '''Initialise with *components* and *location*.'''
@@ -325,7 +329,9 @@ class AccessorPermissionDeniedError(AccessorOperationFailedError):
 class AccessorResourceIdentifierError(AccessorError):
     '''Raise when a error related to a resource_identifier occurs.'''
 
-    default_message = 'Resource identifier is invalid: {resource_identifier}.'
+    default_message = (
+        'Resource identifier is invalid: {resource_identifier}.'
+    )
 
     def __init__(self, resource_identifier, **kw):
         kw.setdefault('details', {}).update(
@@ -346,13 +352,18 @@ class AccessorFilesystemPathError(AccessorResourceIdentifierError):
 class AccessorResourceError(AccessorError):
     '''Base for errors associated with specific resource.'''
 
-    default_message = 'Unspecified resource error: {resource_identifier}'
+    default_message = (
+        'Unspecified resource error: {resource_identifier}'
+    )
 
     def __init__(
         self, operation='', resource_identifier=None, error=None, **kw
     ):
         kw.setdefault('details', {}).update(
-            dict(operation=operation, resource_identifier=resource_identifier)
+            dict(
+                operation=operation,
+                resource_identifier=resource_identifier,
+            )
         )
         super(AccessorResourceError, self).__init__(**kw)
 
@@ -366,7 +377,9 @@ class AccessorResourceNotFoundError(AccessorResourceError):
 class AccessorParentResourceNotFoundError(AccessorResourceError):
     '''Raise when a parent resource (such as directory) is not found.'''
 
-    default_message = 'Parent resource is missing: {resource_identifier}'
+    default_message = (
+        'Parent resource is missing: {resource_identifier}'
+    )
 
 
 class AccessorResourceInvalidError(AccessorResourceError):

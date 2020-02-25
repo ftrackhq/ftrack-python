@@ -97,7 +97,9 @@ class Accessor(with_metaclass(abc.ABCMeta, object)):
         '''Remove container at *resource_identifier*.'''
         return self.remove(resource_identifier)
 
-    def get_filesystem_path(self, resource_identifier):  # pragma: no cover
+    def get_filesystem_path(
+        self, resource_identifier
+    ):  # pragma: no cover
         '''Return filesystem path for *resource_identifier*.
 
         Raise :exc:`~ftrack_api.exception.AccessorFilesystemPathError` if
@@ -107,7 +109,8 @@ class Accessor(with_metaclass(abc.ABCMeta, object)):
 
         '''
         raise ftrack_api.exception.AccessorUnsupportedOperationError(
-            'get_filesystem_path', resource_identifier=resource_identifier
+            'get_filesystem_path',
+            resource_identifier=resource_identifier,
         )
 
     def get_url(self, resource_identifier):

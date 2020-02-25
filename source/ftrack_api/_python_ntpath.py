@@ -123,7 +123,9 @@ def join(a, *p):
                 b_wins = 1
 
             # Else path has a drive letter, and b doesn't but is absolute.
-            elif len(path) > 3 or (len(path) == 3 and path[-1] not in "/\\"):
+            elif len(path) > 3 or (
+                len(path) == 3 and path[-1] not in "/\\"
+            ):
                 # case 3
                 b_wins = 1
 
@@ -300,7 +302,8 @@ def walk(top, func, arg):
     a filename pattern, or a mutable object designed to accumulate
     statistics.  Passing None for arg is common."""
     warnings.warnpy3k(
-        "In 3.x, os.path.walk is removed in favor of os.walk.", stacklevel=2
+        "In 3.x, os.path.walk is removed in favor of os.walk.",
+        stacklevel=2,
     )
     try:
         names = os.listdir(top)
@@ -452,7 +455,9 @@ def expandvars(path):
 def normpath(path):
     """Normalize path, eliminating double slashes, etc."""
     # Preserve unicode (if path is unicode)
-    backslash, dot = (u'\\', u'.') if isinstance(path, str) else ('\\', '.')
+    backslash, dot = (
+        (u'\\', u'.') if isinstance(path, str) else ('\\', '.')
+    )
     if path.startswith(('\\\\.\\', '\\\\?\\')):
         # in the case of paths with these prefixes:
         # \\.\ -> device names
@@ -539,7 +544,8 @@ else:  # use native Windows method on Windows
 realpath = abspath
 # Win9x family and earlier have no Unicode filename support.
 supports_unicode_filenames = (
-    hasattr(sys, "getwindowsversion") and sys.getwindowsversion()[3] >= 2
+    hasattr(sys, "getwindowsversion")
+    and sys.getwindowsversion()[3] >= 2
 )
 
 
@@ -563,7 +569,8 @@ def relpath(path, start=curdir):
 
     if path_is_unc ^ start_is_unc:
         raise ValueError(
-            "Cannot mix UNC and non-UNC paths (%s and %s)" % (path, start)
+            "Cannot mix UNC and non-UNC paths (%s and %s)"
+            % (path, start)
         )
     if path_prefix.lower() != start_prefix.lower():
         if path_is_unc:

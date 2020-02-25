@@ -70,7 +70,10 @@ class SessionAuthentication(requests.auth.AuthBase):
     def __call__(self, request):
         '''Modify *request* to have appropriate headers.'''
         request.headers.update(
-            {'ftrack-api-key': self.api_key, 'ftrack-user': self.api_user}
+            {
+                'ftrack-api-key': self.api_key,
+                'ftrack-user': self.api_user,
+            }
         )
         return request
 
@@ -276,7 +279,8 @@ class Session(object):
         if schema_cache_path is not False:
             if schema_cache_path is None:
                 schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', tempfile.gettempdir()
+                    'FTRACK_API_SCHEMA_CACHE_PATH',
+                    tempfile.gettempdir(),
                 )
 
             schema_cache_path = os.path.join(
@@ -291,7 +295,8 @@ class Session(object):
         self._configure_locations()
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.ready', data=dict(session=self)
+                topic='ftrack.api.session.ready',
+                data=dict(session=self),
             ),
             synchronous=True,
         )
@@ -453,7 +458,8 @@ class Session(object):
 
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.reset', data=dict(session=self)
+                topic='ftrack.api.session.reset',
+                data=dict(session=self),
             ),
             synchronous=True,
         )
@@ -558,7 +564,9 @@ class Session(object):
         into the session.
 
         '''
-        entity = self._create(entity_type, data, reconstructing=reconstructing)
+        entity = self._create(
+            entity_type, data, reconstructing=reconstructing
+        )
         entity = self.merge(entity)
         return entity
 
@@ -567,9 +575,13 @@ class Session(object):
         try:
             EntityTypeClass = self.types[entity_type]
         except KeyError:
-            raise ftrack_api.exception.UnrecognisedEntityTypeError(entity_type)
+            raise ftrack_api.exception.UnrecognisedEntityTypeError(
+                entity_type
+            )
 
-        return EntityTypeClass(self, data=data, reconstructing=reconstructing)
+        return EntityTypeClass(
+            self, data=data, reconstructing=reconstructing
+        )
 
     def ensure(self, entity_type, data, identifying_keys=None):
         '''Retrieve entity of *entity_type* with *data*, creating if necessary.
@@ -659,19 +671,25 @@ class Session(object):
                 # need to strip from query.
                 # TODO: When datetime handling improved, update this logic.
                 value = (
-                    arrow.get(value).naive.replace(microsecond=0).isoformat()
+                    arrow.get(value)
+                    .naive.replace(microsecond=0)
+                    .isoformat()
                 )
                 value = '"{0}"'.format(value)
 
             criteria.append('{0} is {1}'.format(identifying_key, value))
 
-        expression = '{0} {1}'.format(expression, ' and '.join(criteria))
+        expression = '{0} {1}'.format(
+            expression, ' and '.join(criteria)
+        )
 
         try:
             entity = self.query(expression).one()
 
         except ftrack_api.exception.NoResultFoundError:
-            self.logger.debug('Creating entity as did not already exist.')
+            self.logger.debug(
+                'Creating entity as did not already exist.'
+            )
 
             # Create entity.
             entity = self.create(entity_type, data)
@@ -714,9 +732,13 @@ class Session(object):
         If no matching entity found, return None.
 
         '''
-        self.logger.debug(L('Get {0} with key {1}', entity_type, entity_key))
+        self.logger.debug(
+            L('Get {0} with key {1}', entity_type, entity_key)
+        )
 
-        primary_key_definition = self.types[entity_type].primary_key_attributes
+        primary_key_definition = self.types[
+            entity_type
+        ].primary_key_attributes
         if isinstance(entity_key, string_types):
             entity_key = [entity_key]
 
@@ -871,11 +893,15 @@ class Session(object):
 
             merged_collection = []
             for entry in value:
-                merged_collection.append(self._merge(entry, merged=merged))
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
+                )
 
             return merged_collection
 
-        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+        elif isinstance(
+            value, ftrack_api.collection.MappedCollectionProxy
+        ):
             log_debug and self.logger.debug(
                 'Merging mapped collection into session: {0!r} at {1}'.format(
                     value, id(value)
@@ -884,7 +910,9 @@ class Session(object):
 
             merged_collection = []
             for entry in value.collection:
-                merged_collection.append(self._merge(entry, merged=merged))
+                merged_collection.append(
+                    self._merge(entry, merged=merged)
+                )
 
             return merged_collection
 
@@ -913,10 +941,14 @@ class Session(object):
                 ),
             ):
                 log_debug and self.logger.debug(
-                    'Merging remote value for attribute {0}.'.format(attribute)
+                    'Merging remote value for attribute {0}.'.format(
+                        attribute
+                    )
                 )
 
-                if isinstance(remote_value, ftrack_api.entity.base.Entity):
+                if isinstance(
+                    remote_value, ftrack_api.entity.base.Entity
+                ):
                     self._merge_recursive(remote_value, merged=merged)
 
                 elif isinstance(
@@ -926,7 +958,8 @@ class Session(object):
                         self._merge_recursive(entry, merged=merged)
 
                 elif isinstance(
-                    remote_value, ftrack_api.collection.MappedCollectionProxy
+                    remote_value,
+                    ftrack_api.collection.MappedCollectionProxy,
                 ):
                     for entry in remote_value.collection:
                         self._merge_recursive(entry, merged=merged)
@@ -972,7 +1005,9 @@ class Session(object):
 
             # Check for existing instance of entity in cache.
             log_debug and self.logger.debug(
-                'Checking for entity in cache with key {0}'.format(entity_key)
+                'Checking for entity in cache with key {0}'.format(
+                    entity_key
+                )
             )
             try:
                 attached_entity = self.cache.get(entity_key)
@@ -991,7 +1026,9 @@ class Session(object):
 
                 log_debug and self.logger.debug(
                     'Entity not present in cache. Constructed new instance: '
-                    '{0} at {1}'.format(attached_entity, id(attached_entity))
+                    '{0} at {1}'.format(
+                        attached_entity, id(attached_entity)
+                    )
                 )
 
             # Mark entity as seen to avoid infinite loops.
@@ -1032,7 +1069,11 @@ class Session(object):
 
         '''
         self.logger.debug(
-            L('Populate {0!r} projections for {1}.', projections, entities)
+            L(
+                'Populate {0!r} projections for {1}.',
+                projections,
+                entities,
+            )
         )
 
         if not isinstance(
@@ -1070,9 +1111,13 @@ class Session(object):
         if entities_to_process:
             reference_entity = entities_to_process[0]
             entity_type = reference_entity.entity_type
-            query = 'select {0} from {1}'.format(projections, entity_type)
+            query = 'select {0} from {1}'.format(
+                projections, entity_type
+            )
 
-            primary_key_definition = reference_entity.primary_key_attributes
+            primary_key_definition = (
+                reference_entity.primary_key_attributes
+            )
             entity_keys = [
                 list(ftrack_api.inspection.primary_key(entity).values())
                 for entity in entities_to_process
@@ -1083,12 +1128,20 @@ class Session(object):
                 conditions = []
                 for entity_key in entity_keys:
                     condition = []
-                    for key, value in zip(primary_key_definition, entity_key):
-                        condition.append('{0} is "{1}"'.format(key, value))
+                    for key, value in zip(
+                        primary_key_definition, entity_key
+                    ):
+                        condition.append(
+                            '{0} is "{1}"'.format(key, value)
+                        )
 
-                    conditions.append('({0})'.format('and '.join(condition)))
+                    conditions.append(
+                        '({0})'.format('and '.join(condition))
+                    )
 
-                query = '{0} where {1}'.format(query, ' or '.join(conditions))
+                query = '{0} where {1}'.format(
+                    query, ' or '.join(conditions)
+                )
 
             else:
                 primary_key = primary_key_definition[0]
@@ -1098,7 +1151,10 @@ class Session(object):
                         query,
                         primary_key,
                         ','.join(
-                            [str(entity_key[0]) for entity_key in entity_keys]
+                            [
+                                str(entity_key[0])
+                                for entity_key in entity_keys
+                            ]
                         ),
                     )
                 else:
@@ -1126,7 +1182,8 @@ class Session(object):
 
                 # Convert operation to payload.
                 if isinstance(
-                    operation, ftrack_api.operation.CreateEntityOperation
+                    operation,
+                    ftrack_api.operation.CreateEntityOperation,
                 ):
                     # At present, data payload requires duplicating entity
                     # type in data and also ensuring primary key added.
@@ -1140,13 +1197,16 @@ class Session(object):
                         {
                             'action': 'create',
                             'entity_type': operation.entity_type,
-                            'entity_key': list(operation.entity_key.values()),
+                            'entity_key': list(
+                                operation.entity_key.values()
+                            ),
                             'entity_data': entity_data,
                         }
                     )
 
                 elif isinstance(
-                    operation, ftrack_api.operation.UpdateEntityOperation
+                    operation,
+                    ftrack_api.operation.UpdateEntityOperation,
                 ):
                     entity_data = {
                         # At present, data payload requires duplicating entity
@@ -1159,19 +1219,24 @@ class Session(object):
                         {
                             'action': 'update',
                             'entity_type': operation.entity_type,
-                            'entity_key': list(operation.entity_key.values()),
+                            'entity_key': list(
+                                operation.entity_key.values()
+                            ),
                             'entity_data': entity_data,
                         }
                     )
 
                 elif isinstance(
-                    operation, ftrack_api.operation.DeleteEntityOperation
+                    operation,
+                    ftrack_api.operation.DeleteEntityOperation,
                 ):
                     payload = OperationPayload(
                         {
                             'action': 'delete',
                             'entity_type': operation.entity_type,
-                            'entity_key': list(operation.entity_key.values()),
+                            'entity_key': list(
+                                operation.entity_key.values()
+                            ),
                         }
                     )
 
@@ -1266,10 +1331,14 @@ class Session(object):
                 previous_payload is not None
                 and payload['action'] == 'update'
                 and previous_payload['action'] in ('create', 'update')
-                and previous_payload['entity_type'] == payload['entity_type']
-                and previous_payload['entity_key'] == payload['entity_key']
+                and previous_payload['entity_type']
+                == payload['entity_type']
+                and previous_payload['entity_key']
+                == payload['entity_key']
             ):
-                previous_payload['entity_data'].update(payload['entity_data'])
+                previous_payload['entity_data'].update(
+                    payload['entity_data']
+                )
                 continue
 
             else:
@@ -1292,7 +1361,10 @@ class Session(object):
                 with self.operation_recording(False):
                     for entity in list(self._local_cache.values()):
                         for attribute in entity:
-                            if attribute not in entity.primary_key_attributes:
+                            if (
+                                attribute
+                                not in entity.primary_key_attributes
+                            ):
                                 del entity[attribute]
 
             # Process results merging into cache relevant data.
@@ -1336,7 +1408,8 @@ class Session(object):
                 # or cache.
                 for operation in self.recorded_operations:
                     if isinstance(
-                        operation, ftrack_api.operation.CreateEntityOperation
+                        operation,
+                        ftrack_api.operation.CreateEntityOperation,
                     ):
                         entity_key = str(
                             (
@@ -1441,9 +1514,10 @@ class Session(object):
 
         if schema_cache_path:
             try:
-                schemas, local_schema_hash = self._read_schemas_from_cache(
-                    schema_cache_path
-                )
+                (
+                    schemas,
+                    local_schema_hash,
+                ) = self._read_schemas_from_cache(schema_cache_path)
             except (IOError, TypeError, AttributeError, ValueError):
                 # Catch any known exceptions when trying to read the local
                 # schema cache to prevent API from being unusable.
@@ -1470,7 +1544,9 @@ class Session(object):
 
             if schema_cache_path:
                 try:
-                    self._write_schemas_to_cache(schemas, schema_cache_path)
+                    self._write_schemas_to_cache(
+                        schemas, schema_cache_path
+                    )
                 except (IOError, TypeError):
                     self.logger.exception(
                         L(
@@ -1500,7 +1576,9 @@ class Session(object):
                 synchronous=True,
             )
 
-            results = [result for result in results if result is not None]
+            results = [
+                result for result in results if result is not None
+            ]
 
             if not results:
                 self.logger.debug(
@@ -1535,7 +1613,8 @@ class Session(object):
         location = self.create(
             'Location',
             data=dict(
-                name='ftrack.origin', id=ftrack_api.symbol.ORIGIN_LOCATION_ID
+                name='ftrack.origin',
+                id=ftrack_api.symbol.ORIGIN_LOCATION_ID,
             ),
             reconstructing=True,
         )
@@ -1544,8 +1623,12 @@ class Session(object):
             ftrack_api.entity.location.OriginLocationMixin,
             name='OriginLocation',
         )
-        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack_api.structure.origin.OriginStructure()
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(
+            prefix=''
+        )
+        location.structure = (
+            ftrack_api.structure.origin.OriginStructure()
+        )
         location.priority = 100
 
         # Unmanaged.
@@ -1562,8 +1645,12 @@ class Session(object):
             ftrack_api.entity.location.UnmanagedLocationMixin,
             name='UnmanagedLocation',
         )
-        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack_api.structure.origin.OriginStructure()
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(
+            prefix=''
+        )
+        location.structure = (
+            ftrack_api.structure.origin.OriginStructure()
+        )
         # location.resource_identifier_transformer = (
         #     ftrack_api.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
         # )
@@ -1573,7 +1660,8 @@ class Session(object):
         location = self.create(
             'Location',
             data=dict(
-                name='ftrack.review', id=ftrack_api.symbol.REVIEW_LOCATION_ID
+                name='ftrack.review',
+                id=ftrack_api.symbol.REVIEW_LOCATION_ID,
             ),
             reconstructing=True,
         )
@@ -1582,15 +1670,20 @@ class Session(object):
             ftrack_api.entity.location.UnmanagedLocationMixin,
             name='UnmanagedLocation',
         )
-        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
-        location.structure = ftrack_api.structure.origin.OriginStructure()
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(
+            prefix=''
+        )
+        location.structure = (
+            ftrack_api.structure.origin.OriginStructure()
+        )
         location.priority = 110
 
         # Server.
         location = self.create(
             'Location',
             data=dict(
-                name='ftrack.server', id=ftrack_api.symbol.SERVER_LOCATION_ID
+                name='ftrack.server',
+                id=ftrack_api.symbol.SERVER_LOCATION_ID,
             ),
             reconstructing=True,
         )
@@ -1602,11 +1695,15 @@ class Session(object):
         location.accessor = ftrack_api.accessor.server._ServerAccessor(
             session=self
         )
-        location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
+        location.structure = (
+            ftrack_api.structure.entity_id.EntityIdStructure()
+        )
         location.priority = 150
 
         # Master location based on server scenario.
-        storage_scenario = self.server_information.get('storage_scenario')
+        storage_scenario = self.server_information.get(
+            'storage_scenario'
+        )
 
         if storage_scenario and storage_scenario.get('scenario'):
             self.event_hub.publish(
@@ -1633,7 +1730,9 @@ class Session(object):
             'content-type': 'application/json',
             'accept': 'application/json',
         }
-        data = self.encode(data, entity_attribute_strategy='modified_only')
+        data = self.encode(
+            data, entity_attribute_strategy='modified_only'
+        )
 
         self.logger.debug(L('Calling server {0} with {1!r}', url, data))
 
@@ -1710,7 +1809,9 @@ class Session(object):
         handled. See :meth:`Session.encode` for available strategies.
 
         '''
-        if isinstance(item, (arrow.Arrow, datetime.datetime, datetime.date)):
+        if isinstance(
+            item, (arrow.Arrow, datetime.datetime, datetime.date)
+        ):
             return {'__type__': 'datetime', 'value': item.isoformat()}
 
         if isinstance(item, OperationPayload):
@@ -1718,7 +1819,9 @@ class Session(object):
             if "entity_data" in data:
                 for key, value in list(data["entity_data"].items()):
                     if isinstance(value, ftrack_api.entity.base.Entity):
-                        data["entity_data"][key] = self.entity_reference(value)
+                        data["entity_data"][
+                            key
+                        ] = self.entity_reference(value)
 
             return data
 
@@ -1749,7 +1852,8 @@ class Session(object):
 
                     if value is not ftrack_api.symbol.NOT_SET:
                         if isinstance(
-                            attribute, ftrack_api.attribute.ReferenceAttribute
+                            attribute,
+                            ftrack_api.attribute.ReferenceAttribute,
                         ):
                             if isinstance(
                                 value, ftrack_api.entity.base.Entity
@@ -1760,7 +1864,9 @@ class Session(object):
 
             return data
 
-        if isinstance(item, ftrack_api.collection.MappedCollectionProxy):
+        if isinstance(
+            item, ftrack_api.collection.MappedCollectionProxy
+        ):
             # Use proxied collection for serialisation.
             item = item.collection
 
@@ -1822,7 +1928,9 @@ class Session(object):
             ]
 
         # Sort by priority.
-        locations = sorted(locations, key=lambda location: location.priority)
+        locations = sorted(
+            locations, key=lambda location: location.priority
+        )
 
         return locations
 
@@ -1963,7 +2071,9 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', os.path.splitext(container_path)[-1])
+            data.setdefault(
+                'file_type', os.path.splitext(container_path)[-1]
+            )
             data.setdefault('size', container_size)
 
             container = self._create_component(
@@ -1973,14 +2083,19 @@ class Session(object):
             # Create member components for sequence.
             for member_path in collection:
                 member_data = {
-                    'name': collection.match(member_path).group('index'),
+                    'name': collection.match(member_path).group(
+                        'index'
+                    ),
                     'container': container,
                     'size': member_sizes[member_path],
                     'file_type': os.path.splitext(member_path)[-1],
                 }
 
                 component = self._create_component(
-                    'FileComponent', member_path, member_data, location=None
+                    'FileComponent',
+                    member_path,
+                    member_data,
+                    location=None,
                 )
                 container['members'].append(component)
 
@@ -2010,7 +2125,9 @@ class Session(object):
         origin_location.add_component(component, path, recursive=False)
 
         if location:
-            location.add_component(component, origin_location, recursive=False)
+            location.add_component(
+                component, origin_location, recursive=False
+            )
 
         return component
 
@@ -2096,7 +2213,9 @@ class Session(object):
                     ):
                         availability[location_id] += ratio * multiplier
             else:
-                for component_location in component['component_locations']:
+                for component_location in component[
+                    'component_locations'
+                ]:
                     location_id = component_location['location_id']
                     if location_id in availability:
                         availability[location_id] = 100.0
@@ -2105,7 +2224,9 @@ class Session(object):
                 # Avoid quantization error by rounding percentage and clamping
                 # to range 0-100.
                 adjusted_percentage = round(percentage, 9)
-                adjusted_percentage = max(0.0, min(adjusted_percentage, 100.0))
+                adjusted_percentage = max(
+                    0.0, min(adjusted_percentage, 100.0)
+                )
                 availability[location_id] = adjusted_percentage
 
         return availabilities
@@ -2126,7 +2247,11 @@ class Session(object):
         (defaulting to 'dark' if an invalid option given).
 
         '''
-        operation = {'action': 'get_widget_url', 'name': name, 'theme': theme}
+        operation = {
+            'action': 'get_widget_url',
+            'name': name,
+            'theme': theme,
+        }
         if entity:
             operation['entity_type'] = entity.entity_type
             operation['entity_key'] = list(
@@ -2151,7 +2276,9 @@ class Session(object):
         else:
             return result[0]['widget_url']
 
-    def encode_media(self, media, version_id=None, keep_original='auto'):
+    def encode_media(
+        self, media, version_id=None, keep_original='auto'
+    ):
         '''Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
@@ -2206,7 +2333,9 @@ class Session(object):
                 component_data = dict(version_id=version_id)
 
             component = self.create_component(
-                path=media, data=component_data, location=server_location
+                path=media,
+                data=component_data,
+                location=server_location,
             )
 
             # Auto commit to ensure component exists when sent to server.
@@ -2222,7 +2351,9 @@ class Session(object):
 
         else:
             raise ValueError(
-                'Unable to encode media of type: {0}'.format(type(media))
+                'Unable to encode media of type: {0}'.format(
+                    type(media)
+                )
             )
 
         operation = {
@@ -2277,11 +2408,16 @@ class Session(object):
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'get_upload_metadata\'' in error.message:
+            if (
+                'Invalid action u\'get_upload_metadata\''
+                in error.message
+            ):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support '
                     '"get_upload_metadata", please update server and try '
-                    'again.'.format(self.server_information.get('version'))
+                    'again.'.format(
+                        self.server_information.get('version')
+                    )
                 )
             else:
                 raise
@@ -2320,7 +2456,9 @@ class Session(object):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support '
                     '"send_user_invite", please update server and '
-                    'try again.'.format(self.server_information.get('version'))
+                    'try again.'.format(
+                        self.server_information.get('version')
+                    )
                 )
             else:
                 raise
@@ -2368,7 +2506,9 @@ class Session(object):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support '
                     '"send_review_session_invite", please update server and '
-                    'try again.'.format(self.server_information.get('version'))
+                    'try again.'.format(
+                        self.server_information.get('version')
+                    )
                 )
             else:
                 raise
@@ -2406,12 +2546,16 @@ class OperationRecordingContext(object):
 
     def __enter__(self):
         '''Enter context.'''
-        self._current_record_operations = self._session.record_operations
+        self._current_record_operations = (
+            self._session.record_operations
+        )
         self._session.record_operations = self._record_operations
 
     def __exit__(self, exception_type, exception_value, traceback):
         '''Exit context.'''
-        self._session.record_operations = self._current_record_operations
+        self._session.record_operations = (
+            self._current_record_operations
+        )
 
 
 class OperationPayload(collections.MutableMapping):
@@ -2425,7 +2569,9 @@ class OperationPayload(collections.MutableMapping):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} {1}>'.format(self.__class__.__name__, str(self._data))
+        return '<{0} {1}>'.format(
+            self.__class__.__name__, str(self._data)
+        )
 
     def __getitem__(self, key):
         '''Return value for *key*.'''

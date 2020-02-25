@@ -55,7 +55,9 @@ class Factory(object):
         attributes = ftrack_api.attribute.Attributes()
         immutable_properties = schema.get('immutable', [])
         computed_properties = schema.get('computed', [])
-        for name, fragment in list(schema.get('properties', {}).items()):
+        for name, fragment in list(
+            schema.get('properties', {}).items()
+        ):
             mutable = name not in immutable_properties
             computed = name in computed_properties
 
@@ -85,7 +87,12 @@ class Factory(object):
                             data_type = 'datetime'
 
                     attribute = self.create_scalar_attribute(
-                        class_name, name, mutable, computed, default, data_type
+                        class_name,
+                        name,
+                        mutable,
+                        computed,
+                        default,
+                        data_type,
                     )
                     if attribute:
                         attributes.add(attribute)
@@ -128,7 +135,9 @@ class Factory(object):
                     )
             else:
                 # Reference attribute.
-                reference = fragment.get('$ref', ftrack_api.symbol.NOT_SET)
+                reference = fragment.get(
+                    '$ref', ftrack_api.symbol.NOT_SET
+                )
                 if reference is ftrack_api.symbol.NOT_SET:
                     self.logger.debug(
                         L(
@@ -151,7 +160,9 @@ class Factory(object):
         # Construct class.
         class_namespace['entity_type'] = entity_type
         class_namespace['attributes'] = attributes
-        class_namespace['primary_key_attributes'] = schema['primary_key'][:]
+        class_namespace['primary_key_attributes'] = schema[
+            'primary_key'
+        ][:]
         class_namespace['default_projections'] = default_projections
 
         from future.utils import native_str
@@ -176,7 +187,9 @@ class Factory(object):
             computed=computed,
         )
 
-    def create_reference_attribute(self, class_name, name, mutable, reference):
+    def create_reference_attribute(
+        self, class_name, name, mutable, reference
+    ):
         '''Return appropriate reference attribute instance.'''
         return ftrack_api.attribute.ReferenceAttribute(
             name, reference, mutable=mutable
@@ -184,7 +197,9 @@ class Factory(object):
 
     def create_collection_attribute(self, class_name, name, mutable):
         '''Return appropriate collection attribute instance.'''
-        return ftrack_api.attribute.CollectionAttribute(name, mutable=mutable)
+        return ftrack_api.attribute.CollectionAttribute(
+            name, mutable=mutable
+        )
 
     def create_mapped_collection_attribute(
         self, class_name, name, mutable, reference
@@ -277,7 +292,9 @@ def _get_entity_configurations(entity):
         raise ValueError('Entity {!r} not supported.'.format(entity))
 
     configurations = []
-    for configuration in _get_custom_attribute_configurations(entity.session):
+    for configuration in _get_custom_attribute_configurations(
+        entity.session
+    ):
         if (
             configuration['entity_type'] == entity_type
             and configuration['project_id'] in (project_id, None)
@@ -296,7 +313,9 @@ def _get_entity_configurations(entity):
     # Return with global configurations at the end of the list. This is done
     # so that global conigurations are shadowed by project specific if the
     # configurations list is looped when looking for a matching `key`.
-    return sorted(configurations, key=lambda item: item['project_id'] is None)
+    return sorted(
+        configurations, key=lambda item: item['project_id'] is None
+    )
 
 
 class StandardFactory(Factory):
@@ -310,7 +329,9 @@ class StandardFactory(Factory):
         extra_bases = []
         # Customise classes.
         if schema['id'] == 'ProjectSchema':
-            extra_bases = [ftrack_api.entity.project_schema.ProjectSchema]
+            extra_bases = [
+                ftrack_api.entity.project_schema.ProjectSchema
+            ]
 
         elif schema['id'] == 'Location':
             extra_bases = [ftrack_api.entity.location.Location]
@@ -341,7 +362,9 @@ class StandardFactory(Factory):
             bases.append(ftrack_api.entity.note.CreateNoteMixin)
 
         if 'thumbnail_id' in schema.get('properties', {}):
-            bases.append(ftrack_api.entity.component.CreateThumbnailMixin)
+            bases.append(
+                ftrack_api.entity.component.CreateThumbnailMixin
+            )
 
         cls = super(StandardFactory, self).create(schema, bases=bases)
 
@@ -365,12 +388,18 @@ class StandardFactory(Factory):
                 )
                 return session.create(reference, data)
 
-            creator = functools.partial(create_metadata, reference=reference)
+            creator = functools.partial(
+                create_metadata, reference=reference
+            )
             key_attribute = 'key'
             value_attribute = 'value'
 
             return ftrack_api.attribute.KeyValueMappedCollectionAttribute(
-                name, creator, key_attribute, value_attribute, mutable=mutable
+                name,
+                creator,
+                key_attribute,
+                value_attribute,
+                mutable=mutable,
             )
 
         elif reference == 'CustomAttributeValue':
@@ -442,7 +471,11 @@ class StandardFactory(Factory):
             value_attribute = 'value'
 
             return ftrack_api.attribute.KeyValueMappedCollectionAttribute(
-                name, creator, key_attribute, value_attribute, mutable=mutable
+                name,
+                creator,
+                key_attribute,
+                value_attribute,
+                mutable=mutable,
             )
 
         self.logger.debug(

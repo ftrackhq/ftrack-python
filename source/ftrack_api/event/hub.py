@@ -34,7 +34,8 @@ from ftrack_api.logging import LazyLogMessage as L
 
 
 SocketIoSession = collections.namedtuple(
-    'SocketIoSession', ['id', 'heartbeatTimeout', 'supportedTransports',]
+    'SocketIoSession',
+    ['id', 'heartbeatTimeout', 'supportedTransports',],
 )
 
 
@@ -104,10 +105,14 @@ class EventHub(object):
         # Parse server URL and store server details.
         url_parse_result = urllib.parse.urlparse(self._server_url)
         if not url_parse_result.scheme:
-            raise ValueError('Could not determine scheme from server url.')
+            raise ValueError(
+                'Could not determine scheme from server url.'
+            )
 
         if not url_parse_result.hostname:
-            raise ValueError('Could not determine hostname from server url.')
+            raise ValueError(
+                'Could not determine hostname from server url.'
+            )
 
         self.server = ServerDetails(
             url_parse_result.scheme,
@@ -124,7 +129,9 @@ class EventHub(object):
     def get_network_location(self):
         '''Return network location part of url (hostname with optional port).'''
         if self.server.port:
-            return '{0}:{1}'.format(self.server.hostname, self.server.port)
+            return '{0}:{1}'.format(
+                self.server.hostname, self.server.port
+            )
         else:
             return self.server.hostname
 
@@ -154,7 +161,9 @@ class EventHub(object):
             session = self._get_socket_io_session()
 
             if 'websocket' not in session.supportedTransports:
-                raise ValueError('Server does not support websocket sessions.')
+                raise ValueError(
+                    'Server does not support websocket sessions.'
+                )
 
             scheme = 'wss' if self.secure else 'ws'
             url = '{0}://{1}/socket.io/1/websocket/{2}'.format(
@@ -167,7 +176,9 @@ class EventHub(object):
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
-            self._connection = websocket.create_connection(url, timeout=60)
+            self._connection = websocket.create_connection(
+                url, timeout=60
+            )
 
         except Exception as error:
             error_message = (
@@ -180,7 +191,9 @@ class EventHub(object):
                 'server_url': self.get_server_url(),
             }
 
-            self.logger.debug(L(error_message, **error_details), exc_info=1)
+            self.logger.debug(
+                L(error_message, **error_details), exc_info=1
+            )
             raise ftrack_api.exception.EventHubConnectionError(
                 error_message, details=error_details
             )
@@ -210,7 +223,9 @@ class EventHub(object):
     @property
     def connected(self):
         '''Return if connected.'''
-        return self._connection is not None and self._connection.connected
+        return (
+            self._connection is not None and self._connection.connected
+        )
 
     def disconnect(self, unsubscribe=True):
         '''Disconnect from server.
@@ -347,7 +362,9 @@ class EventHub(object):
 
         return None
 
-    def subscribe(self, subscription, callback, subscriber=None, priority=100):
+    def subscribe(
+        self, subscription, callback, subscriber=None, priority=100
+    ):
         '''Register *callback* for *subscription*.
 
         A *subscription* is a string that can specify in detail which events the
@@ -488,7 +505,9 @@ class EventHub(object):
             regardless.
 
         '''
-        subscriber = self.get_subscriber_by_identifier(subscriber_identifier)
+        subscriber = self.get_subscriber_by_identifier(
+            subscriber_identifier
+        )
 
         if subscriber is None:
             raise ftrack_api.exception.NotFoundError(
@@ -508,7 +527,9 @@ class EventHub(object):
         try:
             self._publish(
                 unsubscribe_event,
-                callback=functools.partial(self._on_unsubscribed, subscriber),
+                callback=functools.partial(
+                    self._on_unsubscribed, subscriber
+                ),
             )
         except ftrack_api.exception.EventHubConnectionError:
             self.logger.debug(
@@ -593,10 +614,14 @@ class EventHub(object):
         reply_event = ftrack_api.event.base.Event(
             'ftrack.meta.reply', data=data
         )
-        self._prepare_reply_event(reply_event, source_event, source=source)
+        self._prepare_reply_event(
+            reply_event, source_event, source=source
+        )
         self.publish(reply_event)
 
-    def _publish(self, event, synchronous=False, callback=None, on_reply=None):
+    def _publish(
+        self, event, synchronous=False, callback=None, on_reply=None
+    ):
         '''Publish *event*.
 
         If *synchronous* is specified as True then this method will wait and
@@ -700,7 +725,9 @@ class EventHub(object):
         target_expression = None
         if target:
             try:
-                target_expression = self._expression_parser.parse(target)
+                target_expression = self._expression_parser.parse(
+                    target
+                )
             except Exception:
                 self.logger.exception(
                     L(
@@ -713,8 +740,9 @@ class EventHub(object):
 
         for subscriber in subscribers:
             # Check if event is targeted to the subscriber.
-            if target_expression is not None and not target_expression.match(
-                subscriber.metadata
+            if (
+                target_expression is not None
+                and not target_expression.match(subscriber.metadata)
             ):
                 continue
 
@@ -743,7 +771,9 @@ class EventHub(object):
                 if response is not None:
                     try:
                         self.publish_reply(
-                            event, data=response, source=subscriber.metadata
+                            event,
+                            data=response,
+                            source=subscriber.metadata,
                         )
 
                     except Exception:
@@ -773,7 +803,9 @@ class EventHub(object):
 
     def _handle_reply(self, event):
         '''Handle reply *event*, passing it to any registered callback.'''
-        callback = self._reply_callbacks.get(event['in_reply_to_event'], None)
+        callback = self._reply_callbacks.get(
+            event['in_reply_to_event'], None
+        )
         if callback is not None:
             callback(event)
 
@@ -818,7 +850,9 @@ class EventHub(object):
             )
         except requests.exceptions.SSLError as error:
             raise ftrack_api.exception.EventHubConnectionError(
-                'Failed to negotiate SSL with server: {0}.'.format(error)
+                'Failed to negotiate SSL with server: {0}.'.format(
+                    error
+                )
             )
         except requests.exceptions.ConnectionError as error:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -828,7 +862,9 @@ class EventHub(object):
             status = response.status_code
             if status != 200:
                 raise ftrack_api.exception.EventHubConnectionError(
-                    'Received unexpected status code {0}.'.format(status)
+                    'Received unexpected status code {0}.'.format(
+                        status
+                    )
                 )
 
         # Parse result and return session information.
@@ -857,7 +893,9 @@ class EventHub(object):
         '''Send *event* packet under *namespace*.'''
         data = self._encode(dict(name=namespace, args=[event]))
         self._send_packet(
-            self._code_name_mapping['event'], data=data, callback=callback
+            self._code_name_mapping['event'],
+            data=data,
+            callback=callback,
         )
 
     def _acknowledge_packet(self, packet_identifier, *args):
@@ -867,7 +905,9 @@ class EventHub(object):
         if args:
             data += '+{1}'.format(self._encode(args))
 
-        self._send_packet(self._code_name_mapping['acknowledge'], data=data)
+        self._send_packet(
+            self._code_name_mapping['acknowledge'], data=data
+        )
 
     def _send_packet(self, code, data='', callback=None):
         '''Send packet via connection.'''
@@ -941,12 +981,16 @@ class EventHub(object):
                         delay=self._auto_reconnect_delay,
                     )
                 except ftrack_api.exception.EventHubConnectionError:
-                    self.logger.debug('Failed to reconnect automatically.')
+                    self.logger.debug(
+                        'Failed to reconnect automatically.'
+                    )
                 else:
                     self.logger.debug('Reconnected successfully.')
 
             if not self.connected:
-                event = ftrack_api.event.base.Event('ftrack.meta.disconnected')
+                event = ftrack_api.event.base.Event(
+                    'ftrack.meta.disconnected'
+                )
                 self._prepare_event(event)
                 self._event_queue.put(event)
 
@@ -965,7 +1009,9 @@ class EventHub(object):
                 event_payload = args[0]
                 if isinstance(event_payload, collections.Mapping):
                     try:
-                        event = ftrack_api.event.base.Event(**event_payload)
+                        event = ftrack_api.event.base.Event(
+                            **event_payload
+                        )
                     except Exception:
                         self.logger.exception(
                             L(
@@ -994,7 +1040,9 @@ class EventHub(object):
                 callback(*args)
 
         elif code_name == 'error':
-            self.logger.error(L('Event server reported error: {0}.', data))
+            self.logger.error(
+                L('Event server reported error: {0}.', data)
+            )
 
         else:
             self.logger.debug(L('{0}: {1}', code_name, data))
@@ -1035,7 +1083,9 @@ class EventHub(object):
 class _SubscriptionContext(object):
     '''Context manager for a one-off subscription.'''
 
-    def __init__(self, hub, subscription, callback, subscriber, priority):
+    def __init__(
+        self, hub, subscription, callback, subscriber, priority
+    ):
         '''Initialise context.'''
         self._hub = hub
         self._subscription = subscription
@@ -1082,10 +1132,14 @@ class _ProcessorThread(threading.Thread):
                     path,
                     data,
                 ) = self.client._receive_packet()
-                self.client._handle_packet(code, packet_identifier, path, data)
+                self.client._handle_packet(
+                    code, packet_identifier, path, data
+                )
 
             except ftrack_api.exception.EventHubPacketError as error:
-                self.logger.debug(L('Ignoring invalid packet: {0}', error))
+                self.logger.debug(
+                    L('Ignoring invalid packet: {0}', error)
+                )
                 continue
 
             except ftrack_api.exception.EventHubConnectionError:
@@ -1098,7 +1152,9 @@ class _ProcessorThread(threading.Thread):
                 break
 
             except Exception as error:
-                self.logger.debug(L('Aborting processor thread: {0}', error))
+                self.logger.debug(
+                    L('Aborting processor thread: {0}', error)
+                )
                 self.cancel()
                 break
 

@@ -11,7 +11,9 @@ import ftrack_api.exception
 class User(ftrack_api.entity.base.Entity):
     '''Represent a user.'''
 
-    def start_timer(self, context=None, comment='', name=None, force=False):
+    def start_timer(
+        self, context=None, comment='', name=None, force=False
+    ):
         '''Start a timer for *context* and return it.
 
         *force* can be used to automatically stop an existing timer and create a

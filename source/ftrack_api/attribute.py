@@ -45,7 +45,9 @@ def merge_references(function):
                 ),
             ):
                 logger.debug(
-                    'Merging local value for attribute {0}.'.format(attribute)
+                    'Merging local value for attribute {0}.'.format(
+                        attribute
+                    )
                 )
 
                 merged_local_value = entity.session._merge(
@@ -54,7 +56,9 @@ def merge_references(function):
 
                 if merged_local_value is not local_value:
                     with entity.session.operation_recording(False):
-                        attribute.set_local_value(entity, merged_local_value)
+                        attribute.set_local_value(
+                            entity, merged_local_value
+                        )
 
             # Remote attributes.
             remote_value = attribute.get_remote_value(entity)
@@ -67,7 +71,9 @@ def merge_references(function):
                 ),
             ):
                 logger.debug(
-                    'Merging remote value for attribute {0}.'.format(attribute)
+                    'Merging remote value for attribute {0}.'.format(
+                        attribute
+                    )
                 )
 
                 merged_remote_value = entity.session._merge(
@@ -75,7 +81,9 @@ def merge_references(function):
                 )
 
                 if merged_remote_value is not remote_value:
-                    attribute.set_remote_value(entity, merged_remote_value)
+                    attribute.set_remote_value(
+                        entity, merged_remote_value
+                    )
 
             entity._inflated.add(attribute.name)
 
@@ -175,7 +183,10 @@ class Attribute(object):
     def __repr__(self):
         '''Return representation of entity.'''
         return '<{0}.{1}({2}) object at {3}>'.format(
-            self.__module__, self.__class__.__name__, self.name, id(self)
+            self.__module__,
+            self.__class__.__name__,
+            self.name,
+            id(self),
         )
 
     def get_entity_storage(self, entity):
@@ -307,8 +318,10 @@ class Attribute(object):
         '''Return whether a value is set for *entity*.'''
         return any(
             [
-                self.get_local_value(entity) is not ftrack_api.symbol.NOT_SET,
-                self.get_remote_value(entity) is not ftrack_api.symbol.NOT_SET,
+                self.get_local_value(entity)
+                is not ftrack_api.symbol.NOT_SET,
+                self.get_remote_value(entity)
+                is not ftrack_api.symbol.NOT_SET,
             ]
         )
 
@@ -343,7 +356,9 @@ class ReferenceAttribute(Attribute):
         projections = []
         if default_projections:
             for projection in default_projections:
-                projections.append('{0}.{1}'.format(self.name, projection))
+                projections.append(
+                    '{0}.{1}'.format(self.name, projection)
+                )
         else:
             projections.append(self.name)
 
@@ -411,7 +426,9 @@ class AbstractCollectionAttribute(Attribute):
         ):
             try:
                 with entity.session.operation_recording(False):
-                    self.set_local_value(entity, copy.copy(remote_value))
+                    self.set_local_value(
+                        entity, copy.copy(remote_value)
+                    )
             except ftrack_api.exception.ImmutableAttributeError:
                 pass
 
@@ -442,7 +459,9 @@ class AbstractCollectionAttribute(Attribute):
             value = self._adapt_to_collection(entity, value)
             value.mutable = self.mutable
 
-        super(AbstractCollectionAttribute, self).set_local_value(entity, value)
+        super(AbstractCollectionAttribute, self).set_local_value(
+            entity, value
+        )
 
     def set_remote_value(self, entity, value):
         '''Set remote *value*.
@@ -508,9 +527,13 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
     '''Represent a mapped key, value collection of entities.'''
 
     #: Collection class used by attribute.
-    collection_class = ftrack_api.collection.KeyValueMappedCollectionProxy
+    collection_class = (
+        ftrack_api.collection.KeyValueMappedCollectionProxy
+    )
 
-    def __init__(self, name, creator, key_attribute, value_attribute, **kw):
+    def __init__(
+        self, name, creator, key_attribute, value_attribute, **kw
+    ):
         '''Initialise attribute with *name*.
 
         *creator* should be a function that accepts a dictionary of data and
@@ -528,7 +551,9 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
         self.key_attribute = key_attribute
         self.value_attribute = value_attribute
 
-        super(KeyValueMappedCollectionAttribute, self).__init__(name, **kw)
+        super(KeyValueMappedCollectionAttribute, self).__init__(
+            name, **kw
+        )
 
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to an *entity*.'''
@@ -544,7 +569,9 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
                     self.value_attribute,
                 )
 
-            elif isinstance(value, (list, ftrack_api.collection.Collection)):
+            elif isinstance(
+                value, (list, ftrack_api.collection.Collection)
+            ):
 
                 if isinstance(value, list):
                     value = ftrack_api.collection.Collection(
@@ -591,7 +618,9 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
                 )
 
                 # Remove expired keys from collection.
-                expired_keys = set(current_value.keys()) - set(value.keys())
+                expired_keys = set(current_value.keys()) - set(
+                    value.keys()
+                )
                 for key in expired_keys:
                     del collection_proxy[key]
 
@@ -618,7 +647,9 @@ class CustomAttributeCollectionAttribute(AbstractCollectionAttribute):
     '''Represent a mapped custom attribute collection of entities.'''
 
     #: Collection class used by attribute.
-    collection_class = ftrack_api.collection.CustomAttributeCollectionProxy
+    collection_class = (
+        ftrack_api.collection.CustomAttributeCollectionProxy
+    )
 
     def _adapt_to_collection(self, entity, value):
         '''Adapt *value* to an *entity*.'''
@@ -631,7 +662,9 @@ class CustomAttributeCollectionAttribute(AbstractCollectionAttribute):
                     ftrack_api.collection.Collection(entity, self)
                 )
 
-            elif isinstance(value, (list, ftrack_api.collection.Collection)):
+            elif isinstance(
+                value, (list, ftrack_api.collection.Collection)
+            ):
 
                 # Why are we creating a new if it is a list? This will cause
                 # any merge to create a new proxy and collection.
@@ -674,7 +707,9 @@ class CustomAttributeCollectionAttribute(AbstractCollectionAttribute):
                 )
 
                 # Remove expired keys from collection.
-                expired_keys = set(current_value.keys()) - set(value.keys())
+                expired_keys = set(current_value.keys()) - set(
+                    value.keys()
+                )
                 for key in expired_keys:
                     del collection_proxy[key]
 

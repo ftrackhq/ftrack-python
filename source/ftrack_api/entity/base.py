@@ -39,7 +39,9 @@ class DynamicEntityTypeMetaclass(abc.ABCMeta):
 
 class Entity(
     with_metaclass(
-        DynamicEntityTypeMetaclass, _EntityBase, collections.MutableMapping
+        DynamicEntityTypeMetaclass,
+        _EntityBase,
+        collections.MutableMapping,
     )
 ):
     '''Base class for all entities.'''
@@ -76,7 +78,11 @@ class Entity(
         self.logger.debug(
             L(
                 '{0} entity from {1!r}.',
-                ('Reconstructing' if reconstructing else 'Constructing'),
+                (
+                    'Reconstructing'
+                    if reconstructing
+                    else 'Constructing'
+                ),
                 data,
             )
         )
@@ -314,7 +320,9 @@ class Entity(
         if merged is None:
             merged = {}
 
-        log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
+        log_message = (
+            'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
+        )
         changes = []
 
         # Attributes.
@@ -325,7 +333,9 @@ class Entity(
         # this entity.
         attributes = collections.deque()
         for attribute in entity.attributes:
-            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+            if isinstance(
+                attribute, ftrack_api.attribute.ScalarAttribute
+            ):
                 attributes.appendleft(attribute)
             else:
                 attributes.append(attribute)
@@ -356,7 +366,9 @@ class Entity(
                     )
 
             # Remote attributes.
-            other_remote_value = other_attribute.get_remote_value(entity)
+            other_remote_value = other_attribute.get_remote_value(
+                entity
+            )
             if other_remote_value is not ftrack_api.symbol.NOT_SET:
                 remote_value = attribute.get_remote_value(self)
                 if remote_value != other_remote_value:
@@ -364,7 +376,9 @@ class Entity(
                         other_remote_value, merged=merged
                     )
 
-                    attribute.set_remote_value(self, merged_remote_value)
+                    attribute.set_remote_value(
+                        self, merged_remote_value
+                    )
 
                     changes.append(
                         {
@@ -395,7 +409,9 @@ class Entity(
                         local_value is not ftrack_api.symbol.NOT_SET
                         and local_value == remote_value
                     ):
-                        attribute.set_local_value(self, merged_remote_value)
+                        attribute.set_local_value(
+                            self, merged_remote_value
+                        )
                         changes.append(
                             {
                                 'type': 'local_attribute',
@@ -415,7 +431,9 @@ class Entity(
         '''Populate all unset scalar attributes in one query.'''
         projections = []
         for attribute in self.attributes:
-            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
+            if isinstance(
+                attribute, ftrack_api.attribute.ScalarAttribute
+            ):
                 if (
                     attribute.get_remote_value(self)
                     is ftrack_api.symbol.NOT_SET

@@ -76,10 +76,14 @@ class ConfigureCentralizedStorageScenario(object):
             )
 
         mount_points_text = str(
-            '* Linux: {linux}\n' '* OS X: {osx}\n' '* Windows: {windows}\n\n'
+            '* Linux: {linux}\n'
+            '* OS X: {osx}\n'
+            '* Windows: {windows}\n\n'
         ).format(
-            linux=select_mount_point.get('linux_mount_point') or '*Not set*',
-            osx=select_mount_point.get('osx_mount_point') or '*Not set*',
+            linux=select_mount_point.get('linux_mount_point')
+            or '*Not set*',
+            osx=select_mount_point.get('osx_mount_point')
+            or '*Not set*',
             windows=select_mount_point.get('windows_mount_point')
             or '*Not set*',
         )
@@ -195,7 +199,8 @@ class ConfigureCentralizedStorageScenario(object):
                     options.append(
                         {
                             'label': u'{label} ({name})'.format(
-                                label=location['label'], name=location['name']
+                                label=location['label'],
+                                name=location['name'],
                             ),
                             'description': location['description'],
                             'value': location['id'],
@@ -244,7 +249,8 @@ class ConfigureCentralizedStorageScenario(object):
         default_location_name = 'studio.central-storage-location'
         default_location_label = 'Studio location'
         default_location_description = (
-            'The studio central location where all components are ' 'stored.'
+            'The studio central location where all components are '
+            'stored.'
         )
 
         if previous_step == 'configure_location':
@@ -278,7 +284,9 @@ class ConfigureCentralizedStorageScenario(object):
                 if (
                     not configure_location.get('location_name')
                     or not configure_location.get('location_label')
-                    or not configure_location.get('location_description')
+                    or not configure_location.get(
+                        'location_description'
+                    )
                 ):
                     next_step = 'configure_location'
                     warning_message += (
@@ -289,8 +297,12 @@ class ConfigureCentralizedStorageScenario(object):
 
             if next_step == 'configure_location':
                 # Populate form with previous configuration.
-                default_location_label = configure_location['location_label']
-                default_location_name = configure_location['location_name']
+                default_location_label = configure_location[
+                    'location_label'
+                ]
+                default_location_name = configure_location[
+                    'location_name'
+                ]
                 default_location_description = configure_location[
                     'location_description'
                 ]
@@ -370,7 +382,9 @@ class ConfigureCentralizedStorageScenario(object):
             try:
                 mount_points = self.existing_centralized_storage_configuration[
                     'accessor'
-                ]['mount_points']
+                ][
+                    'mount_points'
+                ]
             except (KeyError, TypeError):
                 mount_points = dict()
 
@@ -451,9 +465,13 @@ class ConfigureCentralizedStorageScenario(object):
                         'location_name': location['name'],
                         'accessor': {
                             'mount_points': {
-                                'linux': mount_points['linux_mount_point'],
+                                'linux': mount_points[
+                                    'linux_mount_point'
+                                ],
                                 'osx': mount_points['osx_mount_point'],
-                                'windows': mount_points['windows_mount_point'],
+                                'windows': mount_points[
+                                    'windows_mount_point'
+                                ],
                             }
                         },
                     },
@@ -486,9 +504,15 @@ class ConfigureCentralizedStorageScenario(object):
             items.insert(0, {'type': 'label', 'value': warning_message})
 
         items.append(
-            {'type': 'hidden', 'value': configuration, 'name': 'configuration'}
+            {
+                'type': 'hidden',
+                'value': configuration,
+                'name': 'configuration',
+            }
         )
-        items.append({'type': 'hidden', 'value': next_step, 'name': 'step'})
+        items.append(
+            {'type': 'hidden', 'value': next_step, 'name': 'step'}
+        )
 
         return {'items': items, 'state': state}
 

@@ -56,7 +56,9 @@ DELETED = Symbol('DELETED')
 COMPONENT_ADDED_TO_LOCATION_TOPIC = 'ftrack.location.component-added'
 
 #: Topic published when component removed from a location.
-COMPONENT_REMOVED_FROM_LOCATION_TOPIC = 'ftrack.location.component-removed'
+COMPONENT_REMOVED_FROM_LOCATION_TOPIC = (
+    'ftrack.location.component-removed'
+)
 
 #: Identifier of builtin origin location.
 ORIGIN_LOCATION_ID = 'ce9b348f-8809-11e3-821c-20c9d081909b'
@@ -74,7 +76,9 @@ CONNECT_LOCATION_ID = '07b82a97-8cf9-11e3-9383-20c9d081909b'
 SERVER_LOCATION_ID = '3a372bde-05bc-11e4-8908-20c9d081909b'
 
 #: Chunk size used when working with data, default to 1Mb.
-CHUNK_SIZE = int(os.getenv('FTRACK_API_FILE_CHUNK_SIZE', 0)) or 1024 * 1024
+CHUNK_SIZE = (
+    int(os.getenv('FTRACK_API_FILE_CHUNK_SIZE', 0)) or 1024 * 1024
+)
 
 #: Symbol representing syncing users with ldap
 JOB_SYNC_USERS_LDAP = Symbol('SYNC_USERS_LDAP')

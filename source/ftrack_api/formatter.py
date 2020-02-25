@@ -13,7 +13,8 @@ import ftrack_api.inspection
 #: Useful filters to pass to :func:`format`.`
 FILTER = {
     'ignore_unset': (
-        lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET
+        lambda entity, name, value: value
+        is not ftrack_api.symbol.NOT_SET
     )
 }
 
@@ -67,7 +68,8 @@ def format(
         ),
     )
     formatters.setdefault(
-        'label', lambda text: termcolor.colored(text, 'blue', attrs=['bold'])
+        'label',
+        lambda text: termcolor.colored(text, 'blue', attrs=['bold']),
     )
 
     # Determine indents.
@@ -131,7 +133,8 @@ def format(
                 value = '\n'.join(child_values)
 
         information.append(
-            spacer + u' {0}: {1}'.format(formatters['label'](key), value)
+            spacer
+            + u' {0}: {1}'.format(formatters['label'](key), value)
         )
 
     return '\n'.join(information)

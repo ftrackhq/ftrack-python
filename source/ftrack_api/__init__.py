@@ -22,4 +22,6 @@ def mixin(instance, mixin_class, name=None):
     if mixin_class in instance.__class__.mro():
         return
 
-    instance.__class__ = type(name, (mixin_class, instance.__class__), {})
+    instance.__class__ = type(
+        name, (mixin_class, instance.__class__), {}
+    )

@@ -40,18 +40,24 @@ def primary_key(entity):
 def _state(operation, state):
     '''Return state following *operation* against current *state*.'''
     if (
-        isinstance(operation, ftrack_api.operation.CreateEntityOperation)
+        isinstance(
+            operation, ftrack_api.operation.CreateEntityOperation
+        )
         and state is ftrack_api.symbol.NOT_SET
     ):
         state = ftrack_api.symbol.CREATED
 
     elif (
-        isinstance(operation, ftrack_api.operation.UpdateEntityOperation)
+        isinstance(
+            operation, ftrack_api.operation.UpdateEntityOperation
+        )
         and state is ftrack_api.symbol.NOT_SET
     ):
         state = ftrack_api.symbol.MODIFIED
 
-    elif isinstance(operation, ftrack_api.operation.DeleteEntityOperation):
+    elif isinstance(
+        operation, ftrack_api.operation.DeleteEntityOperation
+    ):
         state = ftrack_api.symbol.DELETED
 
     return state
@@ -105,7 +111,10 @@ def states(entities):
 
     entities_by_identity = collections.OrderedDict()
     for entity in entities:
-        key = (entity.entity_type, str(list(primary_key(entity).values())))
+        key = (
+            entity.entity_type,
+            str(list(primary_key(entity).values())),
+        )
         entities_by_identity[key] = ftrack_api.symbol.NOT_SET
 
     for operation in session.recorded_operations:

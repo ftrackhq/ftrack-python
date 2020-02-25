@@ -20,7 +20,9 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
                 overrides = self['_overrides']
                 for override in overrides:
                     if override['type_id'] == type_id:
-                        return override['workflow_schema']['statuses'][:]
+                        return override['workflow_schema']['statuses'][
+                            :
+                        ]
 
             return self['_task_workflow']['statuses'][:]
 
@@ -31,7 +33,9 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
             try:
                 EntityTypeClass = self.session.types[schema]
             except KeyError:
-                raise ValueError('Schema {0} does not exist.'.format(schema))
+                raise ValueError(
+                    'Schema {0} does not exist.'.format(schema)
+                )
 
             object_type_id_attribute = EntityTypeClass.attributes.get(
                 'object_type_id'
@@ -51,11 +55,14 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
                         'where schema_id is {0}'.format(_schema['id'])
                     )
                     return [
-                        schema_type['task_status'] for schema_type in result
+                        schema_type['task_status']
+                        for schema_type in result
                     ]
 
             raise ValueError(
-                'No valid statuses were found for schema {0}.'.format(schema)
+                'No valid statuses were found for schema {0}.'.format(
+                    schema
+                )
             )
 
     def get_types(self, schema):
@@ -68,7 +75,9 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
             try:
                 EntityTypeClass = self.session.types[schema]
             except KeyError:
-                raise ValueError('Schema {0} does not exist.'.format(schema))
+                raise ValueError(
+                    'Schema {0} does not exist.'.format(schema)
+                )
 
             object_type_id_attribute = EntityTypeClass.attributes.get(
                 'object_type_id'
@@ -87,8 +96,13 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
                         'select task_type from SchemaType '
                         'where schema_id is {0}'.format(_schema['id'])
                     )
-                    return [schema_type['task_type'] for schema_type in result]
+                    return [
+                        schema_type['task_type']
+                        for schema_type in result
+                    ]
 
             raise ValueError(
-                'No valid types were found for schema {0}.'.format(schema)
+                'No valid types were found for schema {0}.'.format(
+                    schema
+                )
             )

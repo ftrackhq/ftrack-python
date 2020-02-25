@@ -23,7 +23,9 @@ class WeakMethod(ref):
             func = meth.__func__
         except AttributeError:
             raise TypeError(
-                "argument should be a bound method, not {}".format(type(meth))
+                "argument should be a bound method, not {}".format(
+                    type(meth)
+                )
             )
 
         def _cb(arg):
@@ -54,7 +56,8 @@ class WeakMethod(ref):
             if not self._alive or not other._alive:
                 return self is other
             return (
-                ref.__eq__(self, other) and self._func_ref == other._func_ref
+                ref.__eq__(self, other)
+                and self._func_ref == other._func_ref
             )
         return NotImplemented
 
@@ -62,7 +65,10 @@ class WeakMethod(ref):
         if isinstance(other, WeakMethod):
             if not self._alive or not other._alive:
                 return self is not other
-            return ref.__ne__(self, other) or self._func_ref != other._func_ref
+            return (
+                ref.__ne__(self, other)
+                or self._func_ref != other._func_ref
+            )
         return NotImplemented
 
     __hash__ = ref.__hash__

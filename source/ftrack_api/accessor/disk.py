@@ -106,13 +106,15 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
 
         if self.is_file(resource_identifier):
             with error_handler(
-                operation='remove', resource_identifier=resource_identifier
+                operation='remove',
+                resource_identifier=resource_identifier,
             ):
                 os.remove(filesystem_path)
 
         elif self.is_container(resource_identifier):
             with error_handler(
-                operation='remove', resource_identifier=resource_identifier
+                operation='remove',
+                resource_identifier=resource_identifier,
             ):
                 os.rmdir(filesystem_path)
 
@@ -130,7 +132,8 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
         with error_handler(
-            operation='makeContainer', resource_identifier=resource_identifier
+            operation='makeContainer',
+            resource_identifier=resource_identifier,
         ):
             try:
                 if recursive:

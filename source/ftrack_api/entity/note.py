@@ -31,7 +31,12 @@ class CreateNoteMixin(object):
     '''Mixin to add create_note method on entity class.'''
 
     def create_note(
-        self, content, author, recipients=None, category=None, labels=None
+        self,
+        content,
+        author,
+        recipients=None,
+        category=None,
+        labels=None,
     ):
         '''Create note with *content*, *author*.
 

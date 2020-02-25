@@ -224,7 +224,9 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
 
     '''
 
-    def __init__(self, collection, creator, key_attribute, value_attribute):
+    def __init__(
+        self, collection, creator, key_attribute, value_attribute
+    ):
         '''Initialise collection.'''
         self.creator = creator
         self.key_attribute = key_attribute
@@ -249,7 +251,10 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
         try:
             entity = self._get_entity_by_key(key)
         except KeyError:
-            data = {self.key_attribute: key, self.value_attribute: value}
+            data = {
+                self.key_attribute: key,
+                self.value_attribute: value,
+            }
             entity = self.creator(self, data)
 
             if (
@@ -263,7 +268,9 @@ class KeyValueMappedCollectionProxy(MappedCollectionProxy):
             else:
                 # The entity is created and persisted separately by the
                 # creator. Do not record this operation.
-                with self.collection.entity.session.operation_recording(False):
+                with self.collection.entity.session.operation_recording(
+                    False
+                ):
                     # Do not record this operation since it will trigger
                     # redudant and potentially failing operations.
                     self.collection.append(entity)
@@ -382,7 +389,9 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             entity_type = 'user'
 
         if entity_type is None:
-            raise ValueError('Entity {!r} not supported.'.format(entity))
+            raise ValueError(
+                'Entity {!r} not supported.'.format(entity)
+            )
 
         configurations = []
         for configuration in _get_custom_attribute_configurations(
@@ -454,14 +463,18 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             entity = self.collection.entity
             session = entity.session
             data = {
-                self.key_attribute: self.get_configuration_id_from_key(key),
+                self.key_attribute: self.get_configuration_id_from_key(
+                    key
+                ),
                 self.value_attribute: value,
                 'entity_id': entity['id'],
             }
 
             # Make sure to use the currently active collection. This is
             # necessary since a merge might have replaced the current one.
-            self.collection.entity['custom_attributes'].collection.append(
+            self.collection.entity[
+                'custom_attributes'
+            ].collection.append(
                 session.create('CustomAttributeValue', data)
             )
 
@@ -479,7 +492,9 @@ class CustomAttributeCollectionProxy(MappedCollectionProxy):
             index = self.collection.index(custom_attribute_value)
             del self.collection[index]
 
-            custom_attribute_value.session.delete(custom_attribute_value)
+            custom_attribute_value.session.delete(
+                custom_attribute_value
+            )
         else:
             self.logger.warning(
                 L(

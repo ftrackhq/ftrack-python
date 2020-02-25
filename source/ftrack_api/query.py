@@ -110,13 +110,17 @@ class QueryResult(collections.Sequence):
         records, metadata = self._session._query(expression)
         self._results.extend(records)
 
-        if self._limit is not None and (len(self._results) >= self._limit):
+        if self._limit is not None and (
+            len(self._results) >= self._limit
+        ):
             # Original limit reached.
             self._next_offset = None
             del self._results[self._limit :]
         else:
             # Retrieve next page offset from returned metadata.
-            self._next_offset = metadata.get('next', {}).get('offset', None)
+            self._next_offset = metadata.get('next', {}).get(
+                'offset', None
+            )
 
     def all(self):
         '''Fetch and return all data.'''
@@ -146,7 +150,9 @@ class QueryResult(collections.Sequence):
         expression = self._expression
 
         if self._limit is not None:
-            raise ValueError('Expression already contains a limit clause.')
+            raise ValueError(
+                'Expression already contains a limit clause.'
+            )
 
         if self._offset is not None:
             raise ValueError(
@@ -181,7 +187,9 @@ class QueryResult(collections.Sequence):
         expression = self._expression
 
         if self._limit is not None:
-            raise ValueError('Expression already contains a limit clause.')
+            raise ValueError(
+                'Expression already contains a limit clause.'
+            )
 
         # Apply custom offset if present.
         if self._offset is not None:

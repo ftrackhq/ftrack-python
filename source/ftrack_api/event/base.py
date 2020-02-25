@@ -69,7 +69,9 @@ class Event(collections.MutableMapping):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} {1}>'.format(self.__class__.__name__, str(self._data))
+        return '<{0} {1}>'.format(
+            self.__class__.__name__, str(self._data)
+        )
 
     def __getitem__(self, key):
         '''Return value for *key*.'''

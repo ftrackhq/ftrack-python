@@ -85,7 +85,11 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
         elif entity.entity_type in ('ContainerComponent',):
             # Just an id directory
-            parts = [self.prefix] + list(entity['id'][:4]) + [entity['id'][4:]]
+            parts = (
+                [self.prefix]
+                + list(entity['id'][:4])
+                + [entity['id'][4:]]
+            )
 
         else:
             raise NotImplementedError(

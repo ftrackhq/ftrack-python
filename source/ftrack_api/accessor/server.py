@@ -63,7 +63,9 @@ class ServerFile(String):
                 'Failed to read data: {0}.'.format(error)
             )
 
-        for block in response.iter_content(ftrack_api.symbol.CHUNK_SIZE):
+        for block in response.iter_content(
+            ftrack_api.symbol.CHUNK_SIZE
+        ):
             self.wrapped_file.write(block)
 
         self.flush()
@@ -88,7 +90,9 @@ class ServerFile(String):
         # Construct a name from component name and file_type.
         name = component['name']
         if component['file_type']:
-            name = u'{0}.{1}'.format(name, component['file_type'].lstrip('.'))
+            name = u'{0}.{1}'.format(
+                name, component['file_type'].lstrip('.')
+            )
 
         try:
             metadata = self._session.get_upload_metadata(
@@ -141,7 +145,9 @@ class ServerFile(String):
             hash_obj.update(s)
             s = fp.read(buf_size)
 
-        base64_digest = base64.encodebytes(hash_obj.digest()).decode('utf-8')
+        base64_digest = base64.encodebytes(hash_obj.digest()).decode(
+            'utf-8'
+        )
         if base64_digest[-1] == '\n':
             base64_digest = base64_digest[0:-1]
 

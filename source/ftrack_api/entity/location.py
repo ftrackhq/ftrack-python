@@ -90,7 +90,9 @@ class Location(ftrack_api.entity.base.Entity):
             [component], sources=source, recursive=recursive
         )
 
-    def add_components(self, components, sources, recursive=True, _depth=0):
+    def add_components(
+        self, components, sources, recursive=True, _depth=0
+    ):
         '''Add *components* to location.
 
         *components* should be a list of component instances.
@@ -237,11 +239,14 @@ class Location(ftrack_api.entity.base.Entity):
                 if self.resource_identifier_transformer:
                     # Optionally encode resource identifier before storing.
                     resource_identifier = self.resource_identifier_transformer.encode(
-                        resource_identifier, context={'component': component}
+                        resource_identifier,
+                        context={'component': component},
                     )
 
                 components_to_register.append(component)
-                component_resource_identifiers.append(resource_identifier)
+                component_resource_identifiers.append(
+                    resource_identifier
+                )
 
             # Store component in location information.
             self._register_components_in_location(
@@ -275,7 +280,8 @@ class Location(ftrack_api.entity.base.Entity):
                 ftrack_api.event.base.Event(
                     topic=ftrack_api.symbol.COMPONENT_ADDED_TO_LOCATION_TOPIC,
                     data=dict(
-                        component_id=component_id, location_id=location_id
+                        component_id=component_id,
+                        location_id=location_id,
                     ),
                 ),
                 on_error='ignore',
@@ -293,7 +299,9 @@ class Location(ftrack_api.entity.base.Entity):
                 pass
             else:
                 context.update(
-                    dict(source_resource_identifier=source_resource_identifier)
+                    dict(
+                        source_resource_identifier=source_resource_identifier
+                    )
                 )
 
         return context
@@ -339,7 +347,9 @@ class Location(ftrack_api.entity.base.Entity):
         else:
             # Try to make container of component.
             try:
-                container = self.accessor.get_container(resource_identifier)
+                container = self.accessor.get_container(
+                    resource_identifier
+                )
 
             except ftrack_api.exception.AccessorParentResourceNotFoundError:
                 # Container could not be retrieved from
@@ -384,7 +394,9 @@ class Location(ftrack_api.entity.base.Entity):
             target_data.close()
             source_data.close()
 
-    def _register_component_in_location(self, component, resource_identifier):
+    def _register_component_in_location(
+        self, component, resource_identifier
+    ):
         '''Register *component* in location against *resource_identifier*.'''
         return self._register_components_in_location(
             [component], [resource_identifier]
@@ -460,7 +472,8 @@ class Location(ftrack_api.entity.base.Entity):
                 ftrack_api.event.base.Event(
                     topic=ftrack_api.symbol.COMPONENT_REMOVED_FROM_LOCATION_TOPIC,
                     data=dict(
-                        component_id=component_id, location_id=location_id
+                        component_id=component_id,
+                        location_id=location_id,
                     ),
                 ),
                 on_error='ignore',
@@ -475,7 +488,9 @@ class Location(ftrack_api.entity.base.Entity):
             )
 
         try:
-            self.accessor.remove(self.get_resource_identifier(component))
+            self.accessor.remove(
+                self.get_resource_identifier(component)
+            )
         except ftrack_api.exception.AccessorResourceNotFoundError:
             # If accessor does not support detecting sequence paths then an
             # AccessorResourceNotFoundError is raised. For now, if the
@@ -488,7 +503,9 @@ class Location(ftrack_api.entity.base.Entity):
         component_id = list(
             ftrack_api.inspection.primary_key(component).values()
         )[0]
-        location_id = list(ftrack_api.inspection.primary_key(self).values())[0]
+        location_id = list(
+            ftrack_api.inspection.primary_key(self).values()
+        )[0]
 
         # TODO: Use session.get for optimisation.
         component_location = self.session.query(
@@ -536,11 +553,15 @@ class Location(ftrack_api.entity.base.Entity):
         of the components are not present in this location.
 
         '''
-        resource_identifiers = self._get_resource_identifiers(components)
+        resource_identifiers = self._get_resource_identifiers(
+            components
+        )
 
         # Optionally decode resource identifier.
         if self.resource_identifier_transformer:
-            for index, resource_identifier in enumerate(resource_identifiers):
+            for index, resource_identifier in enumerate(
+                resource_identifiers
+            ):
                 resource_identifiers[
                     index
                 ] = self.resource_identifier_transformer.decode(
@@ -567,7 +588,9 @@ class Location(ftrack_api.entity.base.Entity):
         component_locations = self.session.query(
             'select component_id, resource_identifier from ComponentLocation '
             'where location_id is {0} and component_id in ({1})'.format(
-                list(ftrack_api.inspection.primary_key(self).values())[0],
+                list(ftrack_api.inspection.primary_key(self).values())[
+                    0
+                ],
                 ', '.join(list(component_ids_mapping.keys())),
             )
         )
@@ -580,7 +603,9 @@ class Location(ftrack_api.entity.base.Entity):
 
         resource_identifiers = []
         missing = []
-        for component_id, component in list(component_ids_mapping.items()):
+        for component_id, component in list(
+            component_ids_mapping.items()
+        ):
             if component_id not in resource_identifiers_map:
                 missing.append(component)
             else:
@@ -642,7 +667,9 @@ class MemoryLocationMixin(MixinBaseClass):
 
         return cache
 
-    def _register_component_in_location(self, component, resource_identifier):
+    def _register_component_in_location(
+        self, component, resource_identifier
+    ):
         '''Register *component* in location with *resource_identifier*.'''
         component_id = list(
             ftrack_api.inspection.primary_key(component).values()
@@ -751,4 +778,6 @@ class ServerLocationMixin(MixinBaseClass):
         retrieving URL is not supported by the location's accessor.
         '''
         resource_identifier = self.get_resource_identifier(component)
-        return self.accessor.get_thumbnail_url(resource_identifier, size)
+        return self.accessor.get_thumbnail_url(
+            resource_identifier, size
+        )

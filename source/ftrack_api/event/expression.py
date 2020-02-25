@@ -78,7 +78,9 @@ class Parser(object):
             elif conjunction in (not_,):
                 conjunction_expression = FollowedBy(
                     conjunction.expr + current
-                ) + Group(conjunction + current)(conjunction.resultsName)
+                ) + Group(conjunction + current)(
+                    conjunction.resultsName
+                )
 
             else:  # pragma: no cover
                 raise ValueError('Unrecognised conjunction.')
@@ -100,10 +102,14 @@ class Parser(object):
         expression = expression.strip()
         if expression:
             try:
-                result = self._parser.parseString(expression, parseAll=True)
+                result = self._parser.parseString(
+                    expression, parseAll=True
+                )
             except Exception as error:
                 raise ftrack_api.exception.ParseError(
-                    'Failed to parse: {0}. {1}'.format(expression, error)
+                    'Failed to parse: {0}. {1}'.format(
+                        expression, error
+                    )
                 )
 
         return self._process(result)
@@ -173,13 +179,17 @@ class All(Expression):
     def __str__(self):
         '''Return string representation.'''
         return '<{0} [{1}]>'.format(
-            self.__class__.__name__, ' '.join(map(str, self._expressions))
+            self.__class__.__name__,
+            ' '.join(map(str, self._expressions)),
         )
 
     def match(self, candidate):
         '''Return whether *candidate* satisfies this expression.'''
         return all(
-            [expression.match(candidate) for expression in self._expressions]
+            [
+                expression.match(candidate)
+                for expression in self._expressions
+            ]
         )
 
 
@@ -200,13 +210,17 @@ class Any(Expression):
     def __str__(self):
         '''Return string representation.'''
         return '<{0} [{1}]>'.format(
-            self.__class__.__name__, ' '.join(map(str, self._expressions))
+            self.__class__.__name__,
+            ' '.join(map(str, self._expressions)),
         )
 
     def match(self, candidate):
         '''Return whether *candidate* satisfies this expression.'''
         return any(
-            [expression.match(candidate) for expression in self._expressions]
+            [
+                expression.match(candidate)
+                for expression in self._expressions
+            ]
         )
 
 
@@ -220,7 +234,9 @@ class Not(Expression):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} {1}>'.format(self.__class__.__name__, self._expression)
+        return '<{0} {1}>'.format(
+            self.__class__.__name__, self._expression
+        )
 
     def match(self, candidate):
         '''Return whether *candidate* satisfies this expression.'''
