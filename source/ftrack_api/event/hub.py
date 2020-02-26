@@ -15,6 +15,7 @@ import functools
 import json
 import socket
 import warnings
+import ssl
 
 import requests
 import requests.exceptions
