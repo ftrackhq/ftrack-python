@@ -179,7 +179,9 @@ class EventHub(object):
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
-            self._connection = websocket.create_connection(url, timeout=60)
+            self._connection = websocket.create_connection(
+                url, timeout=60, sslopt={"ssl_version": ssl.PROTOCOL_TLS}
+            )
 
         except Exception as error:
             error_message = (
