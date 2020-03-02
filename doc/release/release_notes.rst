@@ -12,6 +12,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    ..change:: changed
+        :tag: websocket
+
+        Select highest available `protocol <https://docs.python.org/2/library/ssl.html>`_ 
+        version when connecting to websocket.
+
     .. change:: changed
         :tags: events
 
@@ -90,7 +96,7 @@ Release Notes
 .. release:: 1.8.1
     :date: 2019-10-30
 
-    .. change:: changed 
+    .. change:: changed
         :tags: Location
 
         Increase chunk size for file operations to 1 Megabyte.
@@ -111,7 +117,7 @@ Release Notes
     .. change:: changed
         :tags: session
 
-        Ensure errors from server are fully reported with stack trace. 
+        Ensure errors from server are fully reported with stack trace.
 
 .. release:: 1.8.0
     :date: 2019-02-21
@@ -168,8 +174,8 @@ Release Notes
     .. change:: fixed
         :tags: session, location
 
-        Missing context argument to 
-        :meth:`ResourceIdentifierTransformer.decode` 
+        Missing context argument to
+        :meth:`ResourceIdentifierTransformer.decode`
         in :meth:`Location.get_resource_identifier`.
 
 .. release:: 1.7.0
@@ -379,7 +385,7 @@ Release Notes
         :tags: documentation
 
         The :ref:`example <example/manage_custom_attribute_configuration>`
-        section for managing `text` custom attributes is not correct. 
+        section for managing `text` custom attributes is not correct.
 
 .. release:: 1.1.0
     :date: 2017-03-08
@@ -655,7 +661,7 @@ Release Notes
     .. change:: new
         :tags: documentation
 
-        Added an example on how to work with assignments and allocations 
+        Added an example on how to work with assignments and allocations
         :ref:`example/assignments_and_allocations`.
 
     .. change:: new
@@ -666,12 +672,12 @@ Release Notes
 
     .. change:: fixed
         :tags: performance
-        
+
         Improve performance of large collection management.
 
     .. change:: fixed
 
-        Entities are not hashable because 
+        Entities are not hashable because
         :meth:`ftrack_api.entity.base.Entity.__hash__` raises `TypeError`.
 
 .. release:: 0.15.1
@@ -1208,7 +1214,7 @@ Release Notes
 
     .. change:: new
         :tags: Client review
-        
+
         Added support for handling review sessions.
 
         .. seealso:: :ref:`Usage guide <example/review_session>`.
