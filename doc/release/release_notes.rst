@@ -15,7 +15,8 @@ Release Notes
     ..change:: changed
         :tag: websocket
 
-        Enforce `highest protocol <https://docs.python.org/2/library/ssl.html#ssl.PROTOCOL_TLS>`_ version when connecting to websocket.
+        Select highest available `protocol <https://docs.python.org/2/library/ssl.html>`_ 
+        version when connecting to websocket.
 
 .. release:: 1.8.2
     :date: 2020-01-14
