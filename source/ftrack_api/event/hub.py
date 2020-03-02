@@ -182,7 +182,7 @@ class EventHub(object):
 
             available_ssl_protocol = None
 
-            for ssl_protocol in ssl_protocol:
+            for ssl_protocol in ssl_protocols:
                 if hasattr(ssl, ssl_protocol):
                     available_ssl_protocol = getattr(ssl, ssl_protocol)
                     self.logger.debug(
