@@ -58,10 +58,15 @@ setup(
     package_dir={
         '': 'source'
     },
+    use_scm_version={
+        'write_to': 'source/ftrack_api/_version.py',
+        'write_to_template': '__version__ = "{version}"',
+    },
     setup_requires=[
         'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
-        'lowdown >= 0.1.0, < 2'
+        'lowdown >= 0.1.0, < 2',
+        'setuptools_scm'
     ],
     install_requires=[
         'requests >= 2, <3',
