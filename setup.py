@@ -15,11 +15,13 @@ RESOURCE_PATH = os.path.join(ROOT_PATH, 'resource')
 SOURCE_PATH = os.path.join(ROOT_PATH, 'source')
 README_PATH = os.path.join(ROOT_PATH, 'README.rst')
 
-
-release = get_distribution('ftrack-python-api').version
-# take major/minor/patch
-VERSION = '.'.join(release.split('.')[:3])
-
+try:
+    release = get_distribution('ftrack-python-api').version
+    # take major/minor/patch
+    VERSION = '.'.join(release.split('.')[:3])
+except DistributionNotFound:
+     # package is not installed
+    VERSION = 'Not Released'
 
 # Custom commands.
 class PyTest(TestCommand):

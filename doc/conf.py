@@ -5,6 +5,7 @@
 
 import os
 import re
+from pkg_resources import get_distribution
 
 # -- General ------------------------------------------------------------------
 
@@ -30,10 +31,13 @@ project = u'ftrack Python API'
 copyright = u'2014, ftrack'
 
 # contents of docs/conf.py
-from pkg_resources import get_distribution
-release = get_distribution('ftrack-python-api').version
-# for example take major/minor
-_version = '.'.join(release.split('.')[:2])
+try:
+    release = get_distribution('ftrack-python-api').version
+    # take major/minor/patch
+    VERSION = '.'.join(release.split('.')[:3])
+except DistributionNotFound:
+     # package is not installed
+    VERSION = 'Not Released'
 
 version = _version
 release = _version
