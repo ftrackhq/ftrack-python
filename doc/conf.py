@@ -29,16 +29,11 @@ master_doc = 'index'
 project = u'ftrack Python API'
 copyright = u'2014, ftrack'
 
-# Version
-with open(
-    os.path.join(
-        os.path.dirname(__file__), '..', 'source',
-        'ftrack_api', '_version.py'
-    )
-) as _version_file:
-    _version = re.match(
-        r'.*__version__ = \'(.*?)\'', _version_file.read(), re.DOTALL
-    ).group(1)
+# contents of docs/conf.py
+from pkg_resources import get_distribution
+release = get_distribution('ftrack-python-api').version
+# for example take major/minor
+_version = '.'.join(release.split('.')[:2])
 
 version = _version
 release = _version

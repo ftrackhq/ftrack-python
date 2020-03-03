@@ -13,6 +13,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: version
+
+        Replace fixed version with automatic versioning from git repository. 
+
+    .. change:: changed
         :tags: events
 
         Notify users on remote event server connection status while waiting.

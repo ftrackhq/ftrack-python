@@ -7,6 +7,8 @@ import re
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+from pkg_resources import get_distribution, DistributionNotFound
+
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCE_PATH = os.path.join(ROOT_PATH, 'resource')
@@ -14,13 +16,9 @@ SOURCE_PATH = os.path.join(ROOT_PATH, 'source')
 README_PATH = os.path.join(ROOT_PATH, 'README.rst')
 
 
-# Read version from source.
-with open(
-    os.path.join(SOURCE_PATH, 'ftrack_api', '_version.py')
-) as _version_file:
-    VERSION = re.match(
-        r'.*__version__ = \'(.*?)\'', _version_file.read(), re.DOTALL
-    ).group(1)
+release = get_distribution('ftrack-python-api').version
+# take major/minor/patch
+VERSION = '.'.join(release.split('.')[:3])
 
 
 # Custom commands.
@@ -42,7 +40,6 @@ class PyTest(TestCommand):
 # Call main setup.
 setup(
     name='ftrack-python-api',
-    version=VERSION,
     description='Python API for ftrack.',
     long_description=open(README_PATH).read(),
     keywords='ftrack, python, api',
@@ -66,6 +63,7 @@ setup(
         'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
+        'setuptools>=30.3.0',
         'setuptools_scm'
     ],
     install_requires=[
