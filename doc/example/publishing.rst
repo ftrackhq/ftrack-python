@@ -35,6 +35,8 @@ Then we create an asset and a version on the asset::
         'asset': asset,
         'task': task
     })
+    
+    session.commit()
 
 .. note::
 
