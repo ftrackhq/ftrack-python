@@ -20,6 +20,7 @@ import functools
 import json
 import socket
 import warnings
+import ssl
 
 import requests
 import requests.exceptions
@@ -163,13 +164,32 @@ class EventHub(object):
                 scheme, self.get_network_location(), session.id
             )
 
+            # Select highest available protocol for websocket connection.
+            ssl_protocols = [
+                'PROTOCOL_TLS',
+                'PROTOCOL_TLSv1_2'
+            ]
+
+            available_ssl_protocol = None
+
+            for ssl_protocol in ssl_protocols:
+                if hasattr(ssl, ssl_protocol):
+                    available_ssl_protocol = getattr(ssl, ssl_protocol)
+                    self.logger.debug(
+                        'Using protocol {} to connect to websocket.'.format(
+                            ssl_protocol
+                        ))
+                    break
+
             # timeout is set to 60 seconds to avoid the issue where the socket
             # ends up in a bad state where it is reported as connected but the
             # connection has been closed. The issue happens often when connected
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
-            self._connection = websocket.create_connection(url, timeout=60)
+            self._connection = websocket.create_connection(
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}
+            )
 
         except Exception as error:
             error_message = (
