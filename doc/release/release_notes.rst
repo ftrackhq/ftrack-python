@@ -15,7 +15,7 @@ Release Notes
     ..change:: changed
         :tag: websocket
 
-        Select highest available `protocol <https://docs.python.org/2/library/ssl.html>`_ 
+        Select highest available `protocol <https://docs.python.org/3/library/ssl.html>`_ 
         version when connecting to websocket.
 
     .. change:: changed
