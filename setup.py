@@ -39,6 +39,14 @@ class PyTest(TestCommand):
         raise SystemExit(pytest.main(self.test_args))
 
 
+version_template = '''
+# :coding: utf-8
+# :copyright: Copyright (c) 2014 ftrack
+
+__version__ = "{version!r}"
+'''
+
+
 # Call main setup.
 setup(
     name='ftrack-python-api',
@@ -59,7 +67,7 @@ setup(
     },
     use_scm_version={
         'write_to': 'source/ftrack_api/_version.py',
-        'write_to_template': '__version__ = "{version}"',
+        'write_to_template': version_template,
     },
     setup_requires=[
         'sphinx >= 1.2.2, < 1.6',
