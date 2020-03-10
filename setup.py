@@ -21,7 +21,7 @@ try:
     VERSION = '.'.join(release.split('.')[:3])
 except DistributionNotFound:
      # package is not installed
-    VERSION = 'Not Released'
+    VERSION = 'Outside of version control system.'
 
 # Custom commands.
 class PyTest(TestCommand):

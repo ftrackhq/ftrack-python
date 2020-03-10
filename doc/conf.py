@@ -37,10 +37,10 @@ try:
     VERSION = '.'.join(release.split('.')[:3])
 except DistributionNotFound:
      # package is not installed
-    VERSION = 'Not Released'
+    VERSION = 'Outside of version control system.'
 
-version = _version
-release = _version
+version = VERSION
+release = VERSION
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
