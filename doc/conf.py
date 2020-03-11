@@ -37,7 +37,7 @@ try:
     VERSION = '.'.join(release.split('.')[:3])
 except DistributionNotFound:
      # package is not installed
-    VERSION = 'Outside of version control system.'
+    VERSION = 'Unknown version'
 
 version = VERSION
 release = VERSION
