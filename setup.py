@@ -43,7 +43,7 @@ version_template = '''
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-__version__ = "{version!r}"
+__version__ = {version!r}
 '''
 
 
