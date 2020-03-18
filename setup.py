@@ -7,21 +7,21 @@ import re
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+from pkg_resources import get_distribution, DistributionNotFound
+
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCE_PATH = os.path.join(ROOT_PATH, 'resource')
 SOURCE_PATH = os.path.join(ROOT_PATH, 'source')
 README_PATH = os.path.join(ROOT_PATH, 'README.rst')
 
-
-# Read version from source.
-with open(
-    os.path.join(SOURCE_PATH, 'ftrack_api', '_version.py')
-) as _version_file:
-    VERSION = re.match(
-        r'.*__version__ = \'(.*?)\'', _version_file.read(), re.DOTALL
-    ).group(1)
-
+try:
+    release = get_distribution('ftrack-python-api').version
+    # take major/minor/patch
+    VERSION = '.'.join(release.split('.')[:3])
+except DistributionNotFound:
+     # package is not installed
+    VERSION = 'Unknown version'
 
 # Custom commands.
 class PyTest(TestCommand):
@@ -39,10 +39,17 @@ class PyTest(TestCommand):
         raise SystemExit(pytest.main(self.test_args))
 
 
+version_template = '''
+# :coding: utf-8
+# :copyright: Copyright (c) 2014 ftrack
+
+__version__ = {version!r}
+'''
+
+
 # Call main setup.
 setup(
     name='ftrack-python-api',
-    version=VERSION,
     description='Python API for ftrack.',
     long_description=open(README_PATH).read(),
     keywords='ftrack, python, api',
@@ -58,10 +65,16 @@ setup(
     package_dir={
         '': 'source'
     },
+    use_scm_version={
+        'write_to': 'source/ftrack_api/_version.py',
+        'write_to_template': version_template,
+    },
     setup_requires=[
         'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
-        'lowdown >= 0.1.0, < 2'
+        'lowdown >= 0.1.0, < 2',
+        'setuptools>=30.3.0',
+        'setuptools_scm'
     ],
     install_requires=[
         'requests >= 2, <3',

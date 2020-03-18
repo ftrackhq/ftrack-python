@@ -5,6 +5,7 @@
 
 import os
 import re
+from pkg_resources import get_distribution
 
 # -- General ------------------------------------------------------------------
 
@@ -29,19 +30,17 @@ master_doc = 'index'
 project = u'ftrack Python API'
 copyright = u'2014, ftrack'
 
-# Version
-with open(
-    os.path.join(
-        os.path.dirname(__file__), '..', 'source',
-        'ftrack_api', '_version.py'
-    )
-) as _version_file:
-    _version = re.match(
-        r'.*__version__ = \'(.*?)\'', _version_file.read(), re.DOTALL
-    ).group(1)
+# contents of docs/conf.py
+try:
+    release = get_distribution('ftrack-python-api').version
+    # take major/minor/patch
+    VERSION = '.'.join(release.split('.')[:3])
+except DistributionNotFound:
+     # package is not installed
+    VERSION = 'Unknown version'
 
-version = _version
-release = _version
+version = VERSION
+release = VERSION
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
