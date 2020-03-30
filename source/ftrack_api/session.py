@@ -1895,7 +1895,7 @@ class Session(object):
         if data is None:
             data = {}
 
-        ext_parser = re.compile('((\.\w.+.)?)*$')
+        extension_parser = re.compile('((\.\w.+.)?)*$')
 
         if location == 'auto':
             # Check if the component name matches one of the ftrackreview
@@ -1919,7 +1919,9 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            data.setdefault('file_type', ext_parser.split(path)[2])
+            find_extension = extension_parser.search(path)
+            extension = extension_parser.groups()[-1] if find_extension else None
+            data.setdefault('file_type',extension)
 
             return self._create_component(
                 'FileComponent', path, data, location
@@ -1947,7 +1949,11 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', ext_parser.split(path)[2])
+
+            find_extension = extension_parser.search(path)
+            extension = extension_parser.groups()[-1] if find_extension else None
+
+            data.setdefault('file_type', extension)
             data.setdefault('size', container_size)
 
             container = self._create_component(
@@ -1956,11 +1962,14 @@ class Session(object):
 
             # Create member components for sequence.
             for member_path in collection:
+                find_extension = extension_parser.search(path)
+                extension = extension_parser.groups()[-1] if find_extension else None
+
                 member_data = {
                     'name': collection.match(member_path).group('index'),
                     'container': container,
                     'size': member_sizes[member_path],
-                    'file_type': ext_parser.split(path)[2]
+                    'file_type': extension
                 }
 
                 component = self._create_component(
