@@ -13,6 +13,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: Api
+
+        Wrong extension extraction on filenames with compound extensions.
+
+    .. change:: fixed
         :tags: tests
 
         Note reply randomly fails.

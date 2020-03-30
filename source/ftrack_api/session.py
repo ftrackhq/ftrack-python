@@ -9,6 +9,7 @@ from builtins import map
 from builtins import str
 from six import string_types
 from builtins import object
+import re
 import json
 import logging
 import collections
@@ -1894,6 +1895,8 @@ class Session(object):
         if data is None:
             data = {}
 
+        ext_parser = re.compile('^(\w+.)(%+\d+d)?(\.\w.+.)$')
+
         if location == 'auto':
             # Check if the component name matches one of the ftrackreview
             # specific names. Add the component to the ftrack.review location if
@@ -1916,7 +1919,7 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            data.setdefault('file_type', os.path.splitext(path)[-1])
+            data.setdefault('file_type', ext_parser.split(path)[-2])
 
             return self._create_component(
                 'FileComponent', path, data, location
@@ -1944,7 +1947,7 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', os.path.splitext(container_path)[-1])
+            data.setdefault('file_type', ext_parser.split(path)[-2])
             data.setdefault('size', container_size)
 
             container = self._create_component(
