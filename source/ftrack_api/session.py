@@ -1895,7 +1895,7 @@ class Session(object):
         if data is None:
             data = {}
 
-        ext_parser = re.compile('(\.\w.+.)?$')
+        ext_parser = re.compile('((\.\w.+.)?)$')
 
         if location == 'auto':
             # Check if the component name matches one of the ftrackreview
@@ -1919,7 +1919,7 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            data.setdefault('file_type', ext_parser.split(path)[-2])
+            data.setdefault('file_type', ext_parser.split(path)[1])
 
             return self._create_component(
                 'FileComponent', path, data, location
@@ -1947,7 +1947,7 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', ext_parser.split(path)[-2])
+            data.setdefault('file_type', ext_parser.split(path)[1])
             data.setdefault('size', container_size)
 
             container = self._create_component(
@@ -1960,7 +1960,7 @@ class Session(object):
                     'name': collection.match(member_path).group('index'),
                     'container': container,
                     'size': member_sizes[member_path],
-                    'file_type': os.path.splitext(member_path)[-1]
+                    'file_type': ext_parser.split(path)[1]
                 }
 
                 component = self._create_component(
