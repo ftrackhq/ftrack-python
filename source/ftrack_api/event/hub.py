@@ -78,6 +78,9 @@ class EventHub(object):
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
+        # Track if a connection has been initialised. 
+        self._connection_initialised = False
+
         # Default values for auto reconnection timeout on unintentional
         # disconnection. Equates to 5 minutes.
         self._auto_reconnect_attempts = 30
@@ -141,6 +144,8 @@ class EventHub(object):
         connected or connection fails.
 
         '''
+        # Update tracking flag for connection.
+        self._connection_initialised = True
 
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -337,7 +342,7 @@ class EventHub(object):
 
         '''
 
-        if self._connection is None:
+        if not self._connection_initialised:
             raise ftrack_api.exception.EventHubConnectionError(
                 'Event hub does not have a connection to the event server and '
                 'will therefore only be able to receive syncronous events.'
