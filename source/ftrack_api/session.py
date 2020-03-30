@@ -1855,6 +1855,25 @@ class Session(object):
 
         return locations
 
+    def __split_extension(self, path):
+        # split by dot and consider just the last two items
+        filename = os.path.basename(path)
+        if '.' not in filename:
+            return ""
+
+        seq_finder = re.compile('((%+\d+d)|(#+)|(%d)|(\d{2,}))')
+
+        results = []
+        tokens = filename.split('.')[-3:]
+        splitn = len(tokens) - 1
+        tokens = tokens[-splitn:]
+        for token in tokens:
+            seq_match = seq_finder.match(token)
+            if not seq_match:
+                results.append(token)
+
+        return '.{}'.format('.'.join(results))
+
     def create_component(
         self, path, data=None, location='auto'
     ):
@@ -1895,8 +1914,6 @@ class Session(object):
         if data is None:
             data = {}
 
-        extension_parser = re.compile('(\.[a-zA-Z].+.)*$')
-
         if location == 'auto':
             # Check if the component name matches one of the ftrackreview
             # specific names. Add the component to the ftrack.review location if
@@ -1919,11 +1936,7 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            extension_finder = extension_parser.search(path)
-            extension = extension_finder.groups()[-1] if (
-                    extension_finder and extension_finder.groups()
-            )[-1] else ""
-
+            extension = self.__split_extension(path)
             data.setdefault('file_type', extension)
 
             return self._create_component(
@@ -1953,11 +1966,7 @@ class Session(object):
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
 
-            extension_finder = extension_parser.search(container_path)
-            extension = extension_finder.groups()[-1] if (
-                    extension_finder and extension_finder.groups()
-            )[-1] else ""
-
+            extension = self.__split_extension(container_path)
             data.setdefault('file_type', extension)
             data.setdefault('size', container_size)
 
@@ -1967,10 +1976,7 @@ class Session(object):
 
             # Create member components for sequence.
             for member_path in collection:
-                extension_finder = extension_parser.search(member_path)
-                extension = extension_finder.groups()[-1] if (
-                        extension_finder and extension_finder.groups()
-                )[-1] else ""
+                extension = self.__split_extension(member_path)
 
                 member_data = {
                     'name': collection.match(member_path).group('index'),
