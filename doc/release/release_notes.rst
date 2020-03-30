@@ -13,6 +13,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: tests
+
+        Note reply randomly fails.
+
+    .. change:: fixed
         :tags: session, events
 
         Event server wait method will sometimes raise a connection error because
