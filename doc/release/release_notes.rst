@@ -12,6 +12,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: fixed
+        :tags: session, events
+
+        Event server wait method will sometimes raise a connection error because
+        of a race condition.
+
     ..change:: changed
         :tag: websocket
 
