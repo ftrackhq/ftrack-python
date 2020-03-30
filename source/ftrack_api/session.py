@@ -1895,7 +1895,7 @@ class Session(object):
         if data is None:
             data = {}
 
-        ext_parser = re.compile('^(\w+.)(%+\d+d)?(\.\w.+.)$')
+        ext_parser = re.compile('(\.\w.+.)$')
 
         if location == 'auto':
             # Check if the component name matches one of the ftrackreview
