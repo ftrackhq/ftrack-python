@@ -1895,7 +1895,7 @@ class Session(object):
         if data is None:
             data = {}
 
-        extension_parser = re.compile('((\.\w.+.)?)*$')
+        extension_parser = re.compile('(\.[a-zA-Z].+.)*$')
 
         if location == 'auto':
             # Check if the component name matches one of the ftrackreview
@@ -1919,9 +1919,12 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            find_extension = extension_parser.search(path)
-            extension = extension_parser.groups()[-1] if find_extension else None
-            data.setdefault('file_type',extension)
+            extension_finder = extension_parser.search(path)
+            extension = extension_finder.groups()[-1] if (
+                    extension_finder and extension_finder.groups()
+            )[-1] else ""
+
+            data.setdefault('file_type', extension)
 
             return self._create_component(
                 'FileComponent', path, data, location
@@ -1950,8 +1953,10 @@ class Session(object):
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
 
-            find_extension = extension_parser.search(path)
-            extension = extension_parser.groups()[-1] if find_extension else None
+            extension_finder = extension_parser.search(container_path)
+            extension = extension_finder.groups()[-1] if (
+                    extension_finder and extension_finder.groups()
+            )[-1] else ""
 
             data.setdefault('file_type', extension)
             data.setdefault('size', container_size)
@@ -1962,8 +1967,10 @@ class Session(object):
 
             # Create member components for sequence.
             for member_path in collection:
-                find_extension = extension_parser.search(path)
-                extension = extension_parser.groups()[-1] if find_extension else None
+                extension_finder = extension_parser.search(member_path)
+                extension = extension_finder.groups()[-1] if (
+                        extension_finder and extension_finder.groups()
+                )[-1] else ""
 
                 member_data = {
                     'name': collection.match(member_path).group('index'),
