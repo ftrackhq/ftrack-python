@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import
 
+import re
 import json
 import logging
 import collections
@@ -1893,6 +1894,29 @@ class Session(object):
 
         return locations
 
+    def _split_extension(self, path):
+        '''Return the extension of the provided *path*.'''
+
+        filename = os.path.basename(path)
+
+        # if no extension is found return an empty string.
+        if '.' not in filename:
+            return ""
+
+        seq_finder = re.compile('((%+\d+d)|(#+)|(%d)|(\d{2,}))')
+
+        results = []
+        tokens = filename.split('.')[-3:]
+        splitn = len(tokens) - 1
+        tokens = tokens[-splitn:]
+        for token in tokens:
+            # if any of the tokens is a sequence identifier, skip it.
+            seq_match = seq_finder.match(token)
+            if not seq_match:
+                results.append(token)
+
+        return '.{}'.format('.'.join(results))
+
     def create_component(
         self, path, data=None, location='auto'
     ):
@@ -1955,7 +1979,8 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            data.setdefault('file_type', os.path.splitext(path)[-1])
+            extension = self._split_extension(path)
+            data.setdefault('file_type', extension)
 
             return self._create_component(
                 'FileComponent', path, data, location
@@ -1983,7 +2008,9 @@ class Session(object):
             # Create sequence component
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', os.path.splitext(container_path)[-1])
+
+            extension = self._split_extension(container_path)
+            data.setdefault('file_type', extension)
             data.setdefault('size', container_size)
 
             container = self._create_component(
@@ -1992,11 +2019,13 @@ class Session(object):
 
             # Create member components for sequence.
             for member_path in collection:
+                extension = self._split_extension(member_path)
+
                 member_data = {
                     'name': collection.match(member_path).group('index'),
                     'container': container,
                     'size': member_sizes[member_path],
-                    'file_type': os.path.splitext(member_path)[-1]
+                    'file_type': extension
                 }
 
                 component = self._create_component(

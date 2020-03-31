@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: Api
+
+        Wrong extension extraction on filenames with compound extensions.
+
 .. release:: 1.8.2
     :date: 2020-01-14
 

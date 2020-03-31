@@ -56,6 +56,17 @@ def new_sequence_component():
     return entity
 
 
+def new_sequence_compound_component():
+    '''Return sequence component.'''
+    session = ftrack_api.Session()
+
+    entity = session.create_component(
+        '/tmp/foo/file.%04d.foo.bar [1-10]', location=None, data={'name': 'baz'}
+    )
+
+    return entity
+
+
 def new_file_component(name='foo', container=None):
     '''Return file component with *name* and *container*.'''
     if container:
@@ -76,6 +87,7 @@ def new_file_component(name='foo', container=None):
 file_component = new_file_component()
 container_component = new_container_component()
 sequence_component = new_sequence_component()
+sequence_compound_component = new_sequence_compound_component()
 
 
 # Note: to improve test performance the same project is reused throughout the
@@ -140,6 +152,20 @@ sequence_component = new_sequence_component()
             'my_new_asset'
         ),
         (
+            sequence_compound_component,
+            ['baz6', 'bar'],
+            '{project_name}/baz6/bar/my_new_asset/v001/baz.%04d.foo.bar',
+            ftrack_api.structure.standard.StandardStructure(),
+            'my_new_asset'
+        ),
+        (
+            sequence_compound_component['members'][3],
+            ['baz7', 'bar'],
+            '{project_name}/baz7/bar/my_new_asset/v001/baz.0004.foo.bar',
+            ftrack_api.structure.standard.StandardStructure(),
+            'my_new_asset'
+        ),
+        (
             file_component,
             [u'björn'],
             '{project_name}/bjorn/my_new_asset/v001/foo.png',
@@ -198,7 +224,8 @@ sequence_component = new_sequence_component()
                 illegal_character_substitute='^'
             ),
             'my_new_asset'
-        )
+        ),
+
     ], ids=[
         'file_component_on_project',
         'file_component_on_project_with_prefix',
@@ -207,6 +234,8 @@ sequence_component = new_sequence_component()
         'sequence_component_member',
         'container_component',
         'container_component_member',
+        'sequence_compound_component',
+        'sequence_compound_component_member',
         'slugify_non_ascii_hierarchy',
         'slugify_illegal_hierarchy',
         'slugify_non_ascii_component_name',
