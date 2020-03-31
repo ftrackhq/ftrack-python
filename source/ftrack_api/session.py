@@ -1855,8 +1855,8 @@ class Session(object):
 
         return locations
 
-    def __split_extension(self, path):
-        '''Return the extension of the provided path.'''
+    def _split_extension(self, path):
+        '''Return the extension of the provided *path*.'''
 
         filename = os.path.basename(path)
 
@@ -1940,7 +1940,7 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            extension = self.__split_extension(path)
+            extension = self._split_extension(path)
             data.setdefault('file_type', extension)
 
             return self._create_component(
@@ -1970,7 +1970,7 @@ class Session(object):
             container_path = collection.format('{head}{padding}{tail}')
             data.setdefault('padding', collection.padding)
 
-            extension = self.__split_extension(container_path)
+            extension = self._split_extension(container_path)
             data.setdefault('file_type', extension)
             data.setdefault('size', container_size)
 
@@ -1980,7 +1980,7 @@ class Session(object):
 
             # Create member components for sequence.
             for member_path in collection:
-                extension = self.__split_extension(member_path)
+                extension = self._split_extension(member_path)
 
                 member_data = {
                     'name': collection.match(member_path).group('index'),
