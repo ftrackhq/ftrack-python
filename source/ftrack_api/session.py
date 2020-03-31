@@ -1856,8 +1856,11 @@ class Session(object):
         return locations
 
     def __split_extension(self, path):
-        # split by dot and consider just the last two items
+        '''Return the extension of the provided path.'''
+
         filename = os.path.basename(path)
+
+        # if no extension is found return an empty string.
         if '.' not in filename:
             return ""
 
@@ -1868,6 +1871,7 @@ class Session(object):
         splitn = len(tokens) - 1
         tokens = tokens[-splitn:]
         for token in tokens:
+            # if any of the tokens is a sequence identifier, skip it.
             seq_match = seq_finder.match(token)
             if not seq_match:
                 results.append(token)
