@@ -1896,7 +1896,7 @@ class Session(object):
 
     @staticmethod
     def _split_extension(path):
-        '''Return the extension of the provided *path*.'''
+        '''Return the file extension of the provided *path*.'''
 
         filename = os.path.basename(path)
 
