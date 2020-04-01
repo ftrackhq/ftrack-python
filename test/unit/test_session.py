@@ -1522,6 +1522,11 @@ def test__entity_reference_issues_deprecation_warning(mocker, session):
 @pytest.mark.parametrize(
     'input_path, expected_extension',
     [
+        ('/input/path/file.%d.baz', '.baz'),
+        ('/input/path/file.%d.baz [0-100]', '.baz [0-100]'),
+        ('/input/path/file.%d.foo.bar', '.foo.bar'),
+        ('/input/path/file.%d.foo.bar [1-100]', '.foo.bar [1-100]'),
+
         ('/input/path/file.%4d.baz', '.baz'),
         ('/input/path/file.%4d.baz [0-100]', '.baz [0-100]'),
         ('/input/path/file.%4d.foo.bar', '.foo.bar'),
@@ -1545,10 +1550,15 @@ def test__entity_reference_issues_deprecation_warning(mocker, session):
         ('/input/path/file.3ds', '.3ds')
     ],
     ids=[
-        'sequence_signature_percent_simple_extension',
-        'sequence_signature_percent_simple_extension_with_range',
-        'sequence_signature_percent_compound_extension',
-        'sequence_signature_percent_compound_extension_with_range',
+        'sequence_signature_percent_no_padding_simple_extension',
+        'sequence_signature_percent_no_padding_simple_extension_with_range',
+        'sequence_signature_percent_no_padding_compound_extension',
+        'sequence_signature_percent_no_padding_compound_extension_with_range',
+
+        'sequence_signature_percent_padding_simple_extension',
+        'sequence_signature_percent_padding_simple_extension_with_range',
+        'sequence_signature_percent_padding_compound_extension',
+        'sequence_signature_percent_padding_compound_extension_with_range',
 
         'sequence_signature_hash_simple_extension',
         'sequence_signature_hash_simple_extension_with_range',
