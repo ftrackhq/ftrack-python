@@ -1579,5 +1579,6 @@ def test__entity_reference_issues_deprecation_warning(mocker, session):
     ]
 )
 def test_split_extension(input_path, expected_extension, session):
+    '''Split extension from file path.'''
     result_extension = session._split_extension(input_path)
     assert result_extension == expected_extension
