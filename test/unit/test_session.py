@@ -1517,3 +1517,57 @@ def test__entity_reference_issues_deprecation_warning(mocker, session):
         ),
         PendingDeprecationWarning
     )
+
+
+@pytest.mark.parametrize(
+    'input_path, expected_extension',
+    [
+        ('/input/path/file.%4d.baz', '.baz'),
+        ('/input/path/file.%4d.baz [0-100]', '.baz [0-100]'),
+        ('/input/path/file.%4d.foo.bar', '.foo.bar'),
+        ('/input/path/file.%4d.foo.bar [1-100]', '.foo.bar [1-100]'),
+
+        ('/input/path/file.####.baz', '.baz'),
+        ('/input/path/file.####.baz [0-100]', '.baz [0-100]'),
+        ('/input/path/file.####.foo.bar', '.foo.bar'),
+        ('/input/path/file.####.foo.bar [1-100]', '.foo.bar [1-100]'),
+
+        ('/input/path/file.0000.baz', '.baz'),
+        ('/input/path/file.0000.baz [0-100]', '.baz [0-100]'),
+        ('/input/path/file.0000.foo.bar', '.foo.bar'),
+        ('/input/path/file.0000.foo.bar [1-100]', '.foo.bar [1-100]'),
+
+        ('/input/path/file.frames.1010.baz', '.baz'),
+        ('/input/path/file.frames.1010.baz [1-100]', '.baz [1-100]'),
+
+        ('/input/path/file.bar', '.bar'),
+        ('/input/path/file', ''),
+        ('/input/path/file.3ds', '.3ds')
+    ],
+    ids=[
+        'sequence_signature_percent_simple_extension',
+        'sequence_signature_percent_simple_extension_with_range',
+        'sequence_signature_percent_compound_extension',
+        'sequence_signature_percent_compound_extension_with_range',
+
+        'sequence_signature_hash_simple_extension',
+        'sequence_signature_hash_simple_extension_with_range',
+        'sequence_signature_hash_compound_extension',
+        'sequence_signature_hash_compound_extension_with_range',
+
+        'sequence_frame_simple_extension',
+        'sequence_frame_simple_extension_with_range',
+        'sequence_frame_compound_extension',
+        'sequence_frame_compound_extension_with_range',
+
+        'sequence_frame_special_compound_extension',
+        'sequence_frame_special_compound_extension_with_range',
+
+        'simple_file',
+        'simple_file_no_extension',
+        'simple_file_with_one_number_in_extension'
+    ]
+)
+def test_split_extension(input_path, expected_extension, session):
+    result_extension = session._split_extension(input_path)
+    assert result_extension == expected_extension
