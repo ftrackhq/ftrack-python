@@ -1898,24 +1898,35 @@ class Session(object):
     def _split_extension(path):
         '''Return the file extension of the provided *path*.'''
 
+        # Get Filename.
         filename = os.path.basename(path)
 
-        # if no extension is found return an empty string.
+        # If no extension is found return an empty string.
         if '.' not in filename:
-            return ""
+            return ''
 
-        seq_finder = re.compile('((%+\d+d)|(#+)|(%d)|(\d{2,}))')
+        # Identify sequence searching for : %<N>d, ####, %d, min two numeral digits.
+        sequence_finder_regexp = re.compile('((%+\d+d)|(#+)|(%d)|(\d{2,}))')
 
+        # Result extension container.
         results = []
+
+        # Split by dot and get the last three occurences.
         tokens = filename.split('.')[-3:]
-        splitn = len(tokens) - 1
-        tokens = tokens[-splitn:]
+
+        # Limit tokens to be taken in accoutn based on the numner of them.
+        split = len(tokens) - 1 
+        tokens = tokens[-split:]
+
         for token in tokens:
-            # if any of the tokens is a sequence identifier, skip it.
-            seq_match = seq_finder.match(token)
-            if not seq_match:
+            # If any of the tokens is a sequence identifier, skip it.
+            sequence_match = sequence_finder_regexp.match(token)
+            if not sequence_match:
+                # If is not a sequence identifier, 
+                # make it part of the extension.
                 results.append(token)
 
+        # Return composed extension.
         return '.{}'.format('.'.join(results))
 
     def create_component(
