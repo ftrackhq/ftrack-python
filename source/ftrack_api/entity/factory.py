@@ -392,9 +392,9 @@ class StandardFactory(Factory):
                 session = entity.session
 
                 if len(proxy.collection) == 0:
-                    # Try to populate the collection if it is empty, this
-                    # can be done by rading the configurations and
-                    # reconstructing a remote value.
+                    # Populate the collection if it is empty. It is done by
+                    # reading the configurations and reconstructing a
+                    # remote value.
                     new_collection_items = []
                     for configuration in _get_entity_configurations(entity):
                         create_data = dict()
