@@ -379,6 +379,7 @@ class StandardFactory(Factory):
 
                 '''
                 entity = proxy.collection.entity
+                attribute = proxy.collection.attribute
                 if (
                     ftrack_api.inspection.state(entity) is not
                     ftrack_api.symbol.CREATED
@@ -388,37 +389,47 @@ class StandardFactory(Factory):
                         'given entity type before being set.'
                     )
 
-                configuration = None
-                for candidate in _get_entity_configurations(entity):
-                    if candidate['key'] == data['key']:
-                        configuration = candidate
+                session = entity.session
+
+                if len(proxy.collection) == 0:
+                    # Try to populate the collection if it is empty, this
+                    # can be done by rading the configurations and
+                    # reconstructing a remote value.
+                    new_collection_items = []
+                    for configuration in _get_entity_configurations(entity):
+                        create_data = dict()
+                        create_data['key'] = configuration['key']
+                        create_data['configuration_id'] = configuration['id']
+                        create_data['entity_id'] = entity['id']
+                        create_data['value'] = configuration['default']
+                        create_data['configuration'] = configuration
+                        new_collection_items.append(
+                            session.create(
+                                reference,
+                                create_data,
+                                reconstructing=True
+                            )
+                        )
+
+                    # Set the value as the remote. This will replace
+                    # the proxy and collection with new ones and it is no longer
+                    # safe to use the passed proxy and collection.
+                    attribute.set_remote_value(
+                        entity, new_collection_items
+                    )
+
+                # Find the custom attribute value and update it.
+                item = None
+                for item in attribute.get_remote_value(entity).collection:
+                    if item['key'] == data['key']:
+                        item['value'] = data['value']
                         break
 
-                if configuration is None:
+                if item is None:
                     raise ValueError(
                         u'No valid custom attribute for data {0!r} was found.'
                         .format(data)
                     )
-
-                create_data = dict(data.items())
-                create_data['configuration_id'] = configuration['id']
-                create_data['entity_id'] = entity['id']
-
-                session = entity.session
-
-                # Create custom attribute by reconstructing it and update the
-                # value. This will prevent a create operation to be sent to the
-                # remote, as create operations for this entity type is not
-                # allowed. Instead an update operation will be recorded.
-                value = create_data.pop('value')
-                item = session.create(
-                    reference,
-                    create_data,
-                    reconstructing=True
-                )
-
-                # Record update operation.
-                item['value'] = value
 
                 return item
 
