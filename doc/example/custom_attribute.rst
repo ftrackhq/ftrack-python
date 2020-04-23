@@ -50,9 +50,8 @@ Limitations
 Set attributes on new entities
 ------------------------------
 
-When creating custom attributes there are some limitations that are important
-to be aware of when creating an entity and updating custom attributes in one
-commit.
+There are some limitations that are important to be aware of when creating an
+entity and updating custom attributes in one commit.
 
 The following code does not work::
 
