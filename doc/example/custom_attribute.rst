@@ -45,6 +45,40 @@ key from the configuration::
 Limitations
 ===========
 
+.. _example/custom_attribute/set-attributes-on-new-entities:
+
+Set attributes on new entities
+------------------------------
+
+When creating custom attributes there are some limitations that are important
+to be aware of when creating an entity and updating custom attributes in one
+commit.
+
+The following code does not work::
+
+    task = session.create('Task', {
+        ...
+        'custom_attributes': {
+            'my_text_field': 'bar',
+        },
+    })
+    session.commit()
+
+Instead, the entity must be created first, then we can set the custom
+attributes:: 
+
+    task = session.create('Task', {
+        ...
+    })
+    task['custom_attributes']['my_text_field'] = 'bar'
+    session.commit()
+
+After the commit the remote value is not automatically populated. This will
+cause an extra query to the server when a custom attribute is accessed::
+
+    # This will cause a server query.
+    print task['custom_attributes']['my_text_field']
+
 Expression attributes
 ---------------------
 
