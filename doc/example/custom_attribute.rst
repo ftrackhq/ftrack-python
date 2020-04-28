@@ -53,7 +53,9 @@ Set attributes on new entities
 There are some limitations that are important to be aware of when creating an
 entity and updating custom attributes in one commit.
 
-The following code does not work::
+The following code does not work:
+
+.. code-block:: python
 
     task = session.create('Task', {
         ...
@@ -64,7 +66,9 @@ The following code does not work::
     session.commit()
 
 Instead, the entity must be created first, then we can set the custom
-attributes:: 
+attributes:
+
+.. code-block:: python
 
     task = session.create('Task', {
         ...
@@ -73,7 +77,9 @@ attributes::
     session.commit()
 
 After the commit the remote value is not automatically populated. This will
-cause an extra query to the server when a custom attribute is accessed::
+cause an extra query to the server when a custom attribute is accessed:
+
+.. code-block:: python
 
     # This will cause a server query.
     print task['custom_attributes']['my_text_field']
