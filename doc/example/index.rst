@@ -49,4 +49,5 @@ already constructed a :class:`Session`::
     task_template
     sync_ldap_users
     invite_user
+    workflow_schema
 
