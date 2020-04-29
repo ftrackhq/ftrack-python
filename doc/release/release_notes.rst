@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: new
+
+        Added advanced example of how to create workflow schemas
+        :ref:`example/workflow_schema`.
+
 .. release:: 1.8.2
     :date: 2020-01-14
 

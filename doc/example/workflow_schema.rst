@@ -15,6 +15,10 @@ project.
 
 .. note::
 
+    This is an advanced topic, most users will not need it.
+
+.. note::
+
     ftrack server version 4.5 or higher is required for this example to work.
 
 Below is an example of how to create a complete `ProjectSchema`::
