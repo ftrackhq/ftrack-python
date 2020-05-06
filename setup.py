@@ -84,7 +84,9 @@ setup(
         'clique >= 1.2.0, < 2',
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
-        'six >= 1, < 2'
+        'six >= 1, < 2',
+        'setuptools>=30.3.0',
+        'setuptools_scm'
     ],
     tests_require=[
         'pytest >= 2.7, < 3',
