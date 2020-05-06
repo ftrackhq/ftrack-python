@@ -32,7 +32,7 @@ Release Notes
         of a race condition.
 
     .. change:: changed
-        :tag: websocket
+        :tags: websocket
 
         Select highest available `protocol <https://docs.python.org/3/library/ssl.html>`_ 
         version when connecting to websocket.
@@ -70,7 +70,7 @@ Release Notes
             You should now use the public method :meth:`Session.call`.
 
     .. change:: changed
-        :tag: Session
+        :tags: Session
 
         Public method :meth:`Session.delayed_job` has been deprecated.
 
@@ -79,17 +79,17 @@ Release Notes
            You should now use :meth:`Session.call`.
 
     .. change:: fixed
-        :tag: Location, Api
+        :tags: Location, Api
 
         LocationMixins are not compatible with Python 3.
     
     .. change:: fixed
-        :tag: Test
+        :tags: Test
 
         Entity test fails due to missing parents.
 
     .. change:: new
-        :tag: Tests
+        :tags: Tests
 
         Add support for flaky tests to improve test reliability.
 
