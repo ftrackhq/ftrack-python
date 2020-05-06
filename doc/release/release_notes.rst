@@ -30,7 +30,7 @@ Release Notes
         Event server wait method will sometimes raise a connection error because
         of a race condition.
 
-    ..change:: changed
+    .. change:: changed
         :tag: websocket
 
         Select highest available `protocol <https://docs.python.org/3/library/ssl.html>`_ 
