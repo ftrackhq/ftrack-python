@@ -144,7 +144,7 @@ first fetching them from the server, turn :ref:`auto-population
 .. _working_with_entities/resetting:
 
 Server side reset of entity attributes or settings.
-===========================
+===================================================
 
 Some entities support resetting of attributes, for example
 to reset a users api key::
