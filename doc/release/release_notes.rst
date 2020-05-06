@@ -12,6 +12,13 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: Documentation
+
+        Added new section
+        :ref:`example/custom_attribute/set-attributes-on-new-entities` to
+        custom attributes known limitation.
+
     .. change:: fixed
         :tags: tests
 
@@ -100,7 +107,7 @@ Release Notes
     :date: 2020-01-14
 
     .. change:: fixed
-        :tag: Test
+        :tags: Test
 
         test_ensure_entity_with_non_string_data_types test fails due to missing parents.
 
@@ -121,7 +128,7 @@ Release Notes
         :envvar:`FTRACK_API_FILE_CHUNK_SIZE`
 
     .. change:: new
-        :tag: setup
+        :tags: setup
 
         Add check for correct python version when installing with pip.
 
