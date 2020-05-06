@@ -5,7 +5,7 @@
 
 import os
 import re
-from pkg_resources import get_distribution
+from pkg_resources import get_distribution, DistributionNotFound
 
 # -- General ------------------------------------------------------------------
 
