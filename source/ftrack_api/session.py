@@ -277,9 +277,7 @@ class Session(object):
                         'Creating schema cache path : {}'.format(schema_temp_path)
                     )
                     try:
-                        # The directory is readable, writable, and searchable only by the
-                        # creating user.
-                        os.mkdir(schema_temp_path, 0700)  
+                        os.mkdir(schema_temp_path)  
                     except OSError as error:
                         self.logger.exception(
                              "Could not create schema cache folder : {} , error {}".format(
