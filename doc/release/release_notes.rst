@@ -9,6 +9,12 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: Session
+
+        Schema cache is not readeable on multi user machines.
 
 .. release:: 2.0.0
     :date: 2020-05-06

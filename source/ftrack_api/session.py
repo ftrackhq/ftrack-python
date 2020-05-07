@@ -271,8 +271,25 @@ class Session(object):
         # rebuilding types)?
         if schema_cache_path is not False:
             if schema_cache_path is None:
+                schema_temp_path = os.path.join(tempfile.gettempdir(), self._api_user)
+                if not os.path.exists(schema_temp_path):
+                    self.logger.debug(
+                        'Creating schema cache path at : {}'.format(schema_temp_path)
+                    )
+                    try:
+                        # The directory is readable, writable, and searchable only by the
+                        # creating user.
+                        os.mkdir(schema_temp_path, 0700)  
+                    except OSError:
+                         self.logger.exception(
+                             "Could not create schema cache folder at: {}".format(
+                                 schema_temp_path
+                             )
+                        )
+                        raise
+
                 schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', tempfile.gettempdir()
+                    'FTRACK_API_SCHEMA_CACHE_PATH', schema_temp_path
                 )
 
             schema_cache_path = os.path.join(
