@@ -271,7 +271,7 @@ class Session(object):
         # rebuilding types)?
         if schema_cache_path is not False:
             if schema_cache_path is None:
-                schema_temp_path = os.path.join(tempfile.gettempdir(), self._api_user)
+                schema_temp_path = os.path.join(tempfile.gettempdir(), getpass.getuser())
                 if not os.path.exists(schema_temp_path):
                     self.logger.debug(
                         'Creating schema cache path : {}'.format(schema_temp_path)
