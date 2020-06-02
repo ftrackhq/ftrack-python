@@ -78,7 +78,7 @@ class EventHub(object):
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
-        # Track if a connection has been initialised. 
+        # Track if a connection has been initialised.
         self._connection_initialised = False
 
         # Default values for auto reconnection timeout on unintentional
@@ -192,8 +192,10 @@ class EventHub(object):
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
+            sock = socket.socket(proto=6)  # TCP
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol},
+                socket=sock,
             )
 
         except Exception as error:
