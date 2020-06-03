@@ -110,7 +110,6 @@ Release Notes
     .. change:: new 
     
         Provide support for python3.X.
->>>>>>> master
 
 .. release:: 1.8.2
     :date: 2020-01-14
