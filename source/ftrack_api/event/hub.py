@@ -3,10 +3,15 @@
 
 from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 import collections
-import urlparse
+import urllib.parse
 import threading
-import Queue as queue
+import queue as queue
 import logging
 import time
 import uuid
@@ -15,6 +20,7 @@ import functools
 import json
 import socket
 import warnings
+import ssl
 
 import requests
 import requests.exceptions
@@ -41,19 +47,8 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 ])
 
 
-
-
 class EventHub(object):
     '''Manage routing of events.'''
-
-    _future_signature_warning = (
-        'When constructing your Session object you did not explicitly define '
-        'auto_connect_event_hub as True even though you appear to be publishing '
-        'and / or subscribing to asynchronous events. In version version 2.0 of '
-        'the ftrack-python-api the default behavior will change from True '
-        'to False. Please make sure to update your tools. You can read more at '
-        'http://ftrack-python-api.rtd.ftrack.com/en/stable/release/migration.html'
-    )
 
     def __init__(self, server_url, api_user, api_key):
         '''Initialise hub, connecting to ftrack *server_url*.
@@ -83,12 +78,13 @@ class EventHub(object):
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
+        # Track if a connection has been initialised. 
+        self._connection_initialised = False
+
         # Default values for auto reconnection timeout on unintentional
         # disconnection. Equates to 5 minutes.
         self._auto_reconnect_attempts = 30
         self._auto_reconnect_delay = 10
-
-        self._deprecation_warning_auto_connect = False
 
         # Mapping of Socket.IO codes to meaning.
         self._code_name_mapping = {
@@ -102,7 +98,7 @@ class EventHub(object):
             '7': 'error'
         }
         self._code_name_mapping.update(
-            dict((name, code) for code, name in self._code_name_mapping.items())
+            dict((name, code) for code, name in list(self._code_name_mapping.items()))
         )
 
         self._server_url = server_url
@@ -110,7 +106,7 @@ class EventHub(object):
         self._api_key = api_key
 
         # Parse server URL and store server details.
-        url_parse_result = urlparse.urlparse(self._server_url)
+        url_parse_result = urllib.parse.urlparse(self._server_url)
         if not url_parse_result.scheme:
             raise ValueError('Could not determine scheme from server url.')
 
@@ -148,8 +144,8 @@ class EventHub(object):
         connected or connection fails.
 
         '''
-
-        self._deprecation_warning_auto_connect = False
+        # Update tracking flag for connection.
+        self._connection_initialised = True
 
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -173,13 +169,32 @@ class EventHub(object):
                 scheme, self.get_network_location(), session.id
             )
 
+            # Select highest available protocol for websocket connection.
+            ssl_protocols = [
+                'PROTOCOL_TLS',
+                'PROTOCOL_TLSv1_2'
+            ]
+
+            available_ssl_protocol = None
+
+            for ssl_protocol in ssl_protocols:
+                if hasattr(ssl, ssl_protocol):
+                    available_ssl_protocol = getattr(ssl, ssl_protocol)
+                    self.logger.debug(
+                        'Using protocol {} to connect to websocket.'.format(
+                            ssl_protocol
+                        ))
+                    break
+
             # timeout is set to 60 seconds to avoid the issue where the socket
             # ends up in a bad state where it is reported as connected but the
             # connection has been closed. The issue happens often when connected
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
-            self._connection = websocket.create_connection(url, timeout=60)
+            self._connection = websocket.create_connection(
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}
+            )
 
         except Exception as error:
             error_message = (
@@ -188,7 +203,7 @@ class EventHub(object):
             )
 
             error_details = {
-                'error': unicode(error),
+                'error': str(error),
                 'server_url': self.get_server_url()
             }
 
@@ -326,6 +341,16 @@ class EventHub(object):
         smaller values.
 
         '''
+
+        if not self._connection_initialised:
+            raise ftrack_api.exception.EventHubConnectionError(
+                'Event hub does not have a connection to the event server and '
+                'will therefore only be able to receive syncronous events.'
+                'Please see http://ftrack-python-api.rtd.ftrack.com/en/stable/'
+                'release/migration.html#default-behavior-for-connecting-to-event-hub'
+                ' for further information.'
+            )
+
         started = time.time()
 
         while True:
@@ -569,10 +594,6 @@ class EventHub(object):
         event will be caught by this method and ignored.
 
         '''
-        if self._deprecation_warning_auto_connect and not synchronous:
-            warnings.warn(
-                self._future_signature_warning, FutureWarning
-            )
 
         try:
             return self._publish(
@@ -732,10 +753,6 @@ class EventHub(object):
             # Automatically publish a non None response as a reply when not in
             # synchronous mode.
             if not synchronous:
-                if self._deprecation_warning_auto_connect:
-                    warnings.warn(
-                        self._future_signature_warning, FutureWarning
-                    )
 
                 if response is not None:
                     try:

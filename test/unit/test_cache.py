@@ -4,7 +4,7 @@
 import os
 import uuid
 import tempfile
-
+import sys
 import pytest
 
 import ftrack_api.cache
@@ -277,7 +277,6 @@ def test_expand_references():
         )
 
 
-
 @pytest.mark.parametrize('items, key', [
     (({},), '{}'),
     (({}, {}), '{}{}')
@@ -291,10 +290,11 @@ def test_string_key_maker_key(items, key):
     assert key_maker.key(*items) == key
 
 
+@pytest.mark.skipif(sys.version_info > (3, 0), reason="requires Python2")
 @pytest.mark.parametrize('items, key', [
     (
         ({},),
-        '\x01\x01'
+        b'\x01\x01'
     ),
     (
         ({'a': 'b'}, [1, 2]),
@@ -308,19 +308,19 @@ def test_string_key_maker_key(items, key):
     ),
     (
         (function,),
-        '\x04function\x00unit.test_cache'
+        b'\x04function\x00unit.test_cache'
     ),
     (
         (Class,),
-        '\x04Class\x00unit.test_cache'
+        b'\x04Class\x00unit.test_cache'
     ),
     (
-        (Class.method,),
-        '\x04method\x00Class\x00unit.test_cache'
+        (Class().method,),
+        b'\x04method\x00Class\x00unit.test_cache'
     ),
     (
         (callable,),
-        '\x04callable'
+        b'\x04callable'
     )
 ], ids=[
     'single mapping',
@@ -330,9 +330,52 @@ def test_string_key_maker_key(items, key):
     'method',
     'builtin'
 ])
-def test_object_key_maker_key(items, key):
+def test_object_key_maker_key_py2k(items, key):
     '''Generate key using string key maker.'''
     key_maker = ftrack_api.cache.ObjectKeyMaker()
+
+    assert key_maker.key(*items) == key
+
+
+@pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
+@pytest.mark.parametrize('items, key', [
+    (
+        ({},),
+        b'\x01\x01'
+    ),
+    (
+        ({'a': 'b'}, [1, 2]),
+        b'\x01\x80\x02X\x01\x00\x00\x00aq\x00.\x02\x80\x02X\x01\x00\x00\x00bq\x00.'
+        b'\x01\x00\x03\x80\x02K\x01.\x00\x80\x02K\x02.\x03'
+    ),
+    (
+        (function,),
+        b'\x04function\x00unit.test_cache'
+    ),
+    (
+        (Class,),
+        b'\x04Class\x00unit.test_cache'
+    ),
+    (
+        (Class().method,),
+        b'\x04method\x00Class\x00unit.test_cache'
+    ),
+    (
+        (callable,),
+        b'\x04callable'
+    )
+], ids=[
+    'single mapping',
+    'multiple objects', # will fail in python 3 due to different pickler
+    'function',
+    'class',
+    'method',
+    'builtin'
+])
+def test_object_key_maker_key_py3k(items, key):
+    '''Generate key using string key maker.'''
+    key_maker = ftrack_api.cache.ObjectKeyMaker()
+
     assert key_maker.key(*items) == key
 
 

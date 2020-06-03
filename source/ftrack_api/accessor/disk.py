@@ -146,7 +146,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                         else:
                             raise
 
-            except OSError, error:
+            except OSError as error:
                 if error.errno != errno.EEXIST:
                     raise
 
@@ -227,24 +227,25 @@ def error_handler(**kw):
         (exception_type, exception_value, traceback) = sys.exc_info()
         kw.setdefault('error', error)
 
+
         error_code = getattr(error, 'errno')
         if not error_code:
-            raise AccessorOperationFailedError(**kw), None, traceback
+            raise AccessorOperationFailedError(**kw)
 
         if error_code == errno.ENOENT:
-            raise AccessorResourceNotFoundError(**kw), None, traceback
+            raise AccessorResourceNotFoundError(**kw)
 
         elif error_code == errno.EPERM:
-            raise AccessorPermissionDeniedError(**kw), None, traceback
+            raise AccessorPermissionDeniedError(**kw)
 
         elif error_code == errno.ENOTEMPTY:
-            raise AccessorContainerNotEmptyError(**kw), None, traceback
+            raise AccessorContainerNotEmptyError(**kw)
 
         elif error_code in (errno.ENOTDIR, errno.EISDIR, errno.EINVAL):
-            raise AccessorResourceInvalidError(**kw), None, traceback
+            raise AccessorResourceInvalidError(**kw)
 
         else:
-            raise AccessorOperationFailedError(**kw), None, traceback
+            raise AccessorOperationFailedError(**kw)
 
     except Exception:
         raise

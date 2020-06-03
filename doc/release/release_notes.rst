@@ -12,15 +12,111 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: Documentation
 
         Added advanced example of how to create workflow schemas
         :ref:`example/workflow_schema`.
+
+.. release:: 2.0.0
+    :date: 2020-05-06
+
+    .. change:: new
+        :tags: Documentation
+
+        Added new section
+        :ref:`example/custom_attribute/set-attributes-on-new-entities` to
+        custom attributes known limitation.
+
+    .. change:: fixed
+        :tags: tests
+
+        Note reply randomly fails.
+
+    .. change:: fixed
+        :tags: session, events
+
+        Event server wait method will sometimes raise a connection error because
+        of a race condition.
+
+    .. change:: changed
+        :tags: websocket
+
+        Select highest available `protocol <https://docs.python.org/3/library/ssl.html>`_ 
+        version when connecting to websocket.
+
+    .. change:: changed
+        :tags: version
+
+        Replace fixed version with automatic versioning from git repository. 
+
+    .. change:: changed
+        :tags: events
+
+        Notify users on remote event server connection status while waiting.
+
+    .. change:: fix 
+    
+        Transfer component from server storage breaks due to different string/byte handling.
+
+    .. change:: changed
+        :tags: Session
+
+        Private method :meth:`Session._entity_reference` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.entity_reference`.
+
+    .. change:: changed
+        :tags: Session
+        
+        Private method :meth:`Session._call` has been deprecated.
+
+        .. note::
+
+            You should now use the public method :meth:`Session.call`.
+
+    .. change:: changed
+        :tags: Session
+
+        Public method :meth:`Session.delayed_job` has been deprecated.
+
+        .. note:: 
+
+           You should now use :meth:`Session.call`.
+
+    .. change:: fixed
+        :tags: Location, Api
+
+        LocationMixins are not compatible with Python 3.
+    
+    .. change:: fixed
+        :tags: Test
+
+        Entity test fails due to missing parents.
+
+    .. change:: new
+        :tags: Tests
+
+        Add support for flaky tests to improve test reliability.
+
+    .. change:: changed
+        :tags: Session
+
+        Do not auto connect by default to event server hub.
+
+        .. seealso:: :ref:`release/migration/2.0.0/event_hub`.
+
+    .. change:: new 
+    
+        Provide support for python3.X.
+>>>>>>> master
 
 .. release:: 1.8.2
     :date: 2020-01-14
 
     .. change:: fixed
-        :tag: Test
+        :tags: Test
 
         test_ensure_entity_with_non_string_data_types test fails due to missing parents.
 
@@ -41,7 +137,7 @@ Release Notes
         :envvar:`FTRACK_API_FILE_CHUNK_SIZE`
 
     .. change:: new
-        :tag: setup
+        :tags: setup
 
         Add check for correct python version when installing with pip.
 

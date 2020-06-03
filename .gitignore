@@ -24,6 +24,8 @@ pip-log.txt
 # Unit test / coverage reports
 .coverage
 .tox
+.cache
+test-reports/*
 
 # Caches
 Thumbs.db
@@ -40,3 +42,6 @@ Thumbs.db
 .cache
 test-reports/*
 .pytest_cache/*
+
+# SCM VERSION
+source/ftrack_api/_version.py

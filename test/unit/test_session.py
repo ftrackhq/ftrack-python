@@ -404,20 +404,20 @@ def test_operation_optimisation_on_commit(session, mocker):
     assert len(payloads) == 3
 
     assert payloads[0]['action'] == 'create'
-    assert payloads[0]['entity_key'] == user_a_entity_key
-    assert set(payloads[0]['entity_data'].keys()) == set([
+    assert payloads[0]['entity_key'] == list(user_a_entity_key)
+    assert set(list(payloads[0]['entity_data'].keys())) == set([
         '__entity_type__', 'id', 'resource_type', 'username'
     ])
 
     assert payloads[1]['action'] == 'create'
-    assert payloads[1]['entity_key'] == user_b_entity_key
-    assert set(payloads[1]['entity_data'].keys()) == set([
+    assert payloads[1]['entity_key'] == list(user_b_entity_key)
+    assert set(list(payloads[1]['entity_data'].keys())) == set([
         '__entity_type__', 'id', 'resource_type', 'username', 'email'
     ])
 
     assert payloads[2]['action'] == 'update'
-    assert payloads[2]['entity_key'] == user_a_entity_key
-    assert set(payloads[2]['entity_data'].keys()) == set([
+    assert payloads[2]['entity_key'] == list(user_a_entity_key)
+    assert set(list(payloads[2]['entity_data'].keys())) == set([
         '__entity_type__', 'email', 'first_name'
     ])
 
@@ -478,7 +478,7 @@ def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
     new_session = ftrack_api.Session()
     with pytest.raises(ValueError):
         new_session.get(
-            'Metadata', ftrack_api.inspection.primary_key(entity).values()[0]
+            'Metadata', list(ftrack_api.inspection.primary_key(entity).values())[0]
         )
 
 
@@ -1262,27 +1262,6 @@ def test_context_manager(session):
     assert session.closed is True
 
 
-def test_delayed_job(session):
-    '''Test the delayed_job action'''
-
-    with pytest.raises(ValueError):
-        session.delayed_job(
-            'DUMMY_JOB'
-        )
-
-
-@pytest.mark.skip(reason='No configured ldap server.')
-def test_delayed_job_ldap_sync(session):
-    '''Test the a delayed_job ldap sync action'''
-    result = session.delayed_job(
-        ftrack_api.symbol.JOB_SYNC_USERS_LDAP
-    )
-
-    assert isinstance(
-        result, ftrack_api.entity.job.Job
-    )
-
-
 def test_query_nested_custom_attributes(session, new_asset_version):
     '''Query custom attributes nested and update a value and query again.
 
@@ -1489,31 +1468,3 @@ def test_entity_reference(mocker, session):
 
     mock_auto_populating.assert_called_once_with(False)
     mock_primary_key.assert_called_once_with(mock_entity)
-
-
-def test__entity_reference(mocker, session):
-    '''Act as alias to entity_reference.'''
-    mock_entity = mocker.Mock(entity_type="MockEntityType")
-    mock_entity_reference = mocker.patch.object(session, "entity_reference")
-    mocker.patch("warnings.warn")
-
-    session._entity_reference(mock_entity)
-
-    mock_entity_reference.assert_called_once_with(mock_entity)
-
-
-def test__entity_reference_issues_deprecation_warning(mocker, session):
-    '''Issue deprecation warning for usage of _entity_reference.'''
-    mocker.patch.object(session, "entity_reference")
-    mock_warn = mocker.patch("warnings.warn")
-
-    session._entity_reference({})
-
-    mock_warn.assert_called_once_with(
-        (
-            "Session._entity_reference is now available as public method "
-            "Session.entity_reference. The private method will be removed "
-            "in version 2.0."
-        ),
-        PendingDeprecationWarning
-    )

@@ -33,7 +33,9 @@ class Base64ResourceIdentifierTransformer(
         transformation.
 
         '''
-        return base64.encodestring(resource_identifier)
+        return base64.encodebytes(
+            resource_identifier.encode()
+        ).decode('utf-8')
 
     def decode(self, resource_identifier, context=None):
         '''Return decoded *resource_identifier* for use locally.
@@ -42,15 +44,23 @@ class Base64ResourceIdentifierTransformer(
         transformation.
 
         '''
-        return base64.decodestring(resource_identifier)
+        return base64.decodebytes(
+            resource_identifier.encode()
+        ).decode('utf-8')
 
 
 @pytest.fixture()
 def new_location(request, session, unique_name, temporary_directory):
     '''Return new managed location.'''
-    location = session.create('Location', {
-        'name': 'test-location-{}'.format(unique_name)
+
+    from builtins import str
+
+    location = session.create(str('Location'), {
+        str('name'): str('test-location-{}'.format(unique_name))
     })
+
+
+    session.commit()
 
     location.accessor = ftrack_api.accessor.disk.DiskAccessor(
         prefix=os.path.join(temporary_directory, 'location')
@@ -433,7 +443,7 @@ def test_resource_identifier_transformer(
     )
     assert (
         new_component['component_locations'][0]['resource_identifier']
-        == base64.encodestring(original_resource_identifier)
+        == base64.encodebytes(original_resource_identifier.encode()).decode('utf-8')
     )
 
     assert (
@@ -512,5 +522,31 @@ def test_get_thumbnail_url(server_location, server_image_component):
             'image-resized-10.png'
         )
     )
-    expected_image_contents = open(image_file).read()
+    expected_image_contents = open(
+        image_file, 'rb'
+    ).read()
+
     assert response.content == expected_image_contents
+
+
+# meta fixture to parametrise location fixtures
+# https://github.com/pytest-dev/pytest/issues/349
+@pytest.fixture(params=[
+    'new_location',
+    'new_unmanaged_location',
+    ]
+)
+def multi_location(request):
+    return request.getfuncargvalue(request.param)
+
+
+def test_transfer_component_from_server(
+    server_location, server_image_component, multi_location
+):
+    '''Test add component to new location from server location'''
+    multi_location.add_component(server_image_component, server_location)
+
+    assert (
+        multi_location.get_component_availability(server_image_component)
+        == 100.0
+    )

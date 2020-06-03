@@ -98,7 +98,8 @@ def test_close(data):
     with pytest.raises(ValueError) as error:
         data.read()
 
-    assert 'I/O operation on closed file' in str(error.value)
+    # Changed for python 3 compat
+    assert 'closed file' in str(error.value)
 
 
 class Dummy(ftrack_api.data.Data):

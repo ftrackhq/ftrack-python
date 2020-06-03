@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
+from builtins import str
 import sys
 import traceback
 
@@ -34,8 +35,8 @@ class Error(Exception):
     def __str__(self):
         '''Return string representation.'''
         keys = {}
-        for key, value in self.details.iteritems():
-            if isinstance(value, unicode):
+        for key, value in self.details.items():
+            if isinstance(value, str):
                 value = value.encode(sys.getfilesystemencoding())
             keys[key] = value
 

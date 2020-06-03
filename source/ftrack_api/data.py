@@ -1,15 +1,15 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
+from builtins import object
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
+from future.utils import with_metaclass
 
 
-class Data(object):
+class Data(with_metaclass(ABCMeta, object)):
     '''File-like object for manipulating data.'''
-
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         '''Initialise data access.'''
@@ -110,10 +110,36 @@ class String(FileWrapper):
 
     def __init__(self, content=None):
         '''Initialise data with *content*.'''
+
+        # Track if data is binary or not. If it is binary then read should also
+        # return binary.
+        self.is_binary = True
+
         super(String, self).__init__(
             tempfile.TemporaryFile()
         )
 
         if content is not None:
+            if not isinstance(content, bytes):
+                self.is_binary = False
+                content = content.encode()
+
             self.wrapped_file.write(content)
             self.wrapped_file.seek(0)
+
+    def write(self, content):
+        if not isinstance(content, bytes):
+            self.is_binary = False
+            content = content.encode()
+
+        super(String, self).write(
+            content
+        )
+
+    def read(self, limit=None):
+        content = super(String, self).read(limit)
+
+        if not self.is_binary:
+            content = content.decode('utf-8')
+
+        return content

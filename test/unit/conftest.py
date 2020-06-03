@@ -5,7 +5,7 @@ import uuid
 import tempfile
 import shutil
 import os
-
+import sys
 import pytest
 import clique
 
@@ -116,10 +116,21 @@ def video_path():
 
 
 @pytest.fixture()
-def session():
+def session(request):
     '''Return session instance.'''
-    return ftrack_api.Session()
+    session = ftrack_api.Session(
+        schema_cache_path=tempfile.mkdtemp(
+            suffix='ftrack_cache'
+        )
+    )
 
+    def cleanup():
+        session.close()
+
+    request.addfinalizer(cleanup)
+
+    return session
+    
 
 @pytest.fixture()
 def session_no_autoconnect_hub():

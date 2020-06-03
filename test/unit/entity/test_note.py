@@ -1,10 +1,13 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from flaky import flaky
+
 import ftrack_api
 import ftrack_api.inspection
 
 
+@flaky(max_runs=2, min_passes=1)
 def test_create_reply(session, new_note, user, unique_name):
     '''Create reply to a note.'''
     reply_text = 'My reply on note'

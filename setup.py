@@ -7,21 +7,21 @@ import re
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+from pkg_resources import get_distribution, DistributionNotFound
+
 
 ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
 RESOURCE_PATH = os.path.join(ROOT_PATH, 'resource')
 SOURCE_PATH = os.path.join(ROOT_PATH, 'source')
 README_PATH = os.path.join(ROOT_PATH, 'README.rst')
 
-
-# Read version from source.
-with open(
-    os.path.join(SOURCE_PATH, 'ftrack_api', '_version.py')
-) as _version_file:
-    VERSION = re.match(
-        r'.*__version__ = \'(.*?)\'', _version_file.read(), re.DOTALL
-    ).group(1)
-
+try:
+    release = get_distribution('ftrack-python-api').version
+    # take major/minor/patch
+    VERSION = '.'.join(release.split('.')[:3])
+except DistributionNotFound:
+     # package is not installed
+    VERSION = 'Unknown version'
 
 # Custom commands.
 class PyTest(TestCommand):
@@ -39,10 +39,17 @@ class PyTest(TestCommand):
         raise SystemExit(pytest.main(self.test_args))
 
 
+version_template = '''
+# :coding: utf-8
+# :copyright: Copyright (c) 2014 ftrack
+
+__version__ = {version!r}
+'''
+
+
 # Call main setup.
 setup(
     name='ftrack-python-api',
-    version=VERSION,
     description='Python API for ftrack.',
     long_description=open(README_PATH).read(),
     keywords='ftrack, python, api',
@@ -51,13 +58,23 @@ setup(
     author_email='support@ftrack.com',
     license='Apache License (2.0)',
     packages=find_packages(SOURCE_PATH),
+    project_urls={
+        "Documentation": "http://ftrack-python-api.rtd.ftrack.com/en/{}/".format(VERSION),
+        "Source Code": "https://bitbucket.org/ftrack/ftrack-python-api/src/{}".format(VERSION),
+    },
     package_dir={
         '': 'source'
     },
+    use_scm_version={
+        'write_to': 'source/ftrack_api/_version.py',
+        'write_to_template': version_template,
+    },
     setup_requires=[
-        'sphinx >= 1.2.2, < 2',
+        'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
-        'lowdown >= 0.1.0, < 2'
+        'lowdown >= 0.1.0, < 2',
+        'setuptools>=30.3.0',
+        'setuptools_scm'
     ],
     install_requires=[
         'requests >= 2, <3',
@@ -65,17 +82,26 @@ setup(
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
         'clique >= 1.2.0, < 2',
-        'websocket-client >= 0.40.0, < 1'
+        'websocket-client >= 0.40.0, < 1',
+        'future >=0.16.0, < 1',
+        'six >= 1, < 2'
     ],
     tests_require=[
         'pytest >= 2.7, < 3',
         'pytest-mock >= 0.4, < 1',
-        'pytest-catchlog >= 1, <=2'
+        'pytest-catchlog >= 1, <=2',
+        'mock',
+        'flaky'
     ],
     cmdclass={
         'test': PyTest
     },
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3'
+    ],
     zip_safe=False,
-    python_requires=">=2.7.9, <3.0"
-
+    python_requires=">=2.7.9, <4.0"
 )

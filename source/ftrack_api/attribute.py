@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import
 
+from builtins import object
 import collections
 import copy
 import logging
@@ -126,7 +127,7 @@ class Attributes(object):
 
     def keys(self):
         '''Return list of attribute names.'''
-        return self._data.keys()
+        return list(self._data.keys())
 
     def __contains__(self, item):
         '''Return whether *item* present.'''
@@ -137,7 +138,7 @@ class Attributes(object):
 
     def __iter__(self):
         '''Return iterator over attributes.'''
-        return self._data.itervalues()
+        return iter(self._data.values())
 
     def __len__(self):
         '''Return count of attributes.'''
@@ -602,7 +603,7 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
                     del collection_proxy[key]
 
                 # Set new values for existing keys / add new keys.
-                for key, value in value.items():
+                for key, value in list(value.items()):
                     collection_proxy[key] = value
 
                 value = collection_proxy
@@ -689,7 +690,7 @@ class CustomAttributeCollectionAttribute(AbstractCollectionAttribute):
                     del collection_proxy[key]
 
                 # Set new values for existing keys / add new keys.
-                for key, value in value.items():
+                for key, value in list(value.items()):
                     collection_proxy[key] = value
 
                 value = collection_proxy

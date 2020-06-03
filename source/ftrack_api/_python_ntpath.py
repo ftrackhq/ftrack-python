@@ -5,7 +5,10 @@
 Instead of importing this module directly, import os and refer to this
 module as os.path.
 """
+from __future__ import unicode_literals
 
+from builtins import str
+from builtins import zip
 import os
 import sys
 import stat
@@ -399,7 +402,7 @@ def expandvars(path):
 def normpath(path):
     """Normalize path, eliminating double slashes, etc."""
     # Preserve unicode (if path is unicode)
-    backslash, dot = (u'\\', u'.') if isinstance(path, unicode) else ('\\', '.')
+    backslash, dot = (u'\\', u'.') if isinstance(path, str) else ('\\', '.')
     if path.startswith(('\\\\.\\', '\\\\?\\')):
         # in the case of paths with these prefixes:
         # \\.\ -> device names
@@ -456,8 +459,8 @@ except ImportError: # not running on Windows - mock up something sensible
     def abspath(path):
         """Return the absolute version of a path."""
         if not isabs(path):
-            if isinstance(path, unicode):
-                cwd = os.getcwdu()
+            if isinstance(path, str):
+                cwd = os.getcwd()
             else:
                 cwd = os.getcwd()
             path = join(cwd, path)
@@ -472,8 +475,8 @@ else:  # use native Windows method on Windows
                 path = _getfullpathname(path)
             except WindowsError:
                 pass # Bad path - return unchanged.
-        elif isinstance(path, unicode):
-            path = os.getcwdu()
+        elif isinstance(path, str):
+            path = os.getcwd()
         else:
             path = os.getcwd()
         return normpath(path)

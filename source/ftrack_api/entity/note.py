@@ -2,7 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import warnings
-
+from builtins import object
 import ftrack_api.entity.base
 
 

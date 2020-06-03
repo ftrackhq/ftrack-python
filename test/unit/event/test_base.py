@@ -7,9 +7,8 @@ import ftrack_api.event.base
 def test_string_representation():
     '''String representation.'''
     event = ftrack_api.event.base.Event('test', id='some-id')
-    assert str(event) == (
-        "<Event {'topic': 'test', 'source': {}, 'target': '', 'data': {}, "
-        "'in_reply_to_event': None, 'id': 'some-id', 'sent': None}>"
+    assert (
+        str(event._data) in str(event)
     )
 
 

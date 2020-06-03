@@ -142,7 +142,7 @@ class ServerFile(String):
             hash_obj.update(s)
             s = fp.read(buf_size)
 
-        base64_digest = base64.encodestring(hash_obj.digest())
+        base64_digest = base64.encodebytes(hash_obj.digest()).decode('utf-8')
         if base64_digest[-1] == '\n':
             base64_digest = base64_digest[0:-1]
 

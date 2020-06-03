@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2016 ftrack
 
+from builtins import object
 import functools
 import warnings
 
@@ -17,7 +18,6 @@ def deprecation_warning(message):
         return wrapper
 
     return decorator
-
 
 class LazyLogMessage(object):
     '''A log message that can be evaluated lazily for improved performance.

@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+from builtins import object
 import copy
 
 
@@ -61,7 +62,7 @@ class CreateEntityOperation(Operation):
         self.entity_type = entity_type
         self.entity_key = entity_key
         self.entity_data = {}
-        for key, value in entity_data.items():
+        for key, value in list(entity_data.items()):
             self.entity_data[key] = copy.copy(value)
 
 
