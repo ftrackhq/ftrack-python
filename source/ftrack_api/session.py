@@ -76,6 +76,26 @@ class SessionAuthentication(requests.auth.AuthBase):
         return request
 
 
+def not_thread_safe(function_to_wrap):
+    def wrapper(session, *args):
+        if (
+            session.thread_safe_warning and
+            threading.current_thread() is not session.created_from_thread
+        ):
+            message = 'Called from other thread: {0}. Created from {1}'.format(
+                threading.current_thread(),
+                session.created_from_thread
+            )
+            if session.thread_safe_warning == 'warn':
+                session.logger.warn(message)
+            elif session.thread_safe_warning == 'raise':
+                raise Exception(message)
+
+        return function_to_wrap(session, *args)
+
+    return wrapper
+
+
 class Session(object):
     '''An isolated session for interaction with an ftrack server.'''
 
@@ -83,7 +103,7 @@ class Session(object):
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
         auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None
+        plugin_arguments=None, thread_safe_warning=None
     ):
         '''Initialise session.
 
@@ -160,6 +180,9 @@ class Session(object):
             __name__ + '.' + self.__class__.__name__
         )
         self._closed = False
+
+        self.created_from_thread = threading.current_thread()
+        self.thread_safe_warning = thread_safe_warning
 
         if server_url is None:
             server_url = os.environ.get('FTRACK_SERVER')
@@ -1602,6 +1625,7 @@ class Session(object):
             synchronous=True
         )
 
+    @not_thread_safe
     def call(self, data):
         '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'
