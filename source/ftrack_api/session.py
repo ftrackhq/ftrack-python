@@ -50,6 +50,7 @@ import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
+import ftrack_api.util
 from ftrack_api.logging import LazyLogMessage as L
 
 try:
@@ -74,26 +75,6 @@ class SessionAuthentication(requests.auth.AuthBase):
             'ftrack-user': self.api_user
         })
         return request
-
-
-def not_thread_safe(function_to_wrap):
-    def wrapper(session, *args):
-        if (
-            session.thread_safe_warning and
-            threading.current_thread() is not session.created_from_thread
-        ):
-            message = 'Called from other thread: {0}. Created from {1}'.format(
-                threading.current_thread(),
-                session.created_from_thread
-            )
-            if session.thread_safe_warning == 'warn':
-                session.logger.warn(message)
-            elif session.thread_safe_warning == 'raise':
-                raise Exception(message)
-
-        return function_to_wrap(session, *args)
-
-    return wrapper
 
 
 class Session(object):
@@ -1625,7 +1606,7 @@ class Session(object):
             synchronous=True
         )
 
-    @not_thread_safe
+    @ftrack_api.util.not_thread_safe
     def call(self, data):
         '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'

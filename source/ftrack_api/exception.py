@@ -233,6 +233,12 @@ class LocationError(Error):
     default_message = 'Unspecified location error'
 
 
+class ThreadError(Error):
+    '''Base for errors associated with threading.'''
+
+    default_message = 'Unspecified threading error'
+
+
 class ComponentNotInAnyLocationError(LocationError):
     '''Raise when component not available in any location.'''
 
