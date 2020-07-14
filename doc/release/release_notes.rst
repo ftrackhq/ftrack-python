@@ -14,6 +14,13 @@ Release Notes
     .. change:: new
         :tags: Documentation
 
+        Fix references to new python 3k support.
+        :ref:`installing`.
+
+
+    .. change:: new
+        :tags: Documentation
+
         Added advanced example of how to create workflow schemas
         :ref:`example/workflow_schema`.
 
