@@ -54,12 +54,12 @@ Dependencies
 ============
 
 * `ftrack server <http://ftrack.rtd.ftrack.com/en/stable/>`_ >= 3.3.11
-* `Python <http://python.org>`_ >=2.7.9, <4.0"
-* `Requests <http://docs.python-requests.org>`_ >= 2, <3,
-* `Arrow <http://crsmithdev.com/arrow/>`_ >= 0.4.4, < 1,
-* `termcolor <https://pypi.python.org/pypi/termcolor>`_ >= 1.1.0, < 2,
-* `pyparsing <http://pyparsing.wikispaces.com/>`_ >= 2.0, < 3,
-* `Clique <http://clique.readthedocs.org/>`_ >= 1.2.0, < 2,
+* `Python <http://python.org>`_ >=2.7.9, <4.0
+* `Requests <http://docs.python-requests.org>`_ >= 2, <3
+* `Arrow <http://crsmithdev.com/arrow/>`_ >= 0.4.4, < 1
+* `termcolor <https://pypi.python.org/pypi/termcolor>`_ >= 1.1.0, < 2
+* `pyparsing <http://pyparsing.wikispaces.com/>`_ >= 2.0, < 3
+* `Clique <http://clique.readthedocs.org/>`_ >= 1.2.0, < 2
 * `websocket-client <https://pypi.python.org/pypi/websocket-client>`_ >= 0.40.0, < 1
 
 Additional For building
