@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: Dependencies
+
+        Explicitly link clique versions to python versions.
+
     .. change:: new
         :tags: Documentation
 
