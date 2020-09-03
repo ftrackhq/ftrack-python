@@ -11,7 +11,7 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: new
+    .. change:: changed
         :tags: Documentation
 
         Fix references to new python 3k support.
