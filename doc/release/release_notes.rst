@@ -19,6 +19,12 @@ Release Notes
 
 
     .. change:: new
+        :tags: Session, requests
+
+        Added new parameter *timeout* to :class:`Session` with default value
+        of 60 seconds to avoid infinity request on sudden disconnection.
+
+    .. change:: new
         :tags: Documentation
 
         Added advanced example of how to create workflow schemas
