@@ -14,7 +14,8 @@ Release Notes
     .. change:: changed
         :tags: Session, cache
 
-        Schema cache is not readeable on multi user machines.
+        Schema cache is now saved per user, to avoid permissions conflicts on 
+        multi user Os.
 
     .. change:: new
         :tags: Session, requests
