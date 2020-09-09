@@ -11,8 +11,8 @@ Release Notes
 
 .. release:: Upcoming
 
-    .. change:: fixed
-        :tags: Session
+    .. change:: changed
+        :tags: Session, cache
 
         Schema cache is not readeable on multi user machines.
 
