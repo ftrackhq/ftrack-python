@@ -17,6 +17,18 @@ Release Notes
         Schema cache is not readeable on multi user machines.
 
     .. change:: new
+        :tags: Session, requests
+
+        Added new parameter *timeout* to :class:`Session` with default value
+        of 60 seconds to avoid infinity request on sudden disconnection.
+
+    .. change:: changed
+        :tags: Documentation
+
+        Fix references to new python 3k support.
+        :ref:`installing`.
+
+    .. change:: new
         :tags: Documentation
 
         Added advanced example of how to create workflow schemas
