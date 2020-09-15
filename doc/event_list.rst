@@ -23,9 +23,6 @@ own plugin for a particular event.
 
 ftrack.api.session.get-file-type-from-string
 ============================================
-:download:`Download template plugin
-</../resource/plugin/get_file_type.py>`
-
 :ref:`Synchronous <handling_events/publishing/synchronously>`. Published by
 the session, when creating a component, to retrieve the file extension from the given path::
 
