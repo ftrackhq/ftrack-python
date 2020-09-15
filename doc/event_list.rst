@@ -38,6 +38,13 @@ Expects returned data to be::
 
     A Python string
 
+
+.. note:: 
+
+    This event is to make users able to further customise the way 
+    extensions are extracted from the file names. An example are coumpound extensions
+    such as : *a_file.geo.bz*, which are specific to some industries only.
+
 .. _event_list/ftrack.api.session.construct-entity-type:
 
 ftrack.api.session.construct-entity-type
