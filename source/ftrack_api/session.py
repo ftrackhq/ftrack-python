@@ -276,8 +276,21 @@ class Session(object):
         # rebuilding types)?
         if schema_cache_path is not False:
             if schema_cache_path is None:
+                cache_path = appdirs.user_cache_dir()
+                backup_cache_path = tempfile.gettempdir()
+                if not os.path.exists:
+                    try:
+                        os.makedirs(cache_path)
+                    except IOError as error:
+                        self.logger.warning(
+                            '{} could not be created, using {}'.format(
+                                cache_path, backup_cache_path
+                            )
+                        )
+                        cache_path = backup_cache_path
+
                 schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', appdirs.user_cache_dir()
+                    'FTRACK_API_SCHEMA_CACHE_PATH', cache_path
                 )
 
             schema_cache_path = os.path.join(
