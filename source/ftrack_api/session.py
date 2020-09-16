@@ -278,7 +278,7 @@ class Session(object):
             if schema_cache_path is None:
                 cache_path = appdirs.user_cache_dir()
                 backup_cache_path = tempfile.gettempdir()
-                if not os.path.exists:
+                if not os.path.exists(cache_path):
                     try:
                         os.makedirs(cache_path)
                     except IOError as error:
