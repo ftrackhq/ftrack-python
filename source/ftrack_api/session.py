@@ -283,7 +283,7 @@ class Session(object):
                         os.makedirs(cache_path)
                     except IOError as error:
                         self.logger.warning(
-                            '{} could not be created, using {}'.format(
+                            '{0} cache folder could not be created, using {1}'.format(
                                 cache_path, backup_cache_path
                             )
                         )
