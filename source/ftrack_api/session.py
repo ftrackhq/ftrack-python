@@ -277,7 +277,7 @@ class Session(object):
         if schema_cache_path is not False:
             if schema_cache_path is None:
 
-                schema_cache_path = appdirs.user_cache_dir('ftrack')
+                schema_cache_path = appdirs.user_cache_dir('ftrack', '')
                 schema_cache_path = os.environ.get(
                     'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
                 )
