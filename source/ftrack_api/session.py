@@ -292,7 +292,7 @@ class Session(object):
             if not os.path.exists(schema_cache_dir):
                 try:
                     os.makedirs(schema_cache_dir)
-                except OSError as error:
+                except (OSError, IOError) as error:
                     self.logger.warning(
                         '{0!s} cache folder could not be created due to :{1!s}.'
                         'Cache will be disabled.'.format(
