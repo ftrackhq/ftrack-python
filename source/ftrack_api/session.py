@@ -28,6 +28,7 @@ import requests
 import requests.auth
 import arrow
 import clique
+import appdirs
 
 import ftrack_api
 import ftrack_api.exception
@@ -275,8 +276,9 @@ class Session(object):
         # rebuilding types)?
         if schema_cache_path is not False:
             if schema_cache_path is None:
+                schema_cache_path = appdirs.user_cache_dir()
                 schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', tempfile.gettempdir()
+                    'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
                 )
 
             schema_cache_path = os.path.join(

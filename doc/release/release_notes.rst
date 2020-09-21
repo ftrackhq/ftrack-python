@@ -12,17 +12,22 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
-        :tags: Documentation
+        :tags: Session, cache
 
-        Fix references to new python 3k support.
-        :ref:`installing`.
-
+        Schema cache is now saved per user, to avoid permissions conflicts on 
+        multi user Os.
 
     .. change:: new
         :tags: Session, requests
 
         Added new parameter *timeout* to :class:`Session` with default value
         of 60 seconds to avoid infinity request on sudden disconnection.
+
+    .. change:: changed
+        :tags: Documentation
+
+        Fix references to new python 3k support.
+        :ref:`installing`.
 
     .. change:: new
         :tags: Documentation
