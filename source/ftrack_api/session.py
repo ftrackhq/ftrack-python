@@ -23,7 +23,6 @@ import tempfile
 import threading
 import atexit
 import warnings
-import errno
 
 import requests
 import requests.auth
@@ -284,17 +283,11 @@ class Session(object):
                     try:
                         os.makedirs(schema_cache_path)
                     except OSError as error:
-                        if (
-                            error.errno == errno.EEXIST and 
-                            os.path.isdir(schema_cache_path)
-                        ):
-                            pass # folder already exists
-                        else:
-                            self.logger.warning(
-                                '{0!s} cache folder could not be'
-                                ' created due to :{1!s}.'.format(
-                                    schema_cache_path, error)    
-                            )
+                        self.logger.warning(
+                            '{0!s} cache folder could not be'
+                            ' created due to :{1!s}.'.format(
+                                schema_cache_path, error)    
+                        )
 
             schema_cache_path = os.environ.get(
                 'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
