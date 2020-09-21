@@ -850,15 +850,6 @@ def test_rollback_entity_deletion(session, new_user):
 # Caching
 # ------------------------------------------------------------------------------
 
-
-def test_initialise_session_with_non_accessible_cache_folder(caplog):
-    '''Create session with an non accessible cache folder.'''
-    session = ftrack_api.Session(schema_cache_path='')
-
-    assert 'cache folder could not be created' in caplog.text()
-    assert session
-
-
 def test_get_entity_bypassing_cache(session, user, mocker):
     '''Retrieve an entity by type and id bypassing cache.'''
     mocker.patch.object(session, 'call', wraps=session.call)

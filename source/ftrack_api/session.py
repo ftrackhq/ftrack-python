@@ -276,31 +276,15 @@ class Session(object):
         # rebuilding types)?
         if schema_cache_path is not False:
             if schema_cache_path is None:
-
                 schema_cache_path = appdirs.user_cache_dir('ftrack', '')
-                schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
-                )
+
+            schema_cache_path = os.environ.get(
+                'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
+            )
 
             schema_cache_path = os.path.join(
                 schema_cache_path, 'ftrack_api_schema_cache.json'
             )
-
-            schema_cache_dir = os.path.dirname(schema_cache_path)
-
-            # Ensure destination cache path exists
-            if not os.path.exists(schema_cache_dir):
-                try:
-                    os.makedirs(schema_cache_dir)
-                except (OSError, IOError) as error:
-                    self.logger.warning(
-                        '{0!s} cache folder could not be created due to :{1!s}.'
-                        'Cache will be disabled.'.format(
-                            schema_cache_dir, error)    
-                    )
-                    # If we fail to create the folder, disable the cache.
-                    schema_cache_path = False
-
 
         self.schemas = self._load_schemas(schema_cache_path)
         self.types = self._build_entity_type_classes(self.schemas)
