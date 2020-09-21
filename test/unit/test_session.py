@@ -9,7 +9,6 @@ import textwrap
 import datetime
 import json
 import random
-import logging
 
 import pytest
 import mock
