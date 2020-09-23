@@ -15,7 +15,9 @@ Release Notes
         :tags: Session, cache
 
         Schema cache is now saved per user, to avoid permissions conflicts on 
-        multi user Os.
+        multi user Os. Please refer to the `appdirs <https://pypi.org/project/appdirs/>`_ 
+        module documentation for the location of the local cache folder, 
+        for your operating system.
 
     .. change:: new
         :tags: Session, requests
