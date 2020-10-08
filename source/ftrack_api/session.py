@@ -28,6 +28,7 @@ import requests
 import requests.auth
 import arrow
 import clique
+import appdirs
 
 import ftrack_api
 import ftrack_api.exception
@@ -83,7 +84,7 @@ class Session(object):
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
         auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None
+        plugin_arguments=None, timeout=60
     ):
         '''Initialise session.
 
@@ -153,6 +154,9 @@ class Session(object):
         arguments, the discovery mechanism will attempt to reduce the passed
         arguments to only those that the plugin accepts. Note that a warning
         will be logged in this case.
+
+        *timeout* how long to wait for server to respond, default is 60
+        seconds.
 
         '''
         super(Session, self).__init__()
@@ -230,6 +234,7 @@ class Session(object):
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
         )
+        self.request_timeout = timeout
 
         self.auto_populate = auto_populate
 
@@ -271,8 +276,9 @@ class Session(object):
         # rebuilding types)?
         if schema_cache_path is not False:
             if schema_cache_path is None:
+                schema_cache_path = appdirs.user_cache_dir()
                 schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', tempfile.gettempdir()
+                    'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
                 )
 
             schema_cache_path = os.path.join(
@@ -1616,7 +1622,8 @@ class Session(object):
         response = self._request.post(
             url,
             headers=headers,
-            data=data
+            data=data,
+            timeout=self.request_timeout,
         )
 
         self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))

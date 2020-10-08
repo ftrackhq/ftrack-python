@@ -12,9 +12,30 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+
         :tags: Dependencies
 
         Explicitly link clique versions to python versions.
+
+        :tags: Session, cache
+
+        Schema cache is now saved per user, to avoid permissions conflicts on 
+        multi user Os. Please refer to the `appdirs <https://pypi.org/project/appdirs/>`_ 
+        module documentation for the location of the local cache folder, 
+        for your operating system.
+
+    .. change:: new
+        :tags: Session, requests
+
+        Added new parameter *timeout* to :class:`Session` with default value
+        of 60 seconds to avoid infinity request on sudden disconnection.
+
+    .. change:: changed
+        :tags: Documentation
+
+        Fix references to new python 3k support.
+        :ref:`installing`.
+
 
     .. change:: new
         :tags: Documentation
