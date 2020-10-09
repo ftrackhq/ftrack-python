@@ -23,27 +23,3 @@ def not_thread_safe(function_to_wrap):
         return function_to_wrap(session, *args)
 
     return wrapper
-
-
-class ThreadLocalRegistry(object):
-
-    _registry = threading.local()
-
-    def has(self):
-        return hasattr(self._registry, 'value')
-
-    def get(self):
-        return self._registry.value
-
-    def set(self, new_session):
-        self._registry.value = new_session
-
-
-def session_factory(creator, registry):
-    def get_scoped_session():
-        if not registry.has():
-            scoped_session = creator()
-            registry.set(scoped_session)
-
-        return registry.get()
-    return get_scoped_session
