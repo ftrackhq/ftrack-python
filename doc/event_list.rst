@@ -18,6 +18,33 @@ own plugin for a particular event.
     * :ref:`handling_events`
     * :ref:`ftrack server event list <ftrack:developing/events/list>`
 
+
+.. _event_list/ftrack.api.session.get-file-type-from-string:
+
+ftrack.api.session.get-file-type-from-string
+============================================
+:ref:`Synchronous <handling_events/publishing/synchronously>`. Published by
+the session, when creating a component, to retrieve the file extension from the given path::
+
+
+    Event(
+        topic='ftrack.api.session.get-file-type-from-string',
+        data=dict(
+            file_path=file_path,
+        )
+    )
+
+Expects returned data to be::
+
+    A Python string
+
+
+.. note:: 
+
+    This event is to make users able to further customise the way 
+    extensions are extracted from the file names. An example are coumpound extensions
+    such as : *a_file.geo.bz*, which are specific to some industries only.
+
 .. _event_list/ftrack.api.session.construct-entity-type:
 
 ftrack.api.session.construct-entity-type

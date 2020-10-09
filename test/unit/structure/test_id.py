@@ -1,6 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
+import os
 import inspect
 
 import pytest
@@ -97,6 +98,7 @@ def unsupported_entity():
         'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a'
     ),
     (unsupported_entity(), {}, NotImplementedError)
+
 ], ids=[
     'file-component',
     'file-component-in-container',

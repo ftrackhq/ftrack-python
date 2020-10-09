@@ -27,7 +27,7 @@ When using this API you may sometimes see a warning::
     prevents urllib3 from configuring SSL appropriately and may cause certain
     SSL connections to fail.
 
-If you encounter this warning, its recommended you upgrade to Python 2.7.9, or
+If you encounter this warning, its recommended you upgrade to Python 2.7.9 or higher, or
 use pyOpenSSL. To use pyOpenSSL simply::
 
     pip install pyopenssl ndg-httpsclient pyasn1

@@ -81,10 +81,12 @@ setup(
         'arrow >= 0.4.4, < 1',
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
-        'clique >= 1.2.0, < 2',
+        'clique >= 1.2.0, < 2; python_version < "3"',
+        'clique >= 2.0, < 3; python_version >= "3"',
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
-        'six >= 1, < 2'
+        'six >= 1, < 2',
+        'appdirs >=1, <2'
     ],
     tests_require=[
         'pytest >= 2.7, < 3',

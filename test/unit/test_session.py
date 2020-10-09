@@ -849,7 +849,6 @@ def test_rollback_entity_deletion(session, new_user):
 # Caching
 # ------------------------------------------------------------------------------
 
-
 def test_get_entity_bypassing_cache(session, user, mocker):
     '''Retrieve an entity by type and id bypassing cache.'''
     mocker.patch.object(session, 'call', wraps=session.call)
