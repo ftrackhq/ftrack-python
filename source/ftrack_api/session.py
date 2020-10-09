@@ -1923,7 +1923,20 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            data.setdefault('file_type', os.path.splitext(path)[-1])
+            file_type = self.event_hub.publish(
+                ftrack_api.event.base.Event(
+                    topic='ftrack.api.session.get-file-type-from-string',
+                    data=dict(
+                        file_path=path
+                    )
+                ),
+                synchronous=True
+            )
+
+            if not file_type:
+                file_type =  os.path.splitext(path)[-1]
+
+            data.setdefault('file_type',file_type)
 
             return self._create_component(
                 'FileComponent', path, data, location

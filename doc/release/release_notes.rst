@@ -11,6 +11,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: session, events
+
+        Added new event :ref:`event_list/ftrack.api.session.get-file-type-from-string`
+        to allow extension parsing customization.
+
     .. change:: changed
         :tags: Session, cache
 
