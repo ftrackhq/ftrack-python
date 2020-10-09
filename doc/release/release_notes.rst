@@ -12,6 +12,17 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
+        :tags: session
+
+        Add new argument *thread_safe_warning* to simplify debug threading issues.
+
+        .. note::
+
+            This argument is not set by default.
+            Can take the value of *warn* or *raise* to change its behaviour.
+
+
+    .. change:: new
         :tags: session, events
 
         Added new event :ref:`event_list/ftrack.api.session.get-file-type-from-string`
