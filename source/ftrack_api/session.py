@@ -145,7 +145,7 @@ class Session(object):
         Enable schema caching by setting *schema_cache_path* to a folder path.
         If not set, :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
         determine the path to store cache in. If the environment variable is
-        also not specified then a temporary directory will be used. Set to
+        also not specified then a local cache directory will be used. Set to
         `False` to disable schema caching entirely.
 
         *plugin_arguments* should be an optional mapping (dict) of keyword
