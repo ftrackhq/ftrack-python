@@ -85,7 +85,7 @@ class Session(object):
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
         auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None,thread_safe_warning=None, timeout=60
+        plugin_arguments=None,timeout=60, thread_safe_warning=None
     ):
         '''Initialise session.
 
@@ -158,6 +158,10 @@ class Session(object):
 
         *timeout* how long to wait for server to respond, default is 60
         seconds.
+
+        *thread_safe_warning* set how threaded calls will be handled,
+        either "raise" or "warn" their behaviour. Set to None will disable
+        this behaviour.
 
         '''
         super(Session, self).__init__()
