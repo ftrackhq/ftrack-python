@@ -5,8 +5,6 @@ import logging
 import re
 import os
 import ftrack_api
-import ftrack_api.entity.location
-import ftrack_api.accessor.disk
 
 
 def get_file_type(event):
