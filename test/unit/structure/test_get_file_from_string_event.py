@@ -3,7 +3,6 @@
 
 import os
 import inspect
-
 import pytest
 
 import ftrack_api
@@ -13,7 +12,7 @@ import ftrack_api.structure.standard
 @pytest.fixture(scope='session')
 def structure():
     '''Return structure.'''
-    return ftrack_api.structure.standard.StandardStructure(prefix='path')
+    return ftrack_api.structure.id.IdStructure(prefix='another_path')
 
 
 def container_component():
@@ -21,39 +20,8 @@ def container_component():
     session = ftrack_api.Session()
 
     entity = session.create('ContainerComponent', {
+        'id': '03ab9967-f86c-4b55-8252-cd187d0c244a',
         'name': 'container_component'
-    })
-
-    return entity
-
-
-def sequence_component():
-    '''Return sequence component.'''
-    session = ftrack_api.Session()
-
-    entity = session.create_component(
-        '/tmp/foo/%04d.jpg [1-10]', location=None, data={'name': 'baz'}
-    )
-
-    return entity
-
-
-def file_component(name='foo', container=None):
-    '''Return file component with *name* and *container*.'''
-
-    plugin_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..','..','fixture', 'plugin')
-    )
-
-    if container:
-        session = container.session
-    else:
-        session = ftrack_api.Session(plugin_paths=[plugin_path])
-
-    entity = session.create('FileComponent', {
-        'name': name,
-        'file_type': '.png',
-        'container': container
     })
 
     return entity
@@ -72,6 +40,7 @@ def file_compound_extension_component_event(container=None):
     session = ftrack_api.Session(plugin_paths=[plugin_path])
 
     entity = session.create('FileComponent', {
+        'id': 'f6cd40cb-d1c0-469f-a2d5-10369be8a724',
         'name': '0010',
         'file_type': '.foo.bar',
         'container': container
@@ -93,6 +62,7 @@ def sequence_compound_extension_component_event(padding=0):
     session = ftrack_api.Session(plugin_paths=[plugin_path])
 
     entity = session.create('SequenceComponent', {
+        'id': 'ff17edad-2129-483b-8b59-d1a654c8497b',
         'name': 'sequence_component',
         'file_type': '.foo.bar',
         'padding': padding
@@ -105,26 +75,26 @@ def sequence_compound_extension_component_event(padding=0):
 @pytest.mark.parametrize('entity, context, expected', [
     (
         file_compound_extension_component_event(), {},
-        'path/f/6/c/d/40cb-d1c0-469f-a2d5-10369be8a725.foo.bar'
+        'another_path/f/6/c/d/40cb-d1c0-469f-a2d5-10369be8a724.foo.bar'
     ),
     (
         file_compound_extension_component_event(container_component()), {},
-        'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a/'
-        'f6cd40cb-d1c0-469f-a2d5-10369be8a725.foo.bar'
+        'another_path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a/'
+        'f6cd40cb-d1c0-469f-a2d5-10369be8a724.foo.bar'
     ),
     (
         file_compound_extension_component_event(
             sequence_compound_extension_component_event()
         ), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497c/file.0010.foo.bar'
+        'another_path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.0010.foo.bar'
     ),
     (
         sequence_compound_extension_component_event(padding=0), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497c/file.%d.foo.bar'
+        'another_path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%d.foo.bar'
     ),
     (
         sequence_compound_extension_component_event(padding=4), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497c/file.%04d.foo.bar'
+        'another_path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%04d.foo.bar'
     ),
 
 ], ids=[
