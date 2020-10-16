@@ -225,7 +225,8 @@ class Session(object):
             self._api_key, self._api_user
         )
 
-        self.auto_populate = auto_populate
+        # Auto populating state is now thread-local
+        self._auto_populate = collections.defaultdict(lambda: auto_populate)
 
         # Fetch server information and in doing so also check credentials.
         self._server_information = self._fetch_server_information()
@@ -320,6 +321,14 @@ class Session(object):
     def _request(self, value):
         '''Set request session to *value*.'''
         self._managed_request = value
+
+    @property
+    def auto_populate(self):
+        return self._auto_populate[threading.get_ident()]
+
+    @auto_populate.setter
+    def auto_populate(self, value):
+        self._auto_populate[threading.get_ident()] = value
 
     @property
     def closed(self):
