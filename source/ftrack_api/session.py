@@ -229,6 +229,8 @@ class Session(object):
             if cache is not None:
                 self.cache.caches.append(cache)
 
+        self.cache_merge_lock = threading.RLock()
+
         self._managed_request = None
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
@@ -963,7 +965,7 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        with self.auto_populating(False):
+        with self.auto_populating(False), self.cache_merge_lock:
             entity_key = self.cache_key_maker.key(
                 ftrack_api.inspection.identity(entity)
             )
