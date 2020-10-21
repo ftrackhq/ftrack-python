@@ -11,6 +11,11 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: changed
+        :tags: Documentation
+
+        Updated workflow schema creation example with more readable statues and types. Added task template.
+
     .. change:: new
         :tags: session, events
 
