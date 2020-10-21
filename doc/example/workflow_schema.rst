@@ -44,7 +44,7 @@ Start by querying the data we need to create our project schema::
     all_types = [type_generic, type_modeling, type_rigging, type_compositing, type_deliverable, type_character]
 
 Create a WorkflowSchema defining statuses tasks can have. Each WorkflowSchema is then linked to one or multiple
-statuses using a WorkflowSchemaStatus object.::
+statuses using a WorkflowSchemaStatus object::
 
     workflow_schema = session.create('WorkflowSchema')
 
@@ -135,7 +135,7 @@ Milestone is a built in type which will always be part of a ProjectSchema but it
 A more complex `ProjectSchema` can have overrides for Task where different types of tasks can have different statuses.
 For example Animation can have different statuses compared to all other types such as Modelling.
 
-Create a override for Deliverable task types, allowing it to only have two states::
+Create a override for Deliverable task type, allowing it to only have two states::
 
     override_workflow_schema = session.create('WorkflowSchema', {
         'name': 'My schema deliverable override '
