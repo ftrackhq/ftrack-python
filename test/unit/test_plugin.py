@@ -30,7 +30,7 @@ def python_non_plugin(temporary_path):
     with open(os.path.join(temporary_path, 'non.py'), 'w') as file_object:
         file_object.write(textwrap.dedent('''
             from __future__ import print_function
-            
+
             print("Not a plugin")
 
             def not_called():
@@ -117,9 +117,11 @@ def test_discover_broken_plugin(broken_plugin, caplog):
 
     else:
         records = caplog.records
-    assert len(records) == 1
+    assert len(records) == 2
     assert records[0].levelno is logging.WARNING
+    assert records[1].levelno is logging.DEBUG
     assert 'Failed to load plugin' in records[0].message
+    assert 'Traceback' in records[1].message
 
 
 @pytest.mark.parametrize(

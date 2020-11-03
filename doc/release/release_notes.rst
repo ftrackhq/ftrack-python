@@ -12,6 +12,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: logging
+
+       :meth:`ftrack_api.plugin.discover` now logs import error traceback.
+
+    .. change:: changed
         :tags: Documentation
 
         Updated workflow schema creation example with more readable statues and types. Added task template.

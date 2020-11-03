@@ -8,7 +8,7 @@ import os
 import uuid
 import imp
 import inspect
-
+import traceback
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
@@ -51,6 +51,8 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                         'Failed to load plugin from "{0}": {1}'
                         .format(module_path, error)
                     )
+                    logger.debug(
+                        traceback.format_exc())
                     continue
 
                 try:
