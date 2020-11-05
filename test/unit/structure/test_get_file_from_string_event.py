@@ -35,6 +35,7 @@ def file_compound_extension_component_event(container=None):
     return entity
 
 
+
 @pytest.mark.parametrize('entity, context, expected', [
     (
         file_compound_extension_component_event(), {},

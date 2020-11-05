@@ -1933,8 +1933,10 @@ class Session(object):
                 synchronous=True
             )
 
-            if not any(file_type):
-                file_type = next((result for result in file_type if result), None)
+            # Pick the first valid result or None
+            file_type = next((result for result in file_type if result), None)
+            if not file_type:
+                file_type = os.path.splitext(path)[-1]
 
             data.setdefault('file_type', file_type)
 
