@@ -15,7 +15,23 @@ def structure():
     return ftrack_api.structure.id.IdStructure(prefix='another_path')
 
 
-def file_compound_extension_component_event(container=None):
+
+def file_compound_extension_no_component_event(component_file=None):
+
+    '''
+    Return file component with compound extension through
+    **ftrack.api.session.get-file-type-from-string** event.
+    '''
+
+    session = ftrack_api.Session()
+
+    entity = session.create_component(
+        component_file
+    )
+
+    return entity
+
+def file_compound_extension_component_event(component_file=None):
 
     '''
     Return file component with compound extension through
@@ -29,21 +45,45 @@ def file_compound_extension_component_event(container=None):
 
 
     entity = session.create_component(
-        'mytest.foo.bar'
+        component_file
     )
 
     return entity
 
 
-
 @pytest.mark.parametrize('entity, context, expected', [
     (
-        file_compound_extension_component_event(), {},
-        'foo.bar'
-    )
+        file_compound_extension_component_event('mytest.foo.bar'), {},
+        '.foo.bar'
+    ),
+      (
+        file_compound_extension_component_event('mytest.%4d.foo.bar'), {},
+        '.foo.bar'
+    ),  
+    (
+        file_compound_extension_component_event('mytest'), {},
+        ''
+    ),  
+    (
+        file_compound_extension_no_component_event('mytest.foo.bar'), {},
+        '.bar'
+    ),
+        (
+        file_compound_extension_no_component_event('mytest.%4d.foo.bar'), {},
+        '.bar'
+    ),
+        (
+        file_compound_extension_no_component_event('mytest'), {},
+        ''
+    ),
 
 ], ids=[
-    'file-compound-extension-component',
+    'file-compound-extension-component-event',
+    'file-sequence-compound-extension-component-event',
+    'no-file-compound-extension-component-event',
+    'file-compound-extension-no-component-event',
+    'file-sequence-compound-extension-no-component-event',
+    'no-file-compound-extension-no-component-event'
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''
