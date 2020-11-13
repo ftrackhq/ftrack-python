@@ -23,3 +23,17 @@ def not_thread_safe(function_to_wrap):
         return function_to_wrap(session, *args)
 
     return wrapper
+
+
+class SessionFactory(object):
+
+    def __init__(self, session_provider, pool_size):
+        self.session_provider = session_provider
+        self.pool_size = pool_size
+        self.pool = dict()
+
+    def get_session(self):
+        if threading.current_thread() not in self.pool:
+            self.pool[threading.current_thread()] = self.session_provider()
+
+        return self.pool[threading.current_thread()]

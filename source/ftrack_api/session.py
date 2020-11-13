@@ -51,7 +51,7 @@ import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
-import ftrack_api.util
+import ftrack_api.thread
 from ftrack_api.logging import LazyLogMessage as L
 
 try:
@@ -1616,7 +1616,7 @@ class Session(object):
             synchronous=True
         )
 
-    @ftrack_api.util.not_thread_safe
+    @ftrack_api.thread.not_thread_safe
     def call(self, data):
         '''Make request to server with *data* batch describing the actions.'''
         url = self._server_url + '/api'
