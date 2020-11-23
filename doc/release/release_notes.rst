@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 2.1.0
+    :date: 2020-11-23
 
     .. change:: changed
         :tags: logging
@@ -51,7 +52,6 @@ Release Notes
 
         Fix references to new python 3k support.
         :ref:`installing`.
-
 
     .. change:: new
         :tags: Documentation
