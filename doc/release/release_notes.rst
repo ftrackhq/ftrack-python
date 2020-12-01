@@ -29,11 +29,11 @@ Release Notes
         to allow extension parsing customization.
 
     .. change:: changed
-
         :tags: Dependencies
 
         Explicitly link clique versions to python versions.
 
+    .. change:: changed
         :tags: Session, cache
 
         Schema cache is now saved per user, to avoid permissions conflicts on 
