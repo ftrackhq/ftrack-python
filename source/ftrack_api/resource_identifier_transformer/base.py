@@ -2,7 +2,11 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 
-from builtins import object
+try:
+    from builtins import object
+except ImportError:
+    from __builtin__ import object
+
 class ResourceIdentifierTransformer(object):
     '''Transform resource identifiers.
 

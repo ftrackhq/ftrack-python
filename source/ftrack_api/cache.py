@@ -15,11 +15,19 @@ memoisation of function using a global cache and standard key maker.
 
 '''
 
+
+try:
+    from builtins import str
+    from builtins import object
+
+except ImportError:
+    from __builtin__ import str
+    from __builtin__ import object
+
+
 from future import standard_library
 standard_library.install_aliases()
-from builtins import str
 from six import string_types
-from builtins import object
 import collections
 import functools
 import abc

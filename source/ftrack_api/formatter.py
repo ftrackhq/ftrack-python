@@ -1,7 +1,12 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-from builtins import str
+
+try:
+    from builtins import str
+except ImportError:
+    from __builtin__ import str
+
 import termcolor
 
 import ftrack_api.entity.base

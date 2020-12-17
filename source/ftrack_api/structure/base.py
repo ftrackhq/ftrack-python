@@ -1,7 +1,11 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-from builtins import object
+try:
+    from builtins import object
+except ImportError:
+    from __builtin__ import object
+
 from abc import ABCMeta, abstractmethod
 from future.utils import with_metaclass
 

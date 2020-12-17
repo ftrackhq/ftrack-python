@@ -1,7 +1,11 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-from builtins import object
+try:
+    from builtins import object
+except ImportError:
+    from __builtin__ import object
+
 import ftrack_api.event.expression
 
 

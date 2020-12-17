@@ -4,11 +4,19 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from builtins import zip
-from builtins import map
-from builtins import str
+try:
+    from builtins import zip
+    from builtins import map
+    from builtins import str
+    from builtins import object
+
+except ImportError:
+    from __builtin__ import zip
+    from __builtin__ import map
+    from __builtin__ import str
+    from __builtin__ import object
+
 from six import string_types
-from builtins import object
 import json
 import logging
 import collections
@@ -16,13 +24,10 @@ import datetime
 import os
 import getpass
 import functools
-import itertools
 import distutils.version
 import hashlib
-import tempfile
 import threading
 import atexit
-import warnings
 
 import requests
 import requests.auth

@@ -4,7 +4,12 @@
 import os
 
 
-from builtins import object
+try:
+    from builtins import object
+except ImportError:
+    from __builtin__ import object
+
+
 class Symbol(object):
     '''A constant symbol.'''
 

@@ -1,9 +1,16 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-from builtins import zip
+
+try:
+    from builtins import zip
+    from builtins import object
+
+except ImportError:
+    from __builtin__ import zip
+    from __builtin__ import object
+
 from six import string_types
-from builtins import object
 import collections
 import functools
 

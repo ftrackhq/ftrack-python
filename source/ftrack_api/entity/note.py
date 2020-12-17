@@ -2,7 +2,13 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import warnings
-from builtins import object
+
+try:
+    from builtins import object
+except ImportError:
+    from __builtin__ import object
+
+
 import ftrack_api.entity.base
 
 

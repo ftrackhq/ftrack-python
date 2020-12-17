@@ -3,7 +3,11 @@
 
 from __future__ import absolute_import
 
-from builtins import str
+try:
+    from builtins import str
+except ImportError:
+    from __builtin__ import str
+
 import abc
 import collections
 import logging

@@ -1,7 +1,12 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-from builtins import str
+try:
+    from builtins import str
+except ImportError:
+    from __builtin__ import str
+
+
 from future.utils import native_str
 import collections
 

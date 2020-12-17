@@ -4,8 +4,12 @@
 from __future__ import absolute_import
 
 
-from builtins import str
-from builtins import object
+try:
+    from builtins import str
+    from builtins import object
+except ImportError:
+    from __builtin__ import str
+    from __builtin__ import object
 
 import logging
 import uuid

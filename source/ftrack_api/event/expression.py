@@ -1,9 +1,16 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-from builtins import map
+
+try:
+    from builtins import map
+    from builtins import object
+except ImportError:
+    from __builtin__ import map
+    from __builtin__ import object
+
 from six import string_types
-from builtins import object
+
 from operator import eq, ne, ge, le, gt, lt
 
 from pyparsing import (Group, Word, CaselessKeyword, Forward,

@@ -7,11 +7,16 @@ module as os.path.
 """
 from __future__ import unicode_literals
 
-from builtins import str
-from builtins import zip
+try:
+    from builtins import zip
+    from builtins import str
+except ImportError:
+    from __builtin__ import zip
+    from __builtin__ import str
+
+
 import os
 import sys
-import stat
 import genericpath
 import warnings
 
