@@ -85,7 +85,8 @@ setup(
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
         'six >= 1, < 2',
-        'appdirs >=1, <2'
+        'appdirs >=1, <2',
+        'backports.functools-lru-cache'
     ],
     tests_require=[
         'pytest >= 2.7, < 3',
