@@ -81,7 +81,7 @@ setup(
         'arrow >= 0.4.4, < 1',
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
-        'clique @ git+https://gitlab.com/4degrees/clique.git@provide-backward-compatiblity-to-py2k#egg=clique-2.1.0',
+        'clique @ git+https://gitlab.com/4degrees/clique.git@provide-backward-compatiblity-to-py2k#egg=clique',
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
         'six >= 1, < 2',
