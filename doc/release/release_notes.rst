@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: compatiblity
+
+       Importing api compiled in python 3 from python2 raise a builtins module error.
+
 .. release:: 2.1.0
     :date: 2020-11-23
 
