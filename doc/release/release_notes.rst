@@ -12,6 +12,20 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: session, plugins
+
+        Changed module unique identifier to be hash of module path, to prevent modules from being reimported
+        each time a new session is created, causing memory usage buildups.
+
+    .. change:: fixed
+        :tags: session, plugins
+
+        Added catch try to plugin register call, to prevent entire plugin discovery to crash in case it
+        stumbles opon a non compatible register function in an external module within plugin paths.
+
+.. release:: Upcoming
+
+    .. change:: fixed
         :tags: docs
 
         Api documentation is not building on read the docs platform.

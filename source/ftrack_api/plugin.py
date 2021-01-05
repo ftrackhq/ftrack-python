@@ -9,6 +9,7 @@ import uuid
 import imp
 import inspect
 import traceback
+import hashlib
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
@@ -42,7 +43,9 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                     continue
 
                 module_path = os.path.join(base, filename)
-                unique_name = uuid.uuid4().hex
+                m = hashlib.md5()
+                m.update(module_path)
+                unique_name = m.hexdigest()
 
                 try:
                     module = imp.load_source(unique_name, module_path)
@@ -117,7 +120,16 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                                 if key in remaining_keyword_arguments
                             }
 
-                    module.register(
-                        *selected_positional_arguments,
-                        **selected_keyword_arguments
-                    )
+                    try:
+                        module.register(
+                            *selected_positional_arguments,
+                            **selected_keyword_arguments
+                        )
+                    except Exception as error:
+                        logger.warning(
+                            'Failed to load plugin that did not define a '
+                            'compatible "register" function at the module level: {0}'
+                                .format(module_path)
+                        )
+                        logger.debug(
+                            traceback.format_exc())
