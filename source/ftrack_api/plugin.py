@@ -44,7 +44,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
 
                 module_path = os.path.join(base, filename)
                 m = hashlib.md5()
-                m.update(module_path)
+                m.update(module_path.encode('utf-8'))
                 unique_name = m.hexdigest()
 
                 try:
