@@ -21,7 +21,7 @@ Release Notes
         :tags: session, plugins
 
         Added catch try to plugin register call, to prevent entire plugin discovery to crash in case it
-        stumbles opon a non compatible register function in an external module within plugin paths.
+        stumbles upon a non compatible register function in an external module within plugin paths.
 
 .. release:: Upcoming
 
