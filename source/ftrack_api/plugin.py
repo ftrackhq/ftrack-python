@@ -45,6 +45,8 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                 module_path = os.path.join(base, filename)
                 m = hashlib.md5()
                 m.update(module_path.encode('utf-8'))
+                with open(module_path, "rb") as f_module:
+                    m.update(f_module.read())
                 unique_name = m.hexdigest()
 
                 try:
@@ -127,9 +129,8 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                         )
                     except Exception as error:
                         logger.warning(
-                            'Failed to load plugin that did not define a '
-                            'compatible "register" function at the module level: {0}'
+                            'An error occurred when attempting to register module: {0}'
                                 .format(module_path)
                         )
-                        logger.debug(
+                        logger.warning(
                             traceback.format_exc())
