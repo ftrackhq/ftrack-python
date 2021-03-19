@@ -56,6 +56,8 @@ class EventHub(object):
         *api_user* is the user to authenticate as and *api_key* is the API key
         to authenticate with.
 
+        *timeout* is the time, in seconds, event hub should attempt connection before giving up.
+
         '''
         super(EventHub, self).__init__()
         self.logger = logging.getLogger(

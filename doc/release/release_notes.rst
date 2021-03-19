@@ -18,8 +18,6 @@ Release Notes
 
         Event hub publish now wait `timeout` seconds for connection to be established.
 
-.. release:: Upcoming
-
     .. change:: fixed
         :tags: docs
 
