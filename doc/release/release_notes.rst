@@ -17,6 +17,11 @@ Release Notes
 
         Update clique to 1.6.0 and remove constraints to python version.
 
+    .. change:: fixed
+        :tags: docs
+
+        Api documentation is not building on read the docs platform.
+
 .. release:: 2.1.0
     :date: 2020-11-23
 
