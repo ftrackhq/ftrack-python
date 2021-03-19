@@ -50,7 +50,7 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server_url, api_user, api_key):
+    def __init__(self, server_url, api_user, api_key, timeout=60):
         '''Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
@@ -68,6 +68,7 @@ class EventHub(object):
         self._packet_callbacks = {}
         self._lock = threading.RLock()
 
+        self._connect_timeout = timeout
         self._wait_timeout = 4
 
         self._subscribers = []
@@ -104,6 +105,7 @@ class EventHub(object):
         self._server_url = server_url
         self._api_user = api_user
         self._api_key = api_key
+        self._timeout = timeout
 
         # Parse server URL and store server details.
         url_parse_result = urllib.parse.urlparse(self._server_url)
@@ -186,14 +188,14 @@ class EventHub(object):
                         ))
                     break
 
-            # timeout is set to 60 seconds to avoid the issue where the socket
+            # timeout is set to 60 seconds by default to avoid the issue where the socket
             # ends up in a bad state where it is reported as connected but the
             # connection has been closed. The issue happens often when connected
             # to a secure socket and the computer goes to sleep.
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}
+                url, timeout=self._connect_timeout, sslopt={"ssl_version": available_ssl_protocol}
             )
 
         except Exception as error:
@@ -650,6 +652,12 @@ class EventHub(object):
             # Bypass emitting event to server and instead call locally
             # registered handlers directly, collecting and returning results.
             return self._handle(event, synchronous=synchronous)
+
+        # Give the event hub thread a chance to establish connection
+        timeout = self._connect_timeout
+        while not self.connected and 0.0 < timeout:
+            time.sleep(0.1)
+            timeout -= 0.1
 
         if not self.connected:
             raise ftrack_api.exception.EventHubConnectionError(

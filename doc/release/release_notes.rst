@@ -14,6 +14,15 @@ Release Notes
     .. change:: fixed
         :tags: docs
 
+        Event hub connect now adheres supplied session timeout.
+
+        Event hub publish now wait `timeout` seconds for connection to be established.
+
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: docs
+
         Api documentation is not building on read the docs platform.
 
 .. release:: 2.1.0
