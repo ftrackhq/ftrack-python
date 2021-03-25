@@ -9,7 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
 .. release:: Upcoming
+
+    .. change:: changed
+        :tags: Dependencies
+
+        Update clique to 1.6.0 and remove constraints to python version.
 
     .. change:: fixed
         :tags: docs
