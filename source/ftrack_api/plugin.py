@@ -43,11 +43,11 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                     continue
 
                 module_path = os.path.join(base, filename)
-                m = hashlib.md5()
-                m.update(module_path.encode('utf-8'))
-                with open(module_path, "rb") as f_module:
-                    m.update(f_module.read())
-                unique_name = m.hexdigest()
+                md5 = hashlib.md5()
+                md5.update(module_path.encode('utf-8'))
+                with open(module_path, 'rb') as f_module:
+                    md5.update(f_module.read())
+                unique_name = md5.hexdigest()
 
                 try:
                     module = imp.load_source(unique_name, module_path)
@@ -122,15 +122,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                                 if key in remaining_keyword_arguments
                             }
 
-                    try:
-                        module.register(
-                            *selected_positional_arguments,
-                            **selected_keyword_arguments
-                        )
-                    except Exception as error:
-                        logger.warning(
-                            'An error occurred when attempting to register module: {0}'
-                                .format(module_path)
-                        )
-                        logger.warning(
-                            traceback.format_exc())
+                    module.register(
+                        *selected_positional_arguments,
+                        **selected_keyword_arguments
+                    )
