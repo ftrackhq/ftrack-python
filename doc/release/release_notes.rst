@@ -9,8 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-
-.. release:: Upcoming
+.. release:: 2.1.1
+    :date: 2021-03-31
 
     .. change:: changed
         :tags: Dependencies
