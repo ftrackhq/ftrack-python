@@ -71,7 +71,7 @@ setup(
     },
     setup_requires=[
         'docutils<0.17',
-        'sphinx >= 1.2.2, < 1.6',
+        'sphinx >= 1.8.5',
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
         'setuptools>=30.3.0',

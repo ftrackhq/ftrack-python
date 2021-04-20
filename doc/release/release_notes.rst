@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: Dependencies
+
+        Sphinx minimum version updated to 1.8.5 (latest py2k compatible version)
+        Add docutils < 17.0 requirement dependency for compatibility with
+        python2 sphinx_rtd_theme.
+
 .. release:: 2.1.1
     :date: 2021-03-31
 
