@@ -9,6 +9,7 @@ import textwrap
 import datetime
 import json
 import random
+import threading
 
 import pytest
 import mock
@@ -404,20 +405,20 @@ def test_operation_optimisation_on_commit(session, mocker):
     assert len(payloads) == 3
 
     assert payloads[0]['action'] == 'create'
-    assert payloads[0]['entity_key'] == user_a_entity_key
-    assert set(payloads[0]['entity_data'].keys()) == set([
+    assert payloads[0]['entity_key'] == list(user_a_entity_key)
+    assert set(list(payloads[0]['entity_data'].keys())) == set([
         '__entity_type__', 'id', 'resource_type', 'username'
     ])
 
     assert payloads[1]['action'] == 'create'
-    assert payloads[1]['entity_key'] == user_b_entity_key
-    assert set(payloads[1]['entity_data'].keys()) == set([
+    assert payloads[1]['entity_key'] == list(user_b_entity_key)
+    assert set(list(payloads[1]['entity_data'].keys())) == set([
         '__entity_type__', 'id', 'resource_type', 'username', 'email'
     ])
 
     assert payloads[2]['action'] == 'update'
-    assert payloads[2]['entity_key'] == user_a_entity_key
-    assert set(payloads[2]['entity_data'].keys()) == set([
+    assert payloads[2]['entity_key'] == list(user_a_entity_key)
+    assert set(list(payloads[2]['entity_data'].keys())) == set([
         '__entity_type__', 'email', 'first_name'
     ])
 
@@ -848,7 +849,6 @@ def test_rollback_entity_deletion(session, new_user):
 
 # Caching
 # ------------------------------------------------------------------------------
-
 
 def test_get_entity_bypassing_cache(session, user, mocker):
     '''Retrieve an entity by type and id bypassing cache.'''
@@ -1517,3 +1517,32 @@ def test__entity_reference_issues_deprecation_warning(mocker, session):
         ),
         PendingDeprecationWarning
     )
+
+
+def test_auto_populate_is_thread_dependent(session):
+    '''Make sure auto_populate is configured per thread'''
+    auto_populate_state = (
+        session.auto_populate
+    )
+
+    def _assert_auto_populate():
+        assert (
+            session.auto_populate == auto_populate_state
+        )
+
+        task = session.query(
+            u'Task'
+        ).first()
+
+        for attribute in task.attributes:
+            assert (
+                getattr(task, attribute.name) is not ftrack_api.symbol.NOT_SET
+            )
+
+    with session.auto_populating(not auto_populate_state):
+        t = threading.Thread(
+            target=_assert_auto_populate
+        )
+
+        t.start()
+        t.join()
