@@ -9,6 +9,7 @@ import textwrap
 import datetime
 import json
 import random
+import threading
 
 import pytest
 import mock
@@ -1467,3 +1468,32 @@ def test_entity_reference(mocker, session):
 
     mock_auto_populating.assert_called_once_with(False)
     mock_primary_key.assert_called_once_with(mock_entity)
+
+
+def test_auto_populate_is_thread_dependent(session):
+    '''Make sure auto_populate is configured per thread'''
+    auto_populate_state = (
+        session.auto_populate
+    )
+
+    def _assert_auto_populate():
+        assert (
+            session.auto_populate == auto_populate_state
+        )
+
+        task = session.query(
+            u'Task'
+        ).first()
+
+        for attribute in task.attributes:
+            assert (
+                getattr(task, attribute.name) is not ftrack_api.symbol.NOT_SET
+            )
+
+    with session.auto_populating(not auto_populate_state):
+        t = threading.Thread(
+            target=_assert_auto_populate
+        )
+
+        t.start()
+        t.join()
