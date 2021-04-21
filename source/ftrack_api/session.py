@@ -332,11 +332,11 @@ class Session(object):
 
     @property
     def auto_populate(self):
-        return self._auto_populate[threading.get_ident()]
+        return self._auto_populate[threading.current_thread().ident]
 
     @auto_populate.setter
     def auto_populate(self, value):
-        self._auto_populate[threading.get_ident()] = value
+        self._auto_populate[threading.current_thread().ident] = value
 
     @property
     def closed(self):
