@@ -229,6 +229,8 @@ class Session(object):
             if cache is not None:
                 self.cache.caches.append(cache)
 
+        self.cache_merge_lock = threading.RLock()
+
         self._managed_request = None
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
@@ -236,7 +238,8 @@ class Session(object):
         )
         self.request_timeout = timeout
 
-        self.auto_populate = auto_populate
+        # Auto populating state is now thread-local
+        self._auto_populate = collections.defaultdict(lambda: auto_populate)
 
         # Fetch server information and in doing so also check credentials.
         self._server_information = self._fetch_server_information()
@@ -326,6 +329,14 @@ class Session(object):
     def _request(self, value):
         '''Set request session to *value*.'''
         self._managed_request = value
+
+    @property
+    def auto_populate(self):
+        return self._auto_populate[threading.get_ident()]
+
+    @auto_populate.setter
+    def auto_populate(self, value):
+        self._auto_populate[threading.get_ident()] = value
 
     @property
     def closed(self):
@@ -954,7 +965,7 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        with self.auto_populating(False):
+        with self.auto_populating(False), self.cache_merge_lock:
             entity_key = self.cache_key_maker.key(
                 ftrack_api.inspection.identity(entity)
             )
