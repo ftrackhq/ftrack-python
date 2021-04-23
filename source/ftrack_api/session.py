@@ -200,7 +200,9 @@ class Session(object):
 
         # Currently pending operations.
         self.recorded_operations = ftrack_api.operation.Operations()
-        self.record_operations = True
+        self._record_operations = collections.defaultdict(
+            lambda: True
+        )
 
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
@@ -220,7 +222,7 @@ class Session(object):
                 self.cache.caches.append(cache)
 
         # Lock used for making sure only one thread at a time
-        # merges into the cache.
+        # merges into the cache, updates or creates entities.
         self.merge_lock = threading.RLock()
 
         self._managed_request = None
@@ -337,6 +339,17 @@ class Session(object):
     def auto_populate(self, value):
         '''Setter for auto_populate, stored per thread.'''
         self._auto_populate[threading.current_thread().ident] = value
+
+    @property
+    def record_operations(self):
+        '''The current state of record operations, stored per thread.'''
+        return self._record_operations[threading.current_thread().ident]
+
+    @record_operations.setter
+    def record_operations(self, value):
+        '''Setter for record operations, stored per thread.'''
+        self._record_operations[threading.current_thread().ident] = value
+
 
     @property
     def closed(self):

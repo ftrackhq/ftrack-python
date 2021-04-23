@@ -22,6 +22,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.session
+import ftrack_api.operation
 import ftrack_api.collection
 
 
@@ -1546,3 +1547,39 @@ def test_auto_populate_is_thread_dependent(session):
 
         t.start()
         t.join()
+
+
+def test_operation_recoding_thread_dependent(session):
+    '''Make sure operation recording is thread dependent.'''
+    _id = str(uuid.uuid4())
+    _entity_type = 'User'
+
+    with session.operation_recording(False):
+        # Create entity in separate thread, should be recorded
+        # in the session.
+        t = threading.Thread(
+            target=lambda: session.create(
+                _entity_type, {'id': _id}
+            )
+        )
+
+        t.start()
+        t.join()
+
+        # Create entity that should be thrown away.
+        session.create(
+            _entity_type
+        )
+
+    assert (
+        len(session.recorded_operations) == 1
+    )
+
+    for operation in session.recorded_operations:
+        assert isinstance(
+            operation, ftrack_api.operation.CreateEntityOperation
+        )
+
+        assert operation.entity_type == 'User'
+        assert operation.entity_key['id'] == _id
+
