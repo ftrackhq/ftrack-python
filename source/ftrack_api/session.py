@@ -249,7 +249,7 @@ class Session(object):
             self._server_url,
             self._api_user,
             self._api_key,
-            timeout
+            timeout=timeout
         )
 
         self._auto_connect_event_hub_thread = None
