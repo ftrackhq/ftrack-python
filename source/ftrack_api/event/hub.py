@@ -656,7 +656,7 @@ class EventHub(object):
             return self._handle(event, synchronous=synchronous)
 
         # Give the event hub thread a chance to establish connection
-        timeout = min(2.0, self._connect_timeout)
+        timeout = min(0.2, self._connect_timeout)
         while not self.connected and 0.0 <= timeout:
             time.sleep(0.1)
             timeout -= 0.1
