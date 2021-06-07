@@ -9,12 +9,14 @@ Using custom attributes links
 
 .. currentmodule:: ftrack_api.session
 
-Custom attributes can be read and queried from entities using the
+Custom attributes can be queried from entities using the
 ``custom_attribute_links`` and ``custom_attribute_links_from`` properties.
 The _from relation represents the reverse direction or a custom attribute link.
 Say you have a link between Task and AssetVersion, then custom_attribute_links
 represent "Task -> AssetVersion" while custom_attribute_links_from represent
-"AssetVersion -> Task".
+"AssetVersion -> Task". The attributes can only be used to query and filter the
+result, to read the actual values you need to query CustomAttributeLink objects
+directly.
 
 Below are a few examples of how to query and filter using the
 custom_attribute_links relation::
@@ -30,6 +32,14 @@ custom_attribute_links relation::
         '(configuration.key is "supervisor" and context.bid > 1)'
     ):
         print user['username']
+
+Below is an example of how to read the values of custom attribute links.
+
+    for value in session.query(
+        'select user from CustomAttributeLink where '
+        'configuration.key = "supervisor" and from_id = "MY_TASK_ID"'
+    ):
+        print value['user']
 
 Relations
 =========
@@ -63,8 +73,4 @@ Projections
 -----------
 
 It is currently not possible to use the custom_attribute_links relation as a
-projection and specifying what particular attribute should be retrieved, instead
-all attributes will be returned which can be plenty and have a negative impact
-on performance. For optimal performance we currently recommend reading the
-CustomAttributeLink objects directly and filtering on configuration_id and
-entities. A future version of ftrack will support more granular projections.
+projection.
