@@ -12,6 +12,12 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: Documentation
+
+        Added new documentation examples of how to work with the new custom
+        attribute links, multiple image and video resolutions and SecurityRoles.
+
     .. change:: change
         :tags: tests
 
