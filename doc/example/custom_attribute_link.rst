@@ -10,11 +10,11 @@ Using custom attributes links
 .. currentmodule:: ftrack_api.session
 
 Custom attributes can be queried from entities using the
-``custom_attribute_links`` and ``custom_attribute_links_from`` properties.
-The _from relation represents the reverse direction or a custom attribute link.
+``custom_attribute_links`` and ``custom_attribute_links_from`` relations.
+The "_from" relation represents the reverse direction of a custom attribute link.
 Say you have a link between Task and AssetVersion, then custom_attribute_links
 represent "Task -> AssetVersion" while custom_attribute_links_from represent
-"AssetVersion -> Task". The attributes can only be used to query and filter the
+"AssetVersion -> Task". The relations can only be used to query and filter the
 result, to read the actual values you need to query CustomAttributeLink objects
 directly.
 
@@ -49,7 +49,7 @@ when filtering a query. In the above examples we are using the "user" and
 "context" relations. You can see these relations in the API reference
 documentation available on your ftrack workspace if you look for
 "CustomAttributeLink" objects that are prefixed such as
-"UserCustomAttributeLink".
+"UserCustomAttributeLink" and "ContextCustomAttributeLink".
 
 Creating links
 ==============
