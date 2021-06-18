@@ -83,12 +83,17 @@ To publish an image for review the steps are similar::
     ftrackreview-image and a higher resolution image should be named
     ftrackreview-image-high.
 
-To make a pdf reviewable, add format to the original pdf file but also
-generate a reviewable image from it as in the previous step::
+To make a pdf reviewable (client reviews in ftrack 4.2+ and experimental/new web
+player in ftrack 4.5+), add format to the original pdf file. Also generate a
+reviewable image from it as in the previous step, for the overview player::
 
     component['metadata']['ftr_meta'] = json.dumps({
         'format': 'pdf'
     })
+
+.. note::
+
+    The pdf component name must not be any of the following reserved names.
 
 Here is a list of components names and how they should be used:
 
