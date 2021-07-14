@@ -249,6 +249,10 @@ def test_get_resource_identifier(
         project_name=new_project['name']
     )
 
+def test_supported_project_entity(new_project):
+    ''' Success on getting resource identifier for a non component - project.'''
+    structure = ftrack_api.structure.standard.StandardStructure()
+    structure.get_resource_identifier(new_project)
 
 def test_unsupported_entity(user):
     '''Fail to get resource identifier for unsupported entity.'''

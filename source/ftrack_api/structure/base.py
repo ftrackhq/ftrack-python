@@ -19,9 +19,12 @@ class Structure(with_metaclass(ABCMeta, object)):
         self.path_separator = '/'
         super(Structure, self).__init__()
 
-    @abstractmethod
     def get_resource_identifier(self, entity, context=None):
-        '''Return a resource identifier for supplied *entity*.
+        return self.get_resource_identifiers([entity], context=context)[0]
+
+    @abstractmethod
+    def get_resource_identifiers(self, entities, context=None):
+        '''Return a list of  resource identifier for supplied *entities*.
 
         *context* can be a mapping that supplies additional information.
 

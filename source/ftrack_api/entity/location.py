@@ -162,7 +162,6 @@ class Location(ftrack_api.entity.base.Entity):
         existing_components = []
         try:
             self.get_resource_identifiers(components)
-
         except ftrack_api.exception.ComponentNotInLocationError as error:
             missing_component_ids = [
                 missing_component['id']
@@ -515,26 +514,30 @@ class Location(ftrack_api.entity.base.Entity):
             )
         ]
 
-    def get_resource_identifier(self, component):
-        '''Return resource identifier for *component*.
+    def get_resource_identifier(self, object):
+        '''Return resource identifier for *object*.
 
         Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if the
         component is not present in this location.
 
         '''
-        return self.get_resource_identifiers([component])[0]
+        return self.get_resource_identifiers([object])[0]
 
-    def get_resource_identifiers(self, components):
-        '''Return resource identifiers for *components*.
+    def get_resource_identifiers(self, objects):
+        '''Return resource identifiers for *objects*.
 
         Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if any
         of the components are not present in this location.
 
-        '''
-        resource_identifiers = self._get_resource_identifiers(components)
+        Raise :exc:`ftrack_api.exception.StructureError` if a
+        supplied entity are not created or not supported.
 
-        # Optionally decode resource identifier.
+        '''
+        resource_identifiers = self._get_resource_identifiers(objects)
+
+        # Optionally decode resource identifier (components only)
         if self.resource_identifier_transformer:
+            components = objects
             for index, resource_identifier in enumerate(resource_identifiers):
                 resource_identifiers[index] = (
                     self.resource_identifier_transformer.decode(
@@ -545,43 +548,66 @@ class Location(ftrack_api.entity.base.Entity):
 
         return resource_identifiers
 
-    def _get_resource_identifiers(self, components):
-        '''Return resource identifiers for *components*.
+    def _get_resource_identifiers(self, objects):
+        '''Return resource identifiers for *entities*.
 
-        Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if any
-        of the components are not present in this location.
+        Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if a
+        supplied component are not present in this location.
+
+        Raise :exc:`ftrack_api.exception.StructureError` if a
+        supplied entity are not created or not supported.
 
         '''
-        component_ids_mapping = collections.OrderedDict()
-        for component in components:
-            component_id = list(ftrack_api.inspection.primary_key(
-                component
-            ).values())[0]
-            component_ids_mapping[component_id] = component
-
-        component_locations = self.session.query(
-            'select component_id, resource_identifier from ComponentLocation '
-            'where location_id is {0} and component_id in ({1})'
-            .format(
-                list(ftrack_api.inspection.primary_key(self).values())[0],
-                ', '.join(list(component_ids_mapping.keys()))
-            )
-        )
-
-        resource_identifiers_map = {}
-        for component_location in component_locations:
-            resource_identifiers_map[component_location['component_id']] = (
-                component_location['resource_identifier']
-            )
 
         resource_identifiers = []
+
+        components = []
+
+        resource_identifiers_map = {}
+
+        for object in objects:
+            if object.entity_type in ('FileComponent','SequenceComponent',
+                                      'ContainerComponent',):
+                # Use component resource identifier as published
+                components.append(object)
+            else:
+                # Resolve resource identifier using current structure plugin
+                resource_identifiers_map[object['id']] = \
+                    self.structure.get_resource_identifier(object)
+
+        if 0<len(components):
+            # Fetch published component locations
+            component_ids_mapping = collections.OrderedDict()
+            for component in components:
+                component_id = list(ftrack_api.inspection.primary_key(
+                    component
+                ).values())[0]
+                component_ids_mapping[component_id] = component
+
+            component_locations = self.session.query(
+                'select component_id, resource_identifier from ComponentLocation '
+                'where location_id is {0} and component_id in ({1})'
+                .format(
+                    list(ftrack_api.inspection.primary_key(self).values())[0],
+                    ', '.join(list(component_ids_mapping.keys()))
+                )
+            )
+
+            for component_location in component_locations:
+                resource_identifiers_map[component_location['component_id']] = (
+                    component_location['resource_identifier']
+                )
+
         missing = []
-        for component_id, component in list(component_ids_mapping.items()):
-            if component_id not in resource_identifiers_map:
-                missing.append(component)
+        for object in objects:
+            if object['id'] not in resource_identifiers_map:
+                if object.entity_type in ('FileComponent', 'SequenceComponent',
+                                          'ContainerComponent',):
+                    # Treat this as an error for published components
+                    missing.append(object)
             else:
                 resource_identifiers.append(
-                    resource_identifiers_map[component_id]
+                    resource_identifiers_map[object['id']]
                 )
 
         if missing:
@@ -591,13 +617,13 @@ class Location(ftrack_api.entity.base.Entity):
 
         return resource_identifiers
 
-    def get_filesystem_path(self, component):
+    def get_filesystem_path(self, entity):
         '''Return filesystem path for *component*.'''
-        return self.get_filesystem_paths([component])[0]
+        return self.get_filesystem_paths([entity])[0]
 
-    def get_filesystem_paths(self, components):
+    def get_filesystem_paths(self, entities):
         '''Return filesystem paths for *components*.'''
-        resource_identifiers = self.get_resource_identifiers(components)
+        resource_identifiers = self.get_resource_identifiers(entities)
 
         filesystem_paths = []
         for resource_identifier in resource_identifiers:

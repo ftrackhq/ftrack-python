@@ -9,6 +9,19 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: change
+        :tags: Structure, Locations
+
+        Structure plugins now supports resolving resource
+        identifiers for any entity, not only components, to enable pipeline
+        file storage operations across entities.
+
+        Location now supports getting file system path for any entity, not only
+        components.
+
+        Multiple structure resource identifier resolve support.
 
 .. release:: 2.1.2
     :date: 2021-06-09

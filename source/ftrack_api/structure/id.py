@@ -8,9 +8,9 @@ import ftrack_api.structure.base
 
 
 class IdStructure(ftrack_api.structure.base.Structure):
-    '''Id based structure supporting Components only.
+    '''Id based structures.
 
-    A components unique id will be used to form a path to store the data at.
+    A components or entity unique id will be used to form a path to store the data at.
     To avoid millions of entries in one directory each id is chunked into four
     prefix directories with the remainder used to name the file::
 
@@ -34,58 +34,70 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
     '''
 
-    def get_resource_identifier(self, entity, context=None):
-        '''Return a resource identifier for supplied *entity*.
+    def _get_id_folder(self, id):
+        parts = [self.prefix]
+        parts.extend(list(id[:4]))
+        return parts
+
+    def get_resource_identifiers(self, entities, context=None):
+        '''Return a resource identifier for supplied *entities*.
 
         *context* can be a mapping that supplies additional information.
 
         '''
-        if entity.entity_type in ('FileComponent',):
-            # When in a container, place the file inside a directory named
-            # after the container.
-            container = entity['container']
-            if container and container is not ftrack_api.symbol.NOT_SET:
-                path = self.get_resource_identifier(container)
+        result = []
+        for entity in entities:
+            if entity.entity_type in ('FileComponent',):
+                # When in a container, place the file inside a directory named
+                # after the container.
+                container = entity['container']
+                if container and container is not ftrack_api.symbol.NOT_SET:
+                    path = self.get_resource_identifier(container)
 
-                if container.entity_type in ('SequenceComponent',):
-                    # Label doubles as index for now.
-                    name = 'file.{0}{1}'.format(
-                        entity['name'], entity['file_type']
-                    )
-                    parts = [os.path.dirname(path), name]
+                    if container.entity_type in ('SequenceComponent',):
+                        # Label doubles as index for now.
+                        name = 'file.{0}{1}'.format(
+                            entity['name'], entity['file_type']
+                        )
+                        parts = [os.path.dirname(path), name]
+
+                    else:
+                        # Just place uniquely identified file into directory
+                        name = entity['id'] + entity['file_type']
+                        parts = [path, name]
 
                 else:
-                    # Just place uniquely identified file into directory
-                    name = entity['id'] + entity['file_type']
-                    parts = [path, name]
+                    name = entity['id'][4:] + entity['file_type']
+                    parts = (self._get_id_folder(entity['id']) + [name])
+
+            elif entity.entity_type in ('SequenceComponent',):
+                name = 'file'
+
+                # Add a sequence identifier.
+                sequence_expression = self._get_sequence_expression(entity)
+                name += '.{0}'.format(sequence_expression)
+
+                if (
+                    entity['file_type'] and
+                    entity['file_type'] is not ftrack_api.symbol.NOT_SET
+                ):
+                    name += entity['file_type']
+
+                parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]]
+                         + [name])
+
+            elif entity.entity_type in ('ContainerComponent',):
+                # Just an id directory
+                parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]])
 
             else:
-                name = entity['id'][4:] + entity['file_type']
-                parts = ([self.prefix] + list(entity['id'][:4]) + [name])
+                # Not an component, base on its id - all types of entities allowed
+                if not 'id' in entity:
+                    raise NotImplementedError('Cannot generate resource identifier'
+                                              ' for unsupported entity {0}'.format(
+                        entity))
+                parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]])
 
-        elif entity.entity_type in ('SequenceComponent',):
-            name = 'file'
+            result.append(self.path_separator.join(parts).strip('/'))
 
-            # Add a sequence identifier.
-            sequence_expression = self._get_sequence_expression(entity)
-            name += '.{0}'.format(sequence_expression)
-
-            if (
-                entity['file_type'] and
-                entity['file_type'] is not ftrack_api.symbol.NOT_SET
-            ):
-                name += entity['file_type']
-
-            parts = ([self.prefix] + list(entity['id'][:4])
-                     + [entity['id'][4:]] + [name])
-
-        elif entity.entity_type in ('ContainerComponent',):
-            # Just an id directory
-            parts = ([self.prefix] +
-                     list(entity['id'][:4]) + [entity['id'][4:]])
-
-        else:
-            raise NotImplementedError('Cannot generate path for unsupported '
-                                      'entity {0}'.format(entity))
-
-        return self.path_separator.join(parts).strip('/')
+        return result

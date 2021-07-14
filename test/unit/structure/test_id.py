@@ -60,16 +60,6 @@ def container_component():
     return entity
 
 
-def unsupported_entity():
-    '''Return an unsupported entity.'''
-    session = ftrack_api.Session()
-
-    entity = session.create('User', {
-        'username': 'martin'
-    })
-
-    return entity
-
 
 @pytest.mark.parametrize('entity, context, expected', [
     (
@@ -96,8 +86,7 @@ def unsupported_entity():
     (
         container_component(), {},
         'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a'
-    ),
-    (unsupported_entity(), {}, NotImplementedError)
+    )
 
 ], ids=[
     'file-component',
@@ -105,8 +94,7 @@ def unsupported_entity():
     'file-component-in-sequence',
     'unpadded-sequence-component',
     'padded-sequence-component',
-    'container-component',
-    'unsupported-entity'
+    'container-component'
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''
