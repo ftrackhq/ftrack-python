@@ -234,7 +234,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         parts.append(self.sanitise_for_filesystem(containercomponent['name']))
         return parts
 
-    def get_resource_identifiers(self, entities, context=None):
+    def get_resource_identifier(self, entity, context=None):
         '''Return a resource identifier for supplied *entity*.
 
         *context* can be a mapping that supplies additional information, but
@@ -247,8 +247,6 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         '''
 
-        result = []
-
         self.resolvers = {
             'FileComponent':self._resolve_filecomponent,
             'SequenceComponent': self._resolve_sequencecomponent,
@@ -257,15 +255,13 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             'Asset': self._resolve_asset,
             'Project': self._resolve_project,
         }
-        for entity in entities:
 
-            resolver_fn = self.resolvers.get(entity.entity_type)
-            if resolver_fn is None:
-                # Fall back on generic context resolver
-                resolver_fn = self._resolve_context
+        resolver_fn = self.resolvers.get(entity.entity_type)
+        if resolver_fn is None:
+            # Fall back on generic context resolver
+            resolver_fn = self._resolve_context
 
-            parts = resolver_fn(entity, context=context)
+        parts = resolver_fn(entity, context=context)
 
-            result.append(self.path_separator.join(parts))
+        return self.path_separator.join(parts)
 
-        return result

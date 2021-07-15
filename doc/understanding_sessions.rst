@@ -62,7 +62,7 @@ can take a peek at these operations if desired by examining the
 ``Session.recorded_operations`` property::
 
     >>> for operation in session.recorded_operations:
-    ...     print operation
+    ...     print(operation)
     <ftrack_api.operation.CreateEntityOperation object at 0x0000000003EC49B0>
     <ftrack_api.operation.UpdateEntityOperation object at 0x0000000003E16898>
     <ftrack_api.operation.CreateEntityOperation object at 0x0000000003E16240>
@@ -85,10 +85,10 @@ server::
 
     >>> user = session.create('User', {'username': 'some_unique_username'})
     >>> query = 'User where username is "{0}"'.format(user['username'])
-    >>> print len(session.query(query))
+    >>>print(len(session.query(query)))
     0
     >>> session.commit()
-    >>> print len(session.query(query))
+    >>> print(len(session.query(query)))
     1
 
 Where possible, query results are merged in with existing data transparently
@@ -99,9 +99,9 @@ with any local changes preserved::
     >>> retrieved = session.query(
     ...     'User where id is "{0}"'.format(user['id'])
     ... ).one()
-    >>> print retrieved['email']  # Displays locally set value.
+    >>> print(retrieved['email'])  # Displays locally set value.
     'me@example.com'
-    >>> print retrieved is user
+    >>> print(retrieved is user)
     True
 
 This is possible due to the smart :ref:`caching` layer in the session.
@@ -119,13 +119,13 @@ will be sent to the server to fetch the value::
     user = session.query('User').first()
     # The next command will issue a request to the server to fetch the
     # 'username' value on demand at this is the first time it is accessed.
-    print user['username']
+    print(user['username'])
 
 Once a value has been retrieved it is :ref:`cached <caching>` locally in the
 session and accessing it again will not issue more server calls::
 
     # On second access no server call is made.
-    print user['username']
+    print(user['username'])
 
 You can control the auto population behaviour of a session by either changing
 the ``Session.auto_populate`` attribute on a session or using the provided
@@ -135,7 +135,7 @@ setting. When turned off you may see a special
 been fetched::
 
     >>> with session.auto_populating(False):
-    ...     print user['email']
+    ...     print(user['email'])
     NOT_SET
 
 Whilst convenient for simple scripts, making many requests to the server for
@@ -157,7 +157,7 @@ This information is readily available and useful if you need to check that the
 entity types you expect are present. Here's how to print a list of all entity
 types registered for use in the current API session::
 
-    >>> print session.types.keys()
+    >>> print(session.types.keys())
     [u'Task', u'Shot', u'TypedContext', u'Sequence', u'Priority',
      u'Status', u'Project', u'User', u'Type', u'ObjectType']
 

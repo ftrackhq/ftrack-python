@@ -14,7 +14,7 @@ but also managing custom attribute configurations.
 Existing custom attribute configurations can be queried as ::
 
     # Print all existing custom attribute configurations.
-    print session.query('CustomAttributeConfiguration').all()
+    print(session.query('CustomAttributeConfiguration').all())
 
 Use :meth:`Session.create` to create a new custom attribute configuration::
 

@@ -34,70 +34,100 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
     '''
 
+
+
     def _get_id_folder(self, id):
         parts = [self.prefix]
         parts.extend(list(id[:4]))
         return parts
 
-    def get_resource_identifiers(self, entities, context=None):
-        '''Return a resource identifier for supplied *entities*.
+    def _resolve_context(self, entity, context=None):
+        '''Return if resource identifier parts from general *entity*.'''
 
-        *context* can be a mapping that supplies additional information.
+        # Not an component, base on its id - all types of entities allowed
+        if not 'id' in entity:
+            raise NotImplementedError('Cannot generate resource identifier'
+                                      ' for unsupported entity {0}'.format(
+                entity))
+        parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]])
+        return parts
 
-        '''
-        result = []
-        for entity in entities:
-            if entity.entity_type in ('FileComponent',):
-                # When in a container, place the file inside a directory named
-                # after the container.
-                container = entity['container']
-                if container and container is not ftrack_api.symbol.NOT_SET:
-                    path = self.get_resource_identifier(container)
 
-                    if container.entity_type in ('SequenceComponent',):
-                        # Label doubles as index for now.
-                        name = 'file.{0}{1}'.format(
-                            entity['name'], entity['file_type']
-                        )
-                        parts = [os.path.dirname(path), name]
+    def _resolve_sequencecomponent(self, sequencecomponent, context=None):
+        '''Get id resource identifier for a sequence component.'''
+        name = 'file'
 
-                    else:
-                        # Just place uniquely identified file into directory
-                        name = entity['id'] + entity['file_type']
-                        parts = [path, name]
+        # Add a sequence identifier.
+        sequence_expression = self._get_sequence_expression(entity)
+        name += '.{0}'.format(sequence_expression)
 
-                else:
-                    name = entity['id'][4:] + entity['file_type']
-                    parts = (self._get_id_folder(entity['id']) + [name])
+        if (
+                sequencecomponent['file_type'] and
+                sequencecomponent['file_type'] is not ftrack_api.symbol.NOT_SET
+        ):
+            name += entity['file_type']
 
-            elif entity.entity_type in ('SequenceComponent',):
-                name = 'file'
+        parts = (self._get_id_folder(sequencecomponent['id'])
+                 + [sequencecomponent['id'][4:]]
+                 + [name])
+        return parts
 
-                # Add a sequence identifier.
-                sequence_expression = self._get_sequence_expression(entity)
-                name += '.{0}'.format(sequence_expression)
 
-                if (
-                    entity['file_type'] and
-                    entity['file_type'] is not ftrack_api.symbol.NOT_SET
-                ):
-                    name += entity['file_type']
+    def _resolve_filecomponent(self, filecomponent, context=None):
+        '''Get id resource identifier for file component.'''
+        # When in a container, place the file inside a directory named
+        # after the container.
+        container = filecomponent['container']
+        if container and container is not ftrack_api.symbol.NOT_SET:
+            path = self.get_resource_identifier(container)
 
-                parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]]
-                         + [name])
-
-            elif entity.entity_type in ('ContainerComponent',):
-                # Just an id directory
-                parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]])
+            if container.entity_type in ('SequenceComponent',):
+                # Label doubles as index for now.
+                name = 'file.{0}{1}'.format(
+                    filecomponent['name'], filecomponent['file_type']
+                )
+                parts = [os.path.dirname(path), name]
 
             else:
-                # Not an component, base on its id - all types of entities allowed
-                if not 'id' in entity:
-                    raise NotImplementedError('Cannot generate resource identifier'
-                                              ' for unsupported entity {0}'.format(
-                        entity))
-                parts = (self._get_id_folder(entity['id']) + [entity['id'][4:]])
+                # Just place uniquely identified file into directory
+                name = filecomponent['id'] + filecomponent['file_type']
+                parts = [path, name]
 
-            result.append(self.path_separator.join(parts).strip('/'))
+        else:
+            name = filecomponent['id'][4:] + filecomponent['file_type']
+            parts = (self._get_id_folder(filecomponent['id']) + [name])
+        return parts
 
-        return result
+    def _resolve_containercomponent(self, containercomponent, context=None):
+        '''Get id resource identifier for container component.'''
+        # Just an id directory
+        parts = (self._get_id_folder(containercomponent['id']) + [containercomponent['id'][4:]])
+        return parts
+
+    def get_resource_identifier(self, entity, context=None):
+        '''Return a resource identifier for supplied *entity*.
+
+        *context* can be a mapping that supplies additional information, but
+        is unused in this implementation.
+
+
+        Raise a :py:exc:`ftrack_api.exeption.StructureError` if *entity* is not
+        attached to a committed version and a committed asset with a parent
+        context.
+
+        '''
+
+        self.resolvers = {
+            'FileComponent':self._resolve_filecomponent,
+            'SequenceComponent': self._resolve_sequencecomponent,
+            'ContainerComponent': self._resolve_containercomponent,
+        }
+
+        resolver_fn = self.resolvers.get(entity.entity_type)
+        if resolver_fn is None:
+            # Fall back on generic context resolver
+            resolver_fn = self._resolve_context
+
+        parts = resolver_fn(entity, context=context)
+
+        return self.path_separator.join(parts).strip('/')

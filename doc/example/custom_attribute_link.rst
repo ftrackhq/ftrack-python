@@ -25,13 +25,13 @@ custom_attribute_links relation::
         'select name from Task where custom_attribute_links any '
         '(configuration.key is "supervisor" and user.username is "foobar")'
     ):
-        print task['name']
+        print(task['name'])
 
     for user in session.query(
         'select username from User where custom_attribute_links_from any '
         '(configuration.key is "supervisor" and context.bid > 1)'
     ):
-        print user['username']
+        print(user['username'])
 
 Below is an example of how to read the values of custom attribute links.
 
@@ -39,7 +39,7 @@ Below is an example of how to read the values of custom attribute links.
         'select user from CustomAttributeLink where '
         'configuration.key = "supervisor" and from_id = "MY_TASK_ID"'
     ):
-        print value['user']
+        print(value['user'])
 
 Relations
 =========
