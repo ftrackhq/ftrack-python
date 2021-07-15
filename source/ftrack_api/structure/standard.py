@@ -6,6 +6,8 @@ import os
 import re
 import unicodedata
 
+from collections import OrderedDict
+
 import ftrack_api.symbol
 import ftrack_api.structure.base
 
@@ -67,6 +69,19 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         self.project_versions_prefix = project_versions_prefix
         self.illegal_character_substitute = illegal_character_substitute
 
+        # Define the resolvers mapped to entity_type
+        # Put FileComponent first as it will be most commonly requested,
+        # for performance.
+        self.resolvers = OrderedDict({
+            'FileComponent': self._resolve_filecomponent,
+            'SequenceComponent': self._resolve_sequencecomponent,
+            'ContainerComponent': self._resolve_containercomponent,
+            'AssetVersion': self._resolve_version,
+            'Asset': self._resolve_asset,
+            'Project': self._resolve_project,
+            'ContextEntity': self._resolve_context_entity,
+        })
+
     def sanitise_for_filesystem(self, value):
         '''Return *value* with illegal filesystem characters replaced.
 
@@ -82,13 +97,16 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             return value
 
         value = unicodedata.normalize('NFKD', str(value)).encode('ascii', 'ignore')
-        value = re.sub('[^\w\.-]', self.illegal_character_substitute, value.decode('utf-8'))
+        value = re.sub('[^\w\.-]', self.illegal_character_substitute,
+                       value.decode('utf-8'))
         return str(value.strip().lower())
 
     def _resolve_project(self, project, context=None):
+        ''' Return resource identifier for *project*.'''
+        # Base on project name
         return [self.sanitise_for_filesystem(project['name'])]
 
-    def _resolve_context(self, entity, context=None):
+    def _resolve_context_entity(self, entity, context=None):
         '''Return resource identifier parts from general *entity*.'''
 
         error_message = (
@@ -119,7 +137,6 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             for item in link[1:]
         ]
 
-        project = None
         if 'project' in entity:
             project = entity['project']
         elif 'project_id' in entity:
@@ -135,13 +152,16 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         elif self.project_versions_prefix:
             # Add *project_versions_prefix* if configured and the version is
             # published directly under the project.
-            parts.append(self.sanitise_for_filesystem(self.project_versions_prefix))
+            parts.append(self.sanitise_for_filesystem(
+                self.project_versions_prefix))
 
         return parts
 
     def _resolve_asset(self, asset, context=None):
-        '''Build asset resource identifier from parent context and asset name.'''
-        parts = self._resolve_context(asset['parent'], context=context)
+        '''Build resource identifier for *asset*.'''
+        # Resolve parent context
+        parts = self._resolve_context_entity(asset['parent'], context=context)
+        # Base on its name
         parts.append(self.sanitise_for_filesystem(asset['name']))
         return parts
 
@@ -150,7 +170,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return 'v{0:03d}'.format(number)
 
     def _resolve_version(self, version, component=None, context=None):
-        '''Get resource identifier for a version.'''
+        '''Get resource identifier for *version*.'''
 
         error_message = (
             'Version {0!r} must be committed and have a asset with parent context.'.format(
@@ -175,11 +195,12 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return parts
 
     def _resolve_sequencecomponent(self, sequencecomponent, context=None):
-        '''Get resource identifier for a sequence component.'''
-
+        '''Get resource identifier for *sequencecomponent*.'''
         # Create sequence expression for the sequence component and add it
         # to the parts.
-        parts = self._resolve_version(sequencecomponent['version'], component=sequencecomponent, context=context)
+        parts = self._resolve_version(sequencecomponent['version'],
+                                      component=sequencecomponent,
+                                      context=context)
         sequence_expression = self._get_sequence_expression(sequencecomponent)
         parts.append(
             '{0}.{1}{2}'.format(
@@ -191,7 +212,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return parts
 
     def _resolve_container(self, component, container, context=None):
-        '''Get resource identifier for a container.'''
+        '''Get resource identifier for *container*, based on the *component*
+        supplied.'''
         container_path = self.get_resource_identifier(container, context=context)
         if container.entity_type in ('SequenceComponent',):
             # Strip the sequence component expression from the parent
@@ -218,19 +240,23 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         '''Get resource identifier for file component.'''
         container = filecomponent['container']
         if container:
-            parts = self._resolve_container(filecomponent, container, context=context)
+            parts = self._resolve_container(filecomponent, container,
+                                            context=context)
         else:
             # File component does not have a container, construct name from
             # component name and file type.
-            parts = self._resolve_version(filecomponent['version'], component=filecomponent, context=context)
+            parts = self._resolve_version(filecomponent['version'],
+                    component=filecomponent, context=context)
             name = filecomponent['name'] + filecomponent['file_type']
             parts.append(self.sanitise_for_filesystem(name))
         return parts
 
     def _resolve_containercomponent(self, containercomponent, context=None):
+        '''Get resource identifier for *containercomponent*.'''
         # Get resource identifier for container component
         # Add the name of the container to the resource identifier parts.
-        parts = self._resolve_version(containercomponent['version'], component=containercomponent, context=context)
+        parts = self._resolve_version(containercomponent['version'],
+                    component=containercomponent, context=context)
         parts.append(self.sanitise_for_filesystem(containercomponent['name']))
         return parts
 
@@ -241,25 +267,14 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         is unused in this implementation.
 
 
-        Raise a :py:exc:`ftrack_api.exeption.StructureError` if *entity* is not
-        attached to a committed version and a committed asset with a parent
-        context.
+        Raise a :py:exc:`ftrack_api.exeption.StructureError` if *entity* is a
+        component not attached to a committed version/asset with a parent
+        context, or if entity is not a proper Context.
 
         '''
 
-        self.resolvers = {
-            'FileComponent':self._resolve_filecomponent,
-            'SequenceComponent': self._resolve_sequencecomponent,
-            'ContainerComponent': self._resolve_containercomponent,
-            'AssetVersion': self._resolve_version,
-            'Asset': self._resolve_asset,
-            'Project': self._resolve_project,
-        }
-
-        resolver_fn = self.resolvers.get(entity.entity_type)
-        if resolver_fn is None:
-            # Fall back on generic context resolver
-            resolver_fn = self._resolve_context
+        resolver_fn = self.resolvers.get(entity.entity_type,
+                                         self._resolve_context_entity)
 
         parts = resolver_fn(entity, context=context)
 

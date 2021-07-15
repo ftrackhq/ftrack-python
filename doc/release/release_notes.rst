@@ -23,6 +23,11 @@ Release Notes
 
         Multiple structure resource identifier resolve support.
 
+    .. change:: change
+        :tags: Documentation
+
+        Removed deprecated py2 print statements.
+
 .. release:: 2.1.2
     :date: 2021-06-09
 

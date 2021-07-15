@@ -21,7 +21,7 @@ class Structure(with_metaclass(ABCMeta, object)):
 
     @abstractmethod
     def get_resource_identifier(self, entity, context=None):
-        '''Return a list of  resource identifier for supplied *entity*.
+        '''Return a list of resource identifier for supplied *entity*.
 
         *context* can be a mapping that supplies additional information.
 

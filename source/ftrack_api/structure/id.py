@@ -3,9 +3,12 @@
 
 import os
 
+from collections import OrderedDict
+
 import ftrack_api.symbol
 import ftrack_api.structure.base
 
+from collections import OrderedDict
 
 class IdStructure(ftrack_api.structure.base.Structure):
     '''Id based structures.
@@ -33,15 +36,21 @@ class IdStructure(ftrack_api.structure.base.Structure):
         /prefix/1/2/3/4/56789/file.0002.exr
 
     '''
-
-
+    def __init__(self):
+        super(IdStructure, self).__init__()
+        self.resolvers = OrderedDict({
+            'FileComponent':self._resolve_filecomponent,
+            'SequenceComponent': self._resolve_sequencecomponent,
+            'ContainerComponent': self._resolve_containercomponent,
+            'ContextEntity': self._resolve_context_entity
+        })
 
     def _get_id_folder(self, id):
         parts = [self.prefix]
         parts.extend(list(id[:4]))
         return parts
 
-    def _resolve_context(self, entity, context=None):
+    def _resolve_context_entity(self, entity, context=None):
         '''Return if resource identifier parts from general *entity*.'''
 
         # Not an component, base on its id - all types of entities allowed
@@ -54,7 +63,7 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
 
     def _resolve_sequencecomponent(self, sequencecomponent, context=None):
-        '''Get id resource identifier for a sequence component.'''
+        '''Get id resource identifier for *sequencecomponent*.'''
         name = 'file'
 
         # Add a sequence identifier.
@@ -74,7 +83,7 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
 
     def _resolve_filecomponent(self, filecomponent, context=None):
-        '''Get id resource identifier for file component.'''
+        '''Get id resource identifier for *filecomponent*.'''
         # When in a container, place the file inside a directory named
         # after the container.
         container = filecomponent['container']
@@ -99,9 +108,10 @@ class IdStructure(ftrack_api.structure.base.Structure):
         return parts
 
     def _resolve_containercomponent(self, containercomponent, context=None):
-        '''Get id resource identifier for container component.'''
+        '''Get id resource identifier for *containercomponent*.'''
         # Just an id directory
-        parts = (self._get_id_folder(containercomponent['id']) + [containercomponent['id'][4:]])
+        parts = (self._get_id_folder(containercomponent['id']) + \
+                 [containercomponent['id'][4:]])
         return parts
 
     def get_resource_identifier(self, entity, context=None):
@@ -117,16 +127,8 @@ class IdStructure(ftrack_api.structure.base.Structure):
 
         '''
 
-        self.resolvers = {
-            'FileComponent':self._resolve_filecomponent,
-            'SequenceComponent': self._resolve_sequencecomponent,
-            'ContainerComponent': self._resolve_containercomponent,
-        }
-
-        resolver_fn = self.resolvers.get(entity.entity_type)
-        if resolver_fn is None:
-            # Fall back on generic context resolver
-            resolver_fn = self._resolve_context
+        resolver_fn = self.resolvers.get(entity.entity_type,
+                                         self._resolve_context_entity)
 
         parts = resolver_fn(entity, context=context)
 

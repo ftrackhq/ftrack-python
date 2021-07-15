@@ -13,6 +13,7 @@ import ftrack_api.event.base
 import ftrack_api.symbol
 import ftrack_api.inspection
 from ftrack_api.logging import LazyLogMessage as L
+from ftrack_api.entity.component import Component
 
 from future.utils import with_metaclass
 
@@ -566,8 +567,7 @@ class Location(ftrack_api.entity.base.Entity):
         resource_identifiers_map = {}
 
         for object in objects:
-            if object.entity_type in ('FileComponent','SequenceComponent',
-                                      'ContainerComponent',):
+            if isinstance(object, Component):
                 # Use component resource identifier as published
                 components.append(object)
             else:
@@ -575,7 +575,7 @@ class Location(ftrack_api.entity.base.Entity):
                 resource_identifiers_map[object['id']] = \
                     self.structure.get_resource_identifier(object)
 
-        if 0<len(components):
+        if components:
             # Fetch published component locations
             component_ids_mapping = collections.OrderedDict()
             for component in components:
@@ -601,8 +601,7 @@ class Location(ftrack_api.entity.base.Entity):
         missing = []
         for object in objects:
             if object['id'] not in resource_identifiers_map:
-                if object.entity_type in ('FileComponent', 'SequenceComponent',
-                                          'ContainerComponent',):
+                if isinstance(object, Component):
                     # Treat this as an error for published components
                     missing.append(object)
             else:

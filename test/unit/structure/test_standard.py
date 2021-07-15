@@ -71,6 +71,167 @@ def new_file_component(name='foo', container=None):
 
     return entity
 
+@pytest.fixture(scope='session')
+def new_shot(request):
+    '''Return new shot.'''
+    session = ftrack_api.Session()
+
+    project_schema = session.query('ProjectSchema').first()
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
+    shot = session.create('Shot', {
+        'parent': project,
+        'name': 'sh0010'
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return shot
+
+@pytest.fixture(scope='session')
+def new_assetbuild(request):
+    '''Return new assetbuild.'''
+    session = ftrack_api.Session()
+
+    project_schema = session.query('ProjectSchema').first()
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
+    assetbuild = session.create('AssetBuild', {
+        'parent': project,
+        'name': 'vehicle'
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return assetbuild
+
+@pytest.fixture(scope='session')
+def new_task(request):
+    '''Return new task.'''
+    session = ftrack_api.Session()
+
+    project_schema = session.query('ProjectSchema').first()
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
+    task_type = session.query('select id from Type').first()
+    task = session.create('Task', {
+        'parent': project,
+        'name': 'modeling',
+        'type': task_type
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return task
+
+@pytest.fixture(scope='session')
+def new_asset(request):
+    '''Return new asset.'''
+    session = ftrack_api.Session()
+
+    project_schema = session.query('ProjectSchema').first()
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
+    task_type = session.query('select id from Type').first()
+    task = session.create('Task', {
+        'parent': project,
+        'name': 'modeling',
+        'type': task_type
+    })
+    asset_type = session.query('select id from AssetType').first()
+    asset = session.create('Asset', {
+        'parent': task['parent'],
+        'name': 'model',
+        'type': asset_type,
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return asset
+
+@pytest.fixture(scope='session')
+def new_version(request):
+    '''Return new asset.'''
+    session = ftrack_api.Session()
+
+    project_schema = session.query('ProjectSchema').first()
+    project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
+    project = session.create('Project', {
+        'name': project_name,
+        'full_name': project_name + '_full',
+        'project_schema': project_schema
+    })
+    task_type = session.query('select id from Type').first()
+    task = session.create('Task', {
+        'parent': project,
+        'name': 'modeling',
+        'type': task_type
+    })
+    asset_type = session.query('select id from AssetType').first()
+    asset = session.create('Asset', {
+        'parent': task['parent'],
+        'name': 'model',
+        'type': asset_type,
+    })
+    version = session.create('AssetVersion', {
+        'task': task,
+        'asset' : asset
+    })
+
+    session.commit()
+
+    def cleanup():
+        '''Remove created entity.'''
+        session.delete(project)
+        session.commit()
+
+    request.addfinalizer(cleanup)
+
+    return version
 
 # Reusable fixtures.
 file_component = new_file_component()
@@ -249,10 +410,35 @@ def test_get_resource_identifier(
         project_name=new_project['name']
     )
 
-def test_supported_project_entity(new_project):
+def test_project_entity(new_project):
     ''' Success on getting resource identifier for a non component - project.'''
     structure = ftrack_api.structure.standard.StandardStructure()
     structure.get_resource_identifier(new_project)
+
+def test_shot_entity(new_shot):
+    ''' Success on getting resource identifier for a shot.'''
+    structure = ftrack_api.structure.standard.StandardStructure()
+    structure.get_resource_identifier(new_shot)
+
+def test_assetbuild_entity(new_assetbuild):
+    ''' Success on getting resource identifier for an asset build.'''
+    structure = ftrack_api.structure.standard.StandardStructure()
+    structure.get_resource_identifier(new_assetbuild)
+
+def test_task_entity(new_task):
+    ''' Success on getting resource identifier for a task.'''
+    structure = ftrack_api.structure.standard.StandardStructure()
+    structure.get_resource_identifier(new_task)
+
+def test_asset_entity(new_asset):
+    ''' Success on getting resource identifier for an asset.'''
+    structure = ftrack_api.structure.standard.StandardStructure()
+    structure.get_resource_identifier(new_asset)
+
+def test_version_entity(new_version):
+    ''' Success on getting resource identifier for an version.'''
+    structure = ftrack_api.structure.standard.StandardStructure()
+    structure.get_resource_identifier(new_version)
 
 def test_unsupported_entity(user):
     '''Fail to get resource identifier for unsupported entity.'''
