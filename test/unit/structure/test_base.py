@@ -9,13 +9,13 @@ import ftrack_api.structure.base
 class Concrete(ftrack_api.structure.base.Structure):
     '''Concrete implementation to allow testing non-abstract methods.'''
 
-    def get_resource_identifiers(self, entities, context=None):
+    def get_resource_identifier(self, entity, context=None):
         '''Return a resource identifier for supplied *entity*.
 
         *context* can be a mapping that supplies additional information.
 
         '''
-        return ['resource_identifier']
+        return 'resource_identifier'
 
 
 @pytest.mark.parametrize('sequence, expected', [

@@ -36,8 +36,8 @@ class IdStructure(ftrack_api.structure.base.Structure):
         /prefix/1/2/3/4/56789/file.0002.exr
 
     '''
-    def __init__(self):
-        super(IdStructure, self).__init__()
+    def __init__(self, prefix=''):
+        super(IdStructure, self).__init__(prefix=prefix)
         self.resolvers = OrderedDict({
             'FileComponent':self._resolve_filecomponent,
             'SequenceComponent': self._resolve_sequencecomponent,
@@ -67,14 +67,14 @@ class IdStructure(ftrack_api.structure.base.Structure):
         name = 'file'
 
         # Add a sequence identifier.
-        sequence_expression = self._get_sequence_expression(entity)
+        sequence_expression = self._get_sequence_expression(sequencecomponent)
         name += '.{0}'.format(sequence_expression)
 
         if (
                 sequencecomponent['file_type'] and
                 sequencecomponent['file_type'] is not ftrack_api.symbol.NOT_SET
         ):
-            name += entity['file_type']
+            name += sequencecomponent['file_type']
 
         parts = (self._get_id_folder(sequencecomponent['id'])
                  + [sequencecomponent['id'][4:]]
