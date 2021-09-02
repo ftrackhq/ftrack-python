@@ -15,8 +15,6 @@ pipelines:
       - step:
           name: run tests against python 2.7.x
           image: python:2.7
-          caches:
-            - pip
           services:
             - ftrack
           script:
@@ -25,8 +23,6 @@ pipelines:
       - step:
           name: run tests against python 3.6.x
           image: python:3.6
-          caches:
-            - pip
           services:
             - ftrack
           script:
@@ -35,8 +31,6 @@ pipelines:
       - step:
           name: run tests against python 3.7.x
           image: python:3.7
-          caches:
-            - pip
           services:
             - ftrack
           script:
@@ -45,8 +39,6 @@ pipelines:
       - step:
           name: run tests against python 3.8.x
           image: python:3.8
-          caches:
-            - pip
           services:
             - ftrack
           script:

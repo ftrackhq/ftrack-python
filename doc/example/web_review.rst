@@ -30,14 +30,25 @@ and add it to the `ftrack.server` location::
         location=server_location
     )
 
-    # Meta data needs to contain *frameIn*, *frameOut* and *frameRate*.
+    # Meta data needs to contain *frameIn*, *frameOut*, *frameRate*, *height*
+    # and *width*.
     component['metadata']['ftr_meta'] = json.dumps({
         'frameIn': 0,
         'frameOut': 150,
-        'frameRate': 25
+        'frameRate': 25,
+        'height': 720,
+        'width': 1280
     })
 
     component.session.commit()
+
+.. note::
+
+    It is possible to add multiple components with different resolutions
+    (supported in ftrack 4.5+). If you add multiple components, they need to be
+    named correctly. The lowest resolution should keep the name ftrackreview-mp4
+    but the higher resolutions should be named ftrackreview-mp4-1080,
+    ftrackreview-mp4-1440, ftrackreview-mp4-2160.
 
 To publish an image for review the steps are similar::
 
@@ -57,22 +68,45 @@ To publish an image for review the steps are similar::
 
     # Meta data needs to contain *format*.
     component['metadata']['ftr_meta'] = json.dumps({
-        'format': 'image'
+        'format': 'image',
+        'height': 3840,
+        'width': 3840
     })
 
     component.session.commit()
 
+.. note::
+
+    It is possible to add multiple components with different resolutions
+    (supported in ftrack 4.5+). If you add multiple components, they need to be
+    named correctly. The lowest resolution should keep the name
+    ftrackreview-image and a higher resolution image should be named
+    ftrackreview-image-high.
+
+To make a pdf reviewable (client reviews in ftrack 4.2+ and experimental/new web
+player in ftrack 4.5+), add format to the original pdf component. Also generate a
+reviewable image from it as in the previous step and use that as the thumbnail of
+the AssetVersion::
+
+    component['metadata']['ftr_meta'] = json.dumps({
+        'format': 'pdf'
+    })
+
 Here is a list of components names and how they should be used:
 
-==================  =====================================
-Component name      Use
-==================  =====================================
-ftrackreview-image  Images reviewable in the browser
-ftrackreview-mp4    H.264/mp4 video reviewable in browser
-ftrackreview-webm   WebM video reviewable in browser
-==================  =====================================
+========================  =====================================
+Component name            Use
+========================  =====================================
+ftrackreview-image        Images reviewable in the browser
+ftrackreview-image-high   High resolution image
+ftrackreview-mp4          H.264/mp4 video reviewable in browser
+ftrackreview-mp4-1080     1080p resolution H.264/mp4 video
+ftrackreview-mp4-1440     1440p resolution H.264/mp4 video
+ftrackreview-mp4-2160     2160p resolution H.264/mp4 video
+========================  =====================================
 
 .. note::
 
     Make sure to use the pre-defined component names and set the `ftr_meta` on
-    the components or review will not work.
+    the components. PDF components should not use any of the pre-defined
+    component names.

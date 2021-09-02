@@ -9,6 +9,21 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: 2.1.2
+    :date: 2021-06-09
+
+    .. change:: new
+        :tags: Documentation
+
+        Added new documentation examples of how to work with the new custom
+        attribute links, multiple image and video resolutions and SecurityRoles.
+
+    .. change:: change
+        :tags: tests
+
+        Remove pip caching from bitbucket pipelines.
+
 .. release:: 2.1.1
     :date: 2021-03-31
 

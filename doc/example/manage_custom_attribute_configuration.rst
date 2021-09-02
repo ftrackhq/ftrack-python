@@ -3,9 +3,9 @@
 
 .. _example/manage_custom_attribute_configuration:
 
-****************************************
-Managing custom attribute configurations
-****************************************
+**************************
+Managing custom attributes
+**************************
 
 From the API it is not only possible to
 :ref:`read and update custom attributes for entities <example/custom_attribute>`,
@@ -239,6 +239,64 @@ set:
             })
         })
         session.commit()
+
+Links
+=====
+
+.. _example/manage_custom_attribute_configuration/links:
+
+A link between entities in ftrack can be created as a custom attribute using the
+CustomAttributeLinkConfiguration schema. Links are different from regular custom
+attributes and they can be used differently in queries.
+Read more about how to use them :ref:`here<example/custom_attribute_links>`.
+
+Links do not have a type or default value like regular CustomAttributeConfiguration
+objects, instead they have the following attributes:
+
+:one_to_one:
+    Boolean used to specify if the link can represent multiple relations or just
+    a single relation.
+
+:entity_type_to:
+    Represents the entity this link can point to. Valid values are show, task,
+    asset_version, list, user, group, asset and component.
+
+:object_type_id_to:
+    When setting entity_type_to to "task" object_type_id_to must also be specified.
+
+Below is an example of how to create a custom attribute link between a
+TypedContext object such as Shot and AssetVersion::
+
+    session.create('CustomAttributeLinkConfiguration', {
+        'entity_type': 'task',
+        'object_type_id': task_object_id,
+        'entity_type_to': 'asset_version',
+        'label': 'Delivered version',
+        'key': 'delivered_version',
+        'config': '{}',
+        'one_to_one': True,
+        'write_security_roles': [security_role],
+        'read_security_roles': [security_role]
+    })
+
+An other example creating a custom attribute link between a Sequence
+and a Shot specifying object_type for both sides.::
+
+    shot_object_id = session.query('ObjectType where name is "shot"').one()['id']
+    sequence_object_id = session.query('ObjectType where name is "sequence"').one()['id']
+
+    session.create('CustomAttributeLinkConfiguration', {
+        'entity_type': 'task',
+        'object_type_id': sequence_object,
+        'entity_type_to': 'task',
+        'object_type_id_to': shot_object_id
+        'label': 'Master shot',
+        'key': 'master_shot',
+        'config': '{}',
+        'one_to_one': True,
+        'write_security_roles': [security_role],
+        'read_security_roles': [security_role]
+    })
 
 Changing default
 ================
