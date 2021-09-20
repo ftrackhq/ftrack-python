@@ -15,7 +15,7 @@ Release Notes
     .. change:: new
         :tags: Threading
 
-        Added lock to allow threaded queries and prevent queries from modifying the cache at the same time.
+        Added lock to allow threaded queries and prevent multiple queries from modifying the cache at the same time.
 
 
 .. release:: 2.1.2
