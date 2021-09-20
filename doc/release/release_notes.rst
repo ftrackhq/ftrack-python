@@ -15,7 +15,7 @@ Release Notes
     .. change:: new
         :tags: Threading
 
-        Provide locking mechanisms to enable threaded query robustness.
+        Added lock to allow threaded queries and prevent queries from modifying the cache at the same time.
 
 
 .. release:: 2.1.2
@@ -27,7 +27,7 @@ Release Notes
         Added new documentation examples of how to work with the new custom
         attribute links, multiple image and video resolutions and SecurityRoles.
 
-    .. change:: change
+    .. change:: changed
         :tags: tests
 
         Remove pip caching from bitbucket pipelines.
