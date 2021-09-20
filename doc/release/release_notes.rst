@@ -10,6 +10,14 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: Threading
+
+        Provide locking mechanisms to enable threaded query robustness.
+
+
 .. release:: 2.1.2
     :date: 2021-06-09
 
