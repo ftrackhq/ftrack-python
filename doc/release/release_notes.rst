@@ -10,7 +10,8 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
-.. release:: Upcoming
+.. release:: 2.2.0
+    :date: 2021-09-20
 
     .. change:: new
         :tags: Threading
