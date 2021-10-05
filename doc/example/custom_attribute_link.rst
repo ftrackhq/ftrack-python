@@ -33,7 +33,7 @@ custom_attribute_links relation::
     ):
         print(user['username'])
 
-Below is an example of how to read the values of custom attribute links.
+Below is an example of how to read the values of custom attribute links::
 
     for value in session.query(
         'select user from CustomAttributeLink where '

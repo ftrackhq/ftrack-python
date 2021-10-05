@@ -210,7 +210,9 @@ class Session(object):
 
         # Currently pending operations.
         self.recorded_operations = ftrack_api.operation.Operations()
-        self.record_operations = True
+        self._record_operations = collections.defaultdict(
+            lambda: True
+        )
 
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
@@ -229,6 +231,10 @@ class Session(object):
             if cache is not None:
                 self.cache.caches.append(cache)
 
+        # Lock used for making sure only one thread at a time
+        # merges into the cache, updates or creates entities.
+        self.merge_lock = threading.RLock()
+
         self._managed_request = None
         self._request = requests.Session()
         self._request.auth = SessionAuthentication(
@@ -236,7 +242,10 @@ class Session(object):
         )
         self.request_timeout = timeout
 
-        self.auto_populate = auto_populate
+        # Auto populating state is now thread-local
+        self._auto_populate = collections.defaultdict(
+            lambda: auto_populate
+        )
 
         # Fetch server information and in doing so also check credentials.
         self._server_information = self._fetch_server_information()
@@ -326,6 +335,27 @@ class Session(object):
     def _request(self, value):
         '''Set request session to *value*.'''
         self._managed_request = value
+
+    @property
+    def auto_populate(self):
+        '''The current state of auto populate, stored per thread.'''
+        return self._auto_populate[threading.current_thread().ident]
+
+    @auto_populate.setter
+    def auto_populate(self, value):
+        '''Setter for auto_populate, stored per thread.'''
+        self._auto_populate[threading.current_thread().ident] = value
+
+    @property
+    def record_operations(self):
+        '''The current state of record operations, stored per thread.'''
+        return self._record_operations[threading.current_thread().ident]
+
+    @record_operations.setter
+    def record_operations(self, value):
+        '''Setter for record operations, stored per thread.'''
+        self._record_operations[threading.current_thread().ident] = value
+
 
     @property
     def closed(self):
@@ -858,44 +888,45 @@ class Session(object):
         '''Return merged *value*.'''
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
-        if isinstance(value, ftrack_api.entity.base.Entity):
-            log_debug and self.logger.debug(
-                'Merging entity into session: {0} at {1}'
-                .format(value, id(value))
-            )
-
-            return self._merge_entity(value, merged=merged)
-
-        elif isinstance(value, ftrack_api.collection.Collection):
-            log_debug and self.logger.debug(
-                'Merging collection into session: {0!r} at {1}'
-                .format(value, id(value))
-            )
-
-            merged_collection = []
-            for entry in value:
-                merged_collection.append(
-                    self._merge(entry, merged=merged)
+        with self.merge_lock:
+            if isinstance(value, ftrack_api.entity.base.Entity):
+                log_debug and self.logger.debug(
+                    'Merging entity into session: {0} at {1}'
+                    .format(value, id(value))
                 )
 
-            return merged_collection
+                return self._merge_entity(value, merged=merged)
 
-        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-            log_debug and self.logger.debug(
-                'Merging mapped collection into session: {0!r} at {1}'
-                .format(value, id(value))
-            )
-
-            merged_collection = []
-            for entry in value.collection:
-                merged_collection.append(
-                    self._merge(entry, merged=merged)
+            elif isinstance(value, ftrack_api.collection.Collection):
+                log_debug and self.logger.debug(
+                    'Merging collection into session: {0!r} at {1}'
+                    .format(value, id(value))
                 )
 
-            return merged_collection
+                merged_collection = []
+                for entry in value:
+                    merged_collection.append(
+                        self._merge(entry, merged=merged)
+                    )
 
-        else:
-            return value
+                return merged_collection
+
+            elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+                log_debug and self.logger.debug(
+                    'Merging mapped collection into session: {0!r} at {1}'
+                    .format(value, id(value))
+                )
+
+                merged_collection = []
+                for entry in value.collection:
+                    merged_collection.append(
+                        self._merge(entry, merged=merged)
+                    )
+
+                return merged_collection
+
+            else:
+                return value
 
     def _merge_recursive(self, entity, merged=None):
         '''Merge *entity* and all its attributes recursivly.'''

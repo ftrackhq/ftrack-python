@@ -9,6 +9,7 @@ import textwrap
 import datetime
 import json
 import random
+import threading
 
 import pytest
 import mock
@@ -21,6 +22,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.session
+import ftrack_api.operation
 import ftrack_api.collection
 
 
@@ -1467,3 +1469,68 @@ def test_entity_reference(mocker, session):
 
     mock_auto_populating.assert_called_once_with(False)
     mock_primary_key.assert_called_once_with(mock_entity)
+
+
+def test_auto_populate_is_thread_dependent(session):
+    '''Make sure auto_populate is configured per thread'''
+    auto_populate_state = (
+        session.auto_populate
+    )
+
+    def _assert_auto_populate():
+        assert (
+            session.auto_populate == auto_populate_state
+        )
+
+        task = session.query(
+            u'Task'
+        ).first()
+
+        for attribute in task.attributes:
+            assert (
+                getattr(task, attribute.name) is not ftrack_api.symbol.NOT_SET
+            )
+
+    with session.auto_populating(not auto_populate_state):
+        t = threading.Thread(
+            target=_assert_auto_populate
+        )
+
+        t.start()
+        t.join()
+
+
+def test_operation_recoding_thread_dependent(session):
+    '''Make sure operation recording is thread dependent.'''
+    _id = str(uuid.uuid4())
+    _entity_type = 'User'
+
+    with session.operation_recording(False):
+        # Create entity in separate thread, should be recorded
+        # in the session.
+        t = threading.Thread(
+            target=lambda: session.create(
+                _entity_type, {'id': _id}
+            )
+        )
+
+        t.start()
+        t.join()
+
+        # Create entity that should be thrown away.
+        session.create(
+            _entity_type
+        )
+
+    assert (
+        len(session.recorded_operations) == 1
+    )
+
+    for operation in session.recorded_operations:
+        assert isinstance(
+            operation, ftrack_api.operation.CreateEntityOperation
+        )
+
+        assert operation.entity_type == 'User'
+        assert operation.entity_key['id'] == _id
+

@@ -28,6 +28,15 @@ Release Notes
 
         Removed deprecated py2 print statements.
 
+.. release:: 2.2.0
+    :date: 2021-09-20
+
+    .. change:: new
+        :tags: Threading
+
+        Added lock to allow threaded queries and prevent multiple queries from modifying the cache at the same time.
+
+
 .. release:: 2.1.2
     :date: 2021-06-09
 
@@ -37,7 +46,7 @@ Release Notes
         Added new documentation examples of how to work with the new custom
         attribute links, multiple image and video resolutions and SecurityRoles.
 
-    .. change:: change
+    .. change:: changed
         :tags: tests
 
         Remove pip caching from bitbucket pipelines.
