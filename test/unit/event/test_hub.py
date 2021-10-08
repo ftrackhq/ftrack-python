@@ -62,7 +62,7 @@ def assert_callbacks(hub, callbacks):
 
 
 @pytest.fixture()
-def event_hub(request, session):
+def event_hub(request, session, delay=None):
     '''Return event hub to test against.
 
     Hub is automatically connected at start of test and disconnected at end.
@@ -71,6 +71,10 @@ def event_hub(request, session):
     hub = ftrack_api.event.hub.EventHub(
         session.server_url, session.api_user, session.api_key
     )
+
+    if delay:
+        raise RuntimeError
+
     hub.connect()
 
     def cleanup():
@@ -587,6 +591,42 @@ def test_synchronous_publish(event_hub):
 
     results = event_hub.publish(Event(topic='test'), synchronous=True)
     assert results == ['A', 'B', 'C']
+
+
+def test_publish_during_connect(session, mocker):
+    '''Test publishing while connection is initialising.'''
+    event_hub = ftrack_api.event.hub.EventHub(
+        session.server_url, session.api_user, session.api_key
+    )
+
+    def replier(event):
+        '''Replier.'''
+        return 'Replied'
+
+    event_hub.subscribe('topic=test', replier)
+    called = {'callback': None}
+
+    def on_reply(event):
+        called['callback'] = event['data']
+
+    # Mark the connection as initialised to simulate
+    # a slow connection.
+    mocker.patch.object(
+        event_hub, '_connection_initialised', True
+    )
+
+    event_hub.publish(
+        Event(topic='test'), on_reply=on_reply
+    )
+
+    assert event_hub._event_send_queue.qsize() == 1
+
+    event_hub.connect()
+    event_hub.wait(2)
+
+    assert called['callback'] == 'Replied'
+
+    assert event_hub._event_send_queue.qsize() == 0
 
 
 def test_publish_with_reply(event_hub):

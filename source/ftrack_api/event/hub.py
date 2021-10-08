@@ -75,6 +75,7 @@ class EventHub(object):
         self._intentional_disconnect = False
 
         self._event_queue = queue.Queue()
+        self._event_send_queue = queue.Queue()
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
@@ -241,6 +242,15 @@ class EventHub(object):
         # reconnecting automatically for example.
         for subscriber in self._subscribers[:]:
             self._notify_server_about_subscriber(subscriber)
+
+        # Publish all waiting messages
+        while True:
+            try:
+                self._publish(*self._event_send_queue.get_nowait())
+
+            except queue.Empty:
+                break
+
 
     @property
     def connected(self):
@@ -652,6 +662,21 @@ class EventHub(object):
             return self._handle(event, synchronous=synchronous)
 
         if not self.connected:
+            if self._connection_initialised:
+                # The connection is still being initalized, add
+                # the message to the queue and attempt to send it
+                # once connection has been established
+
+                self._event_send_queue.put(
+                    (event, synchronous, callback, on_reply)
+                )
+
+                self.logger.debug(
+                    'Connection is still initializing, adding message to '
+                    'queue'
+                )
+
+                return True
             raise ftrack_api.exception.EventHubConnectionError(
                 'Cannot publish event asynchronously as not connected to '
                 'server.'
