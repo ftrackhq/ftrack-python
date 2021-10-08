@@ -662,8 +662,8 @@ class EventHub(object):
             return self._handle(event, synchronous=synchronous)
 
         if not self.connected:
-            if self._connection_initialised:
-                # The connection is still being initalized, add
+            if self._connection_initialised and not self._intentional_disconnect:
+                # The connection is still being initialized, add
                 # the message to the queue and attempt to send it
                 # once connection has been established
 
