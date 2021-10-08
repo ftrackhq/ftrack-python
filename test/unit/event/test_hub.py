@@ -62,7 +62,7 @@ def assert_callbacks(hub, callbacks):
 
 
 @pytest.fixture()
-def event_hub(request, session, delay=None):
+def event_hub(request, session):
     '''Return event hub to test against.
 
     Hub is automatically connected at start of test and disconnected at end.
@@ -71,9 +71,6 @@ def event_hub(request, session, delay=None):
     hub = ftrack_api.event.hub.EventHub(
         session.server_url, session.api_user, session.api_key
     )
-
-    if delay:
-        raise RuntimeError
 
     hub.connect()
 
