@@ -9,6 +9,7 @@ from builtins import str
 from builtins import range
 from builtins import object
 import collections
+from six.moves import collections_abc
 import urllib.parse
 import threading
 import queue as queue
@@ -971,7 +972,7 @@ class EventHub(object):
 
             if len(args) == 1:
                 event_payload = args[0]
-                if isinstance(event_payload, collections.Mapping):
+                if isinstance(event_payload, collections_abc.Mapping):
                     try:
                         event = ftrack_api.event.base.Event(**event_payload)
                     except Exception:
@@ -1033,7 +1034,7 @@ class EventHub(object):
 
     def _decode_object_hook(self, item):
         '''Return *item* transformed.'''
-        if isinstance(item, collections.Mapping):
+        if isinstance(item, collections_abc.Mapping):
             if 'inReplyToEvent' in item:
                 item['in_reply_to_event'] = item.pop('inReplyToEvent')
 

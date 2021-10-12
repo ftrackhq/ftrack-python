@@ -12,6 +12,7 @@ from builtins import object
 import json
 import logging
 import collections
+from six.moves import collections_abc
 import datetime
 import os
 import getpass
@@ -1812,7 +1813,7 @@ class Session(object):
 
     def _decode(self, item):
         '''Return *item* transformed into appropriate representation.'''
-        if isinstance(item, collections.Mapping):
+        if isinstance(item, collections_abc.Mapping):
             if '__type__' in item:
                 if item['__type__'] == 'datetime':
                     item = arrow.get(item['value'])
@@ -2463,7 +2464,7 @@ class OperationRecordingContext(object):
         self._session.record_operations = self._current_record_operations
 
 
-class OperationPayload(collections.MutableMapping):
+class OperationPayload(collections_abc.MutableMapping):
     '''Represent operation payload.'''
 
     def __init__(self, *args, **kwargs):
