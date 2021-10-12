@@ -10,6 +10,20 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 
+.. release:: upcoming
+
+   .. chnage:: fixed
+        :tags: compatibility
+
+        Using or importing the ABCs from 'collections' instead of from 'collections.abc'
+        is deprecated since Python 3.3,and in 3.9 it will stop working.
+
+   .. chnage:: fixed
+        :tags: compatibility
+
+        `inspect.getargspec` is deprecated since Python 3.0, use `inspect.signature` or
+        `inspect.getfullargspec`.
+
 .. release:: 2.2.0
     :date: 2021-09-20
 
