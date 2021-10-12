@@ -7,8 +7,16 @@ import logging
 import os
 import uuid
 import imp
-import inspect
 import traceback
+
+try:
+    # getargspec is deprecated since python version 3.0
+    # use `getfullargspec` if available as a drop in replacement.
+    from inspect import getfullargspec as getargspec
+
+except ImportError:
+    from inspect import getargspec as getargspec
+
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
@@ -66,7 +74,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                 else:
                     # Attempt to only pass arguments that are accepted by the
                     # register function.
-                    specification = inspect.getargspec(module.register)
+                    specification = getargspec(module.register)
 
                     selected_positional_arguments = positional_arguments
                     selected_keyword_arguments = keyword_arguments
