@@ -79,7 +79,7 @@ class EventHub(object):
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
-        # Track if a connection has been initialised. 
+        # Track if a connection has been initialised.
         self._connection_initialised = False
 
         # Default values for auto reconnection timeout on unintentional
@@ -138,6 +138,16 @@ class EventHub(object):
         '''Return whether secure connection used.'''
         return self.server.scheme == 'https'
 
+    def init_connection(self):
+        '''If the connection is not handled synchronously the connection may be marked
+        as initialized to allow for published events to be queued. '''
+
+        self.logger.debug(
+            'Connection initialized,'
+        )
+
+        self._connection_initialised = True
+
     def connect(self):
         '''Initialise connection to server.
 
@@ -145,8 +155,9 @@ class EventHub(object):
         connected or connection fails.
 
         '''
-        # Update tracking flag for connection.
-        self._connection_initialised = True
+        if not self._connection_initialised:
+            # Update tracking flag for connection.
+            self.init_connection()
 
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(

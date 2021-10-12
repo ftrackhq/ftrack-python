@@ -264,6 +264,11 @@ class Session(object):
         if auto_connect_event_hub:
             # Connect to event hub in background thread so as not to block main
             # session usage waiting for event hub connection.
+
+            # set the connection as initialising from the main thread so that
+            # we can queue up any potential published messages.
+            self._event_hub.init_connection()
+
             self._auto_connect_event_hub_thread = threading.Thread(
                 target=self._event_hub.connect
             )

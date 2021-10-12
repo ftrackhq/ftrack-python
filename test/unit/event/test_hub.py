@@ -606,11 +606,8 @@ def test_publish_during_connect(session, mocker):
     def on_reply(event):
         called['callback'] = event['data']
 
-    # Mark the connection as initialised to simulate
-    # a slow connection.
-    mocker.patch.object(
-        event_hub, '_connection_initialised', True
-    )
+    # Mark the connection as initialised.
+    event_hub.init_connection()
 
     event_hub.publish(
         Event(topic='test'), on_reply=on_reply
