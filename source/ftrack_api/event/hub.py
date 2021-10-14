@@ -431,14 +431,15 @@ class EventHub(object):
             subscription, callback, subscriber, priority
         )
 
-        # Notify server now if possible.
-        try:
-            self._notify_server_about_subscriber(subscriber)
-        except ftrack_api.exception.EventHubConnectionError:
-            self.logger.debug(L(
-                'Failed to notify server about new subscriber {0} '
-                'as server not currently reachable.', subscriber.metadata['id']
-            ))
+        if self.connected:
+            # If connected to server event hub, notify now if possible.
+            try:
+                self._notify_server_about_subscriber(subscriber)
+            except ftrack_api.exception.EventHubConnectionError:
+                self.logger.debug(L(
+                    'Failed to notify server about new subscriber {0} '
+                    'as server not currently reachable.', subscriber.metadata['id']
+                ))
 
         return subscriber.metadata['id']
 

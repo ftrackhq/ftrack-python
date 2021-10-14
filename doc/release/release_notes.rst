@@ -9,6 +9,12 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+
+    .. change:: change
+        :tags: events
+
+        I only running synchronous events (local mode), to not bother notifying server on subscribe.
 
 .. release:: 2.2.0
     :date: 2021-09-20
