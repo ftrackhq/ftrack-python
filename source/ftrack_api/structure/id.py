@@ -11,7 +11,7 @@ import ftrack_api.structure.base
 from collections import OrderedDict
 
 class IdStructure(ftrack_api.structure.base.Structure):
-    '''Id based structures.
+    ''' Id based structures.
 
     A components or entity unique id will be used to form a path to store the data at.
     To avoid millions of entries in one directory each id is chunked into four
@@ -39,13 +39,14 @@ class IdStructure(ftrack_api.structure.base.Structure):
     def __init__(self, prefix=''):
         super(IdStructure, self).__init__(prefix=prefix)
         self.resolvers = OrderedDict({
-            'FileComponent':self._resolve_filecomponent,
-            'SequenceComponent': self._resolve_sequencecomponent,
-            'ContainerComponent': self._resolve_containercomponent,
+            'FileComponent': self._resolve_file_component,
+            'SequenceComponent': self._resolve_sequence_component,
+            'ContainerComponent': self._resolve_container_component,
             'ContextEntity': self._resolve_context_entity
         })
 
     def _get_id_folder(self, id):
+        '''Generate a folder name based on **id.'''
         parts = [self.prefix]
         parts.extend(list(id[:4]))
         return parts
@@ -62,56 +63,58 @@ class IdStructure(ftrack_api.structure.base.Structure):
         return parts
 
 
-    def _resolve_sequencecomponent(self, sequencecomponent, context=None):
-        '''Get id resource identifier for *sequencecomponent*.'''
+    def _resolve_sequence_component(self, sequence_component, context=None):
+        '''Get id resource identifier for *sequence_component*.'''
         name = 'file'
 
         # Add a sequence identifier.
-        sequence_expression = self._get_sequence_expression(sequencecomponent)
+        sequence_expression = self._get_sequence_expression(sequence_component)
         name += '.{0}'.format(sequence_expression)
 
         if (
-                sequencecomponent['file_type'] and
-                sequencecomponent['file_type'] is not ftrack_api.symbol.NOT_SET
+                sequence_component['file_type'] and
+                sequence_component['file_type'] is not ftrack_api.symbol.NOT_SET
         ):
-            name += sequencecomponent['file_type']
+            name += sequence_component['file_type']
 
-        parts = (self._get_id_folder(sequencecomponent['id'])
-                 + [sequencecomponent['id'][4:]]
-                 + [name])
+        parts = (self._get_id_folder(sequence_component['id'])
+            + [sequence_component['id'][4:]]
+            + [name])
+
         return parts
 
 
-    def _resolve_filecomponent(self, filecomponent, context=None):
-        '''Get id resource identifier for *filecomponent*.'''
+    def _resolve_file_component(self, file_component, context=None):
+        '''Get id resource identifier for *file_component*.'''
         # When in a container, place the file inside a directory named
         # after the container.
-        container = filecomponent['container']
+        container = file_component['container']
         if container and container is not ftrack_api.symbol.NOT_SET:
             path = self.get_resource_identifier(container)
 
             if container.entity_type in ('SequenceComponent',):
                 # Label doubles as index for now.
                 name = 'file.{0}{1}'.format(
-                    filecomponent['name'], filecomponent['file_type']
+                    file_component['name'], file_component['file_type']
                 )
                 parts = [os.path.dirname(path), name]
 
             else:
                 # Just place uniquely identified file into directory
-                name = filecomponent['id'] + filecomponent['file_type']
+                name = file_component['id'] + file_component['file_type']
                 parts = [path, name]
 
         else:
-            name = filecomponent['id'][4:] + filecomponent['file_type']
-            parts = (self._get_id_folder(filecomponent['id']) + [name])
+            name = file_component['id'][4:] + file_component['file_type']
+            parts = (self._get_id_folder(file_component['id']) + [name])
+
         return parts
 
-    def _resolve_containercomponent(self, containercomponent, context=None):
-        '''Get id resource identifier for *containercomponent*.'''
+    def _resolve_container_component(self, container_component, context=None):
+        '''Get id resource identifier for *container_component*.'''
         # Just an id directory
-        parts = (self._get_id_folder(containercomponent['id']) + \
-                 [containercomponent['id'][4:]])
+        parts = (self._get_id_folder(container_component['id'])
+            + [container_component['id'][4:]])
         return parts
 
     def get_resource_identifier(self, entity, context=None):

@@ -550,7 +550,7 @@ class Location(ftrack_api.entity.base.Entity):
         return resource_identifiers
 
     def _get_resource_identifiers(self, objects):
-        '''Return resource identifiers for *entities*.
+        '''Return resource identifiers for *objects*.
 
         Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if a
         supplied component are not present in this location.
