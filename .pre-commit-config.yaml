@@ -10,7 +10,7 @@ repos:
     - id: requirements-txt-fixer
     - id: trailing-whitespace
   - repo: https://github.com/ambv/black
-    rev: stable
+    rev: 21.9b0
     hooks:
     - id: black
       args: [--skip-string-normalization]
