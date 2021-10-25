@@ -16,6 +16,9 @@ try:
 except ImportError:
     # getargspec is deprecated in version 3.0. convert `ArgSpec` to a named
     # tuple `FullArgSpec`. We only rely on the values of varargs and varkw.
+
+    # Implemented with "https://github.com/tensorflow/tensorflow/blob/3d69fd003d4acef0ea5663a4794c1e9a4f6ec998/tensorflow/python/util/tf_inspect.py#L34"
+    # as reference.
     import inspect
 
     FullArgSpec = collections.namedtuple(
