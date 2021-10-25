@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: upcoming
+    
+    .. change:: changed
+        :tags: events
+
+        Queue up published messages that happen before the event hub has finished initializing
+        and publish them once connected.
 
 .. release:: 2.2.0
     :date: 2021-09-20
