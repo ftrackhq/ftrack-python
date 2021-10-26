@@ -74,7 +74,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         # for performance.
         self.resolvers = OrderedDict({
             'FileComponent': self._resolve_file_component,
-            'SequenceComponent': self._resolve_container_component,
+            'SequenceComponent': self._resolve_sequence_component,
             'ContainerComponent': self._resolve_container_component,
             'AssetVersion': self._resolve_version,
             'Asset': self._resolve_asset,
@@ -198,13 +198,39 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         return parts
 
+    def _resolve_sequence_component(self, sequence_component, context=None):
+        '''Get resource identifier for *sequence_component*, based on the context
+        supplied.'''
+        # Create sequence expression for the sequence component and add it
+        # to the parts.
+        error_message = (
+            'Sequence component {0!r} must defined and be committed.'.format(
+                sequence_component
+            )
+        )
+        if (
+            sequence_component in [None, ftrack_api.symbol.NOT_SET]
+        ):
+            raise ftrack_api.exception.StructureError(error_message)
+        parts = self._resolve_version(sequence_component['version'],
+            component=sequence_component, context=context)
+        sequence_expression = self._get_sequence_expression(sequence_component)
+        parts.append(
+            '{0}.{1}{2}'.format(
+                self.sanitise_for_filesystem(sequence_component['name']),
+                sequence_expression,
+                self.sanitise_for_filesystem(sequence_component['file_type'])
+            )
+        )
+        return parts
+
     def _resolve_container_component(self, container_component, context=None):
         '''Get resource identifier for *container_component*, based on the context
         supplied.'''
         # Create sequence expression for the sequence component and add it
         # to the parts.
         error_message = (
-            'Sequence component {0!r} must defined and be committed.'.format(
+            'Container component {0!r} must defined and be committed.'.format(
                 container_component
             )
         )
@@ -214,13 +240,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
             raise ftrack_api.exception.StructureError(error_message)
         parts = self._resolve_version(container_component['version'],
             component=container_component, context=context)
-        sequence_expression = self._get_sequence_expression(container_component)
         parts.append(
-            '{0}.{1}{2}'.format(
-                self.sanitise_for_filesystem(container_component['name']),
-                sequence_expression,
-                self.sanitise_for_filesystem(container_component['file_type'])
-            )
+            container_component['name']
         )
         return parts
 
