@@ -75,10 +75,11 @@ class EventHub(object):
         self._intentional_disconnect = False
 
         self._event_queue = queue.Queue()
+        self._event_send_queue = queue.Queue()
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
-        # Track if a connection has been initialised. 
+        # Track if a connection has been initialised.
         self._connection_initialised = False
 
         # Default values for auto reconnection timeout on unintentional
@@ -137,6 +138,16 @@ class EventHub(object):
         '''Return whether secure connection used.'''
         return self.server.scheme == 'https'
 
+    def init_connection(self):
+        '''If the connection is not handled synchronously the connection may be marked
+        as initialized to allow for published events to be queued. '''
+
+        self.logger.debug(
+            'Connection initialized,'
+        )
+
+        self._connection_initialised = True
+
     def connect(self):
         '''Initialise connection to server.
 
@@ -144,8 +155,9 @@ class EventHub(object):
         connected or connection fails.
 
         '''
-        # Update tracking flag for connection.
-        self._connection_initialised = True
+        if not self._connection_initialised:
+            # Update tracking flag for connection.
+            self.init_connection()
 
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -241,6 +253,15 @@ class EventHub(object):
         # reconnecting automatically for example.
         for subscriber in self._subscribers[:]:
             self._notify_server_about_subscriber(subscriber)
+
+        # Publish all waiting messages
+        while True:
+            try:
+                self._publish(*self._event_send_queue.get_nowait())
+
+            except queue.Empty:
+                break
+
 
     @property
     def connected(self):
@@ -652,6 +673,21 @@ class EventHub(object):
             return self._handle(event, synchronous=synchronous)
 
         if not self.connected:
+            if self._connection_initialised and not self._intentional_disconnect:
+                # The connection is still being initialized, add
+                # the message to the queue and attempt to send it
+                # once connection has been established
+
+                self._event_send_queue.put(
+                    (event, synchronous, callback, on_reply)
+                )
+
+                self.logger.debug(
+                    'Connection is still initializing, adding message to '
+                    'queue'
+                )
+
+                return True
             raise ftrack_api.exception.EventHubConnectionError(
                 'Cannot publish event asynchronously as not connected to '
                 'server.'
