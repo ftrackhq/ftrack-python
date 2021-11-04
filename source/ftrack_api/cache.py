@@ -21,6 +21,7 @@ from builtins import str
 from six import string_types
 from builtins import object
 import collections
+from six.moves import collections_abc
 import functools
 import abc
 import copy
@@ -457,12 +458,12 @@ class ObjectKeyMaker(KeyMaker):
 
         # TODO: Consider using a more robust and comprehensive solution such as
         # dill (https://github.com/uqfoundation/dill).
-        if isinstance(item, collections.Iterable):
+        if isinstance(item, collections_abc.Iterable):
 
             if isinstance(item, string_types):
                 return pickle.dumps(item, pickle_protocol)
 
-            if isinstance(item, collections.Mapping):
+            if isinstance(item, collections_abc.Mapping):
                 contents = self.item_separator.join([
                     (
                         self._key(key) +

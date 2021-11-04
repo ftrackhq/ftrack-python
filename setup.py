@@ -84,7 +84,7 @@ setup(
         'clique == 1.6.1',
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
-        'six >= 1, < 2',
+        'six >= 1.13.0, < 2',
         'appdirs >=1, <2'
     ],
     tests_require=[
