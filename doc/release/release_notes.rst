@@ -17,8 +17,6 @@ Release Notes
         Queue up published messages that happen before the event hub has finished initializing
         and publish them once connected.
 
-.. release:: upcoming
-
    .. chnage:: fixed
         :tags: compatibility
 
@@ -30,6 +28,7 @@ Release Notes
 
         `inspect.getargspec` is deprecated since Python 3.0, use `inspect.signature` or
         `inspect.getfullargspec`.
+
 
 .. release:: 2.2.0
     :date: 2021-09-20
