@@ -9,9 +9,9 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: upcoming
+.. release:: Upcoming
 
-    .. change:: change
+    .. change:: changed
         :tags: Structure, Locations
 
         Structure plugins now supports resolving resource
@@ -23,10 +23,32 @@ Release Notes
 
         Multiple structure resource identifier resolve support.
 
-    .. change:: change
+    .. change:: changed
         :tags: Documentation
 
         Removed deprecated py2 print statements.
+
+.. release:: 2.3.0
+    :date: 2021-11-09
+
+    .. change:: changed
+        :tags: events
+
+        Queue up published messages that happen before the event hub has finished initializing
+        and publish them once connected.
+
+    .. change:: fixed
+        :tags: compatibility
+
+        Using or importing the ABCs from 'collections' instead of from 'collections.abc'
+        is deprecated since Python 3.3,and in 3.9 it will stop working.
+
+    .. change:: fixed
+        :tags: compatibility
+
+        `inspect.getargspec` is deprecated since Python 3.0, use `inspect.signature` or
+        `inspect.getfullargspec`.
+
 
 .. release:: 2.2.0
     :date: 2021-09-20
@@ -1447,12 +1469,12 @@ Release Notes
 
         Previously::
 
-            print(entity.state)
+            print entity.state
 
         Now::
 
             import ftrack_api.inspection
-            print(ftrack_api.inspection.state(entity))
+            print ftrack_api.inspection.state(entity)
 
         There is also an optimised inspection,
         :func:`ftrack_api.inspection.states`. for determining state of many
@@ -1506,12 +1528,12 @@ Release Notes
         Previously::
 
             session.set_state(entity, state)
-            print(session.get_state(entity))
+            print session.get_state(entity)
 
         Now::
 
             entity.state = state
-            print(entity.state)
+            print entity.state
 
     .. change:: changed
         :tags: entity state

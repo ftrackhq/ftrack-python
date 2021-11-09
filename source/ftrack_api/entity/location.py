@@ -5,6 +5,7 @@ from builtins import zip
 from six import string_types
 from builtins import object
 import collections
+from six.moves import collections_abc
 import functools
 
 import ftrack_api.entity.base
@@ -21,7 +22,7 @@ from future.utils import with_metaclass
 MixinBaseClass = with_metaclass(
       ftrack_api.entity.base.DynamicEntityTypeMetaclass,
       ftrack_api.entity.base._EntityBase,
-      collections.MutableMapping
+      collections_abc.MutableMapping
 )
 
 
@@ -135,7 +136,7 @@ class Location(ftrack_api.entity.base.Entity):
         '''
         if (
             isinstance(sources, string_types)
-            or not isinstance(sources, collections.Sequence)
+            or not isinstance(sources, collections_abc.Sequence)
         ):
             sources = [sources]
 
