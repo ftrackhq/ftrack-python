@@ -9,8 +9,9 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: upcoming
-    
+.. release:: 2.3.0
+    :date: 2021-11-09
+
     .. change:: changed
         :tags: events
 
