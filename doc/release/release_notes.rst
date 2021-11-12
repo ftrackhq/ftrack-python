@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+
+.. release:: Upcoming
+
+    .. change:: new
+        :tags: tests
+
+        Add python 3.9 and 3.10 on CI testing .
+
+
 .. release:: 2.3.0
     :date: 2021-11-09
 
