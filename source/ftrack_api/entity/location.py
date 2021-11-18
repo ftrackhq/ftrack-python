@@ -3,7 +3,6 @@
 
 from builtins import zip
 from six import string_types
-from builtins import object
 import collections
 from six.moves import collections_abc
 import functools
@@ -516,17 +515,17 @@ class Location(ftrack_api.entity.base.Entity):
             )
         ]
 
-    def get_resource_identifier(self, object):
-        '''Return resource identifier for *object*.
+    def get_resource_identifier(self, entity):
+        '''Return resource identifier for *entity*.
 
         Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if the
         component is not present in this location.
 
         '''
-        return self.get_resource_identifiers([object])[0]
+        return self.get_resource_identifiers([entity])[0]
 
-    def get_resource_identifiers(self, objects):
-        '''Return resource identifiers for *objects*.
+    def get_resource_identifiers(self, entities):
+        '''Return resource identifiers for *entities*.
 
         Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if any
         of the components are not present in this location.
@@ -535,11 +534,11 @@ class Location(ftrack_api.entity.base.Entity):
         supplied entity are not created or not supported.
 
         '''
-        resource_identifiers = self._get_resource_identifiers(objects)
+        resource_identifiers = self._get_resource_identifiers(entities)
 
         # Optionally decode resource identifier (components only)
         if self.resource_identifier_transformer:
-            components = objects
+            components = entities
             for index, resource_identifier in enumerate(resource_identifiers):
                 resource_identifiers[index] = (
                     self.resource_identifier_transformer.decode(
@@ -550,8 +549,8 @@ class Location(ftrack_api.entity.base.Entity):
 
         return resource_identifiers
 
-    def _get_resource_identifiers(self, objects):
-        '''Return resource identifiers for *objects*.
+    def _get_resource_identifiers(self, entities):
+        '''Return resource identifiers for *entities*.
 
         Raise :exc:`ftrack_api.exception.ComponentNotInLocationError` if a
         supplied component are not present in this location.
@@ -567,14 +566,14 @@ class Location(ftrack_api.entity.base.Entity):
 
         resource_identifiers_map = {}
 
-        for object in objects:
-            if isinstance(object, Component):
+        for entity in entities:
+            if isinstance(entity, Component):
                 # Use component resource identifier as published
-                components.append(object)
+                components.append(entity)
             else:
                 # Resolve resource identifier using current structure plugin
-                resource_identifiers_map[object['id']] = \
-                    self.structure.get_resource_identifier(object)
+                resource_identifiers_map[entity['id']] = \
+                    self.structure.get_resource_identifier(entity)
 
         if components:
             # Fetch published component locations
@@ -600,14 +599,14 @@ class Location(ftrack_api.entity.base.Entity):
                 )
 
         missing = []
-        for object in objects:
-            if object['id'] not in resource_identifiers_map:
-                if isinstance(object, Component):
+        for entity in entities:
+            if entity['id'] not in resource_identifiers_map:
+                if isinstance(entity, Component):
                     # Treat this as an error for published components
-                    missing.append(object)
+                    missing.append(entity)
             else:
                 resource_identifiers.append(
-                    resource_identifiers_map[object['id']]
+                    resource_identifiers_map[entity['id']]
                 )
 
         if missing:
