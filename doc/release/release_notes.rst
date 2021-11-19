@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: Documentation
+
+        Removed deprecated py2 print statements.
+
+
 .. release:: 2.3.0
     :date: 2021-11-09
 
