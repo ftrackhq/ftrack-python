@@ -65,9 +65,9 @@ relation and then use the ftrack server location to get the download URL::
     ).one()
 
     for job_component in job['job_components']:
-        print 'Download URL: {0}'.format(
+        print('Download URL: {0}'.format(
             server_location.get_url(job_component['component'])   
-        )
+        ))
 
 To add an attachment to a job you have to add it to the ftrack server location
 and create a `jobComponent`::

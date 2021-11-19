@@ -26,7 +26,7 @@ or access keys and values as items::
 
 Read existing custom attribute values::
 
-    >>> print task['custom_attributes']['my_text_field']
+    >>> print(task['custom_attributes']['my_text_field'])
     'some text'
 
 Updating a custom attributes can also be done similar to a dictionary::
@@ -40,7 +40,7 @@ key from the configuration::
         'Task where custom_attributes any '
         '(key is "my_text_field" and value is "bar")'
     ):
-        print task['name']
+        print(task['name'])
 
 Limitations
 ===========
@@ -82,7 +82,7 @@ cause an extra query to the server when a custom attribute is accessed:
 .. code-block:: python
 
     # This will cause a server query.
-    print task['custom_attributes']['my_text_field']
+    print(task['custom_attributes']['my_text_field'])
 
 Expression attributes
 ---------------------
@@ -99,9 +99,9 @@ and instead the `raw` value is returned::
 
     # The hierarchical attribute `my_attribute` is set on Shot but this will not
     # be reflected on the children. Instead the raw value is returned.
-    print shot['custom_attributes']['my_attribute']
+    print(shot['custom_attributes']['my_attribute'])
     'foo'
-    print task['custom_attributes']['my_attribute']
+    print(task['custom_attributes']['my_attribute'])
     None
 
 To work around this limitation it is possible to use the legacy api for

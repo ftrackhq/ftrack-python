@@ -142,9 +142,9 @@ relation and then use the ftrack server location to get the download URL::
     ).one()
 
     for note_component in note['note_components']:
-        print 'Download URL: {0}'.format(
+        print('Download URL: {0}'.format(
             server_location.get_url(note_component['component'])
-        )
+        ))
 
 To add an attachment to a note you have to add it to the ftrack server location
 and create a `NoteComponent`::

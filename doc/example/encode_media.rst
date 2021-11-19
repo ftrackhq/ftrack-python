@@ -19,12 +19,12 @@ Here is an example of how to encode a video and read the output::
     job = session.encode_media('/PATH/TO/MEDIA')
     job_data = json.loads(job['data'])
 
-    print 'Source component id', job_data['source_component_id']
-    print 'Keeping original component', job_data['keep_original']
+    print('Source component id {}'.format(job_data['source_component_id']))
+    print('Keeping original component'.format(job_data['keep_original']))
     for output in job_data['output']:
-        print u'Output component - id: {0}, format: {1}'.format(
+        print('Output component - id: {0}, format: {1}'.format(
             output['component_id'], output['format']
-        )
+        ))
 
 You can also call the corresponding helper method on an :meth:`asset version
 <ftrack_api.entity.asset_version.AssetVersion.encode_media>`, to have the
@@ -41,7 +41,7 @@ finished::
 
     location = session.query('Location where name is "ftrack.server"').one()
     for component in job['job_components']:
-        print location.get_url(component)
+        print(location.get_url(component))
 
 Media can also be an existing component in another location. Before encoding it,
 the component needs to be added to the ftrack.server location::

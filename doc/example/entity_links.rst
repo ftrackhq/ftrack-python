@@ -22,7 +22,7 @@ Both `AssetVersion` and `TypedContext` objects have the same relations
 can use the relationship `incoming_links`::
 
     for link in shot['incoming_links']:
-        print link['from'], link['to']
+        print(link['from'], link['to'])
 
 In the above example `link['to']` is the shot and `link['from']` could be an
 asset build or something else that is linked to the shot. There is an equivalent
@@ -53,4 +53,4 @@ previous section.
 Which versions are using the model can be listed with::
 
     for version in model_version['used_in_versions']:
-        print '{0} is using {1}'.format(version, model_version)
+        print('{0} is using {1}'.format(version, model_version))

@@ -232,7 +232,7 @@ returned together in a list::
     ...     ftrack_api.event.base.Event(topic='test-synchronous'),
     ...     synchronous=True
     ... )
-    >>> print results
+    >>> print(results)
     ['A', 'B']
 
 .. _handling_events/publishing/handling_replies:
@@ -247,7 +247,7 @@ received in response to the published event.
 To do so, simply pass in a callable as the *on_reply* parameter::
 
     def handle_reply(event):
-        print 'Got reply', event
+        print('Got reply: {}'.format(event))
 
     session.event_hub.publish(
         ftrack_api.event.base.Event(topic='test-reply'),
