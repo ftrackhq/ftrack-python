@@ -572,8 +572,8 @@ class Location(ftrack_api.entity.base.Entity):
                 components.append(entity)
             else:
                 # Resolve resource identifier using current structure plugin
-                resource_identifiers_map[entity['id']] = \
-                    self.structure.get_resource_identifier(entity)
+                resource_identifier = self.structure.get_resource_identifier(entity)
+                resource_identifiers_map[entity['id']] = resource_identifier
 
         if components:
             # Fetch published component locations

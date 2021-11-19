@@ -333,9 +333,10 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         context, or if entity is not a proper Context.
 
         '''
-
-        resolver_fn = self.resolvers.get(entity.entity_type,
-            self._resolve_context_entity)
+        resolver_fn = self.resolvers.get(
+            entity.entity_type,
+            self._resolve_context_entity
+        )
 
         parts = resolver_fn(entity, context=context)
 
