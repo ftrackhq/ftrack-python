@@ -247,7 +247,7 @@ received in response to the published event.
 To do so, simply pass in a callable as the *on_reply* parameter::
 
     def handle_reply(event):
-        print('Got reply', event)
+        print('Got reply: {}'.format(event))
 
     session.event_hub.publish(
         ftrack_api.event.base.Event(topic='test-reply'),

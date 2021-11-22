@@ -78,5 +78,5 @@ To list the current user's assigned tasks, see the example below::
         'where assignments any (resource.username = "{0}")'.format(session.api_user)
     )
     for task in assigned_tasks:
-        print(u' / '.join(item['name'] for item in task['link']))
+        print(' / '.join(item['name'] for item in task['link']))
 

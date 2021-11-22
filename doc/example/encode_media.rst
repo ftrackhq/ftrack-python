@@ -19,10 +19,10 @@ Here is an example of how to encode a video and read the output::
     job = session.encode_media('/PATH/TO/MEDIA')
     job_data = json.loads(job['data'])
 
-    print('Source component id', job_data['source_component_id'])
-    print('Keeping original component', job_data['keep_original'])
+    print('Source component id {}'.format(job_data['source_component_id']))
+    print('Keeping original component {}'.format(job_data['keep_original']))
     for output in job_data['output']:
-        print(u'Output component - id: {0}, format: {1}'.format(
+        print('Output component - id: {0}, format: {1}'.format(
             output['component_id'], output['format']
         ))
 

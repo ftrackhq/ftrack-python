@@ -15,7 +15,7 @@ and also used to query entities.
 The metadata property has a similar interface as a dictionary and keys can be
 printed using the keys method::
 
-    >>>print(new_sequence['metadata'].keys())
+    >>> print(new_sequence['metadata'].keys())
     ['frame_padding', 'focal_length']
 
 or items::

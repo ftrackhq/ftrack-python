@@ -85,7 +85,7 @@ server::
 
     >>> user = session.create('User', {'username': 'some_unique_username'})
     >>> query = 'User where username is "{0}"'.format(user['username'])
-    >>>print(len(session.query(query)))
+    >>> print(len(session.query(query)))
     0
     >>> session.commit()
     >>> print(len(session.query(query)))
@@ -157,7 +157,7 @@ This information is readily available and useful if you need to check that the
 entity types you expect are present. Here's how to print a list of all entity
 types registered for use in the current API session::
 
-    >>> print(session.types.keys())
+    >>> print(list(session.types.keys()))
     [u'Task', u'Shot', u'TypedContext', u'Sequence', u'Priority',
      u'Status', u'Project', u'User', u'Type', u'ObjectType']
 
