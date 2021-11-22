@@ -3,8 +3,6 @@
 
 import os
 
-from collections import OrderedDict
-
 import ftrack_api.symbol
 import ftrack_api.structure.base
 
