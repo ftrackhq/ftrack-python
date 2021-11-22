@@ -21,7 +21,7 @@ Keys can be printed using the keys method::
 
 or access keys and values as items::
 
-    >>> print task['custom_attributes'].items()
+    >>> print(task['custom_attributes'].items())
     [(u'my_text_field', u'some text')]
 
 Read existing custom attribute values::
