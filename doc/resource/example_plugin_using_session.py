@@ -12,7 +12,7 @@ def register_with_session_ready(event):
 
     # Session is now ready and can be used to e.g. query objects.
     task = session.query('Task').first()
-    print task['name']
+    print(task['name'])
 
 
 def register(session, **kw):

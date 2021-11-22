@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: Documentation
+
+        Removed deprecated py2 print statements.
+
+
 .. release:: 2.3.0
     :date: 2021-11-09
 
@@ -1450,12 +1458,12 @@ Release Notes
 
         Previously::
 
-            print entity.state
+            print(entity.state)
 
         Now::
 
             import ftrack_api.inspection
-            print ftrack_api.inspection.state(entity)
+            print(ftrack_api.inspection.state(entity))
 
         There is also an optimised inspection,
         :func:`ftrack_api.inspection.states`. for determining state of many
@@ -1509,12 +1517,12 @@ Release Notes
         Previously::
 
             session.set_state(entity, state)
-            print session.get_state(entity)
+            print(session.get_state(entity))
 
         Now::
 
             entity.state = state
-            print entity.state
+            print(entity.state)
 
     .. change:: changed
         :tags: entity state

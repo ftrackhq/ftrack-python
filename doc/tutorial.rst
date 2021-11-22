@@ -35,7 +35,7 @@ with an ftrack server. Create a session that connects to your ftrack server
 
 Now print a list of the available entity types retrieved from the server::
 
-    >>> print session.types.keys()
+    >>> print(session.types.keys())
     [u'TypedContext', u'ObjectType', u'Priority', u'Project', u'Sequence',
      u'Shot', u'Task', u'Status', u'Type', u'Timelog', u'User']
 
@@ -50,14 +50,14 @@ that behaves much like a standard Python dictionary. For example, to find out
 the available keys for an entity, call the
 :meth:`~ftrack_api.entity.Entity.keys` method::
 
-    >>> print projects[0].keys()
+    >>> print(projects[0].keys())
     [u'status', u'is_global', u'name', u'end_date', u'context_type',
      u'id', u'full_name', u'root', u'start_date']
 
 Now, iterate over the retrieved entities and print each ones name::
 
     >>> for project in projects:
-    ...     print project['name']
+    ...     print(project['name'])
     test
     client_review
     tdb
@@ -93,14 +93,14 @@ entities, such as *children* on a *Project* being a collection of *Context*
 entities that have the project as their parent::
 
     >>> project = session.query('Project').first()
-    >>> print project['children']
+    >>> print(project['children'])
     <ftrack_api.collection.Collection object at 0x00000000045B1438>
 
 And on each *Context* there is a corresponding *parent* attribute which is a
 link back to the parent::
 
     >>> child = project['children'][0]
-    >>> print child['parent'] is project
+    >>> print(child['parent'] is project)
     True
 
 These relationships can also be used in the criteria for a query::
@@ -140,9 +140,9 @@ listeners. It is also possible to use the session as a context manager in order
 to have it closed automatically after use::
 
     >>> with ftrack_api.Session() as session:
-    ...     print session.query('User').first()
+    ...     print(session.query('User').first())
     <User(0154901c-eaf9-11e5-b165-00505681ec7a)>
-    >>> print session.closed
+    >>> print(session.closed)
     True
 
 Once a :class:`Session` is closed, any operations that attempt to use the closed

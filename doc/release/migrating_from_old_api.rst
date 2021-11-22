@@ -79,9 +79,9 @@ In addition all entities in the API now act like simple Python dictionaries,
 with some additional helper methods where appropriate. If you know a little
 Python (or even if you don't) getting up to speed should be a breeze::
 
-    >>> print user.keys()
+    >>> print(user.keys())
     ['first_name', 'last_name', 'email', ...]
-    >>> print user['email']
+    >>> print(user['email'])
     'old@example.com'
     >>> user['email'] = 'new@example.com'
 
@@ -457,7 +457,7 @@ Old API::
     )
 
     # Get the calculated version number.
-    print version.getVersion()
+    print(version.getVersion())
 
     # Add some components.
     previewPath = '/path/to/forest_preview.mov'
@@ -502,9 +502,9 @@ New API::
     })
 
     # In the new API, the version number is not set until we persist the changes
-    print 'Version number before commit: {0}'.format(version['version'])
+    print('Version number before commit: {0}'.format(version['version']))
     session.commit()
-    print 'Version number after commit: {0}'.format(version['version'])
+    print('Version number after commit: {0}'.format(version['version']))
 
     # Add some components.
     preview_path = '/path/to/forest_preview.mov'

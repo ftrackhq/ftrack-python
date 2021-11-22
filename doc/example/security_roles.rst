@@ -39,10 +39,10 @@ To get all security roles from a user we can either use relations like this:
                 [project['full_name'] for project in user_security_role['projects']]
             )
 
-        print 'User has security role "{0}" which is valid on {1}.'.format(
+        print('User has security role "{0}" which is valid on {1}.'.format(
             user_security_role['security_role']['name'],
             result_string
-        )
+        ))
 
 or query them directly like this:
 

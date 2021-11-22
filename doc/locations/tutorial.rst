@@ -57,7 +57,7 @@ To retrieve all existing locations use a standard query::
 
     all_locations = session.query('Location').all()
     for existing_location in all_locations:
-        print existing_location['name']
+        print(existing_location['name'])
 
 Configuring locations
 =====================
@@ -155,7 +155,7 @@ protocol.
 To retrieve the path if available, use :meth:`Location.get_filesystem_path
 <ftrack_api.entity.location.Location.get_filesystem_path>`::
 
-    print location.get_filesystem_path(component_c)
+    print(location.get_filesystem_path(component_c))
 
 Obtaining component availability
 ================================
@@ -173,15 +173,15 @@ might be possible to start working with the sequence. To check availability use
 the helper :meth:`Session.get_component_availability
 <ftrack_api.session.Session.get_component_availability>` method::
 
-    print session.get_component_availability(component_c)
+    print(session.get_component_availability(component_c))
 
 There are also convenience methods on both :meth:`components
 <ftrack_api.entity.component.Component.get_availability>` and :meth:`locations
 <ftrack_api.entity.location.Location.get_component_availability>` for
 retrieving availability as well::
 
-    print component_c.get_availability()
-    print location.get_component_availability(component_c)
+    print(component_c.get_availability())
+    print(location.get_component_availability(component_c))
 
 Location events
 ===============
