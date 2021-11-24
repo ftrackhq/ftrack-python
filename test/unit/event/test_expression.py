@@ -26,7 +26,7 @@ def candidate():
 
 
 @pytest.mark.parametrize('expression, expected', [
-    pytest.mark.xfail(('', Expression()), id='Empty Expression'),
+    pytest.param('', Expression(), marks=pytest.mark.xfail, id='Empty Expression'),
     pytest.param('invalid', ParseError, id='Invalid Expression'),
     pytest.param('key=value nor other=value', ParseError, id='Invalid Conjunction'),
     pytest.param('key=value', Condition('key', operator.eq, 'value'), id='Basic Condition'),
@@ -52,7 +52,7 @@ def test_parser_parse(expression, expected):
     '''Parse expression into Expression instances.'''
     parser = Parser()
 
-    if inspect.isclass(expected)and issubclass(expected, Exception):
+    if inspect.isclass(expected) and issubclass(expected, Exception):
         with pytest.raises(expected):
             parser.parse(expression)
     else:
@@ -129,17 +129,17 @@ def parametrize_test_condition_match(metafunc):
                 }
 
             for key_label, key in key_options.items():
-                identifiers.append('{} operator {} key {}'.format(
+                identifier = '{} operator {} key {}'.format(
                     operator_function.__name__, key_label, value_label
-                ))
+                )
 
-                data.append((
+                data.append(pytest.param(
                     key, operator_function, value,
-                    'no-match' not in value_label
+                    'no-match' not in value_label, id=identifier
                 ))
 
     metafunc.parametrize(
-        'key, operator, value, expected', data, ids=identifiers
+        'key, operator, value, expected', data
     )
 
 
