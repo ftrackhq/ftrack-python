@@ -224,10 +224,7 @@ def test_connect_missing_required_transport(session, mocker, caplog):
         event_hub, '_get_socket_io_session', _get_socket_io_session
     )
 
-    with (
-        pytest.raises(ftrack_api.exception.EventHubConnectionError),
-        caplog.at_level(logging.DEBUG)
-    ):
+    with caplog.at_level(logging.DEBUG), pytest.raises(ftrack_api.exception.EventHubConnectionError):
         event_hub.connect()
     
     assert (
