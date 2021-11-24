@@ -7,6 +7,7 @@ import os
 import time
 import subprocess
 import sys
+import logging
 
 import pytest
 from flaky import flaky
@@ -223,7 +224,10 @@ def test_connect_missing_required_transport(session, mocker, caplog):
         event_hub, '_get_socket_io_session', _get_socket_io_session
     )
 
-    with pytest.raises(ftrack_api.exception.EventHubConnectionError):
+    with (
+        pytest.raises(ftrack_api.exception.EventHubConnectionError),
+        caplog.at_level(logging.DEBUG)
+    ):
         event_hub.connect()
     
     assert (
