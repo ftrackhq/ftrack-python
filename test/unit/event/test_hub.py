@@ -227,7 +227,7 @@ def test_connect_missing_required_transport(session, mocker, caplog):
         event_hub.connect()
     
     assert (
-        'Server does not support websocket sessions.' in str(caplog.text())
+        'Server does not support websocket sessions.' in str(caplog.text)
     )
 
 
