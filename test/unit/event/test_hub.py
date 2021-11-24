@@ -561,11 +561,7 @@ def test_publish_logs_other_errors(event_hub, caplog, mocker):
 
     expected = 'Error sending event {0}.'.format(event)
 
-
-    if not isinstance(caplog.records, list):
-        records = caplog.records()
-    else:
-        records = caplog.records
+    records = caplog.get_records(when='call')
 
     messages = [record.getMessage().strip() for record in records]
     assert expected in messages, 'Expected log message missing in output.'

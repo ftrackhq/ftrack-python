@@ -112,11 +112,8 @@ def test_discover_broken_plugin(broken_plugin, caplog):
     '''Discover broken plugin.'''
     ftrack_api.plugin.discover([broken_plugin])
 
-    if not isinstance(caplog.records, list):
-        records = caplog.records()
+    records = caplog.get_records(when='call')
 
-    else:
-        records = caplog.records
     assert len(records) == 2
     assert records[0].levelno is logging.WARNING
     assert records[1].levelno is logging.DEBUG
