@@ -88,7 +88,7 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'pytest >= 4.6 < 5',
+        'pytest >= 4.6, < 5',
         'pytest-mock',
         'pytest-catchlog',
         'pytest-skip-slow',
