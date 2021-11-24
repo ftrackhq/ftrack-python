@@ -532,7 +532,7 @@ def mocked_schemas():
     }]
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def mocked_schema_session(mocker, mocked_schemas):
     '''Return a session instance with mocked schemas.'''
     with mocker.patch.object(
