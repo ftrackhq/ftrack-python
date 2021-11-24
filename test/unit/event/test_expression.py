@@ -26,11 +26,11 @@ def candidate():
 
 
 @pytest.mark.parametrize('expression, expected', [
-    pytest.mark.xfail(('', Expression())),
-    pytest.param('invalid', ParseError),
-    pytest.param('key=value nor other=value', ParseError),
-    pytest.param('key=value', Condition('key', operator.eq, 'value')),
-    pytest.param('key="value"', Condition('key', operator.eq, 'value')),
+    pytest.mark.xfail(('', Expression()), id='Empty Expression'),
+    pytest.param('invalid', ParseError, id='Invalid Expression'),
+    pytest.param('key=value nor other=value', ParseError, id='Invalid Conjunction'),
+    pytest.param('key=value', Condition('key', operator.eq, 'value'), id='Basic Condition'),
+    pytest.param('key="value"', Condition('key', operator.eq, 'value'), id='Basic Quoted Condition'),
     pytest.param(
         'a=b and ((c=d or e!=f) and not g.h > 10)',
         All([
@@ -44,15 +44,9 @@ def candidate():
                     Condition('g.h', operator.gt, 10)
                 )
             ])
-        ])
+        ]),
+        id='Complex Condition'
     )
-], ids=[
-    'empty expression',
-    'invalid expression',
-    'invalid conjunction',
-    'basic condition',
-    'basic quoted condition',
-    'complex condition'
 ])
 def test_parser_parse(expression, expected):
     '''Parse expression into Expression instances.'''
@@ -66,17 +60,11 @@ def test_parser_parse(expression, expected):
 
 
 @pytest.mark.parametrize('expression, expected', [
-    pytest.param(Expression(), '<Expression>'),
-    pytest.param(All([Expression(), Expression()]), '<All [<Expression> <Expression>]>'),
-    pytest.param(Any([Expression(), Expression()]), '<Any [<Expression> <Expression>]>'),
-    pytest.param(Not(Expression()), '<Not <Expression>>'),
-    pytest.param(Condition('key', '=', 'value'), '<Condition key=value>')
-], ids=[
-    'Expression',
-    'All',
-    'Any',
-    'Not',
-    'Condition'
+    pytest.param(Expression(), '<Expression>', id='Expressions'),
+    pytest.param(All([Expression(), Expression()]), '<All [<Expression> <Expression>]>', id='All'),
+    pytest.param(Any([Expression(), Expression()]), '<Any [<Expression> <Expression>]>', id='Any'),
+    pytest.param(Not(Expression()), '<Not <Expression>>', id='Not'),
+    pytest.param(Condition('key', '=', 'value'), '<Condition key=value>', id='Condition')
 ])
 def test_string_representation(expression, expected):
     '''String representation of expression.'''
@@ -85,37 +73,24 @@ def test_string_representation(expression, expected):
 
 @pytest.mark.parametrize('expression, expected', [
     # Expression
-    pytest.param(Expression(), True),
+    pytest.param(Expression(), True, id='Expression-always matches'),
 
     # All
-    pytest.param(All(), True),
-    pytest.param(All([Expression(), Expression()]), True),
-    pytest.param(All([Expression(), Condition('test', operator.eq, 'value')]), False),
+    pytest.param(All(), True, id='All-no expressions always matches'),
+    pytest.param(All([Expression(), Expression()]), True, id='All-all match'),
+    pytest.param(All([Expression(), Condition('test', operator.eq, 'value')]), False, id='All-not all match'),
 
     # Any
-    pytest.param(Any(), False),
-    pytest.param(Any([Expression(), Condition('test', operator.eq, 'value')]), True),
+    pytest.param(Any(), False, id='Any-no expressions never matches'),
+    pytest.param(Any([Expression(), Condition('test', operator.eq, 'value')]), True, id='Any-some match'),
     pytest.param(Any([
         Condition('test', operator.eq, 'value'),
         Condition('other', operator.eq, 'value')
-    ]), False),
+    ]), False, id='Any-none match'),
 
     # Not
-    pytest.param(Not(Expression()), False),
-    pytest.param(Not(Not(Expression())), True)
-], ids=[
-    'Expression-always matches',
-
-    'All-no expressions always matches',
-    'All-all match',
-    'All-not all match',
-
-    'Any-no expressions never matches',
-    'Any-some match',
-    'Any-none match',
-
-    'Not-invert positive match',
-    'Not-double negative is positive match'
+    pytest.param(Not(Expression()), False, id='Not-invert positive match'),
+    pytest.param(Not(Not(Expression())), True, id='Not-double negative is positive match')
 ])
 def test_match(expression, candidate, expected):
     '''Determine if candidate matches expression.'''
