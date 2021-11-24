@@ -537,7 +537,7 @@ def test_get_thumbnail_url(server_location, server_image_component):
     ]
 )
 def multi_location(request):
-    return request.getfuncargvalue(request.param)
+    return request.getfixturevalue(request.param)
 
 
 def test_transfer_component_from_server(
