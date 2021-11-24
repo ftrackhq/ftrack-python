@@ -34,8 +34,8 @@ def valid_entity():
 
 
 @pytest.mark.parametrize('entity, context, expected', [
-    (valid_entity(), {}, 'f6cd40cb-d1c0-469f-a2d5-10369be8a724'),
-    (mock.Mock(), {}, Exception)
+    pytest.param(valid_entity(), {}, 'f6cd40cb-d1c0-469f-a2d5-10369be8a724'),
+    pytest.param(mock.Mock(), {}, Exception)
 ], ids=[
     'valid-entity',
     'non-entity'

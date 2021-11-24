@@ -159,8 +159,8 @@ def server_image_component(request, session, server_location):
 
 
 @pytest.mark.parametrize('name', [
-    'named',
-    None
+    pytest.param('named'),
+    pytest.param(None)
 ], ids=[
     'named',
     'unnamed'

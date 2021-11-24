@@ -27,11 +27,11 @@ def candidate():
 
 @pytest.mark.parametrize('expression, expected', [
     pytest.mark.xfail(('', Expression())),
-    ('invalid', ParseError),
-    ('key=value nor other=value', ParseError),
-    ('key=value', Condition('key', operator.eq, 'value')),
-    ('key="value"', Condition('key', operator.eq, 'value')),
-    (
+    pytest.param('invalid', ParseError),
+    pytest.param('key=value nor other=value', ParseError),
+    pytest.param('key=value', Condition('key', operator.eq, 'value')),
+    pytest.param('key="value"', Condition('key', operator.eq, 'value')),
+    pytest.param(
         'a=b and ((c=d or e!=f) and not g.h > 10)',
         All([
             Condition('a', operator.eq, 'b'),
@@ -66,11 +66,11 @@ def test_parser_parse(expression, expected):
 
 
 @pytest.mark.parametrize('expression, expected', [
-    (Expression(), '<Expression>'),
-    (All([Expression(), Expression()]), '<All [<Expression> <Expression>]>'),
-    (Any([Expression(), Expression()]), '<Any [<Expression> <Expression>]>'),
-    (Not(Expression()), '<Not <Expression>>'),
-    (Condition('key', '=', 'value'), '<Condition key=value>')
+    pytest.param(Expression(), '<Expression>'),
+    pytest.param(All([Expression(), Expression()]), '<All [<Expression> <Expression>]>'),
+    pytest.param(Any([Expression(), Expression()]), '<Any [<Expression> <Expression>]>'),
+    pytest.param(Not(Expression()), '<Not <Expression>>'),
+    pytest.param(Condition('key', '=', 'value'), '<Condition key=value>')
 ], ids=[
     'Expression',
     'All',
@@ -85,24 +85,24 @@ def test_string_representation(expression, expected):
 
 @pytest.mark.parametrize('expression, expected', [
     # Expression
-    (Expression(), True),
+    pytest.param(Expression(), True),
 
     # All
-    (All(), True),
-    (All([Expression(), Expression()]), True),
-    (All([Expression(), Condition('test', operator.eq, 'value')]), False),
+    pytest.param(All(), True),
+    pytest.param(All([Expression(), Expression()]), True),
+    pytest.param(All([Expression(), Condition('test', operator.eq, 'value')]), False),
 
     # Any
-    (Any(), False),
-    (Any([Expression(), Condition('test', operator.eq, 'value')]), True),
-    (Any([
+    pytest.param(Any(), False),
+    pytest.param(Any([Expression(), Condition('test', operator.eq, 'value')]), True),
+    pytest.param(Any([
         Condition('test', operator.eq, 'value'),
         Condition('other', operator.eq, 'value')
     ]), False),
 
     # Not
-    (Not(Expression()), False),
-    (Not(Not(Expression())), True)
+    pytest.param(Not(Expression()), False),
+    pytest.param(Not(Not(Expression())), True)
 ], ids=[
     'Expression-always matches',
 

@@ -19,8 +19,8 @@ class Concrete(ftrack_api.structure.base.Structure):
 
 
 @pytest.mark.parametrize('sequence, expected', [
-    ({'padding': None}, '%d'),
-    ({'padding': 4}, '%04d')
+    pytest.param({'padding': None}, '%d'),
+    pytest.param({'padding': 4}, '%04d')
 ], ids=[
     'no padding',
     'padded'

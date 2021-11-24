@@ -85,14 +85,14 @@ sequence_component = new_sequence_component()
 @pytest.mark.parametrize(
     'component, hierarchy, expected, structure, asset_name',
     [
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/foobar/my_new_asset/v001/foo.png',
@@ -101,35 +101,35 @@ sequence_component = new_sequence_component()
             ),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             file_component,
             ['baz1', 'bar'],
             '{project_name}/baz1/bar/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             sequence_component,
             ['baz2', 'bar'],
             '{project_name}/baz2/bar/my_new_asset/v001/baz.%04d.jpg',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             sequence_component['members'][3],
             ['baz3', 'bar'],
             '{project_name}/baz3/bar/my_new_asset/v001/baz.0004.jpg',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             container_component,
             ['baz4', 'bar'],
             '{project_name}/baz4/bar/my_new_asset/v001/container_component',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             new_file_component(container=container_component),
             ['baz5', 'bar'],
             (
@@ -139,49 +139,49 @@ sequence_component = new_sequence_component()
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             file_component,
             [u'björn'],
             '{project_name}/bjorn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             file_component,
             [u'björn!'],
             '{project_name}/bjorn_/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             new_file_component(name=u'fää'),
             [],
             '{project_name}/my_new_asset/v001/faa.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             new_file_component(name=u'fo/o'),
             [],
             '{project_name}/my_new_asset/v001/fo_o.png',
             ftrack_api.structure.standard.StandardStructure(),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/aao/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             u'åäö'
         ),
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/my_ne____w_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
             u'my_ne!!!!w_asset'
         ),
-        (
+        pytest.param(
             file_component,
             [u'björn2'],
             u'{project_name}/björn2/my_new_asset/v001/foo.png',
@@ -190,7 +190,7 @@ sequence_component = new_sequence_component()
             ),
             'my_new_asset'
         ),
-        (
+        pytest.param(
             file_component,
             [u'bj!rn'],
             '{project_name}/bj^rn/my_new_asset/v001/foo.png',

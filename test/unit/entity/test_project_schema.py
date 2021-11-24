@@ -7,19 +7,19 @@ import pytest
 
 
 @pytest.mark.parametrize('schema, expected', [
-    ('Task', [
+    pytest.param('Task', [
         'Not started', 'In progress', 'Awaiting approval', 'Approved'
     ]),
-    ('Shot', [
+    pytest.param('Shot', [
         'Normal', 'Omitted', 'On Hold'
     ]),
-    ('AssetVersion', [
+    pytest.param('AssetVersion', [
         'Approved', 'Pending'
     ]),
-    ('AssetBuild', [
+    pytest.param('AssetBuild', [
         'Normal', 'Omitted', 'On Hold'
     ]),
-    ('Invalid', ValueError)
+    pytest.param('Invalid', ValueError)
 ], ids=[
     'task',
     'shot',
@@ -40,13 +40,13 @@ def test_get_statuses(project_schema, schema, expected):
 
 
 @pytest.mark.parametrize('schema, expected', [
-    ('Task', [
+    pytest.param('Task', [
         'Generic', 'Animation', 'Modeling', 'Previz', 'Lookdev', 'Hair',
         'Cloth', 'FX', 'Lighting', 'Compositing', 'Tracking', 'Rigging',
         'test 1', 'test type 2'
     ]),
-    ('AssetBuild', ['Character', 'Prop', 'Environment', 'Matte Painting']),
-    ('Invalid', ValueError)
+    pytest.param('AssetBuild', ['Character', 'Prop', 'Environment', 'Matte Painting']),
+    pytest.param('Invalid', ValueError)
 ], ids=[
     'task',
     'asset build',
