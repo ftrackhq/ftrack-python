@@ -180,7 +180,7 @@ def test_ensure_new_entity(session, unique_name):
     assert entity['username'] == unique_name
 
 
-def test_ensure_entity_with_non_string_data_types(session):
+def test_ensure_entity_with_non_string_data_types(session, mocker):
     '''Ensure entity against non-string data types, creating first.'''
     datetime = arrow.get()
 
@@ -199,7 +199,7 @@ def test_ensure_entity_with_non_string_data_types(session):
         }
     )
 
-    with mock.patch.object(session, 'create') as mocked:
+    with mocker.patch.object(session, 'create') as mocked:
         session.ensure(
             'Timelog', 
             {
