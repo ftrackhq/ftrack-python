@@ -665,26 +665,29 @@ def test_publish_with_multiple_replies(event_hub):
     assert sorted(called['callback']) == ['One', 'Two']
 
 
-@pytest.mark.slow
-def test_server_heartbeat_response():
-    '''Maintain connection by responding to server heartbeat request.'''
-    test_script = os.path.join(
-        os.path.dirname(__file__), 'event_hub_server_heartbeat.py'
-    )
+# We never run this test as we disabled the slow tests.
+# Leaving code available for historical reasons.
 
-    # Start subscriber that will listen for all three messages.
-    subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe'])
-
-    # Give subscriber time to connect to server.
-    time.sleep(10)
-
-    # Start publisher to publish three messages.
-    publisher = subprocess.Popen([sys.executable, test_script, 'publish'])
-
-    publisher.wait()
-    subscriber.wait()
-
-    assert subscriber.returncode == 0
+# @pytest.mark.slow
+# def test_server_heartbeat_response():
+#     '''Maintain connection by responding to server heartbeat request.'''
+#     test_script = os.path.join(
+#         os.path.dirname(__file__), 'event_hub_server_heartbeat.py'
+#     )
+#
+#     # Start subscriber that will listen for all three messages.
+#     subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe'])
+#
+#     # Give subscriber time to connect to server.
+#     time.sleep(10)
+#
+#     # Start publisher to publish three messages.
+#     publisher = subprocess.Popen([sys.executable, test_script, 'publish'])
+#
+#     publisher.wait()
+#     subscriber.wait()
+#
+#     assert subscriber.returncode == 0
 
 
 def test_stop_event(event_hub):
