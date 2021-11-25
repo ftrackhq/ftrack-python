@@ -561,15 +561,14 @@ def test_check_server_compatibility(
     server_information, compatible, session
 ):
     '''Check server compatibility.'''
-    mock.patch.dict(
+    with mock.patch.dict(
         session._server_information, server_information, clear=True
-    )
-
-    if compatible:
-        session.check_server_compatibility()
-    else:
-        with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
+    ):
+        if compatible:
             session.check_server_compatibility()
+        else:
+            with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
+                session.check_server_compatibility()
 
 
 def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
