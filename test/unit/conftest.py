@@ -535,16 +535,9 @@ def mocked_schemas():
 @pytest.fixture
 def mocked_schema_session(mocker, mocked_schemas):
     '''Return a session instance with mocked schemas.'''
-    with mocker.patch.object(
-        ftrack_api.Session,
-        '_load_schemas',
-        return_value=mocked_schemas
-    ):
-        # Mock _configure_locations since it will fail if no location schemas
-        # exist.
-        with mocker.patch.object(
-            ftrack_api.Session,
-            '_configure_locations'
-        ):
-            patched_session = ftrack_api.Session()
-            yield patched_session
+    mocker.patch.object(ftrack_api.Session,'_load_schemas',return_value=mocked_schemas)
+    # Mock _configure_locations since it will fail if no location schemas
+    # exist.
+    mocker.patch.object(ftrack_api.Session, '_configure_locations')
+    patched_session = ftrack_api.Session()
+    yield patched_session

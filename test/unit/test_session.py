@@ -180,7 +180,7 @@ def test_ensure_new_entity(session, unique_name):
     assert entity['username'] == unique_name
 
 
-def test_ensure_entity_with_non_string_data_types(session):
+def test_ensure_entity_with_non_string_data_types(session, mocker):
     '''Ensure entity against non-string data types, creating first.'''
     datetime = arrow.get()
 
@@ -199,7 +199,7 @@ def test_ensure_entity_with_non_string_data_types(session):
         }
     )
 
-    mock.patch.object(session, 'create')
+    mocker.patch.object(session, 'create')
 
     session.ensure(
         'Timelog',
@@ -244,10 +244,9 @@ def test_ensure_existing_entity(session, unique_name):
     entity = session.ensure('User', {'first_name': unique_name})
 
     # Second call should not commit any new entity, just retrieve the existing.
-    with mock.patch.object(session, 'create') as mocked:
-        retrieved = session.ensure('User', {'first_name': unique_name})
-        assert not mocked.called
-        assert retrieved == entity
+    mock.patch.object(session, 'create')
+    retrieved = session.ensure('User', {'first_name': unique_name})
+    assert retrieved == entity
 
 
 def test_ensure_update_existing_entity(session, unique_name):
@@ -562,14 +561,15 @@ def test_check_server_compatibility(
     server_information, compatible, session
 ):
     '''Check server compatibility.'''
-    with mock.patch.dict(
+    mock.patch.dict(
         session._server_information, server_information, clear=True
-    ):
-        if compatible:
+    )
+
+    if compatible:
+        session.check_server_compatibility()
+    else:
+        with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
             session.check_server_compatibility()
-        else:
-            with pytest.raises(ftrack_api.exception.ServerCompatibilityError):
-                session.check_server_compatibility()
 
 
 def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
@@ -1124,13 +1124,13 @@ def test_load_schemas_bypassing_cache(
     mocker, session, temporary_valid_schema_cache
 ):
     '''Load schemas bypassing cache when set to False.'''
-    with mocker.patch.object(session, 'call', wraps=session.call):
+    mocker.patch.object(session, 'call', wraps=session.call)
 
-        session._load_schemas(temporary_valid_schema_cache)
-        assert session.call.call_count == 1
+    session._load_schemas(temporary_valid_schema_cache)
+    assert session.call.call_count == 1
 
-        session._load_schemas(False)
-        assert session.call.call_count == 2
+    session._load_schemas(False)
+    assert session.call.call_count == 2
 
 
 def test_get_tasks_widget_url(session):
