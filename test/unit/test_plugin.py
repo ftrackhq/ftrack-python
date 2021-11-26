@@ -110,6 +110,7 @@ def test_discover_non_plugin(non_plugin, capsys):
 
 def test_discover_broken_plugin(broken_plugin, caplog):
     '''Discover broken plugin.'''
+    caplog.set_level(logging.DEBUG)
     ftrack_api.plugin.discover([broken_plugin])
 
     records = caplog.get_records(when='call')
