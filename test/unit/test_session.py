@@ -1487,7 +1487,7 @@ def test_auto_populate_is_thread_dependent(session):
 
         for attribute in task.attributes:
             assert (
-                getattr(task, attribute.name) is not ftrack_api.symbol.NOT_SET
+                task.get(attribute.name) is not ftrack_api.symbol.NOT_SET
             )
 
     with session.auto_populating(not auto_populate_state):
