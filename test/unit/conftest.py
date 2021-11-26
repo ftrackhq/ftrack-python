@@ -543,21 +543,18 @@ def mocked_schema_session(mocker, mocked_schemas):
     yield patched_session
 
 
-
 @pytest.fixture
 def propagating_thread():
     from threading import Thread
 
     class PropagatingThread(Thread):
-        def __init__(self, target):
-            super(PropagatingThread, self).__init__()
+        def __init__(self, *args, **kwargs):
+            super(PropagatingThread, self).__init__(*args, **kwargs)
 
-            self._target = target
         def run(self):
             self.exc = None
             try:
                 if hasattr(self, '_Thread__target'):
-                    # Thread uses name mangling prior to Python 3.
                     self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
                 else:
                     self.ret = self._target(*self._args, **self._kwargs)
@@ -566,7 +563,7 @@ def propagating_thread():
 
         def join(self, timeout=None):
             super(PropagatingThread, self).join(timeout)
-            if self.exc:
+            if self.exc is not None:
                 raise self.exc
             return self.ret
 
