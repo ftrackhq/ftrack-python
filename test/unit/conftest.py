@@ -543,8 +543,9 @@ def mocked_schema_session(mocker, mocked_schemas):
     yield patched_session
 
 
+
 @pytest.fixture
-def propagating_thread(target):
+def propagating_thread():
     from threading import Thread
 
     class PropagatingThread(Thread):
@@ -569,4 +570,4 @@ def propagating_thread(target):
                 raise self.exc
             return self.ret
 
-    return PropagatingThread(target=target)
+    return PropagatingThread

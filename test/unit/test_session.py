@@ -1474,7 +1474,7 @@ def test_auto_populate_is_thread_dependent(session, propagating_thread):
             )
 
     with session.auto_populating(not auto_populate_state):
-        t = propagating_thread.Thread(
+        t = propagating_thread(
             target=_assert_auto_populate
         )
 
@@ -1490,7 +1490,7 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
     with session.operation_recording(False):
         # Create entity in separate thread, should be recorded
         # in the session.
-        t = propagating_thread.Thread(
+        t = propagating_thread(
             target=lambda: session.create(
                 _entity_type, {'id': _id}
             )
