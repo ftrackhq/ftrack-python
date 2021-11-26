@@ -541,3 +541,32 @@ def mocked_schema_session(mocker, mocked_schemas):
     mocker.patch.object(ftrack_api.Session, '_configure_locations')
     patched_session = ftrack_api.Session()
     yield patched_session
+
+
+@pytest.fixture
+def propagating_thread(target):
+    from threading import Thread
+
+    class PropagatingThread(Thread):
+        def __init__(self, target):
+            super(PropagatingThread, self).__init__()
+
+            self._target = target
+        def run(self):
+            self.exc = None
+            try:
+                if hasattr(self, '_Thread__target'):
+                    # Thread uses name mangling prior to Python 3.
+                    self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+                else:
+                    self.ret = self._target(*self._args, **self._kwargs)
+            except BaseException as e:
+                self.exc = e
+
+        def join(self, timeout=None):
+            super(PropagatingThread, self).join(timeout)
+            if self.exc:
+                raise self.exc
+            return self.ret
+
+    return PropagatingThread(target=target)

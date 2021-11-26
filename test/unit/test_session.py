@@ -9,7 +9,6 @@ import textwrap
 import datetime
 import json
 import random
-import threading
 
 import pytest
 import mock
@@ -541,13 +540,13 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
 
 @pytest.mark.parametrize('server_information, compatible', [
-    pytest.param(({}, False), id='No information'),
-    pytest.param(({'version': '3.3.11'}, True), id='Valid current version'),
-    pytest.param(({'version': '3.3.12'}, True), id='Valid higher version'),
-    pytest.param(({'version': '3.4'}, True), id='Valid higher version'),
-    pytest.param(({'version': '3.4.1'}, True), id='Valid higher version'),
-    pytest.param(({'version': '3.5.16'}, True), id='Valid higher version'),
-    pytest.param(({'version': '3.3.10'}, False), id='Invalid lower version'),
+    pytest.param({}, False, id='No information'),
+    pytest.param({'version': '3.3.11'}, True, id='Valid current version'),
+    pytest.param({'version': '3.3.12'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.4'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.4.1'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.5.16'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.3.10'}, False, id='Invalid lower version'),
 ])
 def test_check_server_compatibility(
     server_information, compatible, session
@@ -1191,6 +1190,7 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
+
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
@@ -1200,7 +1200,6 @@ def test_remote_reset(session, new_user):
     key_2 = session.reset_remote(
         'api_key', entity=new_user
     )
-
 
     assert key_1 != key_2
 
@@ -1454,7 +1453,7 @@ def test_entity_reference(mocker, session):
     mock_primary_key.assert_called_once_with(mock_entity)
 
 
-def test_auto_populate_is_thread_dependent(session):
+def test_auto_populate_is_thread_dependent(session, propagating_thread):
     '''Make sure auto_populate is configured per thread'''
     auto_populate_state = (
         session.auto_populate
@@ -1475,7 +1474,7 @@ def test_auto_populate_is_thread_dependent(session):
             )
 
     with session.auto_populating(not auto_populate_state):
-        t = threading.Thread(
+        t = propagating_thread.Thread(
             target=_assert_auto_populate
         )
 
@@ -1483,7 +1482,7 @@ def test_auto_populate_is_thread_dependent(session):
         t.join()
 
 
-def test_operation_recoding_thread_dependent(session):
+def test_operation_recoding_thread_dependent(session, propagating_thread):
     '''Make sure operation recording is thread dependent.'''
     _id = str(uuid.uuid4())
     _entity_type = 'User'
@@ -1491,7 +1490,7 @@ def test_operation_recoding_thread_dependent(session):
     with session.operation_recording(False):
         # Create entity in separate thread, should be recorded
         # in the session.
-        t = threading.Thread(
+        t = propagating_thread.Thread(
             target=lambda: session.create(
                 _entity_type, {'id': _id}
             )
