@@ -541,21 +541,13 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
 
 @pytest.mark.parametrize('server_information, compatible', [
-    ({}, False),
-    ({'version': '3.3.11'}, True),
-    ({'version': '3.3.12'}, True),
-    ({'version': '3.4'}, True),
-    ({'version': '3.4.1'}, True),
-    ({'version': '3.5.16'}, True),
-    ({'version': '3.3.10'}, False)
-], ids=[
-    'No information',
-    'Valid current version',
-    'Valid higher version',
-    'Valid higher version',
-    'Valid higher version',
-    'Valid higher version',
-    'Invalid lower version'
+    pytest.param(({}, False), id='No information'),
+    pytest.param(({'version': '3.3.11'}, True), id='Valid current version'),
+    pytest.param(({'version': '3.3.12'}, True), id='Valid higher version'),
+    pytest.param(({'version': '3.4'}, True), id='Valid higher version'),
+    pytest.param(({'version': '3.4.1'}, True), id='Valid higher version'),
+    pytest.param(({'version': '3.5.16'}, True), id='Valid higher version'),
+    pytest.param(({'version': '3.3.10'}, False), id='Invalid lower version'),
 ])
 def test_check_server_compatibility(
     server_information, compatible, session
@@ -1214,12 +1206,9 @@ def test_remote_reset(session, new_user):
 
 
 @pytest.mark.parametrize('attribute', [
-    ('id',),
-    ('email',)
+    pytest.param(('id',), id='Fail resetting primary key'),
+    pytest.param(('email',), id='Fail resetting attribute without default value')
 
-], ids=[
-    'Fail resetting primary key',
-    'Fail resetting attribute without default value',
 ])
 def test_fail_remote_reset(session, user, attribute):
     '''Fail trying to rest invalid attributes.'''
@@ -1383,14 +1372,9 @@ def test_merge_iterations(session, mocker, project):
 @pytest.mark.parametrize(
     'get_versions',
     [
-        lambda component, asset_version, asset: component['version']['asset']['versions'],
-        lambda component, asset_version, asset: asset_version['asset']['versions'],
-        lambda component, asset_version, asset: asset['versions'],
-    ],
-    ids=[
-        'from_component',
-        'from_asset_version',
-        'from_asset',
+        pytest.param(lambda component, asset_version, asset: component['version']['asset']['versions'], id='from_component'),
+        pytest.param(lambda component, asset_version, asset: asset_version['asset']['versions'], id='from_asset_version'),
+        pytest.param(lambda component, asset_version, asset: asset['versions'], id='from_asset')
     ]
 )
 def test_query_nested2(session, get_versions):

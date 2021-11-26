@@ -34,11 +34,8 @@ def valid_entity():
 
 
 @pytest.mark.parametrize('entity, context, expected', [
-    pytest.param(valid_entity(), {}, 'f6cd40cb-d1c0-469f-a2d5-10369be8a724'),
-    pytest.param(mock.Mock(), {}, Exception)
-], ids=[
-    'valid-entity',
-    'non-entity'
+    pytest.param(valid_entity(), {}, 'f6cd40cb-d1c0-469f-a2d5-10369be8a724', id='valid-entity'),
+    pytest.param(mock.Mock(), {}, Exception, id='non-entity')
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''

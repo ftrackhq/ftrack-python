@@ -125,46 +125,38 @@ def test_discover_broken_plugin(broken_plugin, caplog):
 @pytest.mark.parametrize(
     'plugin, positional, keyword, expected',
     [
-        (
+        pytest.param(
             'a, b=False, c=False, d=False',
             (1, 2), {'c': True, 'd': True, 'e': True},
-            '1 b=2 c=True d=True'
+            '1 b=2 c=True d=True', id='mixed-explicit'
         ),
-        (
+        pytest.param(
             '*args',
             (1, 2), {'b': True, 'c': False},
-            '(1, 2)'
+            '(1, 2)', id='variable-args-only'
         ),
-        (
+        pytest.param(
             '**kwargs',
             tuple(), {'b': True, 'c': False},
-            '[(\'b\', True), (\'c\', False)]'
+            '[(\'b\', True), (\'c\', False)]', id='variable-kwargs-only'
         ),
-        (
+        pytest.param(
             'a=False, b=False',
             (True,), {'b': True},
-            'a=True b=True'
+            'a=True b=True', id='keyword-from-positional'
         ),
-        (
+        pytest.param(
             'a, c=False, *args',
             (1, 2, 3, 4), {},
-            '1 c=2 (3, 4)'
+            '1 c=2 (3, 4)', id='trailing-variable-args'
         ),
-        (
+        pytest.param(
             'a, c=False, **kwargs',
             tuple(), {'a': 1, 'b': 2, 'c': 3, 'd': 4},
-            '1 c=3 [(\'b\', 2), (\'d\', 4)]'
+            '1 c=3 [(\'b\', 2), (\'d\', 4)]', id='trailing-keyword-args'
         ),
     ],
     indirect=['plugin'],
-    ids=[
-        'mixed-explicit',
-        'variable-args-only',
-        'variable-kwargs-only',
-        'keyword-from-positional',
-        'trailing-variable-args',
-        'trailing-keyword-args'
-    ]
 )
 def test_discover_plugin_with_specific_signature(
     plugin, positional, keyword, expected, capsys

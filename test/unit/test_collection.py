@@ -224,15 +224,10 @@ def test_collection_count(
 
 
 @pytest.mark.parametrize('other, expected', [
-    ([], False),
-    ([1, 2], True),
-    ([1, 2, 3], False),
-    ([1], False)
-], ids=[
-    'empty',
-    'same',
-    'additional',
-    'missing'
+    pytest.param(([], False), id='empty'),
+    pytest.param(([1, 2], True), id='same'),
+    pytest.param(([1, 2, 3], False), id='additional'),
+    pytest.param(([1], False), id='missing')
 ])
 def test_collection_equal(mocker, mock_entity, mock_attribute, other, expected):
     '''Determine collection equality against another collection.'''

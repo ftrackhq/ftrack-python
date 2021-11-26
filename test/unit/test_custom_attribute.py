@@ -68,12 +68,8 @@ def new_entity_and_custom_attribute(request, session):
 @pytest.mark.parametrize(
     'entity_type, entity_model_name, custom_attribute_name',
     [
-        ('Task', 'task', 'customNumber'),
-        ('AssetVersion', 'assetversion', 'NumberField')
-    ],
-    ids=[
-        'task',
-        'asset_version'
+        pytest.param(('Task', 'task', 'customNumber'), id='task'),
+        pytest.param(('AssetVersion', 'assetversion', 'NumberField'), id='asset_version')
     ]
 )
 def test_read_set_custom_attribute(
@@ -111,16 +107,11 @@ def test_read_set_custom_attribute(
 @pytest.mark.parametrize(
     'entity_type, custom_attribute_name',
     [
-        ('Task', 'customNumber'),
-        ('Shot', 'fstart'),
-        (
+        pytest.param(('Task', 'customNumber'), id='task'),
+        pytest.param(('Shot', 'fstart'), id='shot'),
+        pytest.param((
             'AssetVersion', 'NumberField'
-        )
-    ],
-    ids=[
-        'task',
-        'shot',
-        'asset_version'
+        ), id='asset_version')
     ]
 )
 def test_write_set_custom_attribute_value(
@@ -145,14 +136,9 @@ def test_write_set_custom_attribute_value(
 @pytest.mark.parametrize(
     'entity_type, custom_attribute_name',
     [
-        ('Task', 'fstart'),
-        ('Shot', 'Not existing'),
-        ('AssetVersion', 'fstart')
-    ],
-    ids=[
-        'task',
-        'shot',
-        'asset_version'
+        pytest.param(('Task', 'fstart'), id='task'),
+        pytest.param(('Shot', 'Not existing'), id='shot'),
+        pytest.param(('AssetVersion', 'fstart'), id='asset_version')
     ]
 )
 def test_read_custom_attribute_that_does_not_exist(
@@ -172,14 +158,9 @@ def test_read_custom_attribute_that_does_not_exist(
 @pytest.mark.parametrize(
     'entity_type, custom_attribute_name',
     [
-        ('Task', 'fstart'),
-        ('Shot', 'Not existing'),
-        ('AssetVersion', 'fstart')
-    ],
-    ids=[
-        'task',
-        'shot',
-        'asset_version'
+        pytest.param(('Task', 'fstart'), id='task'),
+        pytest.param(('Shot', 'Not existing'), id='shot'),
+        pytest.param(('AssetVersion', 'fstart'), id='asset_version')
     ]
 )
 def test_write_custom_attribute_that_does_not_exist(

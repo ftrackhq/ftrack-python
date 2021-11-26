@@ -8,11 +8,8 @@ import ftrack_api.exception
 
 
 @pytest.mark.parametrize('attributes', [
-    [],
-    [ftrack_api.attribute.Attribute('test')]
-], ids=[
-    'no initial attributes',
-    'with initial attributes'
+    pytest.param([], id='no initial attributes'),
+    pytest.param([ftrack_api.attribute.Attribute('test')], id='with initial attributes')
 ])
 def test_initialise_attributes_collection(attributes):
     '''Initialise attributes collection.'''
@@ -79,11 +76,8 @@ def test_get_missing_attribute_from_attributes_collection():
 
 
 @pytest.mark.parametrize('attributes, expected', [
-    ([], []),
-    ([ftrack_api.attribute.Attribute('test')], ['test'])
-], ids=[
-    'no initial attributes',
-    'with initial attributes'
+    pytest.param(([], []), id='no initial attributes'),
+    pytest.param(([ftrack_api.attribute.Attribute('test')], ['test']), id='with initial attributes')
 ])
 def test_attribute_collection_keys(attributes, expected):
     '''Retrieve keys for attribute collection.'''
@@ -92,13 +86,9 @@ def test_attribute_collection_keys(attributes, expected):
 
 
 @pytest.mark.parametrize('attribute, expected', [
-    (None, False),
-    (ftrack_api.attribute.Attribute('b'), True),
-    (ftrack_api.attribute.Attribute('c'), False)
-], ids=[
-    'none attribute',
-    'present attribute',
-    'missing attribute'
+    pytest.param((None, False), id='none attribute'),
+    pytest.param((ftrack_api.attribute.Attribute('b'), True), id='present attribute'),
+    pytest.param((ftrack_api.attribute.Attribute('c'), False), id='missing attribute')
 ])
 def test_attributes_collection_contains(attribute, expected):
     '''Check presence in attributes collection.'''
@@ -111,19 +101,15 @@ def test_attributes_collection_contains(attribute, expected):
 
 
 @pytest.mark.parametrize('attributes, expected', [
-    ([], 0),
-    ([ftrack_api.attribute.Attribute('test')], 1),
-    (
+    pytest.param(([], 0), id='no attributes'),
+    pytest.param(([ftrack_api.attribute.Attribute('test')], 1), id='single attribute'),
+    pytest.param((
         [
             ftrack_api.attribute.Attribute('a'),
             ftrack_api.attribute.Attribute('b')
         ],
         2
-    )
-], ids=[
-    'no attributes',
-    'single attribute',
-    'multiple attributes'
+    ), id='multiple attributes'),
 ])
 def test_attributes_collection_count(attributes, expected):
     '''Count attributes in attributes collection.'''

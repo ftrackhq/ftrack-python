@@ -15,7 +15,6 @@ def structure():
     return ftrack_api.structure.id.IdStructure(prefix='another_path')
 
 
-
 def file_compound_extension_no_component_event(component_file=None):
 
     '''
@@ -31,6 +30,7 @@ def file_compound_extension_no_component_event(component_file=None):
 
     return entity
 
+
 def file_compound_extension_component_event(component_file=None):
 
     '''
@@ -43,7 +43,6 @@ def file_compound_extension_component_event(component_file=None):
     )
     session = ftrack_api.Session(plugin_paths=[plugin_path])
 
-
     entity = session.create_component(
         component_file
     )
@@ -52,38 +51,36 @@ def file_compound_extension_component_event(component_file=None):
 
 
 @pytest.mark.parametrize('entity, context, expected', [
-    (
+    pytest.param(
         file_compound_extension_component_event('mytest.foo.bar'), {},
-        '.foo.bar'
+        '.foo.bar',
+        id='file-compound-extension-component-event'
     ),
-      (
+    pytest.param(
         file_compound_extension_component_event('mytest.%4d.foo.bar'), {},
-        '.foo.bar'
-    ),  
-    (
+        '.foo.bar',
+        id='file-sequence-compound-extension-component-event'
+    ),
+    pytest.param(
         file_compound_extension_component_event('mytest'), {},
-        ''
-    ),  
-    (
+        '',
+        id='no-file-compound-extension-component-event'
+    ),
+    pytest.param(
         file_compound_extension_no_component_event('mytest.foo.bar'), {},
-        '.bar'
+        '.bar',
+        id='file-compound-extension-no-component-event'
     ),
-        (
+    pytest.param(
         file_compound_extension_no_component_event('mytest.%4d.foo.bar'), {},
-        '.bar'
+        '.bar',
+        id='file-sequence-compound-extension-no-component-event'
     ),
-        (
+    pytest.param(
         file_compound_extension_no_component_event('mytest'), {},
-        ''
-    ),
-
-], ids=[
-    'file-compound-extension-component-event',
-    'file-sequence-compound-extension-component-event',
-    'no-file-compound-extension-component-event',
-    'file-compound-extension-no-component-event',
-    'file-sequence-compound-extension-no-component-event',
-    'no-file-compound-extension-no-component-event'
+        '',
+        id='no-file-compound-extension-no-component-event'
+    )
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''

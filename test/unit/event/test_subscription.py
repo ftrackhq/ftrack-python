@@ -16,11 +16,8 @@ def test_string_representation():
 
 
 @pytest.mark.parametrize('expression, event, expected', [
-    ('topic=test', Event(topic='test'), True),
-    ('topic=test', Event(topic='other-test'), False)
-], ids=[
-    'match',
-    'no match'
+    pytest.param('topic=test', Event(topic='test'), True,id='match'),
+    pytest.param('topic=test', Event(topic='other-test'), False, id='no match')
 ])
 def test_includes(expression, event, expected):
     '''Subscription includes event.'''

@@ -261,7 +261,6 @@ def test_expand_references():
         )
     )
 
-
     # Make sure references are merged.
     for sequence in new_session.query(query_string):
         asset = sequence.get('asset')
@@ -278,11 +277,8 @@ def test_expand_references():
 
 
 @pytest.mark.parametrize('items, key', [
-    (({},), '{}'),
-    (({}, {}), '{}{}')
-], ids=[
-    'single object',
-    'multiple objects'
+    pytest.param((({},), '{}'), id='single object'),
+    pytest.param((({}, {}), '{}{}'), id='multiple objects')
 ])
 def test_string_key_maker_key(items, key):
     '''Generate key using string key maker.'''
@@ -292,11 +288,11 @@ def test_string_key_maker_key(items, key):
 
 @pytest.mark.skipif(sys.version_info > (3, 0), reason="requires Python2")
 @pytest.mark.parametrize('items, key', [
-    (
+    pytest.param((
         ({},),
         b'\x01\x01'
-    ),
-    (
+    ), id='single mapping'),
+    pytest.param((
         ({'a': 'b'}, [1, 2]),
         '\x01'
             '\x80\x02U\x01a.' '\x02' '\x80\x02U\x01b.'
@@ -305,30 +301,23 @@ def test_string_key_maker_key(items, key):
         '\x03'
             '\x80\x02K\x01.' '\x00' '\x80\x02K\x02.'
         '\x03'
-    ),
-    (
+    ), id='multiple objects'),
+    pytest.param((
         (function,),
         b'\x04function\x00unit.test_cache'
-    ),
-    (
+    ), id='function'),
+    pytest.param((
         (Class,),
         b'\x04Class\x00unit.test_cache'
-    ),
-    (
+    ), id='class'),
+    pytest.param((
         (Class().method,),
         b'\x04method\x00Class\x00unit.test_cache'
-    ),
-    (
+    ), id='method'),
+    pytest.param((
         (callable,),
         b'\x04callable'
-    )
-], ids=[
-    'single mapping',
-    'multiple objects',
-    'function',
-    'class',
-    'method',
-    'builtin'
+    ), id='builtin')
 ])
 def test_object_key_maker_key_py2k(items, key):
     '''Generate key using string key maker.'''
@@ -339,38 +328,31 @@ def test_object_key_maker_key_py2k(items, key):
 
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
 @pytest.mark.parametrize('items, key', [
-    (
+    pytest.param((
         ({},),
         b'\x01\x01'
-    ),
-    (
+    ), id='single mapping'),
+    pytest.param((
         ({'a': 'b'}, [1, 2]),
         b'\x01\x80\x02X\x01\x00\x00\x00aq\x00.\x02\x80\x02X\x01\x00\x00\x00bq\x00.'
         b'\x01\x00\x03\x80\x02K\x01.\x00\x80\x02K\x02.\x03'
-    ),
-    (
+    ), id='multiple objects'),
+    pytest.param((
         (function,),
         b'\x04function\x00unit.test_cache'
-    ),
-    (
+    ), id='function'),
+    pytest.param((
         (Class,),
         b'\x04Class\x00unit.test_cache'
-    ),
-    (
+    ), id='class'),
+    pytest.param((
         (Class().method,),
         b'\x04method\x00Class\x00unit.test_cache'
-    ),
-    (
+    ), id='method'),
+    pytest.param((
         (callable,),
         b'\x04callable'
-    )
-], ids=[
-    'single mapping',
-    'multiple objects', # will fail in python 3 due to different pickler
-    'function',
-    'class',
-    'method',
-    'builtin'
+    ), id='builtin')
 ])
 def test_object_key_maker_key_py3k(items, key):
     '''Generate key using string key maker.'''

@@ -129,6 +129,7 @@ def origin_location(session):
     '''Return origin location.'''
     return session.query('Location where name is "ftrack.origin"').one()
 
+
 @pytest.fixture()
 def server_location(session):
     '''Return server location.'''
@@ -159,11 +160,8 @@ def server_image_component(request, session, server_location):
 
 
 @pytest.mark.parametrize('name', [
-    pytest.param('named'),
-    pytest.param(None)
-], ids=[
-    'named',
-    'unnamed'
+    pytest.param('named', id='named'),
+    pytest.param(None, id='unnamed')
 ])
 def test_string_representation(session, name):
     '''Return string representation.'''
