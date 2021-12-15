@@ -90,7 +90,6 @@ setup(
     tests_require=[
         'pytest >= 4.6',
         'pytest-mock',
-        'pytest-catchlog',
         'mock',
         'flaky'
     ],
