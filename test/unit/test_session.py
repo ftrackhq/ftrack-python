@@ -9,7 +9,6 @@ import textwrap
 import datetime
 import json
 import random
-import threading
 
 import pytest
 import mock
@@ -180,7 +179,7 @@ def test_ensure_new_entity(session, unique_name):
     assert entity['username'] == unique_name
 
 
-def test_ensure_entity_with_non_string_data_types(session):
+def test_ensure_entity_with_non_string_data_types(session, mocker):
     '''Ensure entity against non-string data types, creating first.'''
     datetime = arrow.get()
 
@@ -199,17 +198,17 @@ def test_ensure_entity_with_non_string_data_types(session):
         }
     )
 
-    with mock.patch.object(session, 'create') as mocked:
-        session.ensure(
-            'Timelog', 
-            {
-                'start': datetime, 
-                'duration': 10, 
-                'user_id': user['id'],
-                'context_id': task['id']
-            }
-        )
-        assert not mocked.called
+    mocker.patch.object(session, 'create')
+
+    session.ensure(
+        'Timelog',
+        {
+            'start': datetime,
+            'duration': 10,
+            'user_id': user['id'],
+            'context_id': task['id']
+        }
+    )
 
     assert first['start'] == datetime
     assert first['duration'] == 10
@@ -244,10 +243,9 @@ def test_ensure_existing_entity(session, unique_name):
     entity = session.ensure('User', {'first_name': unique_name})
 
     # Second call should not commit any new entity, just retrieve the existing.
-    with mock.patch.object(session, 'create') as mocked:
-        retrieved = session.ensure('User', {'first_name': unique_name})
-        assert not mocked.called
-        assert retrieved == entity
+    mock.patch.object(session, 'create')
+    retrieved = session.ensure('User', {'first_name': unique_name})
+    assert retrieved == entity
 
 
 def test_ensure_update_existing_entity(session, unique_name):
@@ -542,21 +540,13 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
 
 
 @pytest.mark.parametrize('server_information, compatible', [
-    ({}, False),
-    ({'version': '3.3.11'}, True),
-    ({'version': '3.3.12'}, True),
-    ({'version': '3.4'}, True),
-    ({'version': '3.4.1'}, True),
-    ({'version': '3.5.16'}, True),
-    ({'version': '3.3.10'}, False)
-], ids=[
-    'No information',
-    'Valid current version',
-    'Valid higher version',
-    'Valid higher version',
-    'Valid higher version',
-    'Valid higher version',
-    'Invalid lower version'
+    pytest.param({}, False, id='No information'),
+    pytest.param({'version': '3.3.11'}, True, id='Valid current version'),
+    pytest.param({'version': '3.3.12'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.4'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.4.1'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.5.16'}, True, id='Valid higher version'),
+    pytest.param({'version': '3.3.10'}, False, id='Invalid lower version'),
 ])
 def test_check_server_compatibility(
     server_information, compatible, session
@@ -1124,13 +1114,13 @@ def test_load_schemas_bypassing_cache(
     mocker, session, temporary_valid_schema_cache
 ):
     '''Load schemas bypassing cache when set to False.'''
-    with mocker.patch.object(session, 'call', wraps=session.call):
+    mocker.patch.object(session, 'call', wraps=session.call)
 
-        session._load_schemas(temporary_valid_schema_cache)
-        assert session.call.call_count == 1
+    session._load_schemas(temporary_valid_schema_cache)
+    assert session.call.call_count == 1
 
-        session._load_schemas(False)
-        assert session.call.call_count == 2
+    session._load_schemas(False)
+    assert session.call.call_count == 2
 
 
 def test_get_tasks_widget_url(session):
@@ -1200,6 +1190,7 @@ def test_plugin_arguments(mocker):
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
+
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
@@ -1210,17 +1201,13 @@ def test_remote_reset(session, new_user):
         'api_key', entity=new_user
     )
 
-
     assert key_1 != key_2
 
 
 @pytest.mark.parametrize('attribute', [
-    ('id',),
-    ('email',)
+    pytest.param(('id',), id='Fail resetting primary key'),
+    pytest.param(('email',), id='Fail resetting attribute without default value')
 
-], ids=[
-    'Fail resetting primary key',
-    'Fail resetting attribute without default value',
 ])
 def test_fail_remote_reset(session, user, attribute):
     '''Fail trying to rest invalid attributes.'''
@@ -1384,14 +1371,9 @@ def test_merge_iterations(session, mocker, project):
 @pytest.mark.parametrize(
     'get_versions',
     [
-        lambda component, asset_version, asset: component['version']['asset']['versions'],
-        lambda component, asset_version, asset: asset_version['asset']['versions'],
-        lambda component, asset_version, asset: asset['versions'],
-    ],
-    ids=[
-        'from_component',
-        'from_asset_version',
-        'from_asset',
+        pytest.param(lambda component, asset_version, asset: component['version']['asset']['versions'], id='from_component'),
+        pytest.param(lambda component, asset_version, asset: asset_version['asset']['versions'], id='from_asset_version'),
+        pytest.param(lambda component, asset_version, asset: asset['versions'], id='from_asset')
     ]
 )
 def test_query_nested2(session, get_versions):
@@ -1471,7 +1453,7 @@ def test_entity_reference(mocker, session):
     mock_primary_key.assert_called_once_with(mock_entity)
 
 
-def test_auto_populate_is_thread_dependent(session):
+def test_auto_populate_is_thread_dependent(session, propagating_thread):
     '''Make sure auto_populate is configured per thread'''
     auto_populate_state = (
         session.auto_populate
@@ -1488,11 +1470,11 @@ def test_auto_populate_is_thread_dependent(session):
 
         for attribute in task.attributes:
             assert (
-                getattr(task, attribute.name) is not ftrack_api.symbol.NOT_SET
+                task.get(attribute.name) is not ftrack_api.symbol.NOT_SET
             )
 
     with session.auto_populating(not auto_populate_state):
-        t = threading.Thread(
+        t = propagating_thread(
             target=_assert_auto_populate
         )
 
@@ -1500,7 +1482,7 @@ def test_auto_populate_is_thread_dependent(session):
         t.join()
 
 
-def test_operation_recoding_thread_dependent(session):
+def test_operation_recoding_thread_dependent(session, propagating_thread):
     '''Make sure operation recording is thread dependent.'''
     _id = str(uuid.uuid4())
     _entity_type = 'User'
@@ -1508,7 +1490,7 @@ def test_operation_recoding_thread_dependent(session):
     with session.operation_recording(False):
         # Create entity in separate thread, should be recorded
         # in the session.
-        t = threading.Thread(
+        t = propagating_thread(
             target=lambda: session.create(
                 _entity_type, {'id': _id}
             )

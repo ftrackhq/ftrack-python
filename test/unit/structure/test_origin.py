@@ -16,13 +16,9 @@ def structure():
 
 
 @pytest.mark.parametrize('entity, context, expected', [
-    (mock.Mock(), {'source_resource_identifier': 'identifier'}, 'identifier'),
-    (mock.Mock(), {}, ValueError),
-    (mock.Mock(), None, ValueError)
-], ids=[
-    'valid-context',
-    'invalid-context',
-    'unspecified-context'
+    pytest.param(mock.Mock(), {'source_resource_identifier': 'identifier'}, 'identifier', id='valid-context'),
+    pytest.param(mock.Mock(), {}, ValueError, id='invalid-context'),
+    pytest.param(mock.Mock(), None, ValueError, id='unspecified-context')
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''

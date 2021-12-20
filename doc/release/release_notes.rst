@@ -11,6 +11,18 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: Tests
+
+        Update bitbucket-pipelines to provide tests on python 3.9.+
+
+
+    .. change:: changed
+        :tags: Tests
+
+        Update pytest version to latest py2/3 compatible version and update tests accordingly.
+
+
     .. change:: changed
         :tags: Documentation
 

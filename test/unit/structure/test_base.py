@@ -19,12 +19,9 @@ class Concrete(ftrack_api.structure.base.Structure):
 
 
 @pytest.mark.parametrize('sequence, expected', [
-    ({'padding': None}, '%d'),
-    ({'padding': 4}, '%04d')
-], ids=[
-    'no padding',
-    'padded'
-])
+    pytest.param({'padding': None}, '%d', id='no padding'),
+    pytest.param({'padding': 4}, '%04d', id='padded')
+],)
 def test_get_sequence_expression(sequence, expected):
     '''Get sequence expression from sequence.'''
     structure = Concrete()

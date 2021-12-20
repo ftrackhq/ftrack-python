@@ -72,41 +72,43 @@ def unsupported_entity():
 
 
 @pytest.mark.parametrize('entity, context, expected', [
-    (
+    pytest.param(
         file_component(), {},
         'path/f/6/c/d/40cb-d1c0-469f-a2d5-10369be8a724.png'
+        , id='file-component'
     ),
-    (
+    pytest.param(
         file_component(container_component()), {},
         'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a/'
-        'f6cd40cb-d1c0-469f-a2d5-10369be8a724.png'
+        'f6cd40cb-d1c0-469f-a2d5-10369be8a724.png',
+        id='file-component-in-container'
     ),
-    (
+    pytest.param(
         file_component(sequence_component()), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.0001.png'
+        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.0001.png',
+        id='file-component-in-sequence'
     ),
-    (
+    pytest.param(
         sequence_component(padding=0), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%d.png'
+        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%d.png',
+        id='unpadded-sequence-component'
     ),
-    (
+    pytest.param(
         sequence_component(padding=4), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%04d.png'
+        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%04d.png',
+        id='padded-sequence-component'
     ),
-    (
+    pytest.param(
         container_component(), {},
-        'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a'
+        'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a',
+        id='container-component'
     ),
-    (unsupported_entity(), {}, NotImplementedError)
+    pytest.param(
+        unsupported_entity(), {},
+        NotImplementedError,
+        id='unsupported-entity'
+    )
 
-], ids=[
-    'file-component',
-    'file-component-in-container',
-    'file-component-in-sequence',
-    'unpadded-sequence-component',
-    'padded-sequence-component',
-    'container-component',
-    'unsupported-entity'
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''

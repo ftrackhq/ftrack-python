@@ -7,25 +7,20 @@ import pytest
 
 
 @pytest.mark.parametrize('schema, expected', [
-    ('Task', [
+    pytest.param('Task', [
         'Not started', 'In progress', 'Awaiting approval', 'Approved'
-    ]),
-    ('Shot', [
+    ], id='task'),
+    pytest.param('Shot', [
         'Normal', 'Omitted', 'On Hold'
-    ]),
-    ('AssetVersion', [
+    ], id='shot'),
+    pytest.param('AssetVersion', [
         'Approved', 'Pending'
-    ]),
-    ('AssetBuild', [
+    ], id='asset version'),
+    pytest.param('AssetBuild', [
         'Normal', 'Omitted', 'On Hold'
-    ]),
-    ('Invalid', ValueError)
-], ids=[
-    'task',
-    'shot',
-    'asset version',
-    'asset build',
-    'invalid'
+    ], id='asset_build'),
+    pytest.param(
+        'Invalid', ValueError,id='invalid')
 ])
 def test_get_statuses(project_schema, schema, expected):
     '''Retrieve statuses for schema and optional type.'''
@@ -40,17 +35,15 @@ def test_get_statuses(project_schema, schema, expected):
 
 
 @pytest.mark.parametrize('schema, expected', [
-    ('Task', [
+    pytest.param('Task', [
         'Generic', 'Animation', 'Modeling', 'Previz', 'Lookdev', 'Hair',
         'Cloth', 'FX', 'Lighting', 'Compositing', 'Tracking', 'Rigging',
         'test 1', 'test type 2'
-    ]),
-    ('AssetBuild', ['Character', 'Prop', 'Environment', 'Matte Painting']),
-    ('Invalid', ValueError)
-], ids=[
-    'task',
-    'asset build',
-    'invalid'
+    ], id='task'),
+    pytest.param('AssetBuild', [
+        'Character', 'Prop', 'Environment', 'Matte Painting'
+    ], id='asset build'),
+    pytest.param('Invalid', ValueError, id='invalid')
 ])
 def test_get_types(project_schema, schema, expected):
     '''Retrieve types for schema.'''
