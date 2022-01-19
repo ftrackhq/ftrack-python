@@ -9,13 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 2.3.1
+    :date: 2022-01-18
 
     .. change:: new
         :tags: Tests
 
         Update bitbucket-pipelines to provide tests on python 3.9.+
-
 
     .. change:: changed
         :tags: Tests
