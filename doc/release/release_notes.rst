@@ -14,7 +14,7 @@ Release Notes
     .. change:: changed
         :tags: events
 
-        Websocket connection now connects with multithread enabled.
+        Websocket now connects with multithread option enabled.
 
 .. release:: 2.3.1
     :date: 2022-01-18
