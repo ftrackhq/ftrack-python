@@ -642,7 +642,7 @@ def test_publish_with_multiple_replies(event_hub):
 
     assert sorted(called['callback']) == ['One', 'Two']
 
-@pytest.mark.slow
+
 def test_server_heartbeat_response():
     '''Maintain connection by responding to server heartbeat request.'''
     test_script = os.path.join(

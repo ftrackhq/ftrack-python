@@ -9,6 +9,13 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: changed
+        :tags: events
+
+        Websocket now connects with multithread option enabled.
+
 .. release:: 2.3.1
     :date: 2022-01-18
 

@@ -206,7 +206,7 @@ class EventHub(object):
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}, enable_multithread= True
             )
 
         except Exception as error:
