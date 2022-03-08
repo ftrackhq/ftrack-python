@@ -9,7 +9,8 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 2.3.2
+    :date: 2022-02-08
 
     .. change:: changed
         :tags: events
