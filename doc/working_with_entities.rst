@@ -15,8 +15,8 @@ may also provide helper methods to perform common operations such as replying to
 a note::
 
     note = session.query('Note').first()
-    print note.keys()
-    print note['content']
+    print(note.keys())
+    print(note['content'])
     note['content'] = 'A different message!'
     reply = note.create_reply(...)
 
@@ -35,14 +35,14 @@ To see the available attribute names on an entity use the
 :meth:`~ftrack_api.entity.base.Entity.keys` method on the instance::
 
     >>> task = session.query('Task').first()
-    >>> print task.keys()
+    >>> print(task.keys())
     ['id', 'name', ...]
 
 If you need more information about the type of attribute, examine the
 ``attributes`` property on the corresponding class::
 
     >>> for attribute in type(task).attributes:
-    ...     print attribute
+    ...     print(attribute)
     <ftrack_api.attribute.ScalarAttribute(id) object at 66701296>
     <ftrack_api.attribute.ScalarAttribute(name) object at 66702192>
     <ftrack_api.attribute.ReferenceAttribute(status) object at 66701240>
@@ -57,20 +57,20 @@ different types are reflected in the behaviour on the entity instance when
 accessing a particular attribute by key:
 
     >>> # Scalar
-    >>> print task['name']
+    >>> print(task['name'])
     'model'
     >>> task['name'] = 'comp'
 
     >>> # Single reference
-    >>> print task['status']
+    >>> print(task['status'])
     <Status(e610b180-4e64-11e1-a500-f23c91df25eb)>
     >>> new_status = session.query('Status').first()
     >>> task['status'] = new_status
 
     >>> # Collection
-    >>> print task['timelogs']
+    >>> print(task['timelogs'])
     <ftrack_api.collection.Collection object at 0x00000000040D95C0>
-    >>> print task['timelogs'][:]
+    >>> print(task['timelogs'][:])
     [<dynamic ftrack Timelog object 72322240>, ...]
     >>> new_timelog = session.create('Timelog', {...})
     >>> task['timelogs'].append(new_timelog)
@@ -101,7 +101,7 @@ passing in the entity type to create and any initial attribute values::
 If there are any default values that can be set client side then they will be
 applied at this point. Typically this will be the unique entity key::
 
-    >>> print new_user['id']
+    >>> print(new_user['id'])
     170f02a4-6656-4f15-a5cb-c4dd77ce0540
 
 At this point no information has been sent to the server. However, you are free
@@ -112,7 +112,7 @@ locally until you are ready to persist the changes by calling
 If you are wondering about what would happen if you accessed an unset attribute
 on a newly created entity, go ahead and give it a go::
 
-    >>> print new_user['first_name']
+    >>> print(new_user['first_name'])
     NOT_SET
 
 The session knows that it is a newly created entity that has not yet been
@@ -205,8 +205,8 @@ case you can you can populate those entities in one go using
     >>> session.populate(users, 'first_name, last_name')
     >>> with session.auto_populating(False):  # Turn off for example purpose.
     ...     for user in users:
-    ...         print 'Name: {0}'.format(user['first_name'])
-    ...         print 'Email: {0}'.format(user['email'])
+    ...         print('Name: {0}'.format(user['first_name']))
+    ...         print('Email: {0}'.format(user['email']))
     Name: Martin
     Email: NOT_SET
     ...
@@ -229,16 +229,16 @@ To do this, use :func:`ftrack_api.inspection.state`::
 
     >>> import ftrack_api.inspection
     >>> new_user = session.create('User', {})
-    >>> print ftrack_api.inspection.state(new_user)
+    >>> print(ftrack_api.inspection.state(new_user))
     CREATED
     >>> existing_user = session.query('User').first()
-    >>> print ftrack_api.inspection.state(existing_user)
+    >>> print(ftrack_api.inspection.state(existing_user))
     NOT_SET
     >>> existing_user['email'] = 'martin@example.com'
-    >>> print ftrack_api.inspection.state(existing_user)
+    >>> print(ftrack_api.inspection.state(existing_user))
     MODIFIED
     >>> session.delete(new_user)
-    >>> print ftrack_api.inspection.state(new_user)
+    >>> print(ftrack_api.inspection.state(new_user))
     DELETED
 
 .. _working_with_entities/entity_types:
@@ -289,7 +289,7 @@ default when no projections added to the query::
 
     >>> user = session.query('User').first()
     >>> with session.auto_populating(False):  # For demonstration purpose only.
-    ...     print user.items()
+    ...     print(user.items())
     [
         (u'id', u'59f0963a-15e2-11e1-a5f1-0019bb4983d8')
         (u'username', Symbol(NOT_SET)),
@@ -330,7 +330,7 @@ Now a projection-less query will also query *username* by default:
 
     >>> user = session.query('User').first()
     >>> with session.auto_populating(False):  # For demonstration purpose only.
-    ...     print user.items()
+    ...     print(user.items())
     [
         (u'id', u'59f0963a-15e2-11e1-a5f1-0019bb4983d8')
         (u'username', u'martin'),
@@ -345,7 +345,7 @@ loaded on demand::
     >>> session = ftrack_api.Session()  # Start new session to avoid cache.
     >>> user = session.query('select id from User').first()
     >>> with session.auto_populating(False):  # For demonstration purpose only.
-    ...     print user.items()
+    ...     print(user.items())
     [
         (u'id', u'59f0963a-15e2-11e1-a5f1-0019bb4983d8')
         (u'username', Symbol(NOT_SET)),
@@ -383,7 +383,7 @@ Now you have a new helper method *get_full_name* on your *User* entities::
 
     >>> session = ftrack_api.Session()  # New session to pick up changes.
     >>> user = session.query('User').first()
-    >>> print user.get_full_name()
+    >>> print(user.get_full_name())
     Martin Pengelly-Phillips
 
 If you'd rather not patch the existing classes, or perhaps have a lot of helpers
@@ -421,7 +421,7 @@ The resulting effect is the same::
 
     >>> session = ftrack_api.Session()  # New session to pick up changes.
     >>> user = session.query('User').first()
-    >>> print user.get_full_name()
+    >>> print(user.get_full_name())
     Martin Pengelly-Phillips
 
 .. note::
@@ -430,5 +430,5 @@ The resulting effect is the same::
     generated class. Instead your custom class becomes the base for the leaf
     class::
 
-        >>> print type(user).__mro__
+        >>> print(type(user).__mro__)
         (<dynamic ftrack class 'User'>, <dynamic ftrack class 'CustomUser'>, ...)

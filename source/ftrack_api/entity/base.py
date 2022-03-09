@@ -6,6 +6,7 @@ from __future__ import absolute_import
 from builtins import str
 import abc
 import collections
+from six.moves import collections_abc
 import logging
 
 import ftrack_api.symbol
@@ -35,7 +36,7 @@ class DynamicEntityTypeMetaclass(abc.ABCMeta):
         return '<dynamic ftrack class \'{0}\'>'.format(self.__name__)
 
 
-class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections.MutableMapping)):
+class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections_abc.MutableMapping)):
     '''Base class for all entities.'''
 
     entity_type = 'Entity'

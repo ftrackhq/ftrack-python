@@ -69,7 +69,7 @@ To list all users assigned to a task, see the following example::
         'where assignments any (context_id = "{0}")'.format(task['id'])
     )
     for user in users:
-        print user['first_name'], user['last_name']
+        print(user['first_name'], user['last_name'])
 
 To list the current user's assigned tasks, see the example below::
 
@@ -78,5 +78,5 @@ To list the current user's assigned tasks, see the example below::
         'where assignments any (resource.username = "{0}")'.format(session.api_user)
     )
     for task in assigned_tasks:
-        print u' / '.join(item['name'] for item in task['link'])
+        print(' / '.join(item['name'] for item in task['link']))
 

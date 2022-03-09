@@ -29,7 +29,7 @@ def main(arguments=None):
     namespace = parser.parse_args(arguments)
     logging.basicConfig(level=logging.INFO)
 
-    session = ftrack_api.Session()
+    session = ftrack_api.Session(auto_connect_event_hub=True)
 
     message_count = 100
     sleep_time_per_message = 1

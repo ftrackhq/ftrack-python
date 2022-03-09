@@ -19,11 +19,8 @@ def test_string_representation():
 
 
 @pytest.mark.parametrize('expression, event, expected', [
-    ('topic=test', Event(topic='test'), True),
-    ('topic=test', Event(topic='other-test'), False)
-], ids=[
-    'interested',
-    'not interested'
+    pytest.param('topic=test', Event(topic='test'), True, id='interested'),
+    pytest.param('topic=test', Event(topic='other-test'), False, id='not interested')
 ])
 def test_interested_in(expression, event, expected):
     '''Determine if subscriber interested in event.'''

@@ -4,11 +4,43 @@
 from __future__ import absolute_import
 
 import logging
+import collections
 import os
 import uuid
 import imp
-import inspect
 import traceback
+
+try:
+    from inspect import getfullargspec
+
+except ImportError:
+    # getargspec is deprecated in version 3.0. convert `ArgSpec` to a named
+    # tuple `FullArgSpec`. We only rely on the values of varargs and varkw.
+
+    # Implemented with "https://github.com/tensorflow/tensorflow/blob/3d69fd003d4acef0ea5663a4794c1e9a4f6ec998/tensorflow/python/util/tf_inspect.py#L34"
+    # as reference.
+    import inspect
+
+    FullArgSpec = collections.namedtuple(
+        'FullArgSpec', [
+            'args', 'varargs', 'varkw', 'defaults', 'kwonlyargs', 'kwonlydefaults', 'annotations'
+        ]
+    )
+
+    def getfullargspec(func):
+        '''a python 2 version of `getfullargspec`.'''
+        spec = inspect.getargspec(func)
+
+        return FullArgSpec(
+            args=spec.args,
+            varargs=spec.varargs,
+            varkw=spec.keywords,
+            defaults=spec.defaults,
+            kwonlyargs=[],
+            kwonlydefaults=None,
+            annotations={}
+        )
+
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
@@ -66,7 +98,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                 else:
                     # Attempt to only pass arguments that are accepted by the
                     # register function.
-                    specification = inspect.getargspec(module.register)
+                    specification = getfullargspec(module.register)
 
                     selected_positional_arguments = positional_arguments
                     selected_keyword_arguments = keyword_arguments
@@ -85,7 +117,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                         ]
                         selected_keyword_arguments = {}
 
-                    elif not specification.keywords:
+                    elif not specification.varkw:
                         # Remove arguments that have been passed as positionals.
                         remainder = specification.args[
                             len(positional_arguments):

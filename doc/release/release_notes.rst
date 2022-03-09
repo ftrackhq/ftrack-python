@@ -14,7 +14,59 @@ Release Notes
     .. change:: change
         :tags: events
 
-        I only running synchronous events (local mode), to not bother notifying server on subscribe.
+        If local mode (synchronous event hub disconnected from server), server is
+        not unnecessarily notified about the subscriber.
+
+.. release:: 2.3.2
+    :date: 2022-02-08
+
+    .. change:: changed
+        :tags: events
+
+        Websocket now connects with multithread option enabled.
+
+.. release:: 2.3.1
+    :date: 2022-01-18
+
+    .. change:: new
+        :tags: Tests
+
+        Update bitbucket-pipelines to provide tests on python 3.9.+
+
+    .. change:: changed
+        :tags: Tests
+
+        Update pytest version to latest py2/3 compatible version and update tests accordingly.
+
+
+    .. change:: changed
+        :tags: Documentation
+
+        Removed deprecated py2 print statements.
+
+
+.. release:: 2.3.0
+    :date: 2021-11-09
+
+    .. change:: changed
+        :tags: events
+
+        Queue up published messages that happen before the event hub has finished initializing
+        and publish them once connected.
+
+    .. change:: fixed
+        :tags: compatibility
+
+        Using or importing the ABCs from 'collections' instead of from 'collections.abc'
+        is deprecated since Python 3.3,and in 3.9 it will stop working.
+
+    .. change:: fixed
+        :tags: compatibility
+
+        `inspect.getargspec` is deprecated since Python 3.0, use `inspect.signature` or
+        `inspect.getfullargspec`.
+
+>>>>>>> master
 
 .. release:: 2.2.0
     :date: 2021-09-20
@@ -1435,12 +1487,12 @@ Release Notes
 
         Previously::
 
-            print entity.state
+            print(entity.state)
 
         Now::
 
             import ftrack_api.inspection
-            print ftrack_api.inspection.state(entity)
+            print(ftrack_api.inspection.state(entity))
 
         There is also an optimised inspection,
         :func:`ftrack_api.inspection.states`. for determining state of many
@@ -1494,12 +1546,12 @@ Release Notes
         Previously::
 
             session.set_state(entity, state)
-            print session.get_state(entity)
+            print(session.get_state(entity))
 
         Now::
 
             entity.state = state
-            print entity.state
+            print(entity.state)
 
     .. change:: changed
         :tags: entity state

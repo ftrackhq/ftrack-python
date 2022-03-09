@@ -13,11 +13,8 @@ def transformer(session):
 
 
 @pytest.mark.parametrize('resource_identifier, context, expected', [
-    ('identifier', None, 'identifier'),
-    ('identifier', {'user': {'username': 'user'}}, 'identifier')
-], ids=[
-    'no context',
-    'basic context'
+    pytest.param('identifier', None, 'identifier', id='no context'),
+    pytest.param('identifier', {'user': {'username': 'user'}}, 'identifier', id='basic context')
 ])
 def test_encode(transformer, resource_identifier, context, expected):
     '''Encode resource identifier.'''
@@ -25,11 +22,8 @@ def test_encode(transformer, resource_identifier, context, expected):
 
 
 @pytest.mark.parametrize('resource_identifier, context, expected', [
-    ('identifier', None, 'identifier'),
-    ('identifier', {'user': {'username': 'user'}}, 'identifier')
-], ids=[
-    'no context',
-    'basic context'
+    pytest.param('identifier', None, 'identifier',id='no context'),
+    pytest.param('identifier', {'user': {'username': 'user'}}, 'identifier', id='basic context')
 ])
 def test_decode(transformer, resource_identifier, context, expected):
     '''Encode resource identifier.'''

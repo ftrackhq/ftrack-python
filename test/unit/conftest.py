@@ -532,19 +532,39 @@ def mocked_schemas():
     }]
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def mocked_schema_session(mocker, mocked_schemas):
     '''Return a session instance with mocked schemas.'''
-    with mocker.patch.object(
-        ftrack_api.Session,
-        '_load_schemas',
-        return_value=mocked_schemas
-    ):
-        # Mock _configure_locations since it will fail if no location schemas
-        # exist.
-        with mocker.patch.object(
-            ftrack_api.Session,
-            '_configure_locations'
-        ):
-            patched_session = ftrack_api.Session()
-            yield patched_session
+    mocker.patch.object(ftrack_api.Session,'_load_schemas',return_value=mocked_schemas)
+    # Mock _configure_locations since it will fail if no location schemas
+    # exist.
+    mocker.patch.object(ftrack_api.Session, '_configure_locations')
+    patched_session = ftrack_api.Session()
+    yield patched_session
+
+
+@pytest.fixture
+def propagating_thread():
+    from threading import Thread
+
+    class PropagatingThread(Thread):
+        def __init__(self, *args, **kwargs):
+            super(PropagatingThread, self).__init__(*args, **kwargs)
+
+        def run(self):
+            self.exc = None
+            try:
+                if hasattr(self, '_Thread__target'):
+                    self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+                else:
+                    self.ret = self._target(*self._args, **self._kwargs)
+            except BaseException as e:
+                self.exc = e
+
+        def join(self, timeout=None):
+            super(PropagatingThread, self).join(timeout)
+            if self.exc is not None:
+                raise self.exc
+            return self.ret
+
+    return PropagatingThread

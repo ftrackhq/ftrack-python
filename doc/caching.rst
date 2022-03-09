@@ -23,14 +23,14 @@ retrieved::
 
     >>> timelog = user['timelogs'][0]
     >>> with session.auto_populating(False):
-    >>>     print timelog['comment']
+    >>>     print(timelog['comment'])
     NOT_SET
     >>> session.query(
     ...     'select comment from Timelog where id is "{0}"'
     ...     .format(timelog['id'])
     ... ).all()
     >>> with session.auto_populating(False):
-    >>>     print timelog['comment']
+    >>>     print(timelog['comment'])
     'Some comment'
 
 By default, each :class:`~ftrack_api.session.Session` is configured with a
@@ -81,7 +81,7 @@ You can check (or even modify) at any time what cache configuration a session is
 using by accessing the `cache` attribute on a
 :class:`~ftrack_api.session.Session`::
 
-    >>> print session.cache
+    >>> print(session.cache)
     <ftrack_api.cache.LayeredCache object at 0x0000000002F64400>
 
 Writing a new cache interface

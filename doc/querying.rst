@@ -38,7 +38,7 @@ the actual query to the server is not issued until you iterate or index into the
 query results::
 
     for project in projects:
-        print project['name']
+        print(project['name'])
 
 You can also explicitly call :meth:`~ftrack_api.query.QueryResult.all` on the
 result set::

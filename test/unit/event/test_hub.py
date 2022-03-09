@@ -7,6 +7,7 @@ import os
 import time
 import subprocess
 import sys
+import logging
 
 import pytest
 from flaky import flaky
@@ -71,6 +72,7 @@ def event_hub(request, session):
     hub = ftrack_api.event.hub.EventHub(
         session.server_url, session.api_user, session.api_key
     )
+
     hub.connect()
 
     def cleanup():
@@ -84,11 +86,8 @@ def event_hub(request, session):
 
 
 @pytest.mark.parametrize('server_url, expected', [
-    ('https://test.ftrackapp.com', 'https://test.ftrackapp.com'),
-    ('https://test.ftrackapp.com:9000', 'https://test.ftrackapp.com:9000')
-], ids=[
-    'with port',
-    'without port'
+    pytest.param('https://test.ftrackapp.com', 'https://test.ftrackapp.com', id='with port'),
+    pytest.param('https://test.ftrackapp.com:9000', 'https://test.ftrackapp.com:9000', id='without port')
 ])
 def test_get_server_url(server_url, expected):
     '''Return server url.'''
@@ -99,11 +98,8 @@ def test_get_server_url(server_url, expected):
 
 
 @pytest.mark.parametrize('server_url, expected', [
-    ('https://test.ftrackapp.com', 'test.ftrackapp.com'),
-    ('https://test.ftrackapp.com:9000', 'test.ftrackapp.com:9000')
-], ids=[
-    'with port',
-    'without port'
+    pytest.param('https://test.ftrackapp.com', 'test.ftrackapp.com', id='with port'),
+    pytest.param('https://test.ftrackapp.com:9000', 'test.ftrackapp.com:9000', id='without port')
 ])
 def test_get_network_location(server_url, expected):
     '''Return network location of server url.'''
@@ -114,11 +110,8 @@ def test_get_network_location(server_url, expected):
 
 
 @pytest.mark.parametrize('server_url, expected', [
-    ('https://test.ftrackapp.com', True),
-    ('http://test.ftrackapp.com', False)
-], ids=[
-    'secure',
-    'not secure'
+    pytest.param('https://test.ftrackapp.com', True, id='secure'),
+    pytest.param('http://test.ftrackapp.com', False, id='not secure')
 ])
 def test_secure_property(server_url, expected, mocker):
     '''Return whether secure connection used.'''
@@ -143,15 +136,10 @@ def test_connected_property(session):
 
 
 @pytest.mark.parametrize('server_url, expected', [
-    ('https://test.ftrackapp.com', 'https://test.ftrackapp.com'),
-    ('https://test.ftrackapp.com:9000', 'https://test.ftrackapp.com:9000'),
-    ('test.ftrackapp.com', ValueError),
-    ('https://:9000', ValueError),
-], ids=[
-    'with port',
-    'without port',
-    'missing scheme',
-    'missing hostname'
+    pytest.param('https://test.ftrackapp.com', 'https://test.ftrackapp.com', id='with port'),
+    pytest.param('https://test.ftrackapp.com:9000', 'https://test.ftrackapp.com:9000', id='without port'),
+    pytest.param('test.ftrackapp.com', ValueError, id='missing scheme'),
+    pytest.param('https://:9000', ValueError, id='missing hostname'),
 ])
 def test_initialise_against_server_url(server_url, expected):
     '''Initialise against server url.'''
@@ -222,11 +210,11 @@ def test_connect_missing_required_transport(session, mocker, caplog):
         event_hub, '_get_socket_io_session', _get_socket_io_session
     )
 
-    with pytest.raises(ftrack_api.exception.EventHubConnectionError):
+    with caplog.at_level(logging.DEBUG) as log_ctx, pytest.raises(ftrack_api.exception.EventHubConnectionError) as exception_ctx:
         event_hub.connect()
     
     assert (
-        'Server does not support websocket sessions.' in str(caplog.text())
+        'Server does not support websocket sessions.' in str(caplog.text)
     )
 
 
@@ -338,11 +326,8 @@ def test_wait_interrupted_by_disconnect(event_hub):
 
 
 @pytest.mark.parametrize('identifier, registered', [
-    ('registered-test-subscriber', True),
-    ('unregistered-test-subscriber', False)
-], ids=[
-    'registered',
-    'missing'
+    pytest.param('registered-test-subscriber', True, id='registered'),
+    pytest.param('unregistered-test-subscriber', False, id='missing')
 ])
 def test_get_subscriber_by_identifier(event_hub, identifier, registered):
     '''Return subscriber by identifier.'''
@@ -466,15 +451,10 @@ def test_unsubscribe_missing_subscriber(event_hub):
 
 
 @pytest.mark.parametrize('event_data', [
-    dict(source=dict(id='1', user=dict(username='auto'))),
-    dict(source=dict(user=dict(username='auto'))),
-    dict(source=dict(id='1')),
-    dict()
-], ids=[
-    'pre-prepared',
-    'missing id',
-    'missing user',
-    'no source'
+    pytest.param(dict(source=dict(id='1', user=dict(username='auto'))), id='pre-prepared'),
+    pytest.param(dict(source=dict(user=dict(username='auto'))), id='missing id'),
+    pytest.param(dict(source=dict(id='1')), id='missing user'),
+    pytest.param(dict(), id='no source')
 ])
 def test_prepare_event(session, event_data):
     '''Prepare event.'''
@@ -560,11 +540,7 @@ def test_publish_logs_other_errors(event_hub, caplog, mocker):
 
     expected = 'Error sending event {0}.'.format(event)
 
-
-    if not isinstance(caplog.records, list):
-        records = caplog.records()
-    else:
-        records = caplog.records
+    records = caplog.get_records(when='call')
 
     messages = [record.getMessage().strip() for record in records]
     assert expected in messages, 'Expected log message missing in output.'
@@ -587,6 +563,39 @@ def test_synchronous_publish(event_hub):
 
     results = event_hub.publish(Event(topic='test'), synchronous=True)
     assert results == ['A', 'B', 'C']
+
+
+def test_publish_during_connect(session, mocker):
+    '''Test publishing while connection is initialising.'''
+    event_hub = ftrack_api.event.hub.EventHub(
+        session.server_url, session.api_user, session.api_key
+    )
+
+    def replier(event):
+        '''Replier.'''
+        return 'Replied'
+
+    event_hub.subscribe('topic=test', replier)
+    called = {'callback': None}
+
+    def on_reply(event):
+        called['callback'] = event['data']
+
+    # Mark the connection as initialised.
+    event_hub.init_connection()
+
+    event_hub.publish(
+        Event(topic='test'), on_reply=on_reply
+    )
+
+    assert event_hub._event_send_queue.qsize() == 1
+
+    event_hub.connect()
+    event_hub.wait(2)
+
+    assert called['callback'] == 'Replied'
+
+    assert event_hub._event_send_queue.qsize() == 0
 
 
 def test_publish_with_reply(event_hub):
@@ -634,7 +643,6 @@ def test_publish_with_multiple_replies(event_hub):
     assert sorted(called['callback']) == ['One', 'Two']
 
 
-@pytest.mark.slow
 def test_server_heartbeat_response():
     '''Maintain connection by responding to server heartbeat request.'''
     test_script = os.path.join(

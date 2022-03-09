@@ -84,13 +84,12 @@ setup(
         'clique == 1.6.1',
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
-        'six >= 1, < 2',
+        'six >= 1.13.0, < 2',
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'pytest >= 2.7, < 3',
-        'pytest-mock >= 0.4, < 1',
-        'pytest-catchlog >= 1, <=2',
+        'pytest >= 4.6',
+        'pytest-mock',
         'mock',
         'flaky'
     ],
@@ -100,9 +99,13 @@ setup(
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3'
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
+
     ],
     zip_safe=False,
-    python_requires=">=2.7.9, <4.0"
+    python_requires=">=2.7.9, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, < 3.10"
 )

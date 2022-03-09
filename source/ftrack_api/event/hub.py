@@ -9,6 +9,7 @@ from builtins import str
 from builtins import range
 from builtins import object
 import collections
+from six.moves import collections_abc
 import urllib.parse
 import threading
 import queue as queue
@@ -75,10 +76,11 @@ class EventHub(object):
         self._intentional_disconnect = False
 
         self._event_queue = queue.Queue()
+        self._event_send_queue = queue.Queue()
         self._event_namespace = 'ftrack.event'
         self._expression_parser = ftrack_api.event.expression.Parser()
 
-        # Track if a connection has been initialised. 
+        # Track if a connection has been initialised.
         self._connection_initialised = False
 
         # Default values for auto reconnection timeout on unintentional
@@ -137,6 +139,16 @@ class EventHub(object):
         '''Return whether secure connection used.'''
         return self.server.scheme == 'https'
 
+    def init_connection(self):
+        '''If the connection is not handled synchronously the connection may be marked
+        as initialized to allow for published events to be queued. '''
+
+        self.logger.debug(
+            'Connection initialized,'
+        )
+
+        self._connection_initialised = True
+
     def connect(self):
         '''Initialise connection to server.
 
@@ -144,8 +156,9 @@ class EventHub(object):
         connected or connection fails.
 
         '''
-        # Update tracking flag for connection.
-        self._connection_initialised = True
+        if not self._connection_initialised:
+            # Update tracking flag for connection.
+            self.init_connection()
 
         if self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -193,7 +206,7 @@ class EventHub(object):
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}, enable_multithread= True
             )
 
         except Exception as error:
@@ -241,6 +254,15 @@ class EventHub(object):
         # reconnecting automatically for example.
         for subscriber in self._subscribers[:]:
             self._notify_server_about_subscriber(subscriber)
+
+        # Publish all waiting messages
+        while True:
+            try:
+                self._publish(*self._event_send_queue.get_nowait())
+
+            except queue.Empty:
+                break
+
 
     @property
     def connected(self):
@@ -653,6 +675,21 @@ class EventHub(object):
             return self._handle(event, synchronous=synchronous)
 
         if not self.connected:
+            if self._connection_initialised and not self._intentional_disconnect:
+                # The connection is still being initialized, add
+                # the message to the queue and attempt to send it
+                # once connection has been established
+
+                self._event_send_queue.put(
+                    (event, synchronous, callback, on_reply)
+                )
+
+                self.logger.debug(
+                    'Connection is still initializing, adding message to '
+                    'queue'
+                )
+
+                return True
             raise ftrack_api.exception.EventHubConnectionError(
                 'Cannot publish event asynchronously as not connected to '
                 'server.'
@@ -972,7 +1009,7 @@ class EventHub(object):
 
             if len(args) == 1:
                 event_payload = args[0]
-                if isinstance(event_payload, collections.Mapping):
+                if isinstance(event_payload, collections_abc.Mapping):
                     try:
                         event = ftrack_api.event.base.Event(**event_payload)
                     except Exception:
@@ -1034,7 +1071,7 @@ class EventHub(object):
 
     def _decode_object_hook(self, item):
         '''Return *item* transformed.'''
-        if isinstance(item, collections.Mapping):
+        if isinstance(item, collections_abc.Mapping):
             if 'inReplyToEvent' in item:
                 item['in_reply_to_event'] = item.pop('inReplyToEvent')
 

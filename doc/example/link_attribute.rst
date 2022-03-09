@@ -17,7 +17,7 @@ You can use the `link` attribute on any entity inheriting from a
     task = session.query(
         'select link from Task where name is "myTask"'
     ).first()
-    print task['link']
+    print(task['link'])
 
 It can also be used create a list of parent entities, including the task
 itself::
@@ -44,7 +44,7 @@ a user::
         'select context.link, start, duration from Timelog '
         'where user.username is "john.doe"'
     ):
-        print timelog['context']['link'], timelog['start'], timelog['duration']
+        print(timelog['context']['link'], timelog['start'], timelog['duration'])
 
 The attribute is also available from the `AssetVersion` asset relation::
 
@@ -52,4 +52,4 @@ The attribute is also available from the `AssetVersion` asset relation::
         'select link from AssetVersion '
         'where user.username is "john.doe"'
     ):
-        print asset_version['link']
+        print(asset_version['link'])
