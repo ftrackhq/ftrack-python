@@ -246,51 +246,51 @@ sequence_component = new_sequence_component()
 @pytest.mark.parametrize(
     'component, hierarchy, expected, structure, asset_name',
     [
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='file_component_on_project'
         ),
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/foobar/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
                 project_versions_prefix='foobar'
             ),
-            'my_new_asset'
+            'my_new_asset', id='file_component_on_project_with_prefix'
         ),
-        (
+        pytest.param(
             file_component,
             ['baz1', 'bar'],
             '{project_name}/baz1/bar/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='file_component_with_hierarchy'
         ),
-        (
+        pytest.param(
             sequence_component,
             ['baz2', 'bar'],
             '{project_name}/baz2/bar/my_new_asset/v001/baz.%04d.jpg',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='sequence_component'
         ),
-        (
+        pytest.param(
             sequence_component['members'][3],
             ['baz3', 'bar'],
             '{project_name}/baz3/bar/my_new_asset/v001/baz.0004.jpg',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='sequence_component_member'
         ),
-        (
+        pytest.param(
             container_component,
             ['baz4', 'bar'],
             '{project_name}/baz4/bar/my_new_asset/v001/container_component',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='container_component'
         ),
-        (
+        pytest.param(
             new_file_component(container=container_component),
             ['baz5', 'bar'],
             (
@@ -298,86 +298,69 @@ sequence_component = new_sequence_component()
                 'foo.png'
             ),
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='container_component_member'
         ),
-        (
+        pytest.param(
             file_component,
             [u'björn'],
             '{project_name}/bjorn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='slugify_non_ascii_hierarchy'
         ),
-        (
+        pytest.param(
             file_component,
             [u'björn!'],
             '{project_name}/bjorn_/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='slugify_illegal_hierarchy'
         ),
-        (
+        pytest.param(
             new_file_component(name=u'fää'),
             [],
             '{project_name}/my_new_asset/v001/faa.png',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='slugify_non_ascii_component_name'
         ),
-        (
+        pytest.param(
             new_file_component(name=u'fo/o'),
             [],
             '{project_name}/my_new_asset/v001/fo_o.png',
             ftrack_api.structure.standard.StandardStructure(),
-            'my_new_asset'
+            'my_new_asset', id='slugify_illegal_component_name'
         ),
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/aao/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
-            u'åäö'
+            u'åäö', id='slugify_non_ascii_asset_name'
         ),
-        (
+        pytest.param(
             file_component,
             [],
             '{project_name}/my_ne____w_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(),
-            u'my_ne!!!!w_asset'
+            u'my_ne!!!!w_asset', id='slugify_illegal_asset_name'
         ),
-        (
+        pytest.param(
             file_component,
             [u'björn2'],
             u'{project_name}/björn2/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
                 illegal_character_substitute=None
             ),
-            'my_new_asset'
+            'my_new_asset', id='slugify_none'
         ),
-        (
+        pytest.param(
             file_component,
             [u'bj!rn'],
             '{project_name}/bj^rn/my_new_asset/v001/foo.png',
             ftrack_api.structure.standard.StandardStructure(
                 illegal_character_substitute='^'
             ),
-            'my_new_asset'
+            'my_new_asset', id='slugify_other_character'
         )
-    ], ids=[
-        'file_component_on_project',
-        'file_component_on_project_with_prefix',
-        'file_component_with_hierarchy',
-        'sequence_component',
-        'sequence_component_member',
-        'container_component',
-        'container_component_member',
-        'slugify_non_ascii_hierarchy',
-        'slugify_illegal_hierarchy',
-        'slugify_non_ascii_component_name',
-        'slugify_illegal_component_name',
-        'slugify_non_ascii_asset_name',
-        'slugify_illegal_asset_name',
-        'slugify_none',
-        'slugify_other_character'
-    ]
-)
+    ])
 def test_get_resource_identifier(
     component, hierarchy, expected, structure, asset_name, new_project
 ):

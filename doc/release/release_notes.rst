@@ -9,7 +9,27 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
-.. release:: Upcoming
+.. release:: 2.3.2
+    :date: 2022-02-08
+
+    .. change:: changed
+        :tags: events
+
+        Websocket now connects with multithread option enabled.
+
+.. release:: 2.3.1
+    :date: 2022-01-18
+
+    .. change:: new
+        :tags: Tests
+
+        Update bitbucket-pipelines to provide tests on python 3.9.+
+
+    .. change:: changed
+        :tags: Tests
+
+        Update pytest version to latest py2/3 compatible version and update tests accordingly.
+
 
     .. change:: changed
         :tags: Structure, Locations
