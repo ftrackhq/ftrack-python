@@ -617,7 +617,10 @@ class Location(ftrack_api.entity.base.Entity):
         return resource_identifiers
 
     def get_filesystem_path(self, entity, with_entities=False):
-        '''Return filesystem path for *component*.'''
+        '''Return filesystem path for *entity*.
+
+        *with_entities* returns a list of entities and their contributing path
+        components.'''
         if with_entities is not True:
             return self.get_filesystem_paths([entity])[0]
         else:
