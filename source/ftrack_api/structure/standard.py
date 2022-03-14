@@ -109,7 +109,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return str(value.strip().lower())
 
     def _resolve_project(self, project, context=None, with_entities=False):
-        '''Return resource identifier for *project*.'''
+        '''Return resource identifier for *project* and *context*, with entities
+        returned if *with_entities* is True.'''
         # Base on project name
         result = [self.sanitise_for_filesystem(project['name'])]
         if with_entities is True:
@@ -119,7 +120,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     def _resolve_context_entity(
         self, entity, context=None, with_entities=False
     ):
-        '''Return resource identifier parts from general *entity*.'''
+        '''Return resource identifier parts from general *entity* and *context*,
+        with entities return if *with_entities* is True.'''
 
         error_message = (
             'Entity {0!r} must be supported (have a link), be committed and have'
@@ -131,7 +133,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         session = entity.session
 
-        if not 'link' in entity:
+        if 'link' not in entity:
             raise NotImplementedError(
                 'Cannot generate resource identifier for unsupported '
                 'entity {0!r}'.format(entity)
@@ -142,12 +144,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         if not link:
             raise ftrack_api.exception.StructureError(error_message)
 
-        if 'project' in entity:
-            project = entity['project']
-        elif 'project_id' in entity:
-            project = session.get('Project', entity['project_id'])
-        else:
-            project = session.get('Project', link[0]['id'])
+        project = session.get('Project', link[0]['id'])
 
         parts = self._resolve_project(project)
 
@@ -179,8 +176,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         return parts
 
     def _resolve_asset(self, asset, context=None, with_entities=False):
-        '''Build resource identifier for *asset*, based on the context
-        supplied.'''
+        '''Build resource identifier for *asset*, based on the *context*
+        supplied ,with entities returned if *with_entities* is True.'''
         error_message = 'Asset {0!r} must be committed and have a asset with parent context.'.format(
             asset
         )
@@ -204,8 +201,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     def _resolve_version(
         self, version, component=None, context=None, with_entities=False
     ):
-        '''Get resource identifier for *version**, based on the context
-        supplied.'''
+        '''Get resource identifier for *version**, based on the *context*
+        supplied, with entities returned if *with_entities* is True.'''
         error_message = 'Version {0!r} must be committed and have a asset with parent context.'.format(
             version
         )
@@ -234,7 +231,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         self, sequence_component, context=None, with_entities=False
     ):
         '''Get resource identifier for *sequence_component*, based on the *context*
-        supplied.'''
+        supplied, with entities returned if *with_entities* is True.'''
         # Create sequence expression for the sequence component and add it
         # to the parts.
         error_message = (
@@ -265,8 +262,8 @@ class StandardStructure(ftrack_api.structure.base.Structure):
     def _resolve_container_component(
         self, container_component, context=None, with_entities=False
     ):
-        '''Get resource identifier for *container_component*, based on the context
-        supplied.'''
+        '''Get resource identifier for *container_component*, based on the *context*
+        supplied, with entities returned if *with_entities* is True.'''
         # Create sequence expression for the sequence component and add it
         # to the parts.
         error_message = (
@@ -292,7 +289,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         self, component, container, context=None, with_entities=False
     ):
         '''Get resource identifier for *container*, based on the *component*
-        supplied and *context*.'''
+        supplied and *context*, with entities returned if *with_entities* is True.'''
         error_message = (
             'Container {0!r} must defined and be committed.'.format(container)
         )
@@ -331,7 +328,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         self, file_component, context=None, with_entities=False
     ):
         '''Get resource identifier for file component, based on the context
-        supplied.'''
+        supplied, with entities returned if *with_entities* is True.'''
         error_message = (
             'File component {0!r} must defined and be committed.'.format(
                 file_component
@@ -369,7 +366,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
         self, container_component, context=None, with_entities=False
     ):
         '''Get resource identifier for *container_component*, based on the context
-        supplied.'''
+        supplied, with entities returned if *with_entities* is True.'''
         # Get resource identifier for container component
         error_message = (
             'Container component {0!r} must be committed and.'.format(
