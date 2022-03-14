@@ -20,14 +20,14 @@ class Structure(with_metaclass(ABCMeta, object)):
         super(Structure, self).__init__()
 
     @abstractmethod
-    def get_resource_identifier(self, entity, context=None):
+    def get_resource_identifier(self, entity, context=None, with_entities=False):
         '''Return a list of resource identifier for supplied *entity*.
 
         *context* can be a mapping that supplies additional information.
 
         '''
 
-    def get_resource_identifiers(self, entities, context=None):
+    def get_resource_identifiers(self, entities, context=None, with_entities=False):
         '''Return a list of  resource identifier for supplied *entities*.
 
         *context* can be a mapping that supplies additional information.
@@ -35,7 +35,7 @@ class Structure(with_metaclass(ABCMeta, object)):
         '''
         result = []
         for entity in entities:
-            result.append(self.get_resource_identifier(entity, context=context))
+            result.append(self.get_resource_identifier(entity, context=context, with_entities=with_entities))
         return result
 
     def _get_sequence_expression(self, sequence):

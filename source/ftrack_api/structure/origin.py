@@ -7,13 +7,14 @@ from .base import Structure
 class OriginStructure(Structure):
     '''Origin structure that passes through existing resource identifier.'''
 
-    def get_resource_identifier(self, entity, context=None):
+    def get_resource_identifier(self, entity, context=None, with_entities=False):
         '''Return a resource identifier for supplied *entity*.
 
         *context* should be a mapping that includes at least a
         'source_resource_identifier' key that refers to the resource identifier
         to pass through.
 
+        *with_entities* Unsupported for this type of structure.
         '''
         if context is None:
             context = {}

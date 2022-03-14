@@ -616,9 +616,27 @@ class Location(ftrack_api.entity.base.Entity):
 
         return resource_identifiers
 
-    def get_filesystem_path(self, entity):
+    def get_filesystem_path(self, entity, with_entities=False):
         '''Return filesystem path for *component*.'''
-        return self.get_filesystem_paths([entity])[0]
+        if with_entities is not True:
+            return self.get_filesystem_paths([entity])[0]
+        else:
+            if isinstance(entity, Component):
+                raise ftrack_api.exception.EntityTypeError(
+                    'Filesystem path with entities not supported on published '
+                    'components', self
+                )
+            resource_identifiers_and_entities = self.structure.get_resource_identifier(
+                entity, with_entities=True)
+            filesystem_paths = [
+                (
+                    resource_identifiers_and_entities[0][0],
+                    self.accessor.get_filesystem_path(
+                        resource_identifiers_and_entities[0][1])
+                )
+            ]
+            filesystem_paths.extend(resource_identifiers_and_entities[1:])
+            return filesystem_paths
 
     def get_filesystem_paths(self, entities):
         '''Return filesystem paths for *components*.'''

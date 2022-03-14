@@ -115,11 +115,13 @@ class IdStructure(ftrack_api.structure.base.Structure):
             + [container_component['id'][4:]])
         return parts
 
-    def get_resource_identifier(self, entity, context=None):
+    def get_resource_identifier(self, entity, context=None, with_entities=False):
         '''Return a resource identifier for supplied *entity*.
 
         *context* can be a mapping that supplies additional information, but
         is unused in this implementation.
+
+        *with_entities* Unsupported for this type of structure.
 
 
         Raise a :py:exc:`ftrack_api.exeption.StructureError` if *entity* is not
