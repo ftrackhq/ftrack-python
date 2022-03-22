@@ -9,7 +9,12 @@ from builtins import str
 from builtins import range
 from builtins import object
 import collections
-from six.moves import collections_abc
+
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
+
 import urllib.parse
 import threading
 import queue as queue

@@ -5,7 +5,11 @@ from builtins import zip
 from six import string_types
 from builtins import object
 import collections
-from six.moves import collections_abc
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
+    
 import functools
 
 import ftrack_api.entity.base

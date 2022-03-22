@@ -2,7 +2,11 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import re
-from six.moves import collections_abc
+
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
 
 import ftrack_api.exception
 

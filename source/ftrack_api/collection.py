@@ -8,7 +8,11 @@ from builtins import str
 import logging
 
 import collections
-from six.moves import collections_abc
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
+    
 import copy
 
 import ftrack_api.exception

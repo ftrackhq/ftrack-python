@@ -3,7 +3,11 @@
 
 from builtins import str
 import uuid
-from six.moves import collections_abc
+
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
 
 
 class Event(collections_abc.MutableMapping):

@@ -12,7 +12,12 @@ from builtins import object
 import json
 import logging
 import collections
-from six.moves import collections_abc
+
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
+
 import datetime
 import os
 import getpass

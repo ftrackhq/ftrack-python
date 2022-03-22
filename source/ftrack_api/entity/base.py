@@ -6,7 +6,12 @@ from __future__ import absolute_import
 from builtins import str
 import abc
 import collections
-from six.moves import collections_abc
+
+try:
+    from collections import abc as collections_abc
+except ImportError:  # Python 2.7
+    import collections as collections_abc
+    
 import logging
 
 import ftrack_api.symbol

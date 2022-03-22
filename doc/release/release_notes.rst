@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: core, 2.7.X
+
+        Import error : cannot import name collections_abc when importing with different six versions
+
+
 .. release:: 2.3.2
     :date: 2022-02-08
 
