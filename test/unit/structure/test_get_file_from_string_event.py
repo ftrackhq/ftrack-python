@@ -85,7 +85,12 @@ def file_compound_extension_component_event(component_file=None):
     pytest.param(
         file_compound_extension_component_event('%04d.bgeo.sc [1-10]'), {},
         '.bgeo.sc [1-10]',
-        id='no-file-compound-extension-no-component-event-with-sequence'
+        id='file-sequence-compound-extension-component-event-valid-clique'
+    ),
+    pytest.param(
+        file_compound_extension_component_event('argh.%04d.bgeo.sc [1-10]'), {},
+        '.bgeo.sc [1-10]',
+        id='file-sequence-compound-extension-component-event-valid-clique-with-prefix'
     )
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
