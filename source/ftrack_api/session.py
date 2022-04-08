@@ -2015,8 +2015,9 @@ class Session(object):
 
             container_path = collection.format('{head}{padding}{tail}')
             file_type = retrieve_file_type(
-                path
+                container_path
             )
+
             data.setdefault('padding', collection.padding)
             data.setdefault('file_type', file_type)
             data.setdefault('size', container_size)
