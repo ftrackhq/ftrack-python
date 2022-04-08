@@ -7,6 +7,7 @@ import pytest
 
 import ftrack_api
 import ftrack_api.structure.standard
+import ftrack_api.structure.id
 
 
 @pytest.fixture(scope='session')
@@ -80,6 +81,11 @@ def file_compound_extension_component_event(component_file=None):
         file_compound_extension_no_component_event('mytest'), {},
         '',
         id='no-file-compound-extension-no-component-event'
+    ),
+    pytest.param(
+        file_compound_extension_component_event('%04d.bgeo.sc [1-10]'), {},
+        '.bgeo.sc [1-10]',
+        id='no-file-compound-extension-no-component-event-with-sequence'
     )
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
