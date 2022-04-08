@@ -10,7 +10,6 @@ Release Notes
 .. currentmodule:: ftrack_api.session
 
 .. release:: Upcoming
-    :date: 2022-04-08
 
     .. change:: fixed
         :tags: session, event,
