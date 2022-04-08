@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+        :tags: session, event,
+
+        :ref:`event_list/ftrack.api.session.get-file-type-from-string` not handled
+        correctly when dealing with sequences.
+
 .. release:: 2.3.2
     :date: 2022-02-08
 
