@@ -1,17 +1,17 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import os
-import hashlib
 import base64
+import hashlib
 import json
+import os
 
-import requests
-
-from .base import Accessor
-from ..data import String
 import ftrack_api.exception
 import ftrack_api.symbol
+import requests
+
+from ..data import String
+from .base import Accessor
 
 
 class ServerFile(String):
@@ -46,7 +46,7 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        response = requests.get(
+        response = self._session._request.get(
             '{0}/component/get'.format(self._session.server_url),
             params={
                 'id': self.resource_identifier,
@@ -107,7 +107,7 @@ class ServerFile(String):
         self.seek(0)
 
         # Put the file based on the metadata.
-        response = requests.put(
+        response = self._session._request.put(
             metadata['url'],
             data=self.wrapped_file,
             headers=metadata['headers']
@@ -165,7 +165,7 @@ class _ServerAccessor(Accessor):
 
     def remove(self, resourceIdentifier):
         '''Remove *resourceIdentifier*.'''
-        response = requests.get(
+        response = self._session._request.get(
             '{0}/component/remove'.format(self._session.server_url),
             params={
                 'id': resourceIdentifier,

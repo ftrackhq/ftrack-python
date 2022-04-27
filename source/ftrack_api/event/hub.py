@@ -4,35 +4,32 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
-from builtins import str
-from builtins import range
-from builtins import object
 import collections
-from six.moves import collections_abc
-import urllib.parse
-import threading
-import queue as queue
-import logging
-import time
-import uuid
-import operator
 import functools
 import json
+import logging
+import operator
+import queue as queue
 import socket
-import warnings
 import ssl
+import threading
+import time
+import urllib.parse
+import uuid
+import warnings
+from builtins import object, range, str
 
+import ftrack_api.event.base
+import ftrack_api.event.expression
+import ftrack_api.event.subscriber
+import ftrack_api.exception
 import requests
 import requests.exceptions
 import websocket
-
-import ftrack_api.exception
-import ftrack_api.event.base
-import ftrack_api.event.subscriber
-import ftrack_api.event.expression
 from ftrack_api.logging import LazyLogMessage as L
-
+from six.moves import collections_abc
 
 SocketIoSession = collections.namedtuple('SocketIoSession', [
     'id',
@@ -51,14 +48,20 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server_url, api_user, api_key):
+    def __init__(self, server_url, api_user, api_key, requests_session=requests):
         '''Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
         to authenticate with.
 
+        *requests_session* is a *Session* object from the requests library (or
+        a subclass) that will allow getting info from the ftrack server. If not
+        provided the default requests lib will be used.
         '''
         super(EventHub, self).__init__()
+
+        self._session = requests_session
+
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__
         )
@@ -847,7 +850,7 @@ class EventHub(object):
             self._api_key
         )
         try:
-            response = requests.get(
+            response = self._session.get(
                 socket_io_url,
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
