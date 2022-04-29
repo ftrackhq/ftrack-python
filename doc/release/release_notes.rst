@@ -9,6 +9,15 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+    :date: 2022-xx-yy
+
+    .. change:: new
+        :tags: session
+
+        Added the cookie argument to the :class:`Session` which allows adding
+        custom cookies to the calls to the ftrack server.
+
 .. release:: 2.3.3
     :date: 2022-04-11
 

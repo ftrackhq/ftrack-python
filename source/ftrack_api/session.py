@@ -155,6 +155,10 @@ class Session(object):
         *timeout* how long to wait for server to respond, default is 60
         seconds.
 
+        *cookies* can be supplied as a dictionary of string keys and string
+        values. These custom cookies will be added to requests to the ftrack
+        server.
+
         '''
         super(Session, self).__init__()
         self.logger = logging.getLogger(
