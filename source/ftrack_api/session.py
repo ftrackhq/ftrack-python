@@ -1,53 +1,57 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-from __future__ import absolute_import, division
+from __future__ import absolute_import
+from __future__ import division
 
-import atexit
-import collections
-import datetime
-import distutils.version
-import functools
-import getpass
-import hashlib
-import itertools
+from builtins import zip
+from builtins import map
+from builtins import str
+from six import string_types
+from builtins import object
 import json
 import logging
+import collections
+from six.moves import collections_abc
+import datetime
 import os
+import getpass
+import functools
+import itertools
+import distutils.version
+import hashlib
 import tempfile
 import threading
+import atexit
 import warnings
-from builtins import map, object, str, zip
 
-import appdirs
-import arrow
-import clique
 import requests
 import requests.auth
-from six import string_types
-from six.moves import collections_abc
+import arrow
+import clique
+import appdirs
 
 import ftrack_api
-import ftrack_api._centralized_storage_scenario
-import ftrack_api.accessor.disk
-import ftrack_api.accessor.server
-import ftrack_api.attribute
-import ftrack_api.cache
-import ftrack_api.collection
-import ftrack_api.entity.base
-import ftrack_api.entity.factory
-import ftrack_api.entity.location
-import ftrack_api.event.base
-import ftrack_api.event.hub
 import ftrack_api.exception
-import ftrack_api.inspection
-import ftrack_api.logging
-import ftrack_api.operation
-import ftrack_api.plugin
-import ftrack_api.query
-import ftrack_api.structure.entity_id
-import ftrack_api.structure.origin
+import ftrack_api.entity.factory
+import ftrack_api.entity.base
+import ftrack_api.entity.location
+import ftrack_api.cache
 import ftrack_api.symbol
+import ftrack_api.query
+import ftrack_api.attribute
+import ftrack_api.collection
+import ftrack_api.event.hub
+import ftrack_api.event.base
+import ftrack_api.plugin
+import ftrack_api.inspection
+import ftrack_api.operation
+import ftrack_api.accessor.disk
+import ftrack_api.structure.origin
+import ftrack_api.structure.entity_id
+import ftrack_api.accessor.server
+import ftrack_api._centralized_storage_scenario
+import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
 
 try:
@@ -209,7 +213,7 @@ class Session(object):
 
         self._api_user = api_user
 
-        if cookies and type(cookies) != dict:
+        if cookies and isinstance(cookies, collections.Mapping):
             raise TypeError(
                 'The cookies argument is required to be a dictionary.'
             )

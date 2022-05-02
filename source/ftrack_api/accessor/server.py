@@ -1,17 +1,17 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 
-import base64
-import hashlib
-import json
 import os
+import hashlib
+import base64
+import json
 
-import ftrack_api.exception
-import ftrack_api.symbol
 import requests
 
-from ..data import String
 from .base import Accessor
+from ..data import String
+import ftrack_api.exception
+import ftrack_api.symbol
 
 
 class ServerFile(String):

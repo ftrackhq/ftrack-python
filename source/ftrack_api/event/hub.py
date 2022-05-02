@@ -4,32 +4,34 @@
 from __future__ import absolute_import
 
 from future import standard_library
-
 standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 import collections
+from six.moves import collections_abc
+import urllib.parse
+import threading
+import queue as queue
+import logging
+import time
+import uuid
+import operator
 import functools
 import json
-import logging
-import operator
-import queue as queue
 import socket
-import ssl
-import threading
-import time
-import urllib.parse
-import uuid
 import warnings
-from builtins import object, range, str
+import ssl
 
-import ftrack_api.event.base
-import ftrack_api.event.expression
-import ftrack_api.event.subscriber
-import ftrack_api.exception
 import requests
 import requests.exceptions
 import websocket
+
+import ftrack_api.exception
+import ftrack_api.event.base
+import ftrack_api.event.subscriber
+import ftrack_api.event.expression
 from ftrack_api.logging import LazyLogMessage as L
-from six.moves import collections_abc
 
 SocketIoSession = collections.namedtuple('SocketIoSession', [
     'id',
