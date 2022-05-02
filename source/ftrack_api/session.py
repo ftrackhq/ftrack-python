@@ -213,7 +213,7 @@ class Session(object):
 
         self._api_user = api_user
 
-        if cookies and isinstance(cookies, collections.Mapping):
+        if cookies and not isinstance(cookies, collections.Mapping):
             raise TypeError(
                 'The cookies argument is required to be a dictionary.'
             )
