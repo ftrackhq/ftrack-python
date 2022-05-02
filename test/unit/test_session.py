@@ -1198,6 +1198,9 @@ def test_cookies_argument():
     We don't need to test further. The requests lib is already testsed to make
     sure a cookie in its cookie jar makes it over the network.
     '''
+    with pytest.raises(TypeError):
+        session = ftrack_api.Session(cookies=['test_cookie'])
+
     session = ftrack_api.Session(cookies={'test_cookie': 'value'})
     assert 'test_cookie' in session._request.cookies
 
