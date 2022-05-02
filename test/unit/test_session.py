@@ -1191,6 +1191,17 @@ def test_plugin_arguments(mocker):
     mock.assert_called_once_with([], [session], {"test": "value"})
 
 
+def test_cookies_argument():
+    '''
+    Make sure that the ftrack API cookie values make it to requests.
+
+    We don't need to test further. The requests lib is already testsed to make
+    sure a cookie in its cookie jar makes it over the network.
+    '''
+    session = ftrack_api.Session(cookies={'test_cookie': 'value'})
+    assert 'test_cookie' in session._request.cookies
+
+
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
