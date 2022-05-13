@@ -33,6 +33,7 @@ import ftrack_api.event.subscriber
 import ftrack_api.event.expression
 from ftrack_api.logging import LazyLogMessage as L
 
+
 SocketIoSession = collections.namedtuple('SocketIoSession', [
     'id',
     'heartbeatTimeout',

@@ -27,6 +27,7 @@ import warnings
 
 import requests
 import requests.auth
+import requests.utils
 import arrow
 import clique
 import appdirs
@@ -78,14 +79,59 @@ class SessionAuthentication(requests.auth.AuthBase):
         return request
 
 
+class CustomSessionAuthentication(SessionAuthentication):
+    '''
+    A customized SessionAuthentication subclass that allows passing of cookies
+    and/or headers for particular authentication needs.
+    '''
+
+    def __init__(self, cookies, headers, api_key, api_user):
+        '''
+        Provide mappings for cookies or headers arguments. If you have no need
+        for one of them, you can pass in None. Passing None for both arguments
+        is a ValueError.
+        '''
+        if cookies is None and headers is None:
+            raise ValueError('A mapping must be supplied for one of cookies or headers arguments.')
+
+        if not isinstance(cookies, collections.Mapping):
+            raise TypeError('The cookies argument is required to be a mapping.')
+        self.cookies = cookies
+
+        if not isinstance(headers, collections.Mapping):
+            raise TypeError('The headers argument is required to be a mapping.')
+        self.headers = headers
+
+        super(CustomSessionAuthentication, self).__init__(api_key, api_user)
+
+    def __call__(self, request):
+        '''
+        Modify the PreparedRequest to include the custom cookies and headers.
+        '''
+        # Once cookies are prepared, that's it. This is a limitation from
+        # cookielib. We work around this by dropping the prepared cookies from
+        # the PreparedRequest and preparing new ones.
+        if self.cookies:
+            request.headers.pop('Cookie', None)
+            cookies = requests.utils.dict_from_cookiejar(request._cookies)
+            cookies.update(self.cookies)
+            request.prepare_cookies(cookies)
+
+        if self.headers:
+            request.headers.update(self.headers)
+
+        return super(CustomSessionAuthentication, self).__call__(request)
+
+
 class Session(object):
     '''An isolated session for interaction with an ftrack server.'''
+    session_authentication_class = SessionAuthentication
 
     def __init__(
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
         auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None, timeout=60, cookies=None
+        plugin_arguments=None, timeout=60
     ):
         '''Initialise session.
 
@@ -159,10 +205,6 @@ class Session(object):
         *timeout* how long to wait for server to respond, default is 60
         seconds.
 
-        *cookies* can be supplied as a dictionary of string keys and string
-        values. These custom cookies will be added to requests to the ftrack
-        server.
-
         '''
         super(Session, self).__init__()
         self.logger = logging.getLogger(
@@ -213,11 +255,6 @@ class Session(object):
 
         self._api_user = api_user
 
-        if cookies and not isinstance(cookies, collections.Mapping):
-            raise TypeError(
-                'The cookies argument is required to be a dictionary.'
-            )
-
         # Currently pending operations.
         self.recorded_operations = ftrack_api.operation.Operations()
         self._record_operations = collections.defaultdict(
@@ -247,12 +284,10 @@ class Session(object):
 
         self._managed_request = None
         self._request = requests.Session()
-        self._request.auth = SessionAuthentication(
+        self._request.auth = self.session_authentication_class(
             self._api_key, self._api_user
         )
         self.request_timeout = timeout
-        if cookies:
-            self._request.cookies.update(cookies)
 
         # Auto populating state is now thread-local
         self._auto_populate = collections.defaultdict(
@@ -2455,6 +2490,21 @@ class Session(object):
                 )
             else:
                 raise
+
+
+class CustomAuthSession(Session):
+    '''
+    A customized Session subclass that adds optional arguments for cookies and
+    headers.
+
+    These cookies and headers will be added to the requests that are made to
+    the ftrack server and allow custom authentication scenarios.
+
+    See :class:`CustomSessionAuthentication`.
+    '''
+    def __init__(self, *args, cookies=None, headers=None, **kwargs):
+        self.session_authentication_class = functools.partial(CustomSessionAuthentication, cookies, headers)
+        super(CustomAuthSession, self).__init__(*args, **kwargs)
 
 
 class AutoPopulatingContext(object):

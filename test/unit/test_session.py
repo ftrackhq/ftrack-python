@@ -1191,18 +1191,18 @@ def test_plugin_arguments(mocker):
     mock.assert_called_once_with([], [session], {"test": "value"})
 
 
-def test_cookies_argument():
+def test_custom_auth_session():
     '''
-    Make sure that the ftrack API cookie values make it to requests.
+    Test CustomAuthSession arg checks
+    '''
+    with pytest.raises(ValueError):
+        session = ftrack_api.CustomAuthSession()
 
-    We don't need to test further. The requests lib is already testsed to make
-    sure a cookie in its cookie jar makes it over the network.
-    '''
     with pytest.raises(TypeError):
-        session = ftrack_api.Session(cookies=['test_cookie'])
+        session = ftrack_api.CustomAuthSession(cookies=['test_cookie'])
 
-    session = ftrack_api.Session(cookies={'test_cookie': 'value'})
-    assert 'test_cookie' in session._request.cookies
+    with pytest.raises(TypeError):
+        session = ftrack_api.CustomAuthSession(headers=['test_headers'])
 
 
 def test_remote_reset(session, new_user):

@@ -15,8 +15,9 @@ Release Notes
     .. change:: new
         :tags: session
 
-        Added the cookie argument to the :class:`Session` which allows adding
-        custom cookies to the calls to the ftrack server.
+        Added :class:`CustomAuthSession` and :class:`CustomSessionAuthentication`
+        classes to allow supplying custom authentication information via cookies
+        and headers.
 
 .. release:: 2.3.3
     :date: 2022-04-11

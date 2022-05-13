@@ -2,7 +2,7 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 from ._version import __version__
-from .session import Session
+from .session import Session, CustomAuthSession
 
 
 def mixin(instance, mixin_class, name=None):
