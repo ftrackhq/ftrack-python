@@ -94,11 +94,11 @@ class CustomSessionAuthentication(SessionAuthentication):
         if cookies is None and headers is None:
             raise ValueError('A mapping must be supplied for one of cookies or headers arguments.')
 
-        if not isinstance(cookies, collections.Mapping):
+        if cookies is not None and not isinstance(cookies, collections.Mapping):
             raise TypeError('The cookies argument is required to be a mapping.')
         self.cookies = cookies
 
-        if not isinstance(headers, collections.Mapping):
+        if headers is not None and not isinstance(headers, collections.Mapping):
             raise TypeError('The headers argument is required to be a mapping.')
         self.headers = headers
 
