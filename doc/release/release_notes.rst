@@ -9,6 +9,12 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: Upcoming
+
+    .. change:: fixed
+
+        Documentation specifies Python 2.7 only rather than including Python 3.0.
+
 .. release:: 2.3.3
     :date: 2022-04-11
 
