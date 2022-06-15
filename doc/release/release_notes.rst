@@ -14,6 +14,11 @@ Release Notes
     .. change:: fixed
         :tags: documentation
 
+        Documentation reference to publish examples links to an unexisting url.
+
+    .. change:: fixed
+        :tags: documentation
+
         Documentation specifies Python 2.7 only rather than including Python 3.0.
 
 .. release:: 2.3.3
