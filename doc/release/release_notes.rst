@@ -12,6 +12,7 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: documentation
 
         Documentation specifies Python 2.7 only rather than including Python 3.0.
 
