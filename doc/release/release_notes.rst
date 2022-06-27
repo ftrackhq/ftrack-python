@@ -14,7 +14,17 @@ Release Notes
     .. change:: fixed
         :tags: session
 
-       Server URL can contain a trailing slash "/" without causing an error.
+        Server URL can contain a trailing slash "/" without causing an error.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Documentation reference to publish examples links to an unexisting url.
+
+    .. change:: fixed
+        :tags: documentation
+
+        Documentation specifies Python 2.7 only rather than including Python 3.0.
 
 .. release:: 2.3.3
     :date: 2022-04-11

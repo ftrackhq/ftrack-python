@@ -10,7 +10,7 @@ Publishing versions
 *******************
 
 To know more about publishing and the concepts around publishing, read the
-`ftrack article <http://ftrack.rtd.ftrack.com/en/stable/developing/publishing/index.html>`_
+`ftrack article <https://help.ftrack.com/en/articles/1040441-publishing>`_
 about publishing.
 
 To publish an asset you first need to get the context where the asset should be
