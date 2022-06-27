@@ -9,6 +9,14 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. release:: 2.3.4
+    :date: 2022-06-27
+
+    .. change:: fixed
+        :tags: session
+
+       Server URL can contain a trailing slash "/" without causing an error.
+
 .. release:: 2.3.3
     :date: 2022-04-11
 
