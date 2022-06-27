@@ -11,7 +11,7 @@ Handling events
 
 Events are generated in ftrack when things happen such as a task being updated
 or a new version being published. Each :class:`~ftrack_api.session.Session`
-automatically connects to the event server and can be used to subscribe to
+can optionally connect to the event server and can be used to subscribe to
 specific events and perform an action as a result. That action could be updating
 another related entity based on a status change or generating folders when a new
 shot is created for example.
