@@ -12,6 +12,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: session
+
+        Server URL can contain a trailing slash "/" without causing an error.
+
+    .. change:: fixed
         :tags: documentation
 
         Documentation reference to publish examples links to an unexisting url.

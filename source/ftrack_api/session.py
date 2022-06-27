@@ -175,7 +175,7 @@ class Session(object):
                 'in environment variable FTRACK_SERVER.'
             )
 
-        self._server_url = server_url
+        self._server_url = server_url.rstrip("/")
 
         if api_key is None:
             api_key = os.environ.get(
