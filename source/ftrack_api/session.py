@@ -175,7 +175,7 @@ class Session(object):
                 'in environment variable FTRACK_SERVER.'
             )
 
-        self._server_url = server_url
+        self._server_url = server_url.rstrip("/")
 
         if api_key is None:
             api_key = os.environ.get(
@@ -1952,6 +1952,28 @@ class Session(object):
             else:
                 location = self.pick_location()
 
+        def retrieve_file_type(_path):
+            '''try to retrive the file type from any registered plugins. If
+            none are available fall back to os.path.splitext'''
+            response = self.event_hub.publish(
+                ftrack_api.event.base.Event(
+                    topic='ftrack.api.session.get-file-type-from-string',
+                    data=dict(
+                        file_path=_path
+                    )
+                ),
+                synchronous=True
+            )
+
+            _file_type = next(
+                (result for result in response if result), None
+            )
+
+            if not _file_type:
+                return os.path.splitext(_path)[-1]
+
+            return _file_type
+
         try:
             collection = clique.parse(path)
 
@@ -1960,20 +1982,9 @@ class Session(object):
             if 'size' not in data:
                 data['size'] = self._get_filesystem_size(path)
 
-            file_type = self.event_hub.publish(
-                ftrack_api.event.base.Event(
-                    topic='ftrack.api.session.get-file-type-from-string',
-                    data=dict(
-                        file_path=path
-                    )
-                ),
-                synchronous=True
+            file_type = retrieve_file_type(
+                path
             )
-
-            # Pick the first valid result or None
-            file_type = next((result for result in file_type if result), None)
-            if not file_type:
-                file_type = os.path.splitext(path)[-1]
 
             data.setdefault('file_type', file_type)
 
@@ -2001,9 +2012,14 @@ class Session(object):
                     container_size += member_sizes[item]
 
             # Create sequence component
+
             container_path = collection.format('{head}{padding}{tail}')
+            file_type = retrieve_file_type(
+                container_path
+            )
+
             data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', os.path.splitext(container_path)[-1])
+            data.setdefault('file_type', file_type)
             data.setdefault('size', container_size)
 
             container = self._create_component(
@@ -2016,7 +2032,7 @@ class Session(object):
                     'name': collection.match(member_path).group('index'),
                     'container': container,
                     'size': member_sizes[member_path],
-                    'file_type': os.path.splitext(member_path)[-1]
+                    'file_type': file_type
                 }
 
                 component = self._create_component(

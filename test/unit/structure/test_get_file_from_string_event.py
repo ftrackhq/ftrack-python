@@ -7,6 +7,7 @@ import pytest
 
 import ftrack_api
 import ftrack_api.structure.standard
+import ftrack_api.structure.id
 
 
 @pytest.fixture(scope='session')
@@ -80,7 +81,22 @@ def file_compound_extension_component_event(component_file=None):
         file_compound_extension_no_component_event('mytest'), {},
         '',
         id='no-file-compound-extension-no-component-event'
-    )
+    ),
+    pytest.param(
+        file_compound_extension_component_event('%04d.bgeo.sc [1-10]'), {},
+        '.bgeo.sc',
+        id='file-sequence-compound-extension-component-event-valid-clique'
+    ),
+    pytest.param(
+        file_compound_extension_component_event('argh.%04d.bgeo.sc [1-10]'), {},
+        '.bgeo.sc',
+        id='file-sequence-compound-extension-component-event-valid-clique-with-prefix'
+    ),
+    pytest.param(
+        file_compound_extension_component_event('foobar.%04d.jpg [1-10]'), {},
+        '.jpg',
+        id='file-sequence-compound-extension-component-event-valid-clique-single-extension'
+    ),
 ])
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''

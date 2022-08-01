@@ -11,7 +11,7 @@ This tutorial is a walkthrough on how you interact with Locations using the
 ftrack :term:`API`. Before you read this tutorial, make sure you familiarize
 yourself with the location concepts by reading the :ref:`locations/overview`.
 
-All examples assume you are using Python 2.x, have the :mod:`ftrack_api`
+All examples assume you are using Python 2.x or 3.x , have the :mod:`ftrack_api`
 module imported and a :class:`session <ftrack_api.session.Session>` created.
 
 .. code-block:: python
