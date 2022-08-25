@@ -187,10 +187,10 @@ This is the list of currently supported operators:
 | before       | exclusive.     |                                              |
 | less_than    |                |                                              |
 +--------------+----------------+----------------------------------------------+
-| >=           | Greater than   | bid >= 10                                    |
+| >=           | Greater than   | bid >= 14400                                 |
 |              | inclusive.     |                                              |
 +--------------+----------------+----------------------------------------------+
-| <=           | Less than      | bid <= 10                                    |
+| <=           | Less than      | bid <= 14400                                 |
 |              | inclusive.     |                                              |
 +--------------+----------------+----------------------------------------------+
 | in           | One of.        | status.type.name in ("In Progress", "Done")  |

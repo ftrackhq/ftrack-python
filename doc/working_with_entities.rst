@@ -129,7 +129,7 @@ the dict-like instance and calling :meth:`Session.commit` when ready. The entity
 to update can either be a new entity or a retrieved entity::
 
     task = session.query('Task').first()
-    task['bid'] = 8
+    task['bid'] = 28800
 
 Remember that, for existing entities, accessing an attribute will load it from
 the server automatically. If you are interested in just setting values without
@@ -138,7 +138,7 @@ first fetching them from the server, turn :ref:`auto-population
 
     >>> with session.auto_populating(False):
     ...    task = session.query('Task').first()
-    ...    task['bid'] = 8
+    ...    task['bid'] = 28800
 
 
 .. _working_with_entities/resetting:
