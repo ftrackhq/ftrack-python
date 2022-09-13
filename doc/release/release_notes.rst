@@ -12,6 +12,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: documentation
+
+        Bid data in examples implies seconds instead of hours.
+        
+    .. change:: fixed
         :tags: session
 
         Server URL can contain a trailing slash "/" without causing an error.
