@@ -839,16 +839,18 @@ class EventHub(object):
     def _get_socket_io_session(self):
         '''Connect to server and retrieve session information.'''
         socket_io_url = (
-            '{0}://{1}/socket.io/1/?api_user={2}&api_key={3}'
+            '{0}://{1}/socket.io/1/'
         ).format(
             self.server.scheme,
-            self.get_network_location(),
-            self._api_user,
-            self._api_key
+            self.get_network_location()
         )
         try:
             response = requests.get(
                 socket_io_url,
+                headers={
+                    'ftrack-user': self._api_user,
+                    'ftrack-api-key': self._api_key
+                },
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
         except requests.exceptions.Timeout as error:
