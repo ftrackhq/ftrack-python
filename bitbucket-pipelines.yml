@@ -4,14 +4,15 @@ options:
 definitions:
   services:
     ftrack:
+      memory: 3072
       image:
-        name: ftrackdocker/test-server:latest
+        name: ftrackdocker/test-server:4.11.0.current.12
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
         email: $DOCKER_HUB_EMAIL
 pipelines:
   default:
-    - parallel:  
+    - parallel:
       - step:
           name: run tests against python 2.7.x
           image: python:2.7
