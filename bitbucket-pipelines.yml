@@ -6,7 +6,7 @@ definitions:
     ftrack:
       memory: 3072
       image:
-        name: ftrackdocker/test-server:4.11.0.current.12
+        name: ftrackdocker/test-server:latest
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
         email: $DOCKER_HUB_EMAIL
