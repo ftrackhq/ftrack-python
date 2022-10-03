@@ -216,8 +216,13 @@ def test_ensure_entity_with_non_string_data_types(session, mocker):
 
 def test_ensure_entity_with_identifying_keys(session, unique_name):
     '''Ensure entity, checking using keys subset and then creating.'''
+
+    unique_mail = 'test{0}@example.com'.format(
+        str(uuid.uuid4())
+    )
+
     entity = session.ensure(
-        'User', {'username': unique_name, 'email': 'test@example.com'},
+        'User', {'username': unique_name, 'email': unique_mail},
         identifying_keys=['username']
     )
     assert entity['username'] == unique_name
@@ -250,18 +255,28 @@ def test_ensure_existing_entity(session, unique_name):
 
 def test_ensure_update_existing_entity(session, unique_name):
     '''Ensure and update existing entity.'''
-    entity = session.ensure(
-        'User', {'first_name': unique_name, 'email': 'anon@example.com'}
+
+    mail = 'test{0}@example.com'.format(
+        str(uuid.uuid4())
     )
-    assert entity['email'] == 'anon@example.com'
+
+    entity = session.ensure(
+        'User', {'first_name': unique_name, 'email': mail}
+    )
+    assert entity['email'] == mail
+
+    updated_mail = 'test{0}@example.com'.format(
+        str(uuid.uuid4())
+    )
 
     # Second call should commit updates.
     retrieved = session.ensure(
-        'User', {'first_name': unique_name, 'email': 'test@example.com'},
+        'User', {'first_name': unique_name, 'email': updated_mail},
         identifying_keys=['first_name']
     )
+
     assert retrieved == entity
-    assert retrieved['email'] == 'test@example.com'
+    assert retrieved['email'] == updated_mail
 
 
 def test_reconstruct_entity(session):
@@ -1137,6 +1152,10 @@ def test_get_info_widget_url(session, task):
     response.raise_for_status()
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError,
+    reason='Testing environment does not support encoding'
+)
 def test_encode_media_from_path(session, video_path):
     '''Encode media based on a file path.'''
     job = session.encode_media(video_path)
@@ -1152,6 +1171,10 @@ def test_encode_media_from_path(session, video_path):
     assert 'format' in job_data['output'][0]
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError,
+    reason='Testing environment does not support encoding'
+)
 def test_encode_media_from_component(session, video_path):
     '''Encode media based on a component.'''
     location = session.query('Location where name is "ftrack.server"').one()
@@ -1515,4 +1538,3 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
 
         assert operation.entity_type == 'User'
         assert operation.entity_key['id'] == _id
-
