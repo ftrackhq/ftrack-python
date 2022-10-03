@@ -1,6 +1,9 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2015 ftrack
 import json
+import pytest
+
+import ftrack_api
 
 
 def test_create_component(new_asset_version, temporary_file):
@@ -33,6 +36,10 @@ def test_create_component_specifying_different_version(
     session.delete(component)
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError,
+    reason='Testing environment does not support encoding'
+)
 def test_encode_media(new_asset_version, video_path):
     '''Encode media based on a file path
 
