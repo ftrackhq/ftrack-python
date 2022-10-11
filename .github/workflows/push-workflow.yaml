@@ -13,3 +13,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
+      - name: Run the ftrack server
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ftrackdocker/test-server:latest
