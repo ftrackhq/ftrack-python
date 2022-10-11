@@ -12,9 +12,9 @@ jobs:
     container: 
       image: ftrackdocker/test-server:latest
       env: 
-        username: $DOCKER_HUB_USERNAME
-        password: $DOCKER_HUB_PASSWORD
-        email: $DOCKER_HUB_EMAIL
+        username: secrets.DOCKER_HUB_USERNAME
+        password: secrets.DOCKER_HUB_PASSWORD
+        email: secrets.DOCKER_HUB_EMAIL
 
     steps:
       - name: Login to Docker Hub
@@ -22,6 +22,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: start ftrack server
+          
 
       - name: Checkout
         uses: actions/checkout@v3
