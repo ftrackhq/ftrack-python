@@ -5,9 +5,32 @@ on: [push]
 jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9"]
+
     container: 
       image: ftrackdocker/test-server:latest
       env: 
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
         email: $DOCKER_HUB_EMAIL
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Switch to Current Branch
+        run: git checkout ${{ env.BRANCH }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Test with pytest
+        run: |
+          bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $FTRACK_SERVER)" != "200" ]]; do sleep 1; done'
+          python setup.py test
