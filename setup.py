@@ -74,7 +74,8 @@ setup(
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
         'setuptools>=30.3.0',
-        'setuptools_scm >=5, <7'
+        'setuptools_scm >=5, <7',
+        'wheel'
     ],
     install_requires=[
         'requests >= 2, <3',
