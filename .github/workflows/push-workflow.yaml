@@ -5,12 +5,6 @@ on: [push]
 jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-    container: 
-      image: ftrackdocker/test-server:latest
-      env: 
-        username: secrets.DOCKER_HUB_USERNAME
-        password: secrets.DOCKER_HUB_PASSWORD
-        email: secrets.DOCKER_HUB_EMAIL
         
     steps:
       - name: Login to Docker Hub
@@ -18,24 +12,4 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-  
-  test-python-code:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Switch to Current Branch
-        run: git checkout ${{ env.BRANCH }}
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Test with pytest
-        run: |
-          bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $FTRACK_SERVER)" != "200" ]]; do sleep 1; done'
-          python setup.py test
+          
