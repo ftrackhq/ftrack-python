@@ -5,6 +5,8 @@ on: [push]
 jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
     strategy:
       matrix:
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9"]
