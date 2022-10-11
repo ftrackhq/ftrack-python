@@ -32,7 +32,6 @@ jobs:
 
       - name: Test with pytest
         run: |
-          bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $FTRACK_SERVER)" != "200" ]]; do sleep 1; done'
           python setup.py test     
           
           
