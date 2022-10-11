@@ -5,14 +5,35 @@ on: [push]
 jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9"]
         
     steps:  
-      - name: Checkout 
-        uses: actions/checkout@v2 # Required to mount the Github Workspace to a volume 
-
       - name: Run the ftrack server
         uses: addnab/docker-run-action@v3
         with:
           image: ftrackdocker/test-server:latest
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Switch to Current Branch
+        run: git checkout ${{ env.BRANCH }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Test with pytest
+        run: |
+          bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' $FTRACK_SERVER)" != "200" ]]; do sleep 1; done'
+          python setup.py test     
+          
+          
+        
