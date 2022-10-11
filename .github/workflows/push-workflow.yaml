@@ -5,7 +5,7 @@ on: [push]
 jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-      container: 
+    container: 
       image: ftrackdocker/test-server:latest
       env: 
         username: $DOCKER_HUB_USERNAME
