@@ -35,7 +35,6 @@ jobs:
       - name: install api
         run: |
           python -m pip install .
-          cache: pip
           
       - name: Test with pytest
         run: |
