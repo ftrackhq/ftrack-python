@@ -1,28 +1,24 @@
 name: ftrack python api CI test
-
 on: [push]
-
 jobs:
-
-  
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+
+    services:
+      ftrack:
+        image: ftrackdocker/test-server:latest
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}  
+        ports:
+          # Opens tcp port 6379 on the host and service container
+          - 80:80
 
     strategy:
       matrix:
-        python-version: ["3.7", "3.8"]
+        python-version: ["3.8"]
 
     steps:  
-      - name: Pull latest docker server and start it.
-        uses: addnab/docker-run-action@v3
-        with:
-          image: ftrackdocker/test-server:latest
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}  
-          options: 
-            -d 
-
       - name: Checkout api code
         uses: actions/checkout@v3
         with:
@@ -41,7 +37,9 @@ jobs:
           pip install wheel
           python setup.py test
         env:
-          FTRACK_SERVER: http://${{ secrets.FTRACK_SERVER }}
+          FTRACK_SERVER: ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
+          
+        
