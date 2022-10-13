@@ -4,7 +4,6 @@ jobs:
 
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-    container: ubuntu
 
     services:
       ftrack_app:
@@ -21,11 +20,6 @@ jobs:
         python-version: ["3.8"]
 
     steps:  
-      - name: install dependencies
-        run: |
-          apt update
-          apt install -y git
-
       - name: Checkout api code
         uses: actions/checkout@v3
         with:
@@ -48,3 +42,5 @@ jobs:
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
+          
+        
