@@ -41,10 +41,9 @@ jobs:
       - name: update system
         run: |
           apt-get update
-          apt-get install -y wget
+          apt-get install -y wget libpython3.7
           wget http://es.archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi7_3.3-4_amd64.deb
           dpkg -i libffi7_3.3-4_amd64.deb
-          apt-get install libpython3.7
         
       - name: Test with pytest 
         run: |
