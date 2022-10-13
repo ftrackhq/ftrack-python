@@ -13,14 +13,8 @@ jobs:
         with:
           image: ftrackdocker/test-server:latest
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          options: -v ${{ github.workspace }}:/data -p 127.0.0.1:80:80
-          
-      - name: Ensure server is alive and kicking
-        run:
-          bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' secrets.FTRACK_SERVER)" != "200" ]]; do sleep 1; done'
+          password: ${{ secrets.DOCKERHUB_TOKEN }}  
 
-          
   run-python-tests:
     runs-on: ubuntu-latest
     needs: run-ftrack-test-server
@@ -53,7 +47,7 @@ jobs:
         run: |
           python setup.py test
         env:
-          FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
+          FTRACK_SERVER: ${{ job.container.network }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
