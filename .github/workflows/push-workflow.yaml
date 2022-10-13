@@ -5,8 +5,13 @@ jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
     # container: ubuntu
+    
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+    
     container:
-      image: python:3.7-bullseye
+      image: python:${{ matrix.python-version }}
 
     services:
       ftrackapp:
@@ -16,10 +21,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}  
         ports:
           - 80:80
-
-    strategy:
-      matrix:
-        python-version: ["3.7"]
 
     steps:         
         
