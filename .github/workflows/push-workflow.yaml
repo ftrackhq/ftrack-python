@@ -42,6 +42,7 @@ jobs:
           apt-get install -y wget
           wget http://es.archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi7_3.3-4_amd64.deb
           dpkg -i libffi7_3.3-4_amd64.deb
+          export LD_LIBRARY_PATH=/lib:/usr/lib:/usr/local/lib
         
       - name: Test with pytest 
         run: |
