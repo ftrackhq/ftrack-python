@@ -38,7 +38,7 @@ jobs:
           pip install wheel
           python setup.py test
         env:
-          FTRACK_SERVER: ftrack_app:80
+          FTRACK_SERVER: http://ftrack_app:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
