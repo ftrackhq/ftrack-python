@@ -11,12 +11,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}  
         ports:
-          # Opens tcp port 6379 on the host and service container
           - 80:80
+        options:
+          --network ${{ job.container.network }}
 
     strategy:
       matrix:
-        python-version: ["3.8"]
+        python-version: ["3.7"]
 
     steps:  
       - name: Checkout api code
@@ -37,7 +38,7 @@ jobs:
           pip install wheel
           python setup.py test
         env:
-          FTRACK_SERVER: ftrack:80
+          FTRACK_SERVER: http://localhost:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
