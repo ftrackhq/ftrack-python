@@ -4,6 +4,7 @@ jobs:
 
   run-ftrack-test-server:
     runs-on: ubuntu-latest
+    container: ubuntu 
 
     services:
       ftrackapp:
