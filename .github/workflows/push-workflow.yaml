@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      ftrack_app:
+      ftrackapp:
         image: ftrackdocker/test-server:latest
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.8"]
+        python-version: ["2.7","3.6", """3.8"]
 
     steps:  
       - name: Checkout api code
@@ -38,7 +38,7 @@ jobs:
           pip install wheel
           python setup.py test
         env:
-          FTRACK_SERVER: http://ftrack_app:80
+          FTRACK_SERVER: http://ftrackapp:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
