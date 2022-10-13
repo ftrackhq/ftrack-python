@@ -1,46 +1,52 @@
 name: ftrack python api CI test
 on: [push]
 jobs:
+
   run-ftrack-test-server:
     runs-on: ubuntu-latest
+    container: ubuntu
 
     services:
-      ftrack:
+      ftrack_app:
         image: ftrackdocker/test-server:latest
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}  
         ports:
           - 80:80
-        options:
-          --network ${{ job.container.network }}
+
 
     strategy:
       matrix:
-        python-version: ["3.7"]
+        python-version: ["3.8"]
 
     steps:  
-      - name: Checkout api code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      - name: Switch to Current Branch
-        run: git checkout ${{ env.BRANCH }}
+      - run: apt-get update; apt-get install curl -y
+      - run: curl ftrack_app:80 > curl_result_docker
+      - run: cat curl_result_docker
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
+      # - name: Checkout api code
+      #   uses: actions/checkout@v3
+      #   with:
+      #     fetch-depth: 0
+
+      # - name: Switch to Current Branch
+      #   run: git checkout ${{ env.BRANCH }}
+
+      # - name: Set up Python ${{ matrix.python-version }}
+      #   uses: actions/setup-python@v4
+      #   with:
+      #     python-version: ${{ matrix.python-version }}
           
-      - name: Test with pytest 
-        run: |
-          pip install wheel
-          python setup.py test
-        env:
-          FTRACK_SERVER: http://localhost:80
-          FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
-          FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
+      # - name: Test with pytest 
+      #   run: |
+      #     pip install wheel
+      #     python setup.py test
+      #   env:
+      #     FTRACK_SERVER: http://localhost:80
+      #     FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
+      #     FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
           
         
