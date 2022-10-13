@@ -4,7 +4,7 @@ jobs:
 
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-    container: node:14.16
+    container:  python:2.7
 
     services:
       ftrackapp:
@@ -14,7 +14,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}  
         ports:
           - 80:80
-
 
     strategy:
       matrix:
@@ -46,4 +45,3 @@ jobs:
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
           
-        
