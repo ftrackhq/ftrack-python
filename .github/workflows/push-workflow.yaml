@@ -4,7 +4,6 @@ jobs:
 
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-    container:  python:2.7
 
     services:
       ftrackapp:
@@ -38,6 +37,7 @@ jobs:
           
       - name: Test with pytest 
         run: |
+          pip install wheel
           python setup.py test
         env:
           FTRACK_SERVER: http://ftrackapp:80
