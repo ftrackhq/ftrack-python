@@ -44,7 +44,6 @@ jobs:
           apt-get install -y wget
           wget http://es.archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi7_3.3-4_amd64.deb
           dpkg -i libffi7_3.3-4_amd64.deb
-          pip3 install uwsgi
         
       - name: Test with pytest 
         run: |
