@@ -73,14 +73,11 @@ setup(
         'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
-        'setuptools_scm >=5, <6; python_version <= "3.6"',
-        'setuptools_scm >=6; python_version > "3.6"',
-        'setuptools <42; python_version <= "3.6"',
-        'wheel',
+        'setuptools>=30.3.0',
+        'setuptools_scm'
     ],
     install_requires=[
-        'requests >= 2, <3; python_version >= "3.0"' ,
-        'requests <2.28; python_version >= "3.0"'
+        'requests >= 2, <3',
         'arrow >= 0.4.4, < 1',
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
@@ -91,8 +88,6 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'requests >= 2, <3; python_version >= "3.0"' ,
-        'requests <2.28; python_version >= "3.0"'
         'pytest >= 4.6',
         'pytest-mock',
         'mock',
