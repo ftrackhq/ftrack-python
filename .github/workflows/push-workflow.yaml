@@ -4,14 +4,6 @@ jobs:
 
   run-ftrack-test-server:
     runs-on: ubuntu-latest
-    # container: ubuntu
-    
-    strategy:
-      matrix:
-        python-version: ["3.7"]
-    
-    container:
-      image: python:${{ matrix.python-version }}
 
     services:
       ftrackapp:
@@ -22,8 +14,12 @@ jobs:
         ports:
           - 80:80
 
+    strategy:
+      matrix:
+        python-version: ["3.7"]
+
     steps:         
-        
+
       - name: Checkout api code
         uses: actions/checkout@v3
         with:
@@ -38,20 +34,14 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      
-      - name: update system
-        run: |
-          apt-get update
-          apt-get install -y wget
-          wget http://es.archive.ubuntu.com/ubuntu/pool/main/libf/libffi/libffi7_3.3-4_amd64.deb
-          dpkg -i libffi7_3.3-4_amd64.deb
-        
+          
       - name: Test with pytest 
         run: |
           python setup.py test
         env:
-          FTRACK_SERVER: http://ftrackapp:80
+          FTRACK_SERVER: http://localhost:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
           
+        
