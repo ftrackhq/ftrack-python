@@ -73,8 +73,7 @@ setup(
         'sphinx >= 1.2.2, < 1.6',
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
-        'setuptools_scm >=4, <5; python_version < "3.0"',
-        'setuptools_scm >=5, <6;python_version <= "3.6"',
+        'setuptools_scm >=5, <6; python_version <= "3.6"',
         'setuptools_scm >=6; python_version > "3.6"',
         'wheel'
     ],
