@@ -35,6 +35,7 @@ jobs:
           
       - name: Test with pytest 
         run: |
+          pip install wheel
           python setup.py test
         env:
           FTRACK_SERVER: http://localhost:80
