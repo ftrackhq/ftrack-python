@@ -75,7 +75,7 @@ setup(
         'lowdown >= 0.1.0, < 2',
         'setuptools_scm >=5, <6; python_version <= "3.6"',
         'setuptools_scm >=6; python_version > "3.6"',
-        'wheel'
+        'wheel',
     ],
     install_requires=[
         'requests >= 2, <3; python_version >= "3.0"' ,
@@ -90,6 +90,8 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
+        'requests >= 2, <3; python_version >= "3.0"' ,
+        'requests <2.28; python_version >= "3.0"'
         'pytest >= 4.6',
         'pytest-mock',
         'mock',
