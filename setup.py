@@ -78,7 +78,8 @@ setup(
         'wheel'
     ],
     install_requires=[
-        'requests >= 2, <3',
+        'requests >= 2, <3; python_version >= "3.0"' ,
+        'requests <2.28; python_version >= "3.0"'
         'arrow >= 0.4.4, < 1',
         'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
