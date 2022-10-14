@@ -75,7 +75,7 @@ setup(
         'lowdown >= 0.1.0, < 2',
         'setuptools_scm >=5, <6; python_version <= "3.6"',
         'setuptools_scm >=6; python_version > "3.6"',
-        'setuptools <42; python_version <= "3.6"'
+        'setuptools <42; python_version <= "3.6"',
         'wheel',
     ],
     install_requires=[
