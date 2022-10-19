@@ -76,6 +76,7 @@ setup(
         'setuptools_scm >=5, <6; python_version <= "3.6"',
         'setuptools_scm >=6; python_version > "3.6"',
         'setuptools < 45; python_version < "3.0"',
+        'requests < 2.28.0; python_version <= "3.0"',
     ],
     install_requires=[
         'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
@@ -92,7 +93,6 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'requests < 2.28.0; python_version <= "3.0"',
         'pytest >= 4.6, <7; python_version <= "3.6"',
         'pytest-mock',
         'mock',
