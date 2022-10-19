@@ -81,7 +81,7 @@ setup(
         'babel <= 2.9.1;  python_version < "3.0"',
         'pygments <= 2.5.2; python_version < "3.0"',
         'jinja2 <= 2.11.3; python_version < "3.0"',
-        'importlib-metadata < 5.0 ; python_version <= "3.6"',
+        'importlib-metadata <= 2.1.3 ; python_version <= "3.0"',
         'typing-extensions <= 3.10.0.2 ; python_version <= "3.6"',
     ],
     install_requires=[
