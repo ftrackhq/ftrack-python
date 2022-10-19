@@ -103,7 +103,7 @@ setup(
         'pytest-mock <= 2.0.0; python_version <= "3.0"',
         'pytest-mock',
         'mock <= 3.0.5 ; python_version <= "3.0"',
-        'mock',
+        'mock > 3.0.5 ; python_version > "3.0"',
         'flaky'
     ],
     cmdclass={
