@@ -85,7 +85,8 @@ setup(
         'typing-extensions <= 3.10.0.2 ; python_version <= "3.6"',
         'zipp <=  1.2.0 ; python_version <= "3.0"',
         'configparser <= 4.0.2 ; python_version <= "3.0"',
-        'markupsafe <= 1.1.1 ; python_version <= "3.0"'
+        'markupsafe <= 1.1.1 ; python_version <= "3.0"',
+        'packaging <= 20.9 ; python_version <= "3.0"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
