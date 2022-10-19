@@ -78,7 +78,10 @@ setup(
         'requests >= 2, <2.28.0; python_version <= "3.6"',
         'requests >= 2.28.0, <3; python_version > "3.6"',
         'certifi <=  2021.10.8;  python_version < "3.0"',
-        'babel <= 2.9.1;  python_version < "3.0"'
+        'babel <= 2.9.1;  python_version < "3.0"',
+        'pygments <= 2.5.2; python_version < "3.0"',
+        'jinja2 <= 2.11.3; python_version < "3.0"',
+
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
