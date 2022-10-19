@@ -90,6 +90,7 @@ setup(
         'pyparsing <= 2.4.7  ; python_version <= "3.0"',
         'pyparsing >= 2.4.7, < 4 ; python_version > "3.0"',
         'attrs <=  21.4.0  ; python_version <= "3.0"',
+        'contextlib2 <= 0.6.0.post1  ; python_version <= "3.0"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
