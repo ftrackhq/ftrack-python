@@ -80,7 +80,7 @@ setup(
     install_requires=[
         'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
         'importlib-metadata < 5.0 ; python_version <= "3.6"',
-        'requests >= 2, <2.28.0; python_version <= "3.6"',
+        'requests < 2.28.0; python_version <= "3.6"',
         'requests >= 2.28.0, <3; python_version > "3.6"',
         'arrow >= 0.4.4, < 1',
         'termcolor >= 1.1.0, < 2',
@@ -92,6 +92,7 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
+        'requests < 2.28.0; python_version <= "3.0"',
         'pytest >= 4.6, <7; python_version <= "3.6"',
         'pytest-mock',
         'mock',
