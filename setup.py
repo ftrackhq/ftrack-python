@@ -77,7 +77,8 @@ setup(
         'setuptools_scm >=6; python_version > "3.6"',
         'requests >= 2, <2.28.0; python_version <= "3.6"',
         'requests >= 2.28.0, <3; python_version > "3.6"',
-        'certify <=  2021.10.8;  python_version < "3.0"'
+        'certify <=  2021.10.8;  python_version < "3.0"',
+        'babel < 3;  python_version < "3.0"'
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
