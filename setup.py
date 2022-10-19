@@ -81,7 +81,8 @@ setup(
         'babel <= 2.9.1;  python_version < "3.0"',
         'pygments <= 2.5.2; python_version < "3.0"',
         'jinja2 <= 2.11.3; python_version < "3.0"',
-
+        'importlib-metadata < 5.0 ; python_version <= "3.6"',
+        'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
@@ -94,8 +95,6 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
-        'importlib-metadata < 5.0 ; python_version <= "3.6"',
         'pytest >= 4.6',
         'pytest >= 4.6, <7; python_version <= "3.6"',
         'pytest-mock',
