@@ -77,6 +77,7 @@ setup(
         'setuptools_scm >=6; python_version > "3.6"'
     ],
     install_requires=[
+        'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
         'importlib-metadata < 5.0 ; python_version <= "3.6"',
         'requests >= 2, <2.28.0; python_version <= "3.6"',
         'requests >= 2.28.0, <3; python_version > "3.6"',
