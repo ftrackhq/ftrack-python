@@ -74,7 +74,9 @@ setup(
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
         'setuptools_scm >=5, <6; python_version <= "3.6"',
-        'setuptools_scm >=6; python_version > "3.6"'
+        'setuptools_scm >=6; python_version > "3.6"',
+        'requests >= 2, <2.28.0; python_version <= "3.6"',
+        'requests >= 2.28.0, <3; python_version > "3.6"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
@@ -89,8 +91,6 @@ setup(
     tests_require=[
         'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
         'importlib-metadata < 5.0 ; python_version <= "3.6"',
-        'requests >= 2, <2.28.0; python_version <= "3.6"',
-        'requests >= 2.28.0, <3; python_version > "3.6"',
         'pytest >= 4.6',
         'pytest >= 4.6, <7; python_version <= "3.6"',
         'pytest-mock',
