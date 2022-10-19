@@ -74,7 +74,8 @@ setup(
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
         'setuptools_scm >=5, <6; python_version <= "3.6"',
-        'setuptools_scm >=6; python_version > "3.6"'
+        'setuptools_scm >=6; python_version > "3.6"',
+        'setuptools < 45; python_version < "3.0"',
     ],
     install_requires=[
         'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
