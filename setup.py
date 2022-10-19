@@ -74,19 +74,12 @@ setup(
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
         'setuptools_scm >=5, <6; python_version <= "3.6"',
-        'setuptools_scm >=6; python_version > "3.6"',
-        'setuptools < 44.2; python_version < "3.0"',
-        'requests < 2.28.0; python_version <= "3.0"',
-        'certifi <= 2021.10.8; python_version <= "3.0"',
-        'babel <= 2.9.1;  python_version <= "3.0"',
-        'jinja2 <= 2.11.3;  python_version <= "3.0"',
-        'markupsafe <= 1.1.1;  python_version <= "3.0"', 
-        'pygments <= 2.5.2;  python_version <= "3.0"', 
+        'setuptools_scm >=6; python_version > "3.6"'
     ],
     install_requires=[
         'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
         'importlib-metadata < 5.0 ; python_version <= "3.6"',
-        'requests < 2.28.0; python_version <= "3.6"',
+        'requests >= 2, <2.28.0; python_version <= "3.6"',
         'requests >= 2.28.0, <3; python_version > "3.6"',
         'arrow >= 0.4.4, < 1',
         'termcolor >= 1.1.0, < 2',
@@ -98,12 +91,10 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'importlib-metadata < 5.0 ; python_version <= "3.6"',
-        'pytest >= 4.6, <5; python_version <= "3.6"',
-        'pytest-mock <= 2.0; python_version <= "3.0"',
-        'pytest-mock > 2.0; python_version > "3.0"',
-        'mock <= 3.0.5; python_version <= "3.0"',
-        'mock > 3.0.5; python_version > "3.0"',
+        'pytest >= 4.6',
+        'pytest >= 4.6, <7; python_version <= "3.6"',
+        'pytest-mock',
+        'mock',
         'flaky'
     ],
     cmdclass={
