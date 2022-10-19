@@ -87,6 +87,7 @@ setup(
         'configparser <= 4.0.2 ; python_version <= "3.0"',
         'markupsafe <= 1.1.1 ; python_version <= "3.0"',
         'packaging <= 20.9 ; python_version <= "3.0"',
+        'pyparsing <= 2.4.7  ; python_version <= "3.0"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
