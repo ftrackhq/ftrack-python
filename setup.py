@@ -98,8 +98,7 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'pytest < 5 ; python_version < "3.0"',
-        'pytest >= 4.6, <7; python_version <= "3.6"',
+        'pytest >= 4.6, <5; python_version <= "3.6"',
         'pytest-mock <= 2.0; python_version <= "3.0"',
         'pytest-mock > 2.0; python_version > "3.0"',
         'mock <= 3.0.5; python_version <= "3.0"',
