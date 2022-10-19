@@ -82,7 +82,7 @@ setup(
         'pygments <= 2.5.2; python_version < "3.0"',
         'jinja2 <= 2.11.3; python_version < "3.0"',
         'importlib-metadata < 5.0 ; python_version <= "3.6"',
-        'typing-extensions <= 4.1.1 ; python_version <= "3.6"',
+        'typing-extensions <= 3.10.0.2 ; python_version <= "3.6"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
