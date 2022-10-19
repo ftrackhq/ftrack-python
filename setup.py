@@ -91,7 +91,7 @@ setup(
         'appdirs >=1, <2'
     ],
     tests_require=[
-        'pytest >= 4.6',
+        'pytest >= 4.6, <7; python_version <= "3.6"',
         'pytest-mock',
         'mock',
         'flaky'
