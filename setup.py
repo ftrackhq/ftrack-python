@@ -77,6 +77,7 @@ setup(
         'setuptools_scm >=6; python_version > "3.6"'
     ],
     install_requires=[
+        'importlib-metadata < 5.0 ; python_version <= "3.6"',
         'requests >= 2, <2.28.0; python_version <= "3.6"',
         'requests >= 2.28.0, <3; python_version > "3.6"',
         'arrow >= 0.4.4, < 1',
