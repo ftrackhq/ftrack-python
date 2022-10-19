@@ -84,6 +84,7 @@ setup(
         'importlib-metadata <= 2.1.3 ; python_version <= "3.0"',
         'typing-extensions <= 3.10.0.2 ; python_version <= "3.6"',
         'zipp <=  1.2.0 ; python_version <= "3.0"',
+        'configparser <= 4.0.2 ; python_version <= "3.0"',
     ],
     install_requires=[
         'arrow >= 0.4.4, < 1',
