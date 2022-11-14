@@ -13,7 +13,7 @@ jobs:
   run-ftrack-test-server:
     runs-on: ubuntu-latest
     container: python:${{ matrix.python-version }}
-    container: python:2.7
+    #container: python:2.7
 
     services:
       ftrack:
