@@ -1,20 +1,16 @@
 name: ftrack python api CI test
 on: [push]
 jobs:
-
-  strategy:
-    max-parallel: 1
-    fail-fast: false
-    matrix:
-      python-version: ["2.7", "3.6"]
-      #python-version: ["2.7"]
-      #python-version: ["2.7", "3.6", "3.7", "3.8", "3.9"]
-
-  run-ftrack-test-server:
+  run-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["2.7", "3.6"]
+        #python-version: ["2.7"]
+        #python-version: ["2.7", "3.6", "3.7", "3.8", "3.9"]
     runs-on: ubuntu-latest
     container: python:${{ matrix.python-version }}
     #container: python:2.7
-
     services:
       ftrack:
         image: ftrackdocker/test-server:latest
@@ -23,7 +19,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
         ports:
           - 80:80
-
     steps:         
       - name: Checkout api code
         uses: actions/checkout@v3
