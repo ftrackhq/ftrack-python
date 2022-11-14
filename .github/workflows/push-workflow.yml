@@ -40,7 +40,7 @@ jobs:
         run: |
           python setup.py test
         env:
-          FTRACK_SERVER: http://ftrack:80
+          FTRACK_SERVER: http://localhost:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
           
