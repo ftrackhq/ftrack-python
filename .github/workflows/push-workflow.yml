@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container: python:${{ matrix.python-version }}
     services:
-      ftrack:
+      127.0.0.1:
         image: ftrackdocker/test-server:latest
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -17,13 +17,13 @@ jobs:
         ports:
           - 80:80
     steps:         
-      - name: Checkout api code
+      - name: Checkout code
         uses: actions/checkout@v3
-      - name: Test with pytest
+      - name: Run pytest
         run: |
           python setup.py test
         env:
-          FTRACK_SERVER: http://ftrack:80
+          FTRACK_SERVER: http://127.0.0.1:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
 
