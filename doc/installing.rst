@@ -17,11 +17,10 @@ Building from source
 ====================
 
 You can also build manually from the source for more control. First obtain a
-copy of the source by either downloading the
-`zipball <https://bitbucket.org/ftrack/ftrack-python-api/get/master.zip>`_ or
+copy of the source by either downloading the files directly from `PyPi <https://pypi.org/project/ftrack-python-api/`_ or
 cloning the public repository::
 
-    git clone git@bitbucket.org:ftrack/ftrack-python-api.git
+    git clone git@github.com:ftrackhq/ftrack-python.git
 
 Then you can build and install the package into your current Python
 site-packages folder::

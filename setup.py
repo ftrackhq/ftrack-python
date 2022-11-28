@@ -2,7 +2,6 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import os
-import re
 
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
@@ -52,15 +51,15 @@ setup(
     name='ftrack-python-api',
     description='Python API for ftrack.',
     long_description=open(README_PATH).read(),
-    keywords='ftrack, python, api',
-    url='https://bitbucket.org/ftrack/ftrack-python-api',
+    keywords='ftrack, python, api, sdk',
+    url='https://github.com/ftrackhq/ftrack-python',
     author='ftrack',
     author_email='support@ftrack.com',
     license='Apache License (2.0)',
     packages=find_packages(SOURCE_PATH),
     project_urls={
         "Documentation": "http://ftrack-python-api.rtd.ftrack.com/en/{}/".format(VERSION),
-        "Source Code": "https://bitbucket.org/ftrack/ftrack-python-api/src/{}".format(VERSION),
+        "Source Code": "https://github.com/ftrackhq/ftrack-python/src/{}".format(VERSION),
     },
     package_dir={
         '': 'source'
