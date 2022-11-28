@@ -102,7 +102,7 @@ Open source and standard code style
 ===================================
 
 The new API is open source software and developed in public at
-`Bitbucket <https://bitbucket.org/ftrack/ftrack-python-api>`_. We welcome you
+`GitHub <https://github.com/ftrackhq/ftrack-python>`_. We welcome you
 to join us in the development and create pull requests there.
 
 In the new API, we also follow the standard code style for Python,
