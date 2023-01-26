@@ -12,6 +12,12 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: fixed
+        :tags: event
+
+        Events published while the event hub is reconnecting are now queued
+        and published once the event hub has reconnected.
+
+    .. change:: fixed
         :tags: session
 
         Server URL can contain a trailing slash "/" without causing an error.
