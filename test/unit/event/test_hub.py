@@ -222,6 +222,10 @@ def test_disconnect(event_hub):
     '''Disconnect and unsubscribe all subscribers.'''
     event_hub.disconnect()
     assert len(event_hub._subscribers) == 0
+
+    assert event_hub._intentional_disconnect is True
+    assert event_hub._connection_initialised is False
+
     assert event_hub.connected is False
 
 
@@ -229,6 +233,15 @@ def test_disconnect_without_unsubscribing(event_hub):
     '''Disconnect without unsubscribing all subscribers.'''
     event_hub.disconnect(unsubscribe=False)
     assert len(event_hub._subscribers) > 0
+    assert event_hub.connected is False
+    assert event_hub._connection_initialised is False
+
+
+def test_disconnect_with_reconnect(event_hub):
+    '''Disconnect with the intention of reconnecting.'''
+    event_hub.disconnect(reconnect=True)
+    assert event_hub._connection_initialised is True
+
     assert event_hub.connected is False
 
 

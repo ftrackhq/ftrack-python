@@ -263,13 +263,12 @@ class EventHub(object):
             except queue.Empty:
                 break
 
-
     @property
     def connected(self):
         '''Return if connected.'''
         return self._connection is not None and self._connection.connected
 
-    def disconnect(self, unsubscribe=True):
+    def disconnect(self, unsubscribe=True, reconnect=False):
         '''Disconnect from server.
 
         Raise :exc:`ftrack_api.exception.EventHubConnectionError` if not
@@ -278,6 +277,9 @@ class EventHub(object):
         If *unsubscribe* is True then unsubscribe all current subscribers
         automatically before disconnecting.
 
+        If *reconnect* is True we do not set connection_initialized to False so that
+        we may queue up messages that are published while disconnected.
+
         '''
         if not self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -285,8 +287,11 @@ class EventHub(object):
             )
 
         else:
-            # Set flag to indicate disconnection was intentional.
             self._intentional_disconnect = True
+
+            if not reconnect:
+                # Set flag to indicate disconnection was intentional.
+                self._connection_initialised = False
 
             # Set blocking to true on socket to make sure unsubscribe events
             # are emitted before closing the connection.
@@ -325,7 +330,10 @@ class EventHub(object):
 
         '''
         try:
-            self.disconnect(unsubscribe=False)
+            self.disconnect(
+                unsubscribe=False, reconnect=True
+            )
+
         except ftrack_api.exception.EventHubConnectionError:
             pass
 
@@ -674,10 +682,12 @@ class EventHub(object):
             return self._handle(event, synchronous=synchronous)
 
         if not self.connected:
-            if self._connection_initialised and not self._intentional_disconnect:
+            if self._connection_initialised:
                 # The connection is still being initialized, add
                 # the message to the queue and attempt to send it
-                # once connection has been established
+                # once connection has been established.
+
+                # This could also be a reconnection.
 
                 self._event_send_queue.put(
                     (event, synchronous, callback, on_reply)
