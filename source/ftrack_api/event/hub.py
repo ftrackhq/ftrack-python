@@ -51,7 +51,7 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server_url, api_user, api_key):
+    def __init__(self, server_url, api_user, api_key, headers=None, cookies=None, ftrack_strict_api=False):
         '''Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
@@ -120,6 +120,22 @@ class EventHub(object):
             url_parse_result.hostname,
             url_parse_result.port
         )
+        
+        self._cookies = None
+        if cookies is not None:
+            if not isinstance(cookies, collections_abc.Mapping):
+                raise TypeError('The cookies argument is required to be a mapping.')
+            self._cookies = ';'.join(['{0}={1}'.format(x, cookies[x]) for x in cookies.keys()])
+
+        self._headers = None
+        if headers is not None:
+            if not isinstance(headers, collections_abc.Mapping):
+                raise TypeError('The headers argument is required to be a mapping.')
+            self._headers = headers
+        
+        if not isinstance(ftrack_strict_api, bool):
+            raise TypeError('The ftrack_strict_api argument is required to be a boolean.')
+        self._headers.update({'ftrack-strict-api': 'true' if ftrack_strict_api else 'false'})
 
     def get_server_url(self):
         '''Return URL to server.'''
@@ -206,7 +222,8 @@ class EventHub(object):
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}, enable_multithread= True
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol},
+                enable_multithread= True, header=self._headers, cookie=self._cookies
             )
 
         except Exception as error:

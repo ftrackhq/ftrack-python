@@ -1541,7 +1541,7 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
         assert operation.entity_key['id'] == _id
 
 
-def test_ftrack_strict_api():
+def test_ftrack_strict_api_header():
     '''Create ftrack session containing ftrack-strict-api = True header.'''
     new_session = ftrack_api.Session(ftrack_strict_api=True)
     
