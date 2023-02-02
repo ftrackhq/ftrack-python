@@ -882,7 +882,7 @@ class EventHub(object):
                 headers={
                     'ftrack-user': self._api_user,
                     'ftrack-api-key': self._api_key
-                } | self._headers,
+                }.update(self._headers),
                 cookies=self._cookies,
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
