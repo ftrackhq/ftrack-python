@@ -124,9 +124,11 @@ class EventHub(object):
         if cookies is not None:
             if not isinstance(cookies, collections_abc.Mapping):
                 raise TypeError('The cookies argument is required to be a mapping.')
-            self._cookies = ';'.join(['{0}={1}'.format(x, cookies[x]) for x in cookies.keys()])
+            self._cookies_str = ';'.join(['{0}={1}'.format(x, cookies[x]) for x in cookies.keys()])
+            self._cookies = cookies
         else:
-            self._cookies = ''
+            self._cookies_str = ''
+            self._cookies = {}
 
         if headers is not None:
             if not isinstance(headers, collections_abc.Mapping):
@@ -227,7 +229,7 @@ class EventHub(object):
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
                 url, timeout=60, sslopt={"ssl_version": available_ssl_protocol},
-                enable_multithread= True, header=self._headers, cookie=self._cookies
+                enable_multithread= True, header=self._headers, cookie=self._cookies_str
             )
 
         except Exception as error:
@@ -881,7 +883,8 @@ class EventHub(object):
                 headers={
                     'ftrack-user': self._api_user,
                     'ftrack-api-key': self._api_key
-                },
+                } | self._headers,
+                cookies=self._cookies,
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
         except requests.exceptions.Timeout as error:
