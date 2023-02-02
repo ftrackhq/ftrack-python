@@ -883,7 +883,7 @@ class EventHub(object):
             }
             response = requests.get(
                 socket_io_url,
-                headers=req_headers.update(self._headers) if self._headers else req_headers,
+                headers=req_headers,#.update(self._headers) if self._headers else req_headers,
                 cookies=self._cookies,
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
