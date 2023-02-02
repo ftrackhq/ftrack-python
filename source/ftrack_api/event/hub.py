@@ -877,12 +877,13 @@ class EventHub(object):
             self.get_network_location()
         )
         try:
+            req_headers = {
+                'ftrack-user': self._api_user,
+                'ftrack-api-key': self._api_key
+            }
             response = requests.get(
                 socket_io_url,
-                headers={
-                    'ftrack-user': self._api_user,
-                    'ftrack-api-key': self._api_key
-                }.update(self._headers),
+                headers=req_headers.update(self._headers) if self._headers else req_headers,
                 cookies=self._cookies,
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
