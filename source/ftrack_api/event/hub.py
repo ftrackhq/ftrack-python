@@ -124,10 +124,8 @@ class EventHub(object):
         if cookies is not None:
             if not isinstance(cookies, collections_abc.Mapping):
                 raise TypeError('The cookies argument is required to be a mapping.')
-            self._cookies_str = ';'.join(['{0}={1}'.format(x, cookies[x]) for x in cookies.keys()])
             self._cookies = cookies
         else:
-            self._cookies_str = ''
             self._cookies = {}
 
         if headers is not None:
@@ -229,7 +227,8 @@ class EventHub(object):
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
                 url, timeout=60, sslopt={"ssl_version": available_ssl_protocol},
-                enable_multithread= True, header=self._headers, cookie=self._cookies_str
+                enable_multithread= True, header=self._headers,
+                cookie=';'.join(['{0}={1}'.format(x, self._cookies[x]) for x in self._cookies.keys()])
             )
 
         except Exception as error:
