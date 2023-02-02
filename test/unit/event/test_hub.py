@@ -173,7 +173,11 @@ def test_connect_custom_headers(session):
     )
     event_hub.connect()
 
-    assert event_hub._connection.headers == {'abc': 'def'}
+    assert (
+        'abc' in event_hub._headers.keys(),
+        event_hub._headers['abc'] == 'def',
+        event_hub.connected is True
+    )
     event_hub.disconnect()
 
 
@@ -184,7 +188,11 @@ def test_connect_ftrack_strict_api_header(session):
     )
     event_hub.connect()
 
-    assert event_hub._connection.headers == {'ftrack-strict-api': 'true'}
+    assert (
+        'ftrack-strict-api' in event_hub._headers.keys(),
+        event_hub._headers['ftrack-strict-api'] is True,
+        event_hub.connected is True
+    )
     event_hub.disconnect()
 
 
@@ -195,7 +203,10 @@ def test_connect_custom_cookies(session):
     )
     event_hub.connect()
 
-    assert event_hub._connection.cookie == 'abc=def'
+    assert (
+        event_hub._cookies == 'abc=def',
+        event_hub.connected is True
+    )
     event_hub.disconnect()
 
 

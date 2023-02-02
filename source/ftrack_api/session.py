@@ -249,9 +249,12 @@ class Session(object):
                 raise TypeError('The headers argument is required to be a mapping.')
             self._request.headers.update(headers)
         
+        self._ftrack_strict_api = ftrack_strict_api
         if not isinstance(ftrack_strict_api, bool):
             raise TypeError('The ftrack_strict_api argument is required to be a boolean.')
-        self._request.headers.update({'ftrack-strict-api': 'true' if ftrack_strict_api else 'false'})
+        self._request.headers.update(
+            {'ftrack-strict-api': 'true' if self._ftrack_strict_api is True else 'false'}
+        )
         
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
@@ -274,6 +277,7 @@ class Session(object):
             self._server_url,
             self._api_user,
             self._api_key,
+            ftrack_strict_api=self._ftrack_strict_api
         )
 
         self._auto_connect_event_hub_thread = None
