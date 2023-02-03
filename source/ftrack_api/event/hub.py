@@ -51,7 +51,7 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server_url, api_user, api_key, headers=None, cookies=None, ftrack_strict_api=False):
+    def __init__(self, server_url, api_user, api_key, headers=None, cookies=None):
         '''Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
@@ -121,25 +121,8 @@ class EventHub(object):
             url_parse_result.port
         )
         
-        if cookies is not None:
-            if not isinstance(cookies, collections_abc.Mapping):
-                raise TypeError('The cookies argument is required to be a mapping.')
-            self._cookies = cookies
-        else:
-            self._cookies = {}
-
-        if headers is not None:
-            if not isinstance(headers, collections_abc.Mapping):
-                raise TypeError('The headers argument is required to be a mapping.')
-            self._headers = headers
-        else:
-            self._headers = {}
-        
-        if not isinstance(ftrack_strict_api, bool):
-            raise TypeError('The ftrack_strict_api argument is required to be a boolean.')
-        self._headers.update(
-            {'ftrack-strict-api': 'true' if ftrack_strict_api is True else 'false'}
-        )
+        self._cookies = cookies or {}
+        self._headers = headers or {}
 
     def get_server_url(self):
         '''Return URL to server.'''

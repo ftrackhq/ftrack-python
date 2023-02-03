@@ -181,10 +181,10 @@ def test_connect_custom_headers(session):
     event_hub.disconnect()
 
 
-def test_connect_ftrack_strict_api_header(session):
+def test_connect_strict_api_header(session):
     '''Connect with ftrack-strict-api = True header passed in.'''
     event_hub = ftrack_api.event.hub.EventHub(
-        session.server_url, session.api_user, session.api_key, ftrack_strict_api=True
+        session.server_url, session.api_user, session.api_key, headers={'ftrack-strict-api': 'true'}
     )
     event_hub.connect()
 

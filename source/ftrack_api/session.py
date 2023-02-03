@@ -85,7 +85,7 @@ class Session(object):
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
         auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None, timeout=60, cookies=None, headers=None, ftrack_strict_api=False
+        plugin_arguments=None, timeout=60, cookies=None, headers=None
     ):
         '''Initialise session.
 
@@ -158,6 +158,12 @@ class Session(object):
 
         *timeout* how long to wait for server to respond, default is 60
         seconds.
+
+        *cookies* should be an optional mapping (dict) of key-value pairs specifying
+        custom cookies that we need to pass in alongside the requests to the server.
+
+        *headers* should be an optional mapping (dict) of key-value pairs specifying
+        custom headers that we need to pass in alongside the requests to the server.
 
         '''
         super(Session, self).__init__()
@@ -249,13 +255,6 @@ class Session(object):
                 raise TypeError('The headers argument is required to be a mapping.')
             self._request.headers.update(headers)
         
-        self._ftrack_strict_api = ftrack_strict_api
-        if not isinstance(ftrack_strict_api, bool):
-            raise TypeError('The ftrack_strict_api argument is required to be a boolean.')
-        self._request.headers.update(
-            {'ftrack-strict-api': 'true' if self._ftrack_strict_api is True else 'false'}
-        )
-        
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
         )
@@ -276,8 +275,7 @@ class Session(object):
         self._event_hub = ftrack_api.event.hub.EventHub(
             self._server_url,
             self._api_user,
-            self._api_key,
-            ftrack_strict_api=self._ftrack_strict_api
+            self._api_key
         )
 
         self._auto_connect_event_hub_thread = None
