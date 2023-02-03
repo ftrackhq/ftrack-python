@@ -866,7 +866,7 @@ class EventHub(object):
             }
             if self._headers:
                 req_headers.update(self._headers)
-            response = self._session._request.get(
+            response = requests.get(
                 socket_io_url,
                 headers=req_headers,
                 cookies=self._cookies,
