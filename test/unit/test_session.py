@@ -1543,7 +1543,7 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
 
 def test_strict_api_header():
     '''Create ftrack session containing ftrack-strict-api = True header.'''
-    new_session = ftrack_api.Session(headers={'ftrack-strict-api': 'true'})
+    new_session = ftrack_api.Session(strict_api=True)
     
     assert(
         'ftrack-strict-api' in new_session._request.headers.keys(),
