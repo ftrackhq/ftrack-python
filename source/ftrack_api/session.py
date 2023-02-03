@@ -27,6 +27,7 @@ import warnings
 
 import requests
 import requests.auth
+import requests.utils
 import arrow
 import clique
 import appdirs
@@ -285,7 +286,9 @@ class Session(object):
         self._event_hub = ftrack_api.event.hub.EventHub(
             self._server_url,
             self._api_user,
-            self._api_key
+            self._api_key,
+            headers=self._request.headers,
+            cookies=requests.utils.dict_from_cookiejar(self._request.cookies)
         )
 
         self._auto_connect_event_hub_thread = None
