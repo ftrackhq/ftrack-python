@@ -56,6 +56,12 @@ class EventHub(object):
 
         *api_user* is the user to authenticate as and *api_key* is the API key
         to authenticate with.
+        
+        *cookies* should be an optional mapping (dict) of key-value pairs specifying
+        custom cookies that we need to pass in alongside the requests to the server.
+
+        *headers* should be an optional mapping (dict) of key-value pairs specifying
+        custom headers that we need to pass in alongside the requests to the server.
 
         '''
         super(EventHub, self).__init__()
