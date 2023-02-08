@@ -166,6 +166,50 @@ def test_connect(session):
     event_hub.disconnect()
 
 
+def test_connect_custom_headers(session):
+    '''Connect with custom headers passed in.'''
+    event_hub = ftrack_api.event.hub.EventHub(
+        session.server_url, session.api_user, session.api_key, headers={'abc': 'def'}
+    )
+    event_hub.connect()
+
+    assert (
+        'abc' in event_hub._headers.keys(),
+        event_hub._headers['abc'] == 'def',
+        event_hub.connected is True
+    )
+    event_hub.disconnect()
+
+
+def test_connect_strict_api_header(session):
+    '''Connect with ftrack-strict-api = True header passed in.'''
+    event_hub = ftrack_api.event.hub.EventHub(
+        session.server_url, session.api_user, session.api_key, headers={'ftrack-strict-api': 'true'}
+    )
+    event_hub.connect()
+
+    assert (
+        'ftrack-strict-api' in event_hub._headers.keys(),
+        event_hub._headers['ftrack-strict-api'] is True,
+        event_hub.connected is True
+    )
+    event_hub.disconnect()
+
+
+def test_connect_custom_cookies(session):
+    '''Connect with custom cookies passed in.'''
+    event_hub = ftrack_api.event.hub.EventHub(
+        session.server_url, session.api_user, session.api_key, cookies={'abc': 'def'}
+    )
+    event_hub.connect()
+
+    assert (
+        event_hub._cookies == 'abc=def',
+        event_hub.connected is True
+    )
+    event_hub.disconnect()
+
+
 def test_connect_when_already_connected(event_hub):
     '''Fail to connect when already connected'''
     assert event_hub.connected is True

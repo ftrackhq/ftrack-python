@@ -14,6 +14,7 @@ import pytest
 import mock
 import arrow
 import requests
+import requests.utils
 
 import ftrack_api
 import ftrack_api.cache
@@ -1538,3 +1539,34 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
 
         assert operation.entity_type == 'User'
         assert operation.entity_key['id'] == _id
+
+
+def test_strict_api_header():
+    '''Create ftrack session containing ftrack-strict-api = True header.'''
+    new_session = ftrack_api.Session(strict_api=True)
+    
+    assert(
+        'ftrack-strict-api' in new_session._request.headers.keys(),
+        new_session._request.headers['ftrack-strict-api'] == 'true'
+    )
+
+
+def test_custom_cookies_session():
+    '''Create ftrack session containing custom cookies.'''
+    new_session = ftrack_api.Session(cookies={'abc': 'def'})
+    cookies_dict = requests.utils.dict_from_cookiejar(new_session._request.cookies)
+
+    assert(
+        'abc' in cookies_dict.keys(),
+        cookies_dict['abc'] == 'def'
+    )
+
+
+def test_custom_headers_session():
+    '''Create ftrack session containing custom headers.'''
+    new_session = ftrack_api.Session(headers={'abc': 'def'})
+
+    assert(
+        'abc' in new_session._request.headers.keys(),
+        new_session._request.headers['abc'] == 'def'
+    )   

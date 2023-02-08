@@ -51,11 +51,17 @@ ServerDetails = collections.namedtuple('ServerDetails', [
 class EventHub(object):
     '''Manage routing of events.'''
 
-    def __init__(self, server_url, api_user, api_key):
+    def __init__(self, server_url, api_user, api_key, headers=None, cookies=None):
         '''Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
         to authenticate with.
+        
+        *cookies* should be an optional mapping (dict) of key-value pairs specifying
+        custom cookies that we need to pass in alongside the requests to the server.
+
+        *headers* should be an optional mapping (dict) of key-value pairs specifying
+        custom headers that we need to pass in alongside the requests to the server.
 
         '''
         super(EventHub, self).__init__()
@@ -120,6 +126,9 @@ class EventHub(object):
             url_parse_result.hostname,
             url_parse_result.port
         )
+        
+        self._cookies = cookies or {}
+        self._headers = headers or {}
 
     def get_server_url(self):
         '''Return URL to server.'''
@@ -206,7 +215,9 @@ class EventHub(object):
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol}, enable_multithread= True
+                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol},
+                enable_multithread= True, header=self._headers,
+                cookie=';'.join(['{0}={1}'.format(x, self._cookies[x]) for x in self._cookies.keys()])
             )
 
         except Exception as error:
@@ -855,12 +866,16 @@ class EventHub(object):
             self.get_network_location()
         )
         try:
+            req_headers = {
+                'ftrack-user': self._api_user,
+                'ftrack-api-key': self._api_key
+            }
+            if self._headers:
+                req_headers.update(self._headers)
             response = requests.get(
                 socket_io_url,
-                headers={
-                    'ftrack-user': self._api_user,
-                    'ftrack-api-key': self._api_key
-                },
+                headers=req_headers,
+                cookies=self._cookies,
                 timeout=60  # 60 seconds timeout to recieve errors faster.
             )
         except requests.exceptions.Timeout as error:

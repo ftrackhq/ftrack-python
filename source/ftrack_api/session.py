@@ -27,6 +27,7 @@ import warnings
 
 import requests
 import requests.auth
+import requests.utils
 import arrow
 import clique
 import appdirs
@@ -85,7 +86,7 @@ class Session(object):
         self, server_url=None, api_key=None, api_user=None, auto_populate=True,
         plugin_paths=None, cache=None, cache_key_maker=None,
         auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None, timeout=60
+        plugin_arguments=None, timeout=60, cookies=None, headers=None, strict_api=False
     ):
         '''Initialise session.
 
@@ -158,6 +159,16 @@ class Session(object):
 
         *timeout* how long to wait for server to respond, default is 60
         seconds.
+
+        *cookies* should be an optional mapping (dict) of key-value pairs specifying
+        custom cookies that we need to pass in alongside the requests to the server.
+
+        *headers* should be an optional mapping (dict) of key-value pairs specifying
+        custom headers that we need to pass in alongside the requests to the server.
+
+        *strict_api* should be an optional boolean flag (defaulting to False if not
+        specified) indicating whether to add the 'ftrack-strict-api': 'true' header
+        to the request or not.
 
         '''
         super(Session, self).__init__()
@@ -238,6 +249,23 @@ class Session(object):
 
         self._managed_request = None
         self._request = requests.Session()
+        
+        if cookies is not None:
+            if not isinstance(cookies, collections_abc.Mapping):
+                raise TypeError('The cookies argument is required to be a mapping.')
+            self._request.cookies.update(cookies)
+        
+        if headers is not None:
+            if not isinstance(headers, collections_abc.Mapping):
+                raise TypeError('The headers argument is required to be a mapping.')
+            self._request.headers.update(headers)
+        
+        if not isinstance(strict_api, bool):
+            raise TypeError('The strict_api argument is required to be a boolean.')
+        self._request.headers.update(
+            {'ftrack-strict-api': 'true' if strict_api is True else 'false'}
+        )
+        
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
         )
@@ -259,6 +287,8 @@ class Session(object):
             self._server_url,
             self._api_user,
             self._api_key,
+            headers=self._request.headers,
+            cookies=requests.utils.dict_from_cookiejar(self._request.cookies)
         )
 
         self._auto_connect_event_hub_thread = None
