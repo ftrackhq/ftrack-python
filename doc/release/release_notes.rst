@@ -9,6 +9,11 @@ Release Notes
 
 .. currentmodule:: ftrack_api.session
 
+.. note::
+
+    Release notes for new versions are published in GitHub at the following
+    URL: https://github.com/ftrackhq/ftrack-python/releases
+
 .. release:: Upcoming
 
     .. change:: changed
