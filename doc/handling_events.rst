@@ -49,7 +49,7 @@ events and then print out the entities that were updated::
 
 
     # Subscribe to events with the update topic.
-    session = ftrack_api.Session()
+    session = ftrack_api.Session(auto_connect_event_hub=True)
     session.event_hub.subscribe('topic=ftrack.update', my_callback)
 
 At this point, if you run this, your code would exit almost immediately. This
@@ -153,7 +153,7 @@ allows handlers to prevent lower priority handlers running when desired.
     ...     '''Never run.'''
     ...     print('Callback B')
     >>>
-    >>> session = ftrack_api.Session()
+    >>> session = ftrack_api.Session(auto_connect_event_hub=True)
     >>> session.event_hub.subscribe(
     ...     'topic=test-stop-event', callback_a, priority=10
     ... )
@@ -221,7 +221,7 @@ returned together in a list::
     >>> def callback_b(event):
     ...     return 'B'
     >>>
-    >>> session = ftrack_api.Session()
+    >>> session = ftrack_api.Session(auto_connect_event_hub=True)
     >>> session.event_hub.subscribe(
     ...     'topic=test-synchronous', callback_a, priority=10
     ... )
