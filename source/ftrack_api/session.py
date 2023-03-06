@@ -1686,26 +1686,33 @@ class Session(object):
 
         self.logger.debug(L('Calling server {0} with {1!r}', url, data))
 
-        response = self._request.post(
-            url,
-            headers=headers,
-            data=data,
-            timeout=self.request_timeout,
-        )
+        try:
+            response = self._request.post(
+                url,
+                headers=headers,
+                data=data,
+                timeout=self.request_timeout,
+            )
+            response.raise_for_status()
+
+        except requests.exceptions.HTTPError:
+            error_message = (
+                'Server reported error: {0}'
+                .format(response.text)
+            )
+            self._raise_server_error(error_message)
 
         self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
-
         self.logger.debug(L('Response: {0!r}', response.text))
-        try:
-            result = self.decode(response.text)
 
+        try:        
+            result = self.decode(response.text)
         except Exception:
             error_message = (
                 'Server reported error in unexpected format. Raw error was: {0}'
                 .format(response.text)
             )
-            self.logger.exception(error_message)
-            raise ftrack_api.exception.ServerError(error_message)
+            self._raise_server_error(error_message)
 
         else:
             if 'exception' in result:
@@ -1713,10 +1720,12 @@ class Session(object):
                 error_message = 'Server reported error: {0}({1})'.format(
                     result['exception'], result['content']
                 )
-                self.logger.exception(error_message)
-                raise ftrack_api.exception.ServerError(error_message)
-
+                self._raise_server_error(error_message)
         return result
+
+    def _raise_server_error(self, error_message):
+        self.logger.exception(error_message)
+        raise ftrack_api.exception.ServerError(error_message)
 
     def encode(self, data, entity_attribute_strategy='set_only'):
         '''Return *data* encoded as JSON formatted string.
