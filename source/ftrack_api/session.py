@@ -259,10 +259,12 @@ class Session(object):
             if not isinstance(headers, collections_abc.Mapping):
                 raise TypeError('The headers argument is required to be a mapping.')
             self._request.headers.update(headers)
+        else:
+            headers = {}
         
         if not isinstance(strict_api, bool):
             raise TypeError('The strict_api argument is required to be a boolean.')
-        self._request.headers.update(
+        headers.update(
             {'ftrack-strict-api': 'true' if strict_api is True else 'false'}
         )
         
@@ -287,7 +289,7 @@ class Session(object):
             self._server_url,
             self._api_user,
             self._api_key,
-            headers=self._request.headers,
+            headers=headers,
             cookies=requests.utils.dict_from_cookiejar(self._request.cookies)
         )
 
