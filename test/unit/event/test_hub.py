@@ -7,6 +7,7 @@ import os
 import time
 import subprocess
 import sys
+import requests
 import logging
 
 import pytest
@@ -181,15 +182,28 @@ def test_connect_custom_headers(session):
     event_hub.disconnect()
 
 
-def test_connect_strict_api_header(session):
+@pytest.mark.parametrize(
+    'headers', [
+        (
+            requests.structures.CaseInsensitiveDict(
+                {'ftrack-strict-api': 'true'}
+            )
+        ),
+        (
+            {'ftrack-strict-api': 'true'}
+        )
+    ]
+)
+def test_connect_strict_api_header(session, headers):
     '''Connect with ftrack-strict-api = True header passed in.'''
     event_hub = ftrack_api.event.hub.EventHub(
-        session.server_url, session.api_user, session.api_key, headers={'ftrack-strict-api': 'true'}
+        session.server_url, session.api_user, session.api_key, headers=headers
     )
     event_hub.connect()
 
     assert (
         'ftrack-strict-api' in event_hub._headers.keys(),
+        isinstance(event_hub._headers, dict),
         event_hub._headers['ftrack-strict-api'] is True,
         event_hub.connected is True
     )
