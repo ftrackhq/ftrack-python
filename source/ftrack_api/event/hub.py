@@ -126,9 +126,16 @@ class EventHub(object):
             url_parse_result.hostname,
             url_parse_result.port
         )
-        
-        self._cookies = cookies or {}
-        self._headers = headers or {}
+
+        def _validate_mapping(mapping):
+            '''Validate mapping is a mapping type and return as dict.'''
+            if not isinstance(mapping, collections_abc.Mapping):
+                raise TypeError('Expected mapping, got {0!r}.'.format(mapping))
+
+            return dict(mapping)
+
+        self._cookies = _validate_mapping(cookies or {})
+        self._headers = _validate_mapping(headers or {})
 
     def get_server_url(self):
         '''Return URL to server.'''
