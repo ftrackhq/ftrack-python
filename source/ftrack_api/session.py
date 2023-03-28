@@ -258,12 +258,16 @@ class Session(object):
         if headers is not None:
             if not isinstance(headers, collections_abc.Mapping):
                 raise TypeError('The headers argument is required to be a mapping.')
+
+            headers = dict(headers)
+
             self._request.headers.update(headers)
         else:
             headers = {}
         
         if not isinstance(strict_api, bool):
             raise TypeError('The strict_api argument is required to be a boolean.')
+
         headers.update(
             {'ftrack-strict-api': 'true' if strict_api is True else 'false'}
         )
