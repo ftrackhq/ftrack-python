@@ -250,22 +250,28 @@ class Session(object):
         self._managed_request = None
         self._request = requests.Session()
         
-        if cookies is not None:
+        if cookies:
             if not isinstance(cookies, collections_abc.Mapping):
                 raise TypeError('The cookies argument is required to be a mapping.')
             self._request.cookies.update(cookies)
-        
-        if headers is not None:
+
+        if headers:
             if not isinstance(headers, collections_abc.Mapping):
                 raise TypeError('The headers argument is required to be a mapping.')
-            self._request.headers.update(headers)
+
+            headers = dict(headers)
+
+        else:
+            headers = {}
         
         if not isinstance(strict_api, bool):
             raise TypeError('The strict_api argument is required to be a boolean.')
-        self._request.headers.update(
+
+        headers.update(
             {'ftrack-strict-api': 'true' if strict_api is True else 'false'}
         )
-        
+
+        self._request.headers.update(headers)
         self._request.auth = SessionAuthentication(
             self._api_key, self._api_user
         )
@@ -287,7 +293,7 @@ class Session(object):
             self._server_url,
             self._api_user,
             self._api_key,
-            headers=self._request.headers,
+            headers=headers,
             cookies=requests.utils.dict_from_cookiejar(self._request.cookies)
         )
 
