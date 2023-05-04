@@ -94,6 +94,7 @@ configuration can have one of the following as `entity_type`:
             'label': 'Foo',
             'key': 'foo',
             'default': 'bar',
+            'config': json.dumps({'markdown': False})
         })
         session.commit()
 
@@ -266,7 +267,8 @@ objects, instead they have the following attributes:
 
 Below is an example of how to create a custom attribute link between a
 TypedContext object such as Shot and AssetVersion::
-
+    security_role = session.query('SecurityRole').first()
+    task_object_id = session.query('ObjectType where name is "task"').one()['id']
     session.create('CustomAttributeLinkConfiguration', {
         'entity_type': 'task',
         'object_type_id': task_object_id,
@@ -281,7 +283,7 @@ TypedContext object such as Shot and AssetVersion::
 
 An other example creating a custom attribute link between a Sequence
 and a Shot specifying object_type for both sides.::
-
+    security_role = session.query('SecurityRole').first()
     shot_object_id = session.query('ObjectType where name is "shot"').one()['id']
     sequence_object_id = session.query('ObjectType where name is "sequence"').one()['id']
 
@@ -289,7 +291,7 @@ and a Shot specifying object_type for both sides.::
         'entity_type': 'task',
         'object_type_id': sequence_object,
         'entity_type_to': 'task',
-        'object_type_id_to': shot_object_id
+        'object_type_id_to': shot_object_id,
         'label': 'Master shot',
         'key': 'master_shot',
         'config': '{}',
