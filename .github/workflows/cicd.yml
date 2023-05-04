@@ -33,7 +33,7 @@ jobs:
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
-          FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY }}
+          FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
   build:
     runs-on: ubuntu-latest
     name: Build package distribution
