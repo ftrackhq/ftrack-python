@@ -1706,14 +1706,6 @@ class Session(object):
             result = self.decode(response.text)
             response.raise_for_status()
 
-        # JSON response decoding exception
-        except Exception:
-            error_message = (
-                'Server reported error in unexpected format. Raw error was: {0}'
-                .format(response.text)
-            )
-            self._raise_server_error(error_message)
-
         # handle response exceptions and / or other http exceptions
         # (strict api used => status code returned => raise_for_status() => HTTPError)
         except requests.exceptions.HTTPError as exc:
@@ -1724,6 +1716,14 @@ class Session(object):
                 self._raise_server_error(error_message)
             else:
                 self._raise_server_error(str(exc))
+
+        # JSON response decoding exception
+        except Exception:
+            error_message = (
+                'Server reported error in unexpected format. Raw error was: {0}'
+                .format(response.text)
+            )
+            self._raise_server_error(error_message)
         
         # handle possible response exceptions
         # (strict api not used => 200 returned)
