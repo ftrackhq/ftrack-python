@@ -1707,7 +1707,7 @@ class Session(object):
             response.raise_for_status()
 
         # JSON response decoding exception
-        except json.decoder.JSONDecodeError:
+        except Exception:
             error_message = (
                 'Server reported error in unexpected format. Raw error was: {0}'
                 .format(response.text)
