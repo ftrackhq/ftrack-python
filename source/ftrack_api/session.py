@@ -1693,7 +1693,7 @@ class Session(object):
         self.logger.debug(L('Calling server {0} with {1!r}', url, data))
 
         try:
-            result = ''
+            result = {}
             response = self._request.post(
                 url,
                 headers=headers,
