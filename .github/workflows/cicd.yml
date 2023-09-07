@@ -12,7 +12,7 @@ jobs:
   check-formatting:
     runs-on: ubuntu-latest
     container:
-      image: python:${{ matrix.python-version }}
+      image: python:3
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
