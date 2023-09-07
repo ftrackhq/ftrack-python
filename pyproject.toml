@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "ftrack-python"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sphinx = ">=1.2.2, <1.6"
+sphinx_rtd_theme = ">=0.1.6, <1"
+lowdown = ">=0.1.0,<2"
+setuptools = ">=30.3.0"
+setuptools-scm = "^7.1.0"
+requests = ">=2,<3"
+arrow = ">=0.4.4,<1"
+termcolor = ">=1.1.0,<2"
+pyparsing = ">=2.0,<3"
+clique = "==1.6.1"
+websocket-client = ">=0.40.0,<1"
+future = ">=0.16.0,<1"
+six = ">=1.13.0,<2"
+appdirs = ">=1,<2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+pre-commit = "^3.4.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.1"
+pytest-mock = "^3.11.1"
+mock = "^5.1.0"
+flaky = "^3.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
