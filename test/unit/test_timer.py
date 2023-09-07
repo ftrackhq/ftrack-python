@@ -7,16 +7,12 @@ import ftrack_api.exception
 
 def test_manually_create_multiple_timers_with_error(session, new_user):
     '''Fail to create a second timer.'''
-    session.create('Timer', {
-        'user': new_user
-    })
+    session.create('Timer', {'user': new_user})
 
     session.commit()
 
     with pytest.raises(ftrack_api.exception.ServerError):
-        session.create('Timer', {
-            'user': new_user
-        })
+        session.create('Timer', {'user': new_user})
 
         session.commit()
 
@@ -60,9 +56,7 @@ def test_start_a_timer_when_timer_is_running(session, new_user, new_task):
     ).all()
     assert len(timelogs) == 1, 'One timelog exists.'
 
-    timelog = session.query(
-        'Timer where user_id = "{0}"'.format(new_user['id'])
-    ).one()
+    timelog = session.query('Timer where user_id = "{0}"'.format(new_user['id'])).one()
 
     # Make sure running timer has no context.
     assert timelog['context_id'] is None, 'Timer does not have a context.'

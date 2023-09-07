@@ -72,8 +72,5 @@ def test_operations_iter():
     operations.push(operation_c)
 
     assert len(operations) == 3
-    for operation, expected in zip(
-        operations, [operation_a, operation_b, operation_c]
-    ):
+    for operation, expected in zip(operations, [operation_a, operation_b, operation_c]):
         assert operation is expected
-

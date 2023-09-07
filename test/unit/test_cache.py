@@ -14,14 +14,10 @@ import ftrack_api.cache
 def cache(request):
     '''Return cache.'''
     if request.param == 'proxy':
-        cache = ftrack_api.cache.ProxyCache(
-            ftrack_api.cache.MemoryCache()
-        )
+        cache = ftrack_api.cache.ProxyCache(ftrack_api.cache.MemoryCache())
 
     elif request.param == 'layered':
-        cache = ftrack_api.cache.LayeredCache(
-            [ftrack_api.cache.MemoryCache()]
-        )
+        cache = ftrack_api.cache.LayeredCache([ftrack_api.cache.MemoryCache()])
 
     elif request.param == 'memory':
         cache = ftrack_api.cache.MemoryCache()
@@ -48,16 +44,13 @@ def cache(request):
         cache = ftrack_api.cache.SerialisedCache(
             ftrack_api.cache.MemoryCache(),
             encode=lambda value: value,
-            decode=lambda value: value
+            decode=lambda value: value,
         )
 
     else:
-        raise ValueError(
-            'Unrecognised cache fixture type {0!r}'.format(request.param)
-        )
+        raise ValueError('Unrecognised cache fixture type {0!r}'.format(request.param))
 
     return cache
-
 
 
 class Class(object):
@@ -176,7 +169,7 @@ def test_layered_cache_propagates_value_on_get():
     caches = [
         ftrack_api.cache.MemoryCache(),
         ftrack_api.cache.MemoryCache(),
-        ftrack_api.cache.MemoryCache()
+        ftrack_api.cache.MemoryCache(),
     ]
 
     cache = ftrack_api.cache.LayeredCache(caches)
@@ -195,10 +188,7 @@ def test_layered_cache_propagates_value_on_get():
 
 def test_layered_cache_remove_at_depth():
     '''Remove key that only exists at depth in LayeredCache.'''
-    caches = [
-        ftrack_api.cache.MemoryCache(),
-        ftrack_api.cache.MemoryCache()
-    ]
+    caches = [ftrack_api.cache.MemoryCache(), ftrack_api.cache.MemoryCache()]
 
     cache = ftrack_api.cache.LayeredCache(caches)
 
@@ -215,71 +205,63 @@ def test_layered_cache_remove_at_depth():
 def test_expand_references():
     '''Test that references are expanded from serialized cache.'''
 
-    cache_path = os.path.join(
-        tempfile.gettempdir(), '{0}.dbm'.format(uuid.uuid4().hex)
-    )
+    cache_path = os.path.join(tempfile.gettempdir(), '{0}.dbm'.format(uuid.uuid4().hex))
 
     def make_cache(session, cache_path):
         '''Create a serialised file cache.'''
         serialized_file_cache = ftrack_api.cache.SerialisedCache(
             ftrack_api.cache.FileCache(cache_path),
             encode=session.encode,
-            decode=session.decode
+            decode=session.decode,
         )
 
         return serialized_file_cache
 
     # Populate the serialized file cache.
     session = ftrack_api.Session(
-        cache=lambda session, cache_path=cache_path:make_cache(
-            session, cache_path
-        )
+        cache=lambda session, cache_path=cache_path: make_cache(session, cache_path)
     )
 
     expanded_results = dict()
 
-    query_string = 'select asset.parent from AssetVersion where asset is_not None limit 10'
+    query_string = (
+        'select asset.parent from AssetVersion where asset is_not None limit 10'
+    )
 
     for sequence in session.query(query_string):
         asset = sequence.get('asset')
 
-        expanded_results.setdefault(
-            asset.get('id'), asset.get('parent')
-        )
+        expanded_results.setdefault(asset.get('id'), asset.get('parent'))
 
     # Fetch the data from cache.
     new_session = ftrack_api.Session(
-        cache=lambda session, cache_path=cache_path:make_cache(
-            session, cache_path
-        )
+        cache=lambda session, cache_path=cache_path: make_cache(session, cache_path)
     )
 
-
     new_session_two = ftrack_api.Session(
-        cache=lambda session, cache_path=cache_path:make_cache(
-            session, cache_path
-        )
+        cache=lambda session, cache_path=cache_path: make_cache(session, cache_path)
     )
 
     # Make sure references are merged.
     for sequence in new_session.query(query_string):
         asset = sequence.get('asset')
 
-        assert (
-            asset.get('parent') == expanded_results[asset.get('id')]
-        )
+        assert asset.get('parent') == expanded_results[asset.get('id')]
 
         # Use for fetching directly using get.
         assert (
-            new_session_two.get(asset.entity_type, asset.get('id')).get('parent') ==
-            expanded_results[asset.get('id')]
+            new_session_two.get(asset.entity_type, asset.get('id')).get('parent')
+            == expanded_results[asset.get('id')]
         )
 
 
-@pytest.mark.parametrize('items, key', [
-    pytest.param(({},), '{}', id='single object'),
-    pytest.param(({}, {}), '{}{}', id='multiple objects')
-])
+@pytest.mark.parametrize(
+    'items, key',
+    [
+        pytest.param(({},), '{}', id='single object'),
+        pytest.param(({}, {}), '{}{}', id='multiple objects'),
+    ],
+)
 def test_string_key_maker_key(items, key):
     '''Generate key using string key maker.'''
     key_maker = ftrack_api.cache.StringKeyMaker()
@@ -287,38 +269,33 @@ def test_string_key_maker_key(items, key):
 
 
 @pytest.mark.skipif(sys.version_info > (3, 0), reason="requires Python2")
-@pytest.mark.parametrize('items, key', [
-    pytest.param(
-        ({},),
-        b'\x01\x01',
-       id='single mapping'),
-    pytest.param(
-        ({'a': 'b'}, [1, 2]),
-        '\x01'
-            '\x80\x02U\x01a.' '\x02' '\x80\x02U\x01b.'
-        '\x01'
-        '\x00'
-        '\x03'
-            '\x80\x02K\x01.' '\x00' '\x80\x02K\x02.'
-        '\x03',
-        id='multiple objects'),
-    pytest.param(
-        (function,),
-        b'\x04function\x00unit.test_cache',
-        id='function'),
-    pytest.param(
-        (Class,),
-        b'\x04Class\x00unit.test_cache',
-        id='class'),
-    pytest.param(
-        (Class().method,),
-        b'\x04method\x00Class\x00unit.test_cache',
-        id='method'),
-    pytest.param(
-        (callable,),
-        b'\x04callable',
-        id='builtin')
-])
+@pytest.mark.parametrize(
+    'items, key',
+    [
+        pytest.param(({},), b'\x01\x01', id='single mapping'),
+        pytest.param(
+            ({'a': 'b'}, [1, 2]),
+            '\x01'
+            '\x80\x02U\x01a.'
+            '\x02'
+            '\x80\x02U\x01b.'
+            '\x01'
+            '\x00'
+            '\x03'
+            '\x80\x02K\x01.'
+            '\x00'
+            '\x80\x02K\x02.'
+            '\x03',
+            id='multiple objects',
+        ),
+        pytest.param((function,), b'\x04function\x00unit.test_cache', id='function'),
+        pytest.param((Class,), b'\x04Class\x00unit.test_cache', id='class'),
+        pytest.param(
+            (Class().method,), b'\x04method\x00Class\x00unit.test_cache', id='method'
+        ),
+        pytest.param((callable,), b'\x04callable', id='builtin'),
+    ],
+)
 def test_object_key_maker_key_py2k(items, key):
     '''Generate key using string key maker.'''
     key_maker = ftrack_api.cache.ObjectKeyMaker()
@@ -327,33 +304,24 @@ def test_object_key_maker_key_py2k(items, key):
 
 
 @pytest.mark.skipif(sys.version_info < (3, 0), reason="requires Python3")
-@pytest.mark.parametrize('items, key', [
-    pytest.param(
-        ({},),
-        b'\x01\x01',
-        id='single mapping'),
-    pytest.param(
-        ({'a': 'b'}, [1, 2]),
-        b'\x01\x80\x02X\x01\x00\x00\x00aq\x00.\x02\x80\x02X\x01\x00\x00\x00bq\x00.'
-        b'\x01\x00\x03\x80\x02K\x01.\x00\x80\x02K\x02.\x03',
-        id='multiple objects'),
-    pytest.param(
-        (function,),
-        b'\x04function\x00unit.test_cache',
-        id='function'),
-    pytest.param(
-        (Class,),
-        b'\x04Class\x00unit.test_cache',
-        id='class'),
-    pytest.param(
-        (Class().method,),
-        b'\x04method\x00Class\x00unit.test_cache',
-        id='method'),
-    pytest.param(
-        (callable,),
-        b'\x04callable',
-        id='builtin')
-])
+@pytest.mark.parametrize(
+    'items, key',
+    [
+        pytest.param(({},), b'\x01\x01', id='single mapping'),
+        pytest.param(
+            ({'a': 'b'}, [1, 2]),
+            b'\x01\x80\x02X\x01\x00\x00\x00aq\x00.\x02\x80\x02X\x01\x00\x00\x00bq\x00.'
+            b'\x01\x00\x03\x80\x02K\x01.\x00\x80\x02K\x02.\x03',
+            id='multiple objects',
+        ),
+        pytest.param((function,), b'\x04function\x00unit.test_cache', id='function'),
+        pytest.param((Class,), b'\x04Class\x00unit.test_cache', id='class'),
+        pytest.param(
+            (Class().method,), b'\x04method\x00Class\x00unit.test_cache', id='method'
+        ),
+        pytest.param((callable,), b'\x04callable', id='builtin'),
+    ],
+)
 def test_object_key_maker_key_py3k(items, key):
     '''Generate key using string key maker.'''
     key_maker = ftrack_api.cache.ObjectKeyMaker()
@@ -397,11 +365,9 @@ def test_memoised_call_variations():
         ((), {'x': 1}),
         ((), {'x': 1, 'y': 2}),
         ((1,), {'y': 2}),
-        ((1,), {})
+        ((1,), {}),
     ]:
-        assert_memoised_call(
-            memoiser, function, args=args, kw=kw, expected=expected
-        )
+        assert_memoised_call(memoiser, function, args=args, kw=kw, expected=expected)
 
     # The following calls should all be treated as new variations and so
     # not use any memoised value.
@@ -409,15 +375,18 @@ def test_memoised_call_variations():
         memoiser, function, kw={'x': 2}, expected={'result': 4}, memoised=False
     )
     assert_memoised_call(
-        memoiser, function, kw={'x': 3, 'y': 2}, expected={'result': 5},
-        memoised=False
+        memoiser, function, kw={'x': 3, 'y': 2}, expected={'result': 5}, memoised=False
     )
     assert_memoised_call(
-        memoiser, function, args=(4, ), kw={'y': 2}, expected={'result': 6},
-        memoised=False
+        memoiser,
+        function,
+        args=(4,),
+        kw={'y': 2},
+        expected={'result': 6},
+        memoised=False,
     )
     assert_memoised_call(
-        memoiser, function, args=(5, ), expected={'result': 7}, memoised=False
+        memoiser, function, args=(5,), expected={'result': 7}, memoised=False
     )
 
 

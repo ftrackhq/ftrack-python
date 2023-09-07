@@ -34,6 +34,5 @@ def register(session):
         return
 
     session.event_hub.subscribe(
-        'topic=ftrack.api.session.configure-location',
-        configure_locations
+        'topic=ftrack.api.session.configure-location', configure_locations
     )

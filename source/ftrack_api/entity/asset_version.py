@@ -7,9 +7,7 @@ import ftrack_api.entity.base
 class AssetVersion(ftrack_api.entity.base.Entity):
     '''Represent asset version.'''
 
-    def create_component(
-        self, path, data=None, location=None
-    ):
+    def create_component(self, path, data=None, location=None):
         '''Create a new component from *path* with additional *data*
 
         .. note::
@@ -70,7 +68,7 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         The output components are associated with the job via the job_components
         relation.
 
-        An image component will always be generated if possible, and will be 
+        An image component will always be generated if possible, and will be
         set as the version's thumbnail.
 
         The new components will automatically be associated with the version.

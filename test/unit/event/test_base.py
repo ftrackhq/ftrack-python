@@ -7,9 +7,7 @@ import ftrack_api.event.base
 def test_string_representation():
     '''String representation.'''
     event = ftrack_api.event.base.Event('test', id='some-id')
-    assert (
-        str(event._data) in str(event)
-    )
+    assert str(event._data) in str(event)
 
 
 def test_stop():

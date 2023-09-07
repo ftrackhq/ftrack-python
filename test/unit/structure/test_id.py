@@ -20,16 +20,20 @@ def structure():
 # called functions here can change to standard fixtures.
 # https://github.com/pytest-dev/pytest/issues/579
 
+
 def file_component(container=None):
     '''Return file component.'''
     session = ftrack_api.Session()
 
-    entity = session.create('FileComponent', {
-        'id': 'f6cd40cb-d1c0-469f-a2d5-10369be8a724',
-        'name': '0001',
-        'file_type': '.png',
-        'container': container
-    })
+    entity = session.create(
+        'FileComponent',
+        {
+            'id': 'f6cd40cb-d1c0-469f-a2d5-10369be8a724',
+            'name': '0001',
+            'file_type': '.png',
+            'container': container,
+        },
+    )
 
     return entity
 
@@ -38,12 +42,15 @@ def sequence_component(padding=0):
     '''Return sequence component with *padding*.'''
     session = ftrack_api.Session()
 
-    entity = session.create('SequenceComponent', {
-        'id': 'ff17edad-2129-483b-8b59-d1a654c8497b',
-        'name': 'sequence_component',
-        'file_type': '.png',
-        'padding': padding
-    })
+    entity = session.create(
+        'SequenceComponent',
+        {
+            'id': 'ff17edad-2129-483b-8b59-d1a654c8497b',
+            'name': 'sequence_component',
+            'file_type': '.png',
+            'padding': padding,
+        },
+    )
 
     return entity
 
@@ -52,10 +59,10 @@ def container_component():
     '''Return container component.'''
     session = ftrack_api.Session()
 
-    entity = session.create('ContainerComponent', {
-        'id': '03ab9967-f86c-4b55-8252-cd187d0c244a',
-        'name': 'container_component'
-    })
+    entity = session.create(
+        'ContainerComponent',
+        {'id': '03ab9967-f86c-4b55-8252-cd187d0c244a', 'name': 'container_component'},
+    )
 
     return entity
 
@@ -64,52 +71,56 @@ def unsupported_entity():
     '''Return an unsupported entity.'''
     session = ftrack_api.Session()
 
-    entity = session.create('User', {
-        'username': 'martin'
-    })
+    entity = session.create('User', {'username': 'martin'})
 
     return entity
 
 
-@pytest.mark.parametrize('entity, context, expected', [
-    pytest.param(
-        file_component(), {},
-        'path/f/6/c/d/40cb-d1c0-469f-a2d5-10369be8a724.png'
-        , id='file-component'
-    ),
-    pytest.param(
-        file_component(container_component()), {},
-        'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a/'
-        'f6cd40cb-d1c0-469f-a2d5-10369be8a724.png',
-        id='file-component-in-container'
-    ),
-    pytest.param(
-        file_component(sequence_component()), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.0001.png',
-        id='file-component-in-sequence'
-    ),
-    pytest.param(
-        sequence_component(padding=0), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%d.png',
-        id='unpadded-sequence-component'
-    ),
-    pytest.param(
-        sequence_component(padding=4), {},
-        'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%04d.png',
-        id='padded-sequence-component'
-    ),
-    pytest.param(
-        container_component(), {},
-        'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a',
-        id='container-component'
-    ),
-    pytest.param(
-        unsupported_entity(), {},
-        NotImplementedError,
-        id='unsupported-entity'
-    )
-
-])
+@pytest.mark.parametrize(
+    'entity, context, expected',
+    [
+        pytest.param(
+            file_component(),
+            {},
+            'path/f/6/c/d/40cb-d1c0-469f-a2d5-10369be8a724.png',
+            id='file-component',
+        ),
+        pytest.param(
+            file_component(container_component()),
+            {},
+            'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a/'
+            'f6cd40cb-d1c0-469f-a2d5-10369be8a724.png',
+            id='file-component-in-container',
+        ),
+        pytest.param(
+            file_component(sequence_component()),
+            {},
+            'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.0001.png',
+            id='file-component-in-sequence',
+        ),
+        pytest.param(
+            sequence_component(padding=0),
+            {},
+            'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%d.png',
+            id='unpadded-sequence-component',
+        ),
+        pytest.param(
+            sequence_component(padding=4),
+            {},
+            'path/f/f/1/7/edad-2129-483b-8b59-d1a654c8497b/file.%04d.png',
+            id='padded-sequence-component',
+        ),
+        pytest.param(
+            container_component(),
+            {},
+            'path/0/3/a/b/9967-f86c-4b55-8252-cd187d0c244a',
+            id='container-component',
+        ),
+        pytest.param(
+            unsupported_entity(), {}, NotImplementedError, id='unsupported-entity'
+        ),
+    ],
+)
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''
     if inspect.isclass(expected) and issubclass(expected, Exception):

@@ -51,9 +51,9 @@ class ServerFile(String):
             params={
                 'id': self.resource_identifier,
                 'username': self._session.api_user,
-                'apiKey': self._session.api_key
+                'apiKey': self._session.api_key,
             },
-            stream=True
+            stream=True,
         )
 
         try:
@@ -86,17 +86,14 @@ class ServerFile(String):
         # Construct a name from component name and file_type.
         name = component['name']
         if component['file_type']:
-            name = u'{0}.{1}'.format(
-                name,
-                component['file_type'].lstrip('.')
-            )
+            name = u'{0}.{1}'.format(name, component['file_type'].lstrip('.'))
 
         try:
             metadata = self._session.get_upload_metadata(
                 component_id=self.resource_identifier,
                 file_name=name,
                 file_size=self._get_size(),
-                checksum=self._compute_checksum()
+                checksum=self._compute_checksum(),
             )
         except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
@@ -108,9 +105,7 @@ class ServerFile(String):
 
         # Put the file based on the metadata.
         response = requests.put(
-            metadata['url'],
-            data=self.wrapped_file,
-            headers=metadata['headers']
+            metadata['url'], data=self.wrapped_file, headers=metadata['headers']
         )
 
         try:
@@ -170,8 +165,8 @@ class _ServerAccessor(Accessor):
             params={
                 'id': resourceIdentifier,
                 'username': self._session.api_user,
-                'apiKey': self._session.api_key
-            }
+                'apiKey': self._session.api_key,
+            },
         )
         if response.status_code != 200:
             raise ftrack_api.exception.AccessorOperationFailedError(
@@ -208,14 +203,13 @@ class _ServerAccessor(Accessor):
     def get_url(self, resource_identifier):
         '''Return url for *resource_identifier*.'''
         url_string = (
-            u'{url}/component/get?id={id}&username={username}'
-            u'&apiKey={apiKey}'
+            u'{url}/component/get?id={id}&username={username}' u'&apiKey={apiKey}'
         )
         return url_string.format(
             url=self._session.server_url,
             id=resource_identifier,
             username=self._session.api_user,
-            apiKey=self._session.api_key
+            apiKey=self._session.api_key,
         )
 
     def get_thumbnail_url(self, resource_identifier, size=None):
@@ -225,14 +219,13 @@ class _ServerAccessor(Accessor):
         x size pixels.
         '''
         url_string = (
-            u'{url}/component/thumbnail?id={id}&username={username}'
-            u'&apiKey={apiKey}'
+            u'{url}/component/thumbnail?id={id}&username={username}' u'&apiKey={apiKey}'
         )
         url = url_string.format(
             url=self._session.server_url,
             id=resource_identifier,
             username=self._session.api_user,
-            apiKey=self._session.api_key
+            apiKey=self._session.api_key,
         )
         if size:
             url += u'&size={0}'.format(size)

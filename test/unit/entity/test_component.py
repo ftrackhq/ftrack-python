@@ -16,13 +16,9 @@ def test_get_availability(new_component):
     assert set(availability.values()) == set([0.0])
 
     # Add to a location.
-    source_location = session.query(
-        'Location where name is "ftrack.origin"'
-    ).one()
+    source_location = session.query('Location where name is "ftrack.origin"').one()
 
-    target_location = session.query(
-        'Location where name is "ftrack.unmanaged"'
-    ).one()
+    target_location = session.query('Location where name is "ftrack.unmanaged"').one()
 
     target_location.add_component(new_component, source_location)
 
@@ -39,21 +35,18 @@ def test_get_availability(new_component):
     # All other locations should still be 0.
     assert set(availability.values()) == set([0.0])
 
+
 @pytest.fixture()
 def image_path():
     '''Return a path to an image file.'''
     image_path = os.path.abspath(
         os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            '..',
-            'fixture',
-            'media',
-            'image.png'
+            os.path.dirname(__file__), '..', '..', 'fixture', 'media', 'image.png'
         )
     )
 
     return image_path
+
 
 def test_create_task_thumbnail(task, image_path):
     '''Successfully create thumbnail component and set as task thumbnail.'''

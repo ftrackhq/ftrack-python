@@ -19,8 +19,9 @@ try:
     # take major/minor/patch
     VERSION = '.'.join(release.split('.')[:3])
 except DistributionNotFound:
-     # package is not installed
+    # package is not installed
     VERSION = 'Unknown version'
+
 
 # Custom commands.
 class PyTest(TestCommand):
@@ -35,6 +36,7 @@ class PyTest(TestCommand):
     def run_tests(self):
         '''Import pytest and run.'''
         import pytest
+
         raise SystemExit(pytest.main(self.test_args))
 
 
@@ -58,12 +60,14 @@ setup(
     license='Apache License (2.0)',
     packages=find_packages(SOURCE_PATH),
     project_urls={
-        "Documentation": "http://ftrack-python-api.rtd.ftrack.com/en/{}/".format(VERSION),
-        "Source Code": "https://github.com/ftrackhq/ftrack-python/src/{}".format(VERSION),
+        "Documentation": "http://ftrack-python-api.rtd.ftrack.com/en/{}/".format(
+            VERSION
+        ),
+        "Source Code": "https://github.com/ftrackhq/ftrack-python/src/{}".format(
+            VERSION
+        ),
     },
-    package_dir={
-        '': 'source'
-    },
+    package_dir={'': 'source'},
     use_scm_version={
         'write_to': 'source/ftrack_api/_version.py',
         'write_to_template': version_template,
@@ -73,7 +77,7 @@ setup(
         'sphinx_rtd_theme >= 0.1.6, < 1',
         'lowdown >= 0.1.0, < 2',
         'setuptools>=30.3.0',
-        'setuptools_scm'
+        'setuptools_scm',
     ],
     install_requires=[
         'requests >= 2, <3',
@@ -84,17 +88,10 @@ setup(
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
         'six >= 1.13.0, < 2',
-        'appdirs >=1, <2'
+        'appdirs >=1, <2',
     ],
-    tests_require=[
-        'pytest >= 4.6',
-        'pytest-mock',
-        'mock',
-        'flaky'
-    ],
-    cmdclass={
-        'test': PyTest
-    },
+    tests_require=['pytest >= 4.6', 'pytest-mock', 'mock', 'flaky'],
+    cmdclass={'test': PyTest},
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Intended Audience :: Developers',
@@ -104,9 +101,8 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11'
-
+        'Programming Language :: Python :: 3.11',
     ],
     zip_safe=False,
-    python_requires=">=2.7.9, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+    python_requires=">=2.7.9, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*",
 )

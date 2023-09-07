@@ -10,14 +10,13 @@ def deprecation_warning(message):
     def decorator(function):
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
-            warnings.warn(
-                message,
-                PendingDeprecationWarning
-            )
+            warnings.warn(message, PendingDeprecationWarning)
             return function(*args, **kwargs)
+
         return wrapper
 
     return decorator
+
 
 class LazyLogMessage(object):
     '''A log message that can be evaluated lazily for improved performance.
@@ -40,4 +39,3 @@ class LazyLogMessage(object):
     def __str__(self):
         '''Return string representation.'''
         return self.message.format(*self.args, **self.kwargs)
-

@@ -28,10 +28,9 @@ def test_create_note_on_entity(session, new_task, user, unique_name):
     session.reset()
     retrieved_task = session.get(*ftrack_api.inspection.identity(new_task))
     assert len(retrieved_task['notes']) == 1
-    assert (
-        ftrack_api.inspection.identity(retrieved_task['notes'][0])
-        == ftrack_api.inspection.identity(note)
-    )
+    assert ftrack_api.inspection.identity(
+        retrieved_task['notes'][0]
+    ) == ftrack_api.inspection.identity(note)
 
 
 def test_create_note_on_entity_specifying_recipients(

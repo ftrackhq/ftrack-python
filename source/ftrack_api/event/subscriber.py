@@ -10,9 +10,7 @@ class Subscriber(object):
 
     def __init__(self, subscription, callback, metadata, priority):
         '''Initialise subscriber.'''
-        self.subscription = ftrack_api.event.subscription.Subscription(
-            subscription
-        )
+        self.subscription = ftrack_api.event.subscription.Subscription(subscription)
         self.callback = callback
         self.metadata = metadata
         self.priority = priority

@@ -33,16 +33,12 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
             except KeyError:
                 raise ValueError('Schema {0} does not exist.'.format(schema))
 
-            object_type_id_attribute = EntityTypeClass.attributes.get(
-                'object_type_id'
-            )
+            object_type_id_attribute = EntityTypeClass.attributes.get('object_type_id')
 
             try:
                 object_type_id = object_type_id_attribute.default_value
             except AttributeError:
-                raise ValueError(
-                    'Schema {0} does not have statuses.'.format(schema)
-                )
+                raise ValueError('Schema {0} does not have statuses.'.format(schema))
 
             for _schema in self['_schemas']:
                 if _schema['type_id'] == object_type_id:
@@ -50,9 +46,7 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
                         'select task_status from SchemaStatus '
                         'where schema_id is {0}'.format(_schema['id'])
                     )
-                    return [
-                        schema_type['task_status'] for schema_type in result
-                    ]
+                    return [schema_type['task_status'] for schema_type in result]
 
             raise ValueError(
                 'No valid statuses were found for schema {0}.'.format(schema)
@@ -70,16 +64,12 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
             except KeyError:
                 raise ValueError('Schema {0} does not exist.'.format(schema))
 
-            object_type_id_attribute = EntityTypeClass.attributes.get(
-                'object_type_id'
-            )
+            object_type_id_attribute = EntityTypeClass.attributes.get('object_type_id')
 
             try:
                 object_type_id = object_type_id_attribute.default_value
             except AttributeError:
-                raise ValueError(
-                    'Schema {0} does not have types.'.format(schema)
-                )
+                raise ValueError('Schema {0} does not have types.'.format(schema))
 
             for _schema in self['_schemas']:
                 if _schema['type_id'] == object_type_id:
@@ -89,6 +79,4 @@ class ProjectSchema(ftrack_api.entity.base.Entity):
                     )
                     return [schema_type['task_type'] for schema_type in result]
 
-            raise ValueError(
-                'No valid types were found for schema {0}.'.format(schema)
-            )
+            raise ValueError('No valid types were found for schema {0}.'.format(schema))

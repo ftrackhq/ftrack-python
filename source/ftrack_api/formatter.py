@@ -12,15 +12,18 @@ import ftrack_api.inspection
 
 #: Useful filters to pass to :func:`format`.`
 FILTER = {
-    'ignore_unset': (
-        lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET
-    )
+    'ignore_unset': (lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET)
 }
 
 
 def format(
-    entity, formatters=None, attribute_filter=None, recursive=False,
-    indent=0, indent_first_line=True, _seen=None
+    entity,
+    formatters=None,
+    attribute_filter=None,
+    recursive=False,
+    indent=0,
+    indent_first_line=True,
+    _seen=None,
 ):
     '''Return formatted string representing *entity*.
 
@@ -56,14 +59,11 @@ def format(
         formatters = dict()
 
     formatters.setdefault(
-        'header', lambda text: termcolor.colored(
-            text, 'white', 'on_blue', attrs=['bold']
-        )
+        'header',
+        lambda text: termcolor.colored(text, 'white', 'on_blue', attrs=['bold']),
     )
     formatters.setdefault(
-        'label', lambda text: termcolor.colored(
-            text, 'blue', attrs=['bold']
-        )
+        'label', lambda text: termcolor.colored(text, 'blue', attrs=['bold'])
     )
 
     # Determine indents.
@@ -79,17 +79,12 @@ def format(
 
     identifier = str(ftrack_api.inspection.identity(entity))
     if identifier in _seen:
-        return (
-            first_line_spacer +
-            formatters['header'](entity.entity_type) + '{...}'
-        )
+        return first_line_spacer + formatters['header'](entity.entity_type) + '{...}'
 
     _seen.add(identifier)
     information = list()
 
-    information.append(
-        first_line_spacer + formatters['header'](entity.entity_type)
-    )
+    information.append(first_line_spacer + formatters['header'](entity.entity_type))
     for key, value in sorted(entity.items()):
         if attribute_filter is not None:
             if not attribute_filter(entity, key, value):
@@ -105,7 +100,7 @@ def format(
                 recursive=recursive,
                 indent=child_indent,
                 indent_first_line=False,
-                _seen=_seen.copy()
+                _seen=_seen.copy(),
             )
 
         if isinstance(value, ftrack_api.collection.Collection):
@@ -119,7 +114,7 @@ def format(
                         recursive=recursive,
                         indent=child_indent,
                         indent_first_line=index != 0,
-                        _seen=_seen.copy()
+                        _seen=_seen.copy(),
                     )
                     child_values.append(child_value)
 

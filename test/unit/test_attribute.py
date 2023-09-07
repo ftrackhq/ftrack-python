@@ -7,10 +7,15 @@ import ftrack_api.attribute
 import ftrack_api.exception
 
 
-@pytest.mark.parametrize('attributes', [
-    pytest.param([], id='no initial attributes'),
-    pytest.param([ftrack_api.attribute.Attribute('test')], id='with initial attributes')
-])
+@pytest.mark.parametrize(
+    'attributes',
+    [
+        pytest.param([], id='no initial attributes'),
+        pytest.param(
+            [ftrack_api.attribute.Attribute('test')], id='with initial attributes'
+        ),
+    ],
+)
 def test_initialise_attributes_collection(attributes):
     '''Initialise attributes collection.'''
     attribute_collection = ftrack_api.attribute.Attributes(attributes)
@@ -75,41 +80,56 @@ def test_get_missing_attribute_from_attributes_collection():
     assert attribute_collection.get('test') is None
 
 
-@pytest.mark.parametrize('attributes, expected', [
-    pytest.param([], [], id='no initial attributes'),
-    pytest.param([ftrack_api.attribute.Attribute('test')], ['test'], id='with initial attributes')
-])
+@pytest.mark.parametrize(
+    'attributes, expected',
+    [
+        pytest.param([], [], id='no initial attributes'),
+        pytest.param(
+            [ftrack_api.attribute.Attribute('test')],
+            ['test'],
+            id='with initial attributes',
+        ),
+    ],
+)
 def test_attribute_collection_keys(attributes, expected):
     '''Retrieve keys for attribute collection.'''
     attribute_collection = ftrack_api.attribute.Attributes(attributes)
     assert sorted(attribute_collection.keys()) == sorted(expected)
 
 
-@pytest.mark.parametrize('attribute, expected', [
-    pytest.param(None, False, id='none attribute'),
-    pytest.param(ftrack_api.attribute.Attribute('b'), True, id='present attribute'),
-    pytest.param(ftrack_api.attribute.Attribute('c'), False, id='missing attribute')
-])
+@pytest.mark.parametrize(
+    'attribute, expected',
+    [
+        pytest.param(None, False, id='none attribute'),
+        pytest.param(ftrack_api.attribute.Attribute('b'), True, id='present attribute'),
+        pytest.param(
+            ftrack_api.attribute.Attribute('c'), False, id='missing attribute'
+        ),
+    ],
+)
 def test_attributes_collection_contains(attribute, expected):
     '''Check presence in attributes collection.'''
-    attribute_collection = ftrack_api.attribute.Attributes([
-        ftrack_api.attribute.Attribute('a'),
-        ftrack_api.attribute.Attribute('b')
-    ])
+    attribute_collection = ftrack_api.attribute.Attributes(
+        [ftrack_api.attribute.Attribute('a'), ftrack_api.attribute.Attribute('b')]
+    )
 
     assert (attribute in attribute_collection) is expected
 
 
-@pytest.mark.parametrize('attributes, expected', [
-    pytest.param([], 0, id='no attributes'),
-    pytest.param([ftrack_api.attribute.Attribute('test')], 1, id='single attribute'),
-    pytest.param(
-        [
-            ftrack_api.attribute.Attribute('a'),
-            ftrack_api.attribute.Attribute('b')
-        ],
-        2, id='multiple attributes'),
-])
+@pytest.mark.parametrize(
+    'attributes, expected',
+    [
+        pytest.param([], 0, id='no attributes'),
+        pytest.param(
+            [ftrack_api.attribute.Attribute('test')], 1, id='single attribute'
+        ),
+        pytest.param(
+            [ftrack_api.attribute.Attribute('a'), ftrack_api.attribute.Attribute('b')],
+            2,
+            id='multiple attributes',
+        ),
+    ],
+)
 def test_attributes_collection_count(attributes, expected):
     '''Count attributes in attributes collection.'''
     attribute_collection = ftrack_api.attribute.Attributes(attributes)
@@ -120,7 +140,7 @@ def test_iterate_over_attributes_collection():
     '''Iterate over attributes collection.'''
     attributes = [
         ftrack_api.attribute.Attribute('a'),
-        ftrack_api.attribute.Attribute('b')
+        ftrack_api.attribute.Attribute('b'),
     ]
 
     attribute_collection = ftrack_api.attribute.Attributes(attributes)
@@ -128,4 +148,3 @@ def test_iterate_over_attributes_collection():
         attributes.remove(attribute)
 
     assert len(attributes) == 0
-

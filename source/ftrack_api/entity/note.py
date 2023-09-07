@@ -9,9 +9,7 @@ import ftrack_api.entity.base
 class Note(ftrack_api.entity.base.Entity):
     '''Represent a note.'''
 
-    def create_reply(
-        self, content, author
-    ):
+    def create_reply(self, content, author):
         '''Create a reply with *content* and *author*.
 
         .. note::
@@ -20,12 +18,7 @@ class Note(ftrack_api.entity.base.Entity):
             standard :meth:`Session.create` method.
 
         '''
-        reply = self.session.create(
-            'Note', {
-                'author': author,
-                'content': content
-            }
-        )
+        reply = self.session.create('Note', {'author': author, 'content': content})
 
         self['replies'].append(reply)
 
@@ -35,15 +28,13 @@ class Note(ftrack_api.entity.base.Entity):
 class CreateNoteMixin(object):
     '''Mixin to add create_note method on entity class.'''
 
-    def create_note(
-        self, content, author, recipients=None, category=None, labels=None
-    ):
+    def create_note(self, content, author, recipients=None, category=None, labels=None):
         '''Create note with *content*, *author*.
 
         NoteLabels can be set by including *labels*.
 
         Note category can be set by including *category*.
-        
+
         *recipients* can be specified as a list of user or group instances.
 
         '''
@@ -58,17 +49,12 @@ class CreateNoteMixin(object):
             )
 
         if category and labels:
-            raise ValueError(
-                'Both category and labels cannot be set at the same time.'
-            )
+            raise ValueError('Both category and labels cannot be set at the same time.')
 
         if not recipients:
             recipients = []
 
-        data = {
-            'content': content,
-            'author': author
-        }
+        data = {'content': content, 'author': author}
 
         if category:
             if note_label_support:
@@ -76,7 +62,7 @@ class CreateNoteMixin(object):
                 warnings.warn(
                     'category argument will be removed in an upcoming version, '
                     'please use labels instead.',
-                    PendingDeprecationWarning
+                    PendingDeprecationWarning,
                 )
             else:
                 data['category_id'] = category['id']
@@ -86,20 +72,15 @@ class CreateNoteMixin(object):
         self['notes'].append(note)
 
         for resource in recipients:
-            recipient = self.session.create('Recipient', {
-                'note_id': note['id'],
-                'resource_id': resource['id']
-            })
+            recipient = self.session.create(
+                'Recipient', {'note_id': note['id'], 'resource_id': resource['id']}
+            )
 
             note['recipients'].append(recipient)
 
         for label in labels:
             self.session.create(
-                'NoteLabelLink',
-                {
-                    'label_id': label['id'],
-                    'note_id': note['id']
-                }
+                'NoteLabelLink', {'label_id': label['id'], 'note_id': note['id']}
             )
 
         return note

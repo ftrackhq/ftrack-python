@@ -32,10 +32,7 @@ def mock_entity(session):
 @pytest.fixture
 def mock_entities(session):
     '''Return list of two mock entities.'''
-    return [
-        create_mock_entity(session),
-        create_mock_entity(session)
-    ]
+    return [create_mock_entity(session), create_mock_entity(session)]
 
 
 @pytest.fixture
@@ -50,9 +47,7 @@ def test_collection_initialisation_does_not_modify_entity_state(
     mock_entity, mock_attribute, mock_entities
 ):
     '''Initialising collection does not modify entity state.'''
-    ftrack_api.collection.Collection(
-        mock_entity, mock_attribute, data=mock_entities
-    )
+    ftrack_api.collection.Collection(mock_entity, mock_attribute, data=mock_entities)
 
     assert ftrack_api.inspection.state(mock_entity) is ftrack_api.symbol.NOT_SET
 
@@ -69,9 +64,7 @@ def test_immutable_collection_initialisation(
     assert collection.mutable is False
 
 
-def test_collection_shallow_copy(
-    mock_entity, mock_attribute, mock_entities, session
-):
+def test_collection_shallow_copy(mock_entity, mock_attribute, mock_entities, session):
     '''Shallow copying collection should avoid indirect mutation.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -86,9 +79,7 @@ def test_collection_shallow_copy(
     assert list(collection_copy) == mock_entities + [new_entity]
 
 
-def test_collection_insert(
-    mock_entity, mock_attribute, mock_entities, session
-):
+def test_collection_insert(mock_entity, mock_attribute, mock_entities, session):
     '''Insert a value into collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -99,9 +90,7 @@ def test_collection_insert(
     assert list(collection) == [new_entity] + mock_entities
 
 
-def test_collection_insert_duplicate(
-    mock_entity, mock_attribute, mock_entities
-):
+def test_collection_insert_duplicate(mock_entity, mock_attribute, mock_entities):
     '''Fail to insert a duplicate value into collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -123,9 +112,7 @@ def test_immutable_collection_insert(
         collection.insert(0, create_mock_entity(session))
 
 
-def test_collection_set_item(
-    mock_entity, mock_attribute, mock_entities, session
-):
+def test_collection_set_item(mock_entity, mock_attribute, mock_entities, session):
     '''Set item at index in collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -136,9 +123,7 @@ def test_collection_set_item(
     assert list(collection) == [new_entity, mock_entities[1]]
 
 
-def test_collection_re_set_item(
-    mock_entity, mock_attribute, mock_entities
-):
+def test_collection_re_set_item(mock_entity, mock_attribute, mock_entities):
     '''Re-set value at exact same index in collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -148,9 +133,7 @@ def test_collection_re_set_item(
     assert list(collection) == mock_entities
 
 
-def test_collection_set_duplicate_item(
-    mock_entity, mock_attribute, mock_entities
-):
+def test_collection_set_duplicate_item(mock_entity, mock_attribute, mock_entities):
     '''Fail to set a duplicate value into collection at different index.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -160,9 +143,7 @@ def test_collection_set_duplicate_item(
         collection[0] = mock_entities[1]
 
 
-def test_immutable_collection_set_item(
-    mock_entity, mock_attribute, mock_entities
-):
+def test_immutable_collection_set_item(mock_entity, mock_attribute, mock_entities):
     '''Fail to set item at index in immutable collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities, mutable=False
@@ -172,9 +153,7 @@ def test_immutable_collection_set_item(
         collection[0] = mock_entities[0]
 
 
-def test_collection_delete_item(
-    mock_entity, mock_attribute, mock_entities
-):
+def test_collection_delete_item(mock_entity, mock_attribute, mock_entities):
     '''Remove item at index from collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -195,9 +174,7 @@ def test_collection_delete_item_at_invalid_index(
         del collection[4]
 
 
-def test_immutable_collection_delete_item(
-    mock_entity, mock_attribute, mock_entities
-):
+def test_immutable_collection_delete_item(mock_entity, mock_attribute, mock_entities):
     '''Fail to remove item at index from immutable collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities, mutable=False
@@ -207,9 +184,7 @@ def test_immutable_collection_delete_item(
         del collection[0]
 
 
-def test_collection_count(
-    mock_entity, mock_attribute, mock_entities, session
-):
+def test_collection_count(mock_entity, mock_attribute, mock_entities, session):
     '''Count items in collection.'''
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=mock_entities
@@ -223,19 +198,20 @@ def test_collection_count(
     assert len(collection) == 2
 
 
-@pytest.mark.parametrize('other, expected', [
-    pytest.param([], False, id='empty'),
-    pytest.param([1, 2], True, id='same'),
-    pytest.param([1, 2, 3], False, id='additional'),
-    pytest.param([1], False, id='missing')
-])
+@pytest.mark.parametrize(
+    'other, expected',
+    [
+        pytest.param([], False, id='empty'),
+        pytest.param([1, 2], True, id='same'),
+        pytest.param([1, 2, 3], False, id='additional'),
+        pytest.param([1], False, id='missing'),
+    ],
+)
 def test_collection_equal(mocker, mock_entity, mock_attribute, other, expected):
     '''Determine collection equality against another collection.'''
     # Temporarily override determination of entity identity so that it works
     # against simple scalar values for purpose of test.
-    mocker.patch.object(
-        ftrack_api.inspection, 'identity', lambda entity: str(entity)
-    )
+    mocker.patch.object(ftrack_api.inspection, 'identity', lambda entity: str(entity))
 
     collection_a = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=[1, 2]
@@ -247,15 +223,11 @@ def test_collection_equal(mocker, mock_entity, mock_attribute, other, expected):
     assert (collection_a == collection_b) is expected
 
 
-def test_collection_not_equal_to_non_collection(
-    mocker, mock_entity, mock_attribute
-):
+def test_collection_not_equal_to_non_collection(mocker, mock_entity, mock_attribute):
     '''Collection not equal to a non-collection.'''
     # Temporarily override determination of entity identity so that it works
     # against simple scalar values for purpose of test.
-    mocker.patch.object(
-        ftrack_api.inspection, 'identity', lambda entity: str(entity)
-    )
+    mocker.patch.object(ftrack_api.inspection, 'identity', lambda entity: str(entity))
 
     collection = ftrack_api.collection.Collection(
         mock_entity, mock_attribute, data=[1, 2]
@@ -303,9 +275,7 @@ def test_mapped_collection_proxy_mutable_property(new_project):
     assert metadata.collection.mutable is False
 
 
-def test_mapped_collection_proxy_attribute_property(
-    new_project, mock_attribute
-):
+def test_mapped_collection_proxy_attribute_property(new_project, mock_attribute):
     '''Mapped collection attribute property maps to underlying collection.'''
     metadata = new_project['metadata']
 
@@ -414,11 +384,7 @@ def test_mapped_collection_proxy_delete_missing_item(new_project, unique_name):
 def test_mapped_collection_proxy_iterate_keys(new_project, unique_name):
     '''Iterate over keys in mapped collection proxy.'''
     metadata = new_project['metadata']
-    metadata.update({
-        'a': 'value-a',
-        'b': 'value-b',
-        'c': 'value-c'
-    })
+    metadata.update({'a': 'value-a', 'b': 'value-b', 'c': 'value-c'})
 
     # Commit here as otherwise cleanup operation will fail because transaction
     # will include updating metadata to refer to a deleted entity.
@@ -434,11 +400,7 @@ def test_mapped_collection_proxy_iterate_keys(new_project, unique_name):
 def test_mapped_collection_proxy_count(new_project, unique_name):
     '''Count items in mapped collection proxy.'''
     metadata = new_project['metadata']
-    metadata.update({
-        'a': 'value-a',
-        'b': 'value-b',
-        'c': 'value-c'
-    })
+    metadata.update({'a': 'value-a', 'b': 'value-b', 'c': 'value-c'})
 
     # Commit here as otherwise cleanup operation will fail because transaction
     # will include updating metadata to refer to a deleted entity.
@@ -449,19 +411,15 @@ def test_mapped_collection_proxy_count(new_project, unique_name):
 
 def test_mapped_collection_on_create(session, unique_name, project):
     '''Test that it is possible to set relational attributes on create'''
-    metadata = {
-        'a': 'value-a',
-        'b': 'value-b',
-        'c': 'value-c'
-    }
+    metadata = {'a': 'value-a', 'b': 'value-b', 'c': 'value-c'}
 
     task_id = session.create(
-        'Task', {
+        'Task',
+        {
             'name': unique_name,
             'parent': project,
             'metadata': metadata,
-
-        }
+        },
     ).get('id')
 
     session.commit()
@@ -470,9 +428,7 @@ def test_mapped_collection_on_create(session, unique_name, project):
     # values.
     session.reset()
 
-    task = session.get(
-        'Task', task_id
-    )
+    task = session.get('Task', task_id)
 
     for key, value in metadata.items():
         assert value == task['metadata'][key]
@@ -487,25 +443,19 @@ def test_collection_refresh(new_asset_version, new_component):
     )
 
     # Fetch the new asset version in a new session.
-    new_asset_version_two = session_two.query(
-        query_string
-    ).one()
+    new_asset_version_two = session_two.query(query_string).one()
 
     # Modify our asset version
-    new_asset_version.get('components').append(
-        new_component
-    )
+    new_asset_version.get('components').append(new_component)
 
     new_asset_version.session.commit()
 
     # Query the same asset version again and make sure we get the newly
     # populated data.
-    session_two.query(
-        query_string
-    ).all()
+    session_two.query(query_string).all()
 
-    assert (
-        new_asset_version.get('components') == new_asset_version_two.get('components')
+    assert new_asset_version.get('components') == new_asset_version_two.get(
+        'components'
     )
 
     # Make a local change to our asset version
@@ -514,9 +464,7 @@ def test_collection_refresh(new_asset_version, new_component):
     # Query the same asset version again and make sure our local changes
     # are not overwritten.
 
-    session_two.query(
-        query_string
-    ).all()
+    session_two.query(query_string).all()
 
     assert len(new_asset_version_two.get('components')) == 0
 
@@ -530,9 +478,7 @@ def test_mapped_collection_reload(new_asset_version):
     )
 
     # Fetch the new asset version in a new session.
-    new_asset_version_two = session_two.query(
-        query_string
-    ).one()
+    new_asset_version_two = session_two.query(query_string).one()
 
     # Modify our asset version
     new_asset_version['metadata']['test'] = str(uuid.uuid4())
@@ -541,12 +487,11 @@ def test_mapped_collection_reload(new_asset_version):
 
     # Query the same asset version again and make sure we get the newly
     # populated data.
-    session_two.query(
-        query_string
-    ).all()
+    session_two.query(query_string).all()
 
     assert (
-        new_asset_version['metadata']['test'] == new_asset_version_two['metadata']['test']
+        new_asset_version['metadata']['test']
+        == new_asset_version_two['metadata']['test']
     )
 
     local_data = str(uuid.uuid4())
@@ -560,10 +505,6 @@ def test_mapped_collection_reload(new_asset_version):
 
     # Query the same asset version again and make sure our local changes
     # are not overwritten.
-    session_two.query(
-        query_string
-    ).all()
+    session_two.query(query_string).all()
 
-    assert (
-        new_asset_version_two['metadata']['test'] == local_data
-    )
+    assert new_asset_version_two['metadata']['test'] == local_data

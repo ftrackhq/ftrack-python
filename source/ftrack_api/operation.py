@@ -69,9 +69,7 @@ class CreateEntityOperation(Operation):
 class UpdateEntityOperation(Operation):
     '''Represent update entity operation.'''
 
-    def __init__(
-        self, entity_type, entity_key, attribute_name, old_value, new_value
-    ):
+    def __init__(self, entity_type, entity_key, attribute_name, old_value, new_value):
         '''Initialise operation.
 
         *entity_type* should be the type of entity in string form (as returned
@@ -113,4 +111,3 @@ class DeleteEntityOperation(Operation):
         super(DeleteEntityOperation, self).__init__()
         self.entity_type = entity_type
         self.entity_key = entity_key
-

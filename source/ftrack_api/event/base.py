@@ -9,8 +9,16 @@ from six.moves import collections_abc
 class Event(collections_abc.MutableMapping):
     '''Represent a single event.'''
 
-    def __init__(self, topic, id=None, data=None, sent=None,
-                 source=None, target='', in_reply_to_event=None):
+    def __init__(
+        self,
+        topic,
+        id=None,
+        data=None,
+        sent=None,
+        source=None,
+        target='',
+        in_reply_to_event=None,
+    ):
         '''Initialise event.
 
         *topic* is the required topic for the event. It can use a dotted
@@ -47,7 +55,7 @@ class Event(collections_abc.MutableMapping):
             sent=sent,
             source=source or {},
             target=target,
-            in_reply_to_event=in_reply_to_event
+            in_reply_to_event=in_reply_to_event,
         )
         self._stopped = False
 
@@ -61,9 +69,7 @@ class Event(collections_abc.MutableMapping):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} {1}>'.format(
-            self.__class__.__name__, str(self._data)
-        )
+        return '<{0} {1}>'.format(self.__class__.__name__, str(self._data))
 
     def __getitem__(self, key):
         '''Return value for *key*.'''

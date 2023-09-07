@@ -34,12 +34,10 @@ class User(ftrack_api.entity.base.Entity):
             except ftrack_api.exception.NoResultFoundError:
                 self.logger.debug('Failed to stop existing timer.')
 
-        timer = self.session.create('Timer', {
-            'user': self,
-            'context': context,
-            'name': name,
-            'comment': comment
-        })
+        timer = self.session.create(
+            'Timer',
+            {'user': self, 'context': context, 'name': name, 'comment': comment},
+        )
 
         # Commit the new timer and try to catch any error that indicate another
         # timelog already exists and inform the user about it.
@@ -48,9 +46,11 @@ class User(ftrack_api.entity.base.Entity):
         except ftrack_api.exception.ServerError as error:
             if 'IntegrityError' in str(error):
                 raise ftrack_api.exception.NotUniqueError(
-                    ('Failed to start a timelog for user with id: {0}, it is '
-                     'likely that a timer is already running. Either use '
-                     'force=True or stop the timer first.').format(self['id'])
+                    (
+                        'Failed to start a timelog for user with id: {0}, it is '
+                        'likely that a timer is already running. Either use '
+                        'force=True or stop the timer first.'
+                    ).format(self['id'])
                 )
             else:
                 # Reraise the error as it might be something unrelated.
@@ -94,14 +94,17 @@ class User(ftrack_api.entity.base.Entity):
         delta = now - timer['start']
         duration = delta.days * 24 * 60 * 60 + delta.seconds
 
-        timelog = self.session.create('Timelog', {
-            'user_id': timer['user_id'],
-            'context_id': timer['context_id'],
-            'comment': timer['comment'],
-            'start': timer['start'],
-            'duration': duration,
-            'name': timer['name']
-        })
+        timelog = self.session.create(
+            'Timelog',
+            {
+                'user_id': timer['user_id'],
+                'context_id': timer['context_id'],
+                'comment': timer['comment'],
+                'start': timer['start'],
+                'duration': duration,
+                'name': timer['name'],
+            },
+        )
 
         self.session.delete(timer)
         self.session.commit()
@@ -111,14 +114,11 @@ class User(ftrack_api.entity.base.Entity):
     def send_invite(self):
         '''Send a invation email to the user'''
 
-        self.session.send_user_invite(
-            self
-        )
+        self.session.send_user_invite(self)
+
     def reset_api_key(self):
         '''Reset the users api key.'''
 
-        response = self.session.reset_remote(
-            'api_key', entity=self
-        )
+        response = self.session.reset_remote('api_key', entity=self)
 
         return response['api_key']

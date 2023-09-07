@@ -20,23 +20,35 @@ def structure():
 # called functions here can change to standard fixtures.
 # https://github.com/pytest-dev/pytest/issues/579
 
+
 def valid_entity():
     '''Return valid entity.'''
     session = ftrack_api.Session()
 
-    entity = session.create('FileComponent', {
-        'id': 'f6cd40cb-d1c0-469f-a2d5-10369be8a724',
-        'name': 'file_component',
-        'file_type': '.png'
-    })
+    entity = session.create(
+        'FileComponent',
+        {
+            'id': 'f6cd40cb-d1c0-469f-a2d5-10369be8a724',
+            'name': 'file_component',
+            'file_type': '.png',
+        },
+    )
 
     return entity
 
 
-@pytest.mark.parametrize('entity, context, expected', [
-    pytest.param(valid_entity(), {}, 'f6cd40cb-d1c0-469f-a2d5-10369be8a724', id='valid-entity'),
-    pytest.param(mock.Mock(), {}, Exception, id='non-entity')
-])
+@pytest.mark.parametrize(
+    'entity, context, expected',
+    [
+        pytest.param(
+            valid_entity(),
+            {},
+            'f6cd40cb-d1c0-469f-a2d5-10369be8a724',
+            id='valid-entity',
+        ),
+        pytest.param(mock.Mock(), {}, Exception, id='non-entity'),
+    ],
+)
 def test_get_resource_identifier(structure, entity, context, expected):
     '''Get resource identifier.'''
     if inspect.isclass(expected) and issubclass(expected, Exception):

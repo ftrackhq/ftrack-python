@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import str
 from builtins import range
@@ -34,18 +35,24 @@ import ftrack_api.event.expression
 from ftrack_api.logging import LazyLogMessage as L
 
 
-SocketIoSession = collections.namedtuple('SocketIoSession', [
-    'id',
-    'heartbeatTimeout',
-    'supportedTransports',
-])
+SocketIoSession = collections.namedtuple(
+    'SocketIoSession',
+    [
+        'id',
+        'heartbeatTimeout',
+        'supportedTransports',
+    ],
+)
 
 
-ServerDetails = collections.namedtuple('ServerDetails', [
-    'scheme',
-    'hostname',
-    'port',
-])
+ServerDetails = collections.namedtuple(
+    'ServerDetails',
+    [
+        'scheme',
+        'hostname',
+        'port',
+    ],
+)
 
 
 class EventHub(object):
@@ -56,7 +63,7 @@ class EventHub(object):
 
         *api_user* is the user to authenticate as and *api_key* is the API key
         to authenticate with.
-        
+
         *cookies* should be an optional mapping (dict) of key-value pairs specifying
         custom cookies that we need to pass in alongside the requests to the server.
 
@@ -65,9 +72,7 @@ class EventHub(object):
 
         '''
         super(EventHub, self).__init__()
-        self.logger = logging.getLogger(
-            __name__ + '.' + self.__class__.__name__
-        )
+        self.logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
         self.id = uuid.uuid4().hex
         self._connection = None
 
@@ -103,7 +108,7 @@ class EventHub(object):
             '4': 'json',
             '5': 'event',
             '6': 'acknowledge',
-            '7': 'error'
+            '7': 'error',
         }
         self._code_name_mapping.update(
             dict((name, code) for code, name in list(self._code_name_mapping.items()))
@@ -122,9 +127,7 @@ class EventHub(object):
             raise ValueError('Could not determine hostname from server url.')
 
         self.server = ServerDetails(
-            url_parse_result.scheme,
-            url_parse_result.hostname,
-            url_parse_result.port
+            url_parse_result.scheme, url_parse_result.hostname, url_parse_result.port
         )
 
         def _validate_mapping(mapping):
@@ -139,9 +142,7 @@ class EventHub(object):
 
     def get_server_url(self):
         '''Return URL to server.'''
-        return '{0}://{1}'.format(
-            self.server.scheme, self.get_network_location()
-        )
+        return '{0}://{1}'.format(self.server.scheme, self.get_network_location())
 
     def get_network_location(self):
         '''Return network location part of url (hostname with optional port).'''
@@ -157,11 +158,9 @@ class EventHub(object):
 
     def init_connection(self):
         '''If the connection is not handled synchronously the connection may be marked
-        as initialized to allow for published events to be queued. '''
+        as initialized to allow for published events to be queued.'''
 
-        self.logger.debug(
-            'Connection initialized,'
-        )
+        self.logger.debug('Connection initialized,')
 
         self._connection_initialised = True
 
@@ -177,9 +176,7 @@ class EventHub(object):
             self.init_connection()
 
         if self.connected:
-            raise ftrack_api.exception.EventHubConnectionError(
-                'Already connected.'
-            )
+            raise ftrack_api.exception.EventHubConnectionError('Already connected.')
 
         # Reset flag tracking whether disconnection was intentional.
         self._intentional_disconnect = False
@@ -189,9 +186,7 @@ class EventHub(object):
             session = self._get_socket_io_session()
 
             if 'websocket' not in session.supportedTransports:
-                raise ValueError(
-                    'Server does not support websocket sessions.'
-                )
+                raise ValueError('Server does not support websocket sessions.')
 
             scheme = 'wss' if self.secure else 'ws'
             url = '{0}://{1}/socket.io/1/websocket/{2}'.format(
@@ -199,10 +194,7 @@ class EventHub(object):
             )
 
             # Select highest available protocol for websocket connection.
-            ssl_protocols = [
-                'PROTOCOL_TLS',
-                'PROTOCOL_TLSv1_2'
-            ]
+            ssl_protocols = ['PROTOCOL_TLS', 'PROTOCOL_TLSv1_2']
 
             available_ssl_protocol = None
 
@@ -212,7 +204,8 @@ class EventHub(object):
                     self.logger.debug(
                         'Using protocol {} to connect to websocket.'.format(
                             ssl_protocol
-                        ))
+                        )
+                    )
                     break
 
             # timeout is set to 60 seconds to avoid the issue where the socket
@@ -222,9 +215,17 @@ class EventHub(object):
             # More information on how the timeout works can be found here:
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
-                url, timeout=60, sslopt={"ssl_version": available_ssl_protocol},
-                enable_multithread= True, header=self._headers,
-                cookie=';'.join(['{0}={1}'.format(x, self._cookies[x]) for x in self._cookies.keys()])
+                url,
+                timeout=60,
+                sslopt={"ssl_version": available_ssl_protocol},
+                enable_multithread=True,
+                header=self._headers,
+                cookie=';'.join(
+                    [
+                        '{0}={1}'.format(x, self._cookies[x])
+                        for x in self._cookies.keys()
+                    ]
+                ),
             )
 
         except Exception as error:
@@ -233,20 +234,11 @@ class EventHub(object):
                 'error: "{error}".'
             )
 
-            error_details = {
-                'error': str(error),
-                'server_url': self.get_server_url()
-            }
+            error_details = {'error': str(error), 'server_url': self.get_server_url()}
 
-            self.logger.debug(
-                L(
-                    error_message, **error_details
-                ),
-                exc_info=1
-            )
+            self.logger.debug(L(error_message, **error_details), exc_info=1)
             raise ftrack_api.exception.EventHubConnectionError(
-                error_message,
-                details=error_details
+                error_message, details=error_details
             )
 
         # Start background processing thread.
@@ -261,9 +253,7 @@ class EventHub(object):
             self._add_subscriber(
                 'topic=ftrack.meta.reply',
                 self._handle_reply,
-                subscriber=dict(
-                    id=self.id
-                )
+                subscriber=dict(id=self.id),
             )
         except ftrack_api.exception.NotUniqueError:
             pass
@@ -348,17 +338,13 @@ class EventHub(object):
 
         '''
         try:
-            self.disconnect(
-                unsubscribe=False, reconnect=True
-            )
+            self.disconnect(unsubscribe=False, reconnect=True)
 
         except ftrack_api.exception.EventHubConnectionError:
             pass
 
         for attempt in range(attempts):
-            self.logger.debug(L(
-                'Reconnect attempt {0} of {1}', attempt, attempts
-            ))
+            self.logger.debug(L('Reconnect attempt {0} of {1}', attempt, attempts))
 
             # Silence logging temporarily to avoid lots of failed connection
             # related information.
@@ -377,8 +363,9 @@ class EventHub(object):
 
         if not self.connected:
             raise ftrack_api.exception.EventHubConnectionError(
-                'Failed to reconnect to event server at {0} after {1} attempts.'
-                .format(self.get_server_url(), attempts)
+                'Failed to reconnect to event server at {0} after {1} attempts.'.format(
+                    self.get_server_url(), attempts
+                )
             )
 
     def wait(self, duration=None):
@@ -475,24 +462,23 @@ class EventHub(object):
 
         '''
         # Add subscriber locally.
-        subscriber = self._add_subscriber(
-            subscription, callback, subscriber, priority
-        )
+        subscriber = self._add_subscriber(subscription, callback, subscriber, priority)
 
         # Notify server now if possible.
         try:
             self._notify_server_about_subscriber(subscriber)
         except ftrack_api.exception.EventHubConnectionError:
-            self.logger.debug(L(
-                'Failed to notify server about new subscriber {0} '
-                'as server not currently reachable.', subscriber.metadata['id']
-            ))
+            self.logger.debug(
+                L(
+                    'Failed to notify server about new subscriber {0} '
+                    'as server not currently reachable.',
+                    subscriber.metadata['id'],
+                )
+            )
 
         return subscriber.metadata['id']
 
-    def _add_subscriber(
-        self, subscription, callback, subscriber=None, priority=100
-    ):
+    def _add_subscriber(self, subscription, callback, subscriber=None, priority=100):
         '''Add subscriber locally.
 
         See :meth:`subscribe` for argument descriptions.
@@ -509,21 +495,20 @@ class EventHub(object):
         subscriber.setdefault('id', uuid.uuid4().hex)
 
         # Check subscriber not already subscribed.
-        existing_subscriber = self.get_subscriber_by_identifier(
-            subscriber['id']
-        )
+        existing_subscriber = self.get_subscriber_by_identifier(subscriber['id'])
 
         if existing_subscriber is not None:
             raise ftrack_api.exception.NotUniqueError(
-                'Subscriber with identifier {0} already exists.'
-                .format(subscriber['id'])
+                'Subscriber with identifier {0} already exists.'.format(
+                    subscriber['id']
+                )
             )
 
         subscriber = ftrack_api.event.subscriber.Subscriber(
             subscription=subscription,
             callback=callback,
             metadata=subscriber,
-            priority=priority
+            priority=priority,
         )
 
         self._subscribers.append(subscriber)
@@ -536,22 +521,24 @@ class EventHub(object):
             topic='ftrack.meta.subscribe',
             data=dict(
                 subscriber=subscriber.metadata,
-                subscription=str(subscriber.subscription)
-            )
+                subscription=str(subscriber.subscription),
+            ),
         )
 
         self._publish(
-            subscribe_event,
-            callback=functools.partial(self._on_subscribed, subscriber)
+            subscribe_event, callback=functools.partial(self._on_subscribed, subscriber)
         )
 
     def _on_subscribed(self, subscriber, response):
         '''Handle acknowledgement of subscription.'''
         if response.get('success') is False:
-            self.logger.warning(L(
-                'Server failed to subscribe subscriber {0}: {1}',
-                subscriber.metadata['id'], response.get('message')
-            ))
+            self.logger.warning(
+                L(
+                    'Server failed to subscribe subscriber {0}: {1}',
+                    subscriber.metadata['id'],
+                    response.get('message'),
+                )
+            )
 
     def unsubscribe(self, subscriber_identifier):
         '''Unsubscribe subscriber with *subscriber_identifier*.
@@ -567,43 +554,47 @@ class EventHub(object):
 
         if subscriber is None:
             raise ftrack_api.exception.NotFoundError(
-                'Cannot unsubscribe missing subscriber with identifier {0}'
-                .format(subscriber_identifier)
+                'Cannot unsubscribe missing subscriber with identifier {0}'.format(
+                    subscriber_identifier
+                )
             )
 
         self._subscribers.pop(self._subscribers.index(subscriber))
 
         # Notify the server if possible.
         unsubscribe_event = ftrack_api.event.base.Event(
-            topic='ftrack.meta.unsubscribe',
-            data=dict(subscriber=subscriber.metadata)
+            topic='ftrack.meta.unsubscribe', data=dict(subscriber=subscriber.metadata)
         )
 
         try:
             self._publish(
                 unsubscribe_event,
-                callback=functools.partial(self._on_unsubscribed, subscriber)
+                callback=functools.partial(self._on_unsubscribed, subscriber),
             )
         except ftrack_api.exception.EventHubConnectionError:
-            self.logger.debug(L(
-                'Failed to notify server to unsubscribe subscriber {0} as '
-                'server not currently reachable.', subscriber.metadata['id']
-            ))
+            self.logger.debug(
+                L(
+                    'Failed to notify server to unsubscribe subscriber {0} as '
+                    'server not currently reachable.',
+                    subscriber.metadata['id'],
+                )
+            )
 
     def _on_unsubscribed(self, subscriber, response):
         '''Handle acknowledgement of unsubscribing *subscriber*.'''
         if response.get('success') is not True:
-            self.logger.warning(L(
-                'Server failed to unsubscribe subscriber {0}: {1}',
-                subscriber.metadata['id'], response.get('message')
-            ))
+            self.logger.warning(
+                L(
+                    'Server failed to unsubscribe subscriber {0}: {1}',
+                    subscriber.metadata['id'],
+                    response.get('message'),
+                )
+            )
 
     def _prepare_event(self, event):
         '''Prepare *event* for sending.'''
         event['source'].setdefault('id', self.id)
-        event['source'].setdefault('user', {
-            'username': self._api_user
-        })
+        event['source'].setdefault('user', {'username': self._api_user})
 
     def _prepare_reply_event(self, event, source_event, source=None):
         '''Prepare *event* as a reply to another *source_event*.
@@ -617,9 +608,7 @@ class EventHub(object):
         if source is not None:
             event['source'] = source
 
-    def publish(
-        self, event, synchronous=False, on_reply=None, on_error='raise'
-    ):
+    def publish(self, event, synchronous=False, on_reply=None, on_error='raise'):
         '''Publish *event*.
 
         If *synchronous* is specified as True then this method will wait and
@@ -644,9 +633,7 @@ class EventHub(object):
         '''
 
         try:
-            return self._publish(
-                event, synchronous=synchronous, on_reply=on_reply
-            )
+            return self._publish(event, synchronous=synchronous, on_reply=on_reply)
         except Exception:
             if on_error == 'ignore':
                 pass
@@ -660,10 +647,7 @@ class EventHub(object):
         sent event.
 
         '''
-        reply_event = ftrack_api.event.base.Event(
-            'ftrack.meta.reply',
-            data=data
-        )
+        reply_event = ftrack_api.event.base.Event('ftrack.meta.reply', data=data)
         self._prepare_reply_event(reply_event, source_event, source=source)
         self.publish(reply_event)
 
@@ -707,19 +691,15 @@ class EventHub(object):
 
                 # This could also be a reconnection.
 
-                self._event_send_queue.put(
-                    (event, synchronous, callback, on_reply)
-                )
+                self._event_send_queue.put((event, synchronous, callback, on_reply))
 
                 self.logger.debug(
-                    'Connection is still initializing, adding message to '
-                    'queue'
+                    'Connection is still initializing, adding message to ' 'queue'
                 )
 
                 return True
             raise ftrack_api.exception.EventHubConnectionError(
-                'Cannot publish event asynchronously as not connected to '
-                'server.'
+                'Cannot publish event asynchronously as not connected to ' 'server.'
             )
 
         # Use standard callback if none specified.
@@ -736,17 +716,13 @@ class EventHub(object):
                 self._reply_callbacks[event['id']] = on_reply
 
             try:
-                self._emit_event_packet(
-                    self._event_namespace, event, callback=callback
-                )
+                self._emit_event_packet(self._event_namespace, event, callback=callback)
             except ftrack_api.exception.EventHubConnectionError:
                 # Connection may have dropped temporarily. Wait a few moments to
                 # see if background thread reconnects automatically.
                 time.sleep(15)
 
-                self._emit_event_packet(
-                    self._event_namespace, event, callback=callback
-                )
+                self._emit_event_packet(self._event_namespace, event, callback=callback)
             except:
                 raise
 
@@ -760,10 +736,14 @@ class EventHub(object):
     def _on_published(self, event, response):
         '''Handle acknowledgement of published event.'''
         if response.get('success', False) is False:
-            self.logger.error(L(
-                'Server responded with error while publishing event {0}. '
-                'Error was: {1}', event, response.get('message')
-            ))
+            self.logger.error(
+                L(
+                    'Server responded with error while publishing event {0}. '
+                    'Error was: {1}',
+                    event,
+                    response.get('message'),
+                )
+            )
 
     def _handle(self, event, synchronous=False):
         '''Handle *event*.
@@ -774,9 +754,7 @@ class EventHub(object):
         # Sort by priority, lower is higher.
         # TODO: Use a sorted list to avoid sorting each time in order to improve
         # performance.
-        subscribers = sorted(
-            self._subscribers, key=operator.attrgetter('priority')
-        )
+        subscribers = sorted(self._subscribers, key=operator.attrgetter('priority'))
 
         results = []
 
@@ -786,17 +764,19 @@ class EventHub(object):
             try:
                 target_expression = self._expression_parser.parse(target)
             except Exception:
-                self.logger.exception(L(
-                    'Cannot handle event as failed to parse event target '
-                    'information: {0}', event
-                ))
+                self.logger.exception(
+                    L(
+                        'Cannot handle event as failed to parse event target '
+                        'information: {0}',
+                        event,
+                    )
+                )
                 return
 
         for subscriber in subscribers:
             # Check if event is targeted to the subscriber.
-            if (
-                target_expression is not None
-                and not target_expression.match(subscriber.metadata)
+            if target_expression is not None and not target_expression.match(
+                subscriber.metadata
             ):
                 continue
 
@@ -810,15 +790,13 @@ class EventHub(object):
                 response = subscriber.callback(event)
                 results.append(response)
             except Exception:
-                self.logger.exception(L(
-                    'Error calling subscriber {0} for event {1}.',
-                    subscriber, event
-                ))
+                self.logger.exception(
+                    L('Error calling subscriber {0} for event {1}.', subscriber, event)
+                )
 
             # Automatically publish a non None response as a reply when not in
             # synchronous mode.
             if not synchronous:
-
                 if response is not None:
                     try:
                         self.publish_reply(
@@ -826,18 +804,26 @@ class EventHub(object):
                         )
 
                     except Exception:
-                        self.logger.exception(L(
-                            'Error publishing response {0} from subscriber {1} '
-                            'for event {2}.', response, subscriber, event
-                        ))
+                        self.logger.exception(
+                            L(
+                                'Error publishing response {0} from subscriber {1} '
+                                'for event {2}.',
+                                response,
+                                subscriber,
+                                event,
+                            )
+                        )
 
             # Check whether to continue processing topic event.
             if event.is_stopped():
-                self.logger.debug(L(
-                    'Subscriber {0} stopped event {1}. Will not process '
-                    'subsequent subscriber callbacks for this event.',
-                    subscriber, event
-                ))
+                self.logger.debug(
+                    L(
+                        'Subscriber {0} stopped event {1}. Will not process '
+                        'subsequent subscriber callbacks for this event.',
+                        subscriber,
+                        event,
+                    )
+                )
                 break
 
         return results
@@ -848,8 +834,7 @@ class EventHub(object):
         if callback is not None:
             callback(event)
 
-    def subscription(self, subscription, callback, subscriber=None,
-                     priority=100):
+    def subscription(self, subscription, callback, subscriber=None, priority=100):
         '''Return context manager with *callback* subscribed to *subscription*.
 
         The subscribed callback will be automatically unsubscribed on exit
@@ -857,7 +842,10 @@ class EventHub(object):
 
         '''
         return _SubscriptionContext(
-            self, subscription, callback, subscriber=subscriber,
+            self,
+            subscription,
+            callback,
+            subscriber=subscriber,
             priority=priority,
         )
 
@@ -866,16 +854,13 @@ class EventHub(object):
 
     def _get_socket_io_session(self):
         '''Connect to server and retrieve session information.'''
-        socket_io_url = (
-            '{0}://{1}/socket.io/1/'
-        ).format(
-            self.server.scheme,
-            self.get_network_location()
+        socket_io_url = ('{0}://{1}/socket.io/1/').format(
+            self.server.scheme, self.get_network_location()
         )
         try:
             req_headers = {
                 'ftrack-user': self._api_user,
-                'ftrack-api-key': self._api_key
+                'ftrack-api-key': self._api_key,
             }
             if self._headers:
                 req_headers.update(self._headers)
@@ -883,7 +868,7 @@ class EventHub(object):
                 socket_io_url,
                 headers=req_headers,
                 cookies=self._cookies,
-                timeout=60  # 60 seconds timeout to recieve errors faster.
+                timeout=60,  # 60 seconds timeout to recieve errors faster.
             )
         except requests.exceptions.Timeout as error:
             raise ftrack_api.exception.EventHubConnectionError(
@@ -906,11 +891,7 @@ class EventHub(object):
 
         # Parse result and return session information.
         parts = response.text.split(':')
-        return SocketIoSession(
-            parts[0],
-            parts[1],
-            parts[3].split(',')
-        )
+        return SocketIoSession(parts[0], parts[1], parts[3].split(','))
 
     def _add_packet_callback(self, callback):
         '''Store callback against a new unique packet ID.
@@ -932,9 +913,7 @@ class EventHub(object):
 
     def _emit_event_packet(self, namespace, event, callback):
         '''Send *event* packet under *namespace*.'''
-        data = self._encode(
-            dict(name=namespace, args=[event])
-        )
+        data = self._encode(dict(name=namespace, args=[event]))
         self._send_packet(
             self._code_name_mapping['event'], data=data, callback=callback
         )
@@ -951,9 +930,7 @@ class EventHub(object):
     def _send_packet(self, code, data='', callback=None):
         '''Send packet via connection.'''
         path = ''
-        packet_identifier = (
-            self._add_packet_callback(callback) if callback else ''
-        )
+        packet_identifier = self._add_packet_callback(callback) if callback else ''
         packet_parts = (str(code), packet_identifier, path, data)
         packet = ':'.join(packet_parts)
 
@@ -1011,13 +988,11 @@ class EventHub(object):
         elif code_name == 'disconnect':
             self.logger.debug('Disconnected from event server.')
             if not self._intentional_disconnect:
-                self.logger.debug(
-                    'Disconnected unexpectedly. Attempting to reconnect.'
-                )
+                self.logger.debug('Disconnected unexpectedly. Attempting to reconnect.')
                 try:
                     self.reconnect(
                         attempts=self._auto_reconnect_attempts,
-                        delay=self._auto_reconnect_delay
+                        delay=self._auto_reconnect_delay,
                     )
                 except ftrack_api.exception.EventHubConnectionError:
                     self.logger.debug('Failed to reconnect automatically.')
@@ -1046,10 +1021,12 @@ class EventHub(object):
                     try:
                         event = ftrack_api.event.base.Event(**event_payload)
                     except Exception:
-                        self.logger.exception(L(
-                            'Failed to convert payload into event: {0}',
-                            event_payload
-                        ))
+                        self.logger.exception(
+                            L(
+                                'Failed to convert payload into event: {0}',
+                                event_payload,
+                            )
+                        )
                         return
 
                     self._event_queue.put(event)
@@ -1062,9 +1039,7 @@ class EventHub(object):
                 args = self._decode(parts[1])
 
             try:
-                callback = self._pop_packet_callback(
-                    acknowledged_packet_identifier
-                )
+                callback = self._pop_packet_callback(acknowledged_packet_identifier)
             except KeyError:
                 pass
             else:
@@ -1078,11 +1053,7 @@ class EventHub(object):
 
     def _encode(self, data):
         '''Return *data* encoded as JSON formatted string.'''
-        return json.dumps(
-            data,
-            default=self._encode_object_hook,
-            ensure_ascii=False
-        )
+        return json.dumps(data, default=self._encode_object_hook, ensure_ascii=False)
 
     def _encode_object_hook(self, item):
         '''Return *item* transformed for encoding.'''
@@ -1126,8 +1097,10 @@ class _SubscriptionContext(object):
     def __enter__(self):
         '''Enter context subscribing callback to topic.'''
         self._subscriberIdentifier = self._hub.subscribe(
-            self._subscription, self._callback, subscriber=self._subscriber,
-            priority=self._priority
+            self._subscription,
+            self._callback,
+            subscriber=self._subscriber,
+            priority=self._priority,
         )
 
     def __exit__(self, exception_type, exception_value, traceback):
@@ -1143,9 +1116,7 @@ class _ProcessorThread(threading.Thread):
     def __init__(self, client):
         '''Initialise thread with Socket.IO *client* instance.'''
         super(_ProcessorThread, self).__init__()
-        self.logger = logging.getLogger(
-            __name__ + '.' + self.__class__.__name__
-        )
+        self.logger = logging.getLogger(__name__ + '.' + self.__class__.__name__)
         self.client = client
         self.done = threading.Event()
 

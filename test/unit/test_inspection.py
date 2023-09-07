@@ -15,9 +15,7 @@ def test_identity(user):
 def test_primary_key(user):
     '''Retrieve primary key of *user*.'''
     primary_key = ftrack_api.inspection.primary_key(user)
-    assert primary_key == {
-        'id': 'd07ae5d0-66e1-11e1-b5e9-f23c91df25eb'
-    }
+    assert primary_key == {'id': 'd07ae5d0-66e1-11e1-b5e9-f23c91df25eb'}
 
 
 def test_created_entity_state(session, unique_name):
@@ -82,7 +80,7 @@ def test_states(session, unique_name, user):
         ftrack_api.symbol.NOT_SET,
         ftrack_api.symbol.CREATED,
         ftrack_api.symbol.MODIFIED,
-        ftrack_api.symbol.DELETED
+        ftrack_api.symbol.DELETED,
     ]
 
 

@@ -41,6 +41,5 @@ def register(session):
         return factory.create(schema)
 
     session.event_hub.subscribe(
-        'topic=ftrack.api.session.construct-entity-type',
-        construct_entity_type
+        'topic=ftrack.api.session.construct-entity-type', construct_entity_type
     )

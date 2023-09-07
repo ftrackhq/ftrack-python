@@ -13,9 +13,7 @@ def test_extend_standard_factory_with_bases(session):
     standard_factory = ftrack_api.entity.factory.StandardFactory()
 
     schemas = session._load_schemas(False)
-    user_schema = [
-        schema for schema in schemas if schema['id'] == 'User'
-    ].pop()
+    user_schema = [schema for schema in schemas if schema['id'] == 'User'].pop()
 
     user_class = standard_factory.create(user_schema, bases=[CustomUser])
     session.types[user_class.entity_type] = user_class

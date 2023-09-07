@@ -38,11 +38,7 @@ class Job(ftrack_api.entity.base.Entity):
         if not reconstructing:
             if data.get('type') not in ('api_job', None):
                 raise ValueError(
-                    'Invalid job type "{0}". Must be "api_job"'.format(
-                        data.get('type')
-                    )
+                    'Invalid job type "{0}". Must be "api_job"'.format(data.get('type'))
                 )
 
-        super(Job, self).__init__(
-            session, data=data, reconstructing=reconstructing
-        )
+        super(Job, self).__init__(session, data=data, reconstructing=reconstructing)

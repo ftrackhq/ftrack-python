@@ -30,12 +30,6 @@ def register(session, **kw):
         return
 
     session._test_called_events = collections.defaultdict(int)
-    session.event_hub.subscribe(
-        'topic=ftrack.api.session.ready',
-        count_session_event
-    )
-    session.event_hub.subscribe(
-        'topic=ftrack.api.session.reset',
-        count_session_event
-    )
+    session.event_hub.subscribe('topic=ftrack.api.session.ready', count_session_event)
+    session.event_hub.subscribe('topic=ftrack.api.session.reset', count_session_event)
     logger.debug('Plugin registered')

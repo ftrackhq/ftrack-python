@@ -16,7 +16,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'lowdown'
+    'lowdown',
 ]
 
 
@@ -36,7 +36,7 @@ try:
     # take major/minor/patch
     VERSION = '.'.join(release.split('.')[:3])
 except DistributionNotFound:
-     # package is not installed
+    # package is not installed
     VERSION = 'Unknown version'
 
 version = VERSION
@@ -47,15 +47,14 @@ release = VERSION
 exclude_patterns = ['_template']
 
 # A list of prefixes to ignore for module listings.
-modindex_common_prefix = [
-    'ftrack_api.'
-]
+modindex_common_prefix = ['ftrack_api.']
 
 # -- HTML output --------------------------------------------------------------
 
 if not os.environ.get('READTHEDOCS', None) == 'True':
     # Only import and set the theme if building locally.
     import sphinx_rtd_theme
+
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
@@ -82,9 +81,7 @@ def autodoc_skip(app, what, name, obj, skip, options):
 
 # -- Intersphinx --------------------------------------------------------------
 
-intersphinx_mapping = {
-    'python': ('http://docs.python.org/', None)
-}
+intersphinx_mapping = {'python': ('http://docs.python.org/', None)}
 
 
 # -- Todos ---------------------------------------------------------------------
@@ -93,6 +90,7 @@ todo_include_todos = os.environ.get('FTRACK_DOC_INCLUDE_TODOS', False) == 'True'
 
 
 # -- Setup --------------------------------------------------------------------
+
 
 def setup(app):
     app.connect('autodoc-skip-member', autodoc_skip)

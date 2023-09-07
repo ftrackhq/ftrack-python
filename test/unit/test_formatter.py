@@ -26,10 +26,11 @@ def test_format(user, mocker):
 def test_format_using_custom_formatters(user):
     '''Return formatted representation of entity using custom formatters.'''
     result = ftrack_api.formatter.format(
-        user, formatters={
+        user,
+        formatters={
             'header': lambda text: '*{0}*'.format(text),
-            'label': lambda text: '-{0}'.format(text)
-        }
+            'label': lambda text: '-{0}'.format(text),
+        },
     )
 
     # Cannot test entire string as too variable so check for key text.
@@ -44,8 +45,7 @@ def test_format_filtering(new_user, mocker):
 
     with new_user.session.auto_populating(False):
         result = ftrack_api.formatter.format(
-            new_user,
-            attribute_filter=ftrack_api.formatter.FILTER['ignore_unset']
+            new_user, attribute_filter=ftrack_api.formatter.FILTER['ignore_unset']
         )
 
     # Cannot test entire string as too variable so check for key text.

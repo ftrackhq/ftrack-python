@@ -18,10 +18,15 @@ def test_string_representation():
     )
 
 
-@pytest.mark.parametrize('expression, event, expected', [
-    pytest.param('topic=test', Event(topic='test'), True, id='interested'),
-    pytest.param('topic=test', Event(topic='other-test'), False, id='not interested')
-])
+@pytest.mark.parametrize(
+    'expression, event, expected',
+    [
+        pytest.param('topic=test', Event(topic='test'), True, id='interested'),
+        pytest.param(
+            'topic=test', Event(topic='other-test'), False, id='not interested'
+        ),
+    ],
+)
 def test_interested_in(expression, event, expected):
     '''Determine if subscriber interested in event.'''
     subscriber = ftrack_api.event.subscriber.Subscriber(

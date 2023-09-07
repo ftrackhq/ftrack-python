@@ -11,7 +11,7 @@ def get_file_type(event):
     '''return extension from the provided **file_path**.'''
     path = event['data']['file_path']
 
-     # Get Filename.
+    # Get Filename.
     filename = os.path.basename(path)
 
     # If no extension is found return to fall back on defaut session code.
@@ -28,7 +28,7 @@ def get_file_type(event):
     tokens = filename.split('.')[-3:]
 
     # Limit tokens to be taken in accoutn based on the numner of them.
-    split = len(tokens) - 1 
+    split = len(tokens) - 1
     tokens = tokens[-split:]
 
     for token in tokens:
@@ -36,7 +36,7 @@ def get_file_type(event):
         sequence_match = sequence_finder_regexp.match(token)
 
         if not sequence_match:
-            # If is not a sequence identifier, 
+            # If is not a sequence identifier,
             # make it part of the extension.
             results.append(token)
 
@@ -59,6 +59,5 @@ def register(session):
         return
 
     session.event_hub.subscribe(
-        'topic=ftrack.api.session.get-file-type-from-string',
-        get_file_type
+        'topic=ftrack.api.session.get-file-type-from-string', get_file_type
     )

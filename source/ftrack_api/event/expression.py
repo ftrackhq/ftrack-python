@@ -6,9 +6,20 @@ from six import string_types
 from builtins import object
 from operator import eq, ne, ge, le, gt, lt
 
-from pyparsing import (Group, Word, CaselessKeyword, Forward,
-                       FollowedBy, Suppress, oneOf, OneOrMore, Optional,
-                       alphanums, quotedString, removeQuotes)
+from pyparsing import (
+    Group,
+    Word,
+    CaselessKeyword,
+    Forward,
+    FollowedBy,
+    Suppress,
+    oneOf,
+    OneOrMore,
+    Optional,
+    alphanums,
+    quotedString,
+    removeQuotes,
+)
 
 import ftrack_api.exception
 
@@ -22,14 +33,7 @@ class Parser(object):
 
     def __init__(self):
         '''Initialise parser.'''
-        self._operators = {
-            '=': eq,
-            '!=': ne,
-            '>=': ge,
-            '<=': le,
-            '>': gt,
-            '<': lt
-        }
+        self._operators = {'=': eq, '!=': ne, '>=': ge, '<=': le, '>': gt, '<': lt}
         self._parser = self._construct_parser()
         super(Parser, self).__init__()
 
@@ -40,9 +44,7 @@ class Parser(object):
         value = Word(alphanums + '-_,./*@+')
         quoted_value = quotedString('quoted_value').setParseAction(removeQuotes)
 
-        condition = Group(
-            field + operator + (quoted_value | value)
-        )('condition')
+        condition = Group(field + operator + (quoted_value | value))('condition')
 
         not_ = Optional(Suppress(CaselessKeyword('not')))('not')
         and_ = Suppress(CaselessKeyword('and'))('and')
@@ -56,23 +58,21 @@ class Parser(object):
             current = Forward()
 
             if conjunction in (and_, or_):
-                conjunction_expression = (
-                    FollowedBy(previous + conjunction + previous)
-                    + Group(
-                        previous + OneOrMore(conjunction + previous)
-                    )(conjunction.resultsName)
+                conjunction_expression = FollowedBy(
+                    previous + conjunction + previous
+                ) + Group(previous + OneOrMore(conjunction + previous))(
+                    conjunction.resultsName
                 )
 
-            elif conjunction in (not_, ):
-                conjunction_expression = (
-                    FollowedBy(conjunction.expr + current)
-                    + Group(conjunction + current)(conjunction.resultsName)
-                )
+            elif conjunction in (not_,):
+                conjunction_expression = FollowedBy(conjunction.expr + current) + Group(
+                    conjunction + current
+                )(conjunction.resultsName)
 
             else:  # pragma: no cover
                 raise ValueError('Unrecognised conjunction.')
 
-            current <<= (conjunction_expression | previous)
+            current <<= conjunction_expression | previous
             previous = current
 
         expression <<= previous
@@ -89,9 +89,7 @@ class Parser(object):
         expression = expression.strip()
         if expression:
             try:
-                result = self._parser.parseString(
-                    expression, parseAll=True
-                )
+                result = self._parser.parseString(expression, parseAll=True)
             except Exception as error:
                 raise ftrack_api.exception.ParseError(
                     'Failed to parse: {0}. {1}'.format(expression, error)
@@ -164,15 +162,12 @@ class All(Expression):
     def __str__(self):
         '''Return string representation.'''
         return '<{0} [{1}]>'.format(
-            self.__class__.__name__,
-            ' '.join(map(str, self._expressions))
+            self.__class__.__name__, ' '.join(map(str, self._expressions))
         )
 
     def match(self, candidate):
         '''Return whether *candidate* satisfies this expression.'''
-        return all([
-            expression.match(candidate) for expression in self._expressions
-        ])
+        return all([expression.match(candidate) for expression in self._expressions])
 
 
 class Any(Expression):
@@ -192,15 +187,12 @@ class Any(Expression):
     def __str__(self):
         '''Return string representation.'''
         return '<{0} [{1}]>'.format(
-            self.__class__.__name__,
-            ' '.join(map(str, self._expressions))
+            self.__class__.__name__, ' '.join(map(str, self._expressions))
         )
 
     def match(self, candidate):
         '''Return whether *candidate* satisfies this expression.'''
-        return any([
-            expression.match(candidate) for expression in self._expressions
-        ])
+        return any([expression.match(candidate) for expression in self._expressions])
 
 
 class Not(Expression):
@@ -213,10 +205,7 @@ class Not(Expression):
 
     def __str__(self):
         '''Return string representation.'''
-        return '<{0} {1}>'.format(
-            self.__class__.__name__,
-            self._expression
-        )
+        return '<{0} {1}>'.format(self.__class__.__name__, self._expression)
 
     def match(self, candidate):
         '''Return whether *candidate* satisfies this expression.'''
@@ -252,7 +241,7 @@ class Condition(Expression):
             ge: '>=',
             le: '<=',
             gt: '>',
-            lt: '<'
+            lt: '<',
         }
 
     def __str__(self):
@@ -261,7 +250,7 @@ class Condition(Expression):
             self.__class__.__name__,
             self._key,
             self._operatorMapping.get(self._operator, self._operator),
-            self._value
+            self._value,
         )
 
     def match(self, candidate):

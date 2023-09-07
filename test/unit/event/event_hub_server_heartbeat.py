@@ -39,9 +39,7 @@ def main(arguments=None):
         retry_interval = 0.1
         atempt = 0
         while not session.event_hub.connected:
-            print (
-                'Session is not yet connected to event hub, sleeping for 0.1s'
-            )
+            print('Session is not yet connected to event hub, sleeping for 0.1s')
             time.sleep(retry_interval)
 
             atempt = atempt + 1
@@ -55,9 +53,7 @@ def main(arguments=None):
         print('Sending {0} messages...'.format(message_count))
 
         for counter in range(1, message_count + 1):
-            session.event_hub.publish(
-                Event(topic=TOPIC, data=dict(counter=counter))
-            )
+            session.event_hub.publish(Event(topic=TOPIC, data=dict(counter=counter)))
             print('Sent message {0}'.format(counter))
 
             if counter < message_count:
@@ -66,15 +62,14 @@ def main(arguments=None):
     elif namespace.mode == 'subscribe':
         session.event_hub.subscribe('topic={0}'.format(TOPIC), callback)
         session.event_hub.wait(
-            duration=(
-                ((message_count - 1) * sleep_time_per_message) + 15
-            )
+            duration=(((message_count - 1) * sleep_time_per_message) + 15)
         )
 
         if len(RECEIVED) != message_count:
             print(
-                '>> Failed to receive all messages. Dropped {0} <<'
-                .format(message_count - len(RECEIVED))
+                '>> Failed to receive all messages. Dropped {0} <<'.format(
+                    message_count - len(RECEIVED)
+                )
             )
             return False
 

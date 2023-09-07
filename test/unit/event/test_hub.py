@@ -51,15 +51,15 @@ def assert_callbacks(hub, callbacks):
 
     if len(subscribers) != len(callbacks):
         raise AssertionError(
-            'Number of subscribers ({0}) != number of callbacks ({1})'
-            .format(len(subscribers), len(callbacks))
+            'Number of subscribers ({0}) != number of callbacks ({1})'.format(
+                len(subscribers), len(callbacks)
+            )
         )
 
     for index, subscriber in enumerate(subscribers):
         if subscriber.callback != callbacks[index]:
             raise AssertionError(
-                'Callback at {0} != subscriber callback at same index.'
-                .format(index)
+                'Callback at {0} != subscriber callback at same index.'.format(index)
             )
 
 
@@ -86,39 +86,54 @@ def event_hub(request, session):
     return hub
 
 
-@pytest.mark.parametrize('server_url, expected', [
-    pytest.param('https://test.ftrackapp.com', 'https://test.ftrackapp.com', id='with port'),
-    pytest.param('https://test.ftrackapp.com:9000', 'https://test.ftrackapp.com:9000', id='without port')
-])
+@pytest.mark.parametrize(
+    'server_url, expected',
+    [
+        pytest.param(
+            'https://test.ftrackapp.com', 'https://test.ftrackapp.com', id='with port'
+        ),
+        pytest.param(
+            'https://test.ftrackapp.com:9000',
+            'https://test.ftrackapp.com:9000',
+            id='without port',
+        ),
+    ],
+)
 def test_get_server_url(server_url, expected):
     '''Return server url.'''
-    event_hub = ftrack_api.event.hub.EventHub(
-        server_url, 'user', 'key'
-    )
+    event_hub = ftrack_api.event.hub.EventHub(server_url, 'user', 'key')
     assert event_hub.get_server_url() == expected
 
 
-@pytest.mark.parametrize('server_url, expected', [
-    pytest.param('https://test.ftrackapp.com', 'test.ftrackapp.com', id='with port'),
-    pytest.param('https://test.ftrackapp.com:9000', 'test.ftrackapp.com:9000', id='without port')
-])
+@pytest.mark.parametrize(
+    'server_url, expected',
+    [
+        pytest.param(
+            'https://test.ftrackapp.com', 'test.ftrackapp.com', id='with port'
+        ),
+        pytest.param(
+            'https://test.ftrackapp.com:9000',
+            'test.ftrackapp.com:9000',
+            id='without port',
+        ),
+    ],
+)
 def test_get_network_location(server_url, expected):
     '''Return network location of server url.'''
-    event_hub = ftrack_api.event.hub.EventHub(
-        server_url, 'user', 'key'
-    )
+    event_hub = ftrack_api.event.hub.EventHub(server_url, 'user', 'key')
     assert event_hub.get_network_location() == expected
 
 
-@pytest.mark.parametrize('server_url, expected', [
-    pytest.param('https://test.ftrackapp.com', True, id='secure'),
-    pytest.param('http://test.ftrackapp.com', False, id='not secure')
-])
+@pytest.mark.parametrize(
+    'server_url, expected',
+    [
+        pytest.param('https://test.ftrackapp.com', True, id='secure'),
+        pytest.param('http://test.ftrackapp.com', False, id='not secure'),
+    ],
+)
 def test_secure_property(server_url, expected, mocker):
     '''Return whether secure connection used.'''
-    event_hub = ftrack_api.event.hub.EventHub(
-        server_url, 'user', 'key'
-    )
+    event_hub = ftrack_api.event.hub.EventHub(server_url, 'user', 'key')
     assert event_hub.secure is expected
 
 
@@ -136,23 +151,28 @@ def test_connected_property(session):
     assert event_hub.connected is False
 
 
-@pytest.mark.parametrize('server_url, expected', [
-    pytest.param('https://test.ftrackapp.com', 'https://test.ftrackapp.com', id='with port'),
-    pytest.param('https://test.ftrackapp.com:9000', 'https://test.ftrackapp.com:9000', id='without port'),
-    pytest.param('test.ftrackapp.com', ValueError, id='missing scheme'),
-    pytest.param('https://:9000', ValueError, id='missing hostname'),
-])
+@pytest.mark.parametrize(
+    'server_url, expected',
+    [
+        pytest.param(
+            'https://test.ftrackapp.com', 'https://test.ftrackapp.com', id='with port'
+        ),
+        pytest.param(
+            'https://test.ftrackapp.com:9000',
+            'https://test.ftrackapp.com:9000',
+            id='without port',
+        ),
+        pytest.param('test.ftrackapp.com', ValueError, id='missing scheme'),
+        pytest.param('https://:9000', ValueError, id='missing hostname'),
+    ],
+)
 def test_initialise_against_server_url(server_url, expected):
     '''Initialise against server url.'''
     if inspect.isclass(expected) and issubclass(expected, Exception):
         with pytest.raises(expected):
-            ftrack_api.event.hub.EventHub(
-                server_url, 'user', 'key'
-            )
+            ftrack_api.event.hub.EventHub(server_url, 'user', 'key')
     else:
-        event_hub = ftrack_api.event.hub.EventHub(
-            server_url, 'user', 'key'
-        )
+        event_hub = ftrack_api.event.hub.EventHub(server_url, 'user', 'key')
         assert event_hub.get_server_url() == expected
 
 
@@ -177,22 +197,17 @@ def test_connect_custom_headers(session):
     assert (
         'abc' in event_hub._headers.keys(),
         event_hub._headers['abc'] == 'def',
-        event_hub.connected is True
+        event_hub.connected is True,
     )
     event_hub.disconnect()
 
 
 @pytest.mark.parametrize(
-    'headers', [
-        (
-            requests.structures.CaseInsensitiveDict(
-                {'ftrack-strict-api': 'true'}
-            )
-        ),
-        (
-            {'ftrack-strict-api': 'true'}
-        )
-    ]
+    'headers',
+    [
+        (requests.structures.CaseInsensitiveDict({'ftrack-strict-api': 'true'})),
+        ({'ftrack-strict-api': 'true'}),
+    ],
 )
 def test_connect_strict_api_header(session, headers):
     '''Connect with ftrack-strict-api = True header passed in.'''
@@ -205,7 +220,7 @@ def test_connect_strict_api_header(session, headers):
         'ftrack-strict-api' in event_hub._headers.keys(),
         isinstance(event_hub._headers, dict),
         event_hub._headers['ftrack-strict-api'] is True,
-        event_hub.connected is True
+        event_hub.connected is True,
     )
     event_hub.disconnect()
 
@@ -217,10 +232,7 @@ def test_connect_custom_cookies(session):
     )
     event_hub.connect()
 
-    assert (
-        event_hub._cookies == 'abc=def',
-        event_hub.connected is True
-    )
+    assert (event_hub._cookies == 'abc=def', event_hub.connected is True)
     event_hub.disconnect()
 
 
@@ -260,20 +272,16 @@ def test_connect_missing_required_transport(session, mocker, caplog):
     def _get_socket_io_session():
         '''Patched to return no transports.'''
         session = original_get_socket_io_session()
-        return ftrack_api.event.hub.SocketIoSession(
-            session[0], session[1], []
-        )
+        return ftrack_api.event.hub.SocketIoSession(session[0], session[1], [])
 
-    mocker.patch.object(
-        event_hub, '_get_socket_io_session', _get_socket_io_session
-    )
+    mocker.patch.object(event_hub, '_get_socket_io_session', _get_socket_io_session)
 
-    with caplog.at_level(logging.DEBUG) as log_ctx, pytest.raises(ftrack_api.exception.EventHubConnectionError) as exception_ctx:
+    with caplog.at_level(logging.DEBUG) as log_ctx, pytest.raises(
+        ftrack_api.exception.EventHubConnectionError
+    ) as exception_ctx:
         event_hub.connect()
-    
-    assert (
-        'Server does not support websocket sessions.' in str(caplog.text)
-    )
+
+    assert 'Server does not support websocket sessions.' in str(caplog.text)
 
 
 def test_disconnect(event_hub):
@@ -396,18 +404,20 @@ def test_wait_interrupted_by_disconnect(event_hub):
     assert time.time() - start < wait_time
 
 
-@pytest.mark.parametrize('identifier, registered', [
-    pytest.param('registered-test-subscriber', True, id='registered'),
-    pytest.param('unregistered-test-subscriber', False, id='missing')
-])
+@pytest.mark.parametrize(
+    'identifier, registered',
+    [
+        pytest.param('registered-test-subscriber', True, id='registered'),
+        pytest.param('unregistered-test-subscriber', False, id='missing'),
+    ],
+)
 def test_get_subscriber_by_identifier(event_hub, identifier, registered):
     '''Return subscriber by identifier.'''
+
     def callback(event):
         pass
 
-    subscriber = {
-        'id': 'registered-test-subscriber'
-    }
+    subscriber = {'id': 'registered-test-subscriber'}
 
     event_hub.subscribe('topic=test-subscribe', callback, subscriber)
     retrieved = event_hub.get_subscriber_by_identifier(identifier)
@@ -450,9 +460,7 @@ def test_subscribe_before_connected(session):
         called['callback'] = True
 
     identifier = 'test-subscriber'
-    event_hub.subscribe(
-        'topic=test-subscribe', callback, subscriber={'id': identifier}
-    )
+    event_hub.subscribe('topic=test-subscribe', callback, subscriber={'id': identifier})
     assert event_hub.get_subscriber_by_identifier(identifier) is not None
 
     event_hub.connect()
@@ -479,6 +487,7 @@ def test_duplicate_subscriber(event_hub):
 
 def test_unsubscribe(event_hub):
     '''Unsubscribe a specific callback.'''
+
     def callback_a(event):
         pass
 
@@ -515,18 +524,20 @@ def test_unsubscribe_missing_subscriber(event_hub):
     with pytest.raises(ftrack_api.exception.NotFoundError) as error:
         event_hub.unsubscribe(identifier)
 
-    assert (
-        'missing subscriber with identifier {}'.format(identifier)
-        in str(error)
-    )
+    assert 'missing subscriber with identifier {}'.format(identifier) in str(error)
 
 
-@pytest.mark.parametrize('event_data', [
-    pytest.param(dict(source=dict(id='1', user=dict(username='auto'))), id='pre-prepared'),
-    pytest.param(dict(source=dict(user=dict(username='auto'))), id='missing id'),
-    pytest.param(dict(source=dict(id='1')), id='missing user'),
-    pytest.param(dict(), id='no source')
-])
+@pytest.mark.parametrize(
+    'event_data',
+    [
+        pytest.param(
+            dict(source=dict(id='1', user=dict(username='auto'))), id='pre-prepared'
+        ),
+        pytest.param(dict(source=dict(user=dict(username='auto'))), id='missing id'),
+        pytest.param(dict(source=dict(id='1')), id='missing user'),
+        pytest.param(dict(), id='no source'),
+    ],
+)
 def test_prepare_event(session, event_data):
     '''Prepare event.'''
     # Replace username `auto` in event data with API user.
@@ -619,6 +630,7 @@ def test_publish_logs_other_errors(event_hub, caplog, mocker):
 
 def test_synchronous_publish(event_hub):
     '''Publish event synchronously and collect results.'''
+
     def callback_a(event):
         return 'A'
 
@@ -655,9 +667,7 @@ def test_publish_during_connect(session, mocker):
     # Mark the connection as initialised.
     event_hub.init_connection()
 
-    event_hub.publish(
-        Event(topic='test'), on_reply=on_reply
-    )
+    event_hub.publish(Event(topic='test'), on_reply=on_reply)
 
     assert event_hub._event_send_queue.qsize() == 1
 
@@ -737,11 +747,7 @@ def test_server_heartbeat_response():
 
 def test_stop_event(event_hub):
     '''Stop processing of subsequent local handlers when stop flag set.'''
-    called = {
-        'a': False,
-        'b': False,
-        'c': False
-    }
+    called = {'a': False, 'b': False, 'c': False}
 
     def callback_a(event):
         called['a'] = True
@@ -760,29 +766,19 @@ def test_stop_event(event_hub):
     event_hub.publish(Event(topic='test'))
     event_hub.wait(2)
 
-    assert called == {
-        'a': True,
-        'b': True,
-        'c': False
-    }
+    assert called == {'a': True, 'b': True, 'c': False}
 
 
 def test_encode(session):
     '''Encode event data.'''
-    encoded = session.event_hub._encode(
-        dict(name='ftrack.event', args=[Event('test')])
-    )
+    encoded = session.event_hub._encode(dict(name='ftrack.event', args=[Event('test')]))
     assert 'inReplyToEvent' in encoded
     assert 'in_reply_to_event' not in encoded
 
 
 def test_decode(session):
     '''Decode event data.'''
-    decoded = session.event_hub._decode(
-        json.dumps({
-            'inReplyToEvent': 'id'
-        })
-    )
+    decoded = session.event_hub._decode(json.dumps({'inReplyToEvent': 'id'}))
 
     assert 'in_reply_to_event' in decoded
     assert 'inReplyToEvent' not in decoded

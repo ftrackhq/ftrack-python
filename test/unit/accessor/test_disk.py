@@ -24,35 +24,33 @@ def test_get_filesystem_path(temporary_path):
     assert accessor.get_filesystem_path(temporary_path) == temporary_path
 
     # Absolute path within prefix.
-    assert (
-        accessor.get_filesystem_path(
-            os.path.join(temporary_path, 'test.txt')
-        ) ==
+    assert accessor.get_filesystem_path(
         os.path.join(temporary_path, 'test.txt')
-    )
+    ) == os.path.join(temporary_path, 'test.txt')
 
     # Relative root path
     assert accessor.get_filesystem_path('') == temporary_path
 
     # Relative path for file at root
-    assert (accessor.get_filesystem_path('test.txt') ==
-            os.path.join(temporary_path, 'test.txt'))
+    assert accessor.get_filesystem_path('test.txt') == os.path.join(
+        temporary_path, 'test.txt'
+    )
 
     # Relative path for file in subdirectory
-    assert (accessor.get_filesystem_path('test/foo.txt') ==
-            os.path.join(temporary_path, 'test', 'foo.txt'))
+    assert accessor.get_filesystem_path('test/foo.txt') == os.path.join(
+        temporary_path, 'test', 'foo.txt'
+    )
 
     # Relative path non-collapsed
-    assert (accessor.get_filesystem_path('test/../foo.txt') ==
-            os.path.join(temporary_path, 'foo.txt'))
+    assert accessor.get_filesystem_path('test/../foo.txt') == os.path.join(
+        temporary_path, 'foo.txt'
+    )
 
     # Relative directory path without trailing slash
-    assert (accessor.get_filesystem_path('test') ==
-            os.path.join(temporary_path, 'test'))
+    assert accessor.get_filesystem_path('test') == os.path.join(temporary_path, 'test')
 
     # Relative directory path with trailing slash
-    assert (accessor.get_filesystem_path('test/') ==
-            os.path.join(temporary_path, 'test'))
+    assert accessor.get_filesystem_path('test/') == os.path.join(temporary_path, 'test')
 
 
 def test_list(temporary_path):
@@ -140,9 +138,7 @@ def test_is_sequence(temporary_path):
     '''Sequence detection unsupported.'''
     accessor = ftrack_api.accessor.disk.DiskAccessor(temporary_path)
 
-    with pytest.raises(
-        ftrack_api.exception.AccessorUnsupportedOperationError
-    ):
+    with pytest.raises(ftrack_api.exception.AccessorUnsupportedOperationError):
         accessor.is_sequence('foo.%04d.exr')
 
 
@@ -160,7 +156,7 @@ def test_open(temporary_path):
     data.close()
 
     data = accessor.open('test.txt', 'r')
-    assert (data.read() == 'test data')
+    assert data.read() == 'test data'
     data.close()
 
 
@@ -199,17 +195,10 @@ def test_make_container(temporary_path):
 
     # Recursive
     accessor.make_container('test/a/b/c')
-    assert (
-        os.path.isdir(
-            os.path.join(temporary_path, 'test', 'a', 'b', 'c')
-        ) is
-        True
-    )
+    assert os.path.isdir(os.path.join(temporary_path, 'test', 'a', 'b', 'c')) is True
 
     # Non-recursive fail
-    with pytest.raises(
-        ftrack_api.exception.AccessorParentResourceNotFoundError
-    ):
+    with pytest.raises(ftrack_api.exception.AccessorParentResourceNotFoundError):
         accessor.make_container('test/d/e/f', recursive=False)
 
     # Existing succeeds
@@ -221,47 +210,29 @@ def test_get_container(temporary_path):
     # With prefix.
     accessor = ftrack_api.accessor.disk.DiskAccessor(prefix=temporary_path)
 
-    assert (
-        accessor.get_container(os.path.join('test', 'a')) ==
-        'test'
-    )
+    assert accessor.get_container(os.path.join('test', 'a')) == 'test'
 
-    assert (
-        accessor.get_container(os.path.join('test', 'a/')) ==
-        'test'
-    )
+    assert accessor.get_container(os.path.join('test', 'a/')) == 'test'
 
-    assert (
-        accessor.get_container('test') ==
-        ''
-    )
+    assert accessor.get_container('test') == ''
 
-    with pytest.raises(
-        ftrack_api.exception.AccessorParentResourceNotFoundError
-    ):
+    with pytest.raises(ftrack_api.exception.AccessorParentResourceNotFoundError):
         accessor.get_container('')
 
-    with pytest.raises(
-        ftrack_api.exception.AccessorParentResourceNotFoundError
-    ):
+    with pytest.raises(ftrack_api.exception.AccessorParentResourceNotFoundError):
         accessor.get_container(temporary_path)
 
     # Without prefix.
     accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
 
-    assert (
-        accessor.get_container(os.path.join(temporary_path, 'test', 'a')) ==
-        os.path.join(temporary_path, 'test')
-    )
+    assert accessor.get_container(
+        os.path.join(temporary_path, 'test', 'a')
+    ) == os.path.join(temporary_path, 'test')
+
+    assert accessor.get_container(
+        os.path.join(temporary_path, 'test', 'a/')
+    ) == os.path.join(temporary_path, 'test')
 
     assert (
-        accessor.get_container(
-            os.path.join(temporary_path, 'test', 'a/')
-        ) ==
-        os.path.join(temporary_path, 'test')
-    )
-
-    assert (
-        accessor.get_container(os.path.join(temporary_path, 'test')) ==
-        temporary_path
+        accessor.get_container(os.path.join(temporary_path, 'test')) == temporary_path
     )

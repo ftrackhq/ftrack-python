@@ -3,6 +3,7 @@
 
 from past.builtins import long
 
+
 def test_force_start_timer(new_user, task):
     '''Successfully force starting a timer when another timer is running.'''
     first_timer = new_user.start_timer(context=task)
@@ -21,16 +22,12 @@ def test_timer_creates_timelog(new_user, task, unique_name):
 
     '''
     comment = 'comment' + unique_name
-    timer = new_user.start_timer(
-        context=task,
-        name=unique_name,
-        comment=comment
-    )
+    timer = new_user.start_timer(context=task, name=unique_name, comment=comment)
     timer_start = timer['start']
     timelog = new_user.stop_timer()
 
     assert timelog['user_id'] == new_user['id']
-    assert timelog['context_id']== task['id']
+    assert timelog['context_id'] == task['id']
     assert timelog['name'] == unique_name
     assert timelog['comment'] == comment
     assert timelog['start'] == timer_start
@@ -47,4 +44,3 @@ def test_reset_user_api_key(new_user):
 
     # make sure all api keys are unique
     assert len(set(api_keys)) == 10
-

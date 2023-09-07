@@ -41,7 +41,7 @@ def cache(request):
             encode=functools.partial(
                 session.encode, entity_attribute_strategy='persisted_only'
             ),
-            decode=session.decode
+            decode=session.decode,
         )
 
         def cleanup():
@@ -63,7 +63,7 @@ def temporary_invalid_schema_cache(request):
     '''Return schema cache path to invalid schema cache file.'''
     schema_cache_path = os.path.join(
         tempfile.gettempdir(),
-        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex),
     )
 
     with open(schema_cache_path, 'w') as file_:
@@ -83,7 +83,7 @@ def temporary_valid_schema_cache(request, mocked_schemas):
     '''Return schema cache path to valid schema cache file.'''
     schema_cache_path = os.path.join(
         tempfile.gettempdir(),
-        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex)
+        'ftrack_api_schema_cache_test_{0}.json'.format(uuid.uuid4().hex),
     )
 
     with open(schema_cache_path, 'w') as file_:
@@ -104,10 +104,7 @@ class SelectiveCache(ftrack_api.cache.ProxyCache):
     def set(self, key, value):
         '''Set *value* for *key*.'''
         if isinstance(value, ftrack_api.entity.base.Entity):
-            if (
-                ftrack_api.inspection.state(value)
-                is ftrack_api.symbol.CREATED
-            ):
+            if ftrack_api.inspection.state(value) is ftrack_api.symbol.CREATED:
                 return
 
         super(SelectiveCache, self).set(key, value)
@@ -185,18 +182,16 @@ def test_ensure_entity_with_non_string_data_types(session, mocker):
     datetime = arrow.get()
 
     task = session.query('Task').first()
-    user = session.query(
-        'User where username is {}'.format(session.api_user)
-    ).first()
+    user = session.query('User where username is {}'.format(session.api_user)).first()
 
     first = session.ensure(
-        'Timelog', 
+        'Timelog',
         {
             'start': datetime,
             'duration': 10,
             'user_id': user['id'],
-            'context_id': task['id']
-        }
+            'context_id': task['id'],
+        },
     )
 
     mocker.patch.object(session, 'create')
@@ -207,8 +202,8 @@ def test_ensure_entity_with_non_string_data_types(session, mocker):
             'start': datetime,
             'duration': 10,
             'user_id': user['id'],
-            'context_id': task['id']
-        }
+            'context_id': task['id'],
+        },
     )
 
     assert first['start'] == datetime
@@ -218,13 +213,12 @@ def test_ensure_entity_with_non_string_data_types(session, mocker):
 def test_ensure_entity_with_identifying_keys(session, unique_name):
     '''Ensure entity, checking using keys subset and then creating.'''
 
-    unique_mail = 'test{0}@example.com'.format(
-        str(uuid.uuid4())
-    )
+    unique_mail = 'test{0}@example.com'.format(str(uuid.uuid4()))
 
     entity = session.ensure(
-        'User', {'username': unique_name, 'email': unique_mail},
-        identifying_keys=['username']
+        'User',
+        {'username': unique_name, 'email': unique_mail},
+        identifying_keys=['username'],
     )
     assert entity['username'] == unique_name
 
@@ -233,8 +227,9 @@ def test_ensure_entity_with_invalid_identifying_keys(session, unique_name):
     '''Fail to ensure entity when identifying key missing from data.'''
     with pytest.raises(KeyError):
         session.ensure(
-            'User', {'username': unique_name, 'email': 'test@example.com'},
-            identifying_keys=['invalid']
+            'User',
+            {'username': unique_name, 'email': 'test@example.com'},
+            identifying_keys=['invalid'],
         )
 
 
@@ -257,23 +252,18 @@ def test_ensure_existing_entity(session, unique_name):
 def test_ensure_update_existing_entity(session, unique_name):
     '''Ensure and update existing entity.'''
 
-    mail = 'test{0}@example.com'.format(
-        str(uuid.uuid4())
-    )
+    mail = 'test{0}@example.com'.format(str(uuid.uuid4()))
 
-    entity = session.ensure(
-        'User', {'first_name': unique_name, 'email': mail}
-    )
+    entity = session.ensure('User', {'first_name': unique_name, 'email': mail})
     assert entity['email'] == mail
 
-    updated_mail = 'test{0}@example.com'.format(
-        str(uuid.uuid4())
-    )
+    updated_mail = 'test{0}@example.com'.format(str(uuid.uuid4()))
 
     # Second call should commit updates.
     retrieved = session.ensure(
-        'User', {'first_name': unique_name, 'email': updated_mail},
-        identifying_keys=['first_name']
+        'User',
+        {'first_name': unique_name, 'email': updated_mail},
+        identifying_keys=['first_name'],
     )
 
     assert retrieved == entity
@@ -283,11 +273,7 @@ def test_ensure_update_existing_entity(session, unique_name):
 def test_reconstruct_entity(session):
     '''Reconstruct entity.'''
     uid = str(uuid.uuid4())
-    data = {
-        'id': uid,
-        'username': 'martin',
-        'email': 'martin@example.com'
-    }
+    data = {'id': uid, 'username': 'martin', 'email': 'martin@example.com'}
     user = session.create('User', data, reconstructing=True)
 
     for attribute in user.attributes:
@@ -327,16 +313,16 @@ def test_delete_operation_ordering(session, unique_name):
     '''Delete entities in valid order.'''
     # Construct entities.
     project_schema = session.query('ProjectSchema').first()
-    project = session.create('Project', {
-        'name': unique_name,
-        'full_name': unique_name,
-        'project_schema': project_schema
-    })
+    project = session.create(
+        'Project',
+        {
+            'name': unique_name,
+            'full_name': unique_name,
+            'project_schema': project_schema,
+        },
+    )
 
-    sequence = session.create('Sequence', {
-        'name': unique_name,
-        'parent': project
-    })
+    sequence = session.create('Sequence', {'name': unique_name, 'parent': project})
 
     session.commit()
 
@@ -369,18 +355,14 @@ def test_ignore_in_create_entity_payload_values_set_to_not_set(
     mocked = mocker.patch.object(session, 'call')
 
     # Should ignore 'email' attribute in payload.
-    new_user = session.create(
-        'User', {'username': unique_name, 'email': 'test'}
-    )
+    new_user = session.create('User', {'username': unique_name, 'email': 'test'})
     new_user['email'] = ftrack_api.symbol.NOT_SET
     session.commit()
     payloads = mocked.call_args[0][0]
     assert len(payloads) == 1
 
 
-def test_ignore_operation_that_modifies_attribute_to_not_set(
-    mocker, session, user
-):
+def test_ignore_operation_that_modifies_attribute_to_not_set(mocker, session, user):
     '''Ignore in commit, operation that sets attribute value to NOT_SET'''
     mocked = mocker.patch.object(session, 'call')
 
@@ -421,21 +403,21 @@ def test_operation_optimisation_on_commit(session, mocker):
 
     assert payloads[0]['action'] == 'create'
     assert payloads[0]['entity_key'] == list(user_a_entity_key)
-    assert set(list(payloads[0]['entity_data'].keys())) == set([
-        '__entity_type__', 'id', 'resource_type', 'username'
-    ])
+    assert set(list(payloads[0]['entity_data'].keys())) == set(
+        ['__entity_type__', 'id', 'resource_type', 'username']
+    )
 
     assert payloads[1]['action'] == 'create'
     assert payloads[1]['entity_key'] == list(user_b_entity_key)
-    assert set(list(payloads[1]['entity_data'].keys())) == set([
-        '__entity_type__', 'id', 'resource_type', 'username', 'email'
-    ])
+    assert set(list(payloads[1]['entity_data'].keys())) == set(
+        ['__entity_type__', 'id', 'resource_type', 'username', 'email']
+    )
 
     assert payloads[2]['action'] == 'update'
     assert payloads[2]['entity_key'] == list(user_a_entity_key)
-    assert set(list(payloads[2]['entity_data'].keys())) == set([
-        '__entity_type__', 'email', 'first_name'
-    ])
+    assert set(list(payloads[2]['entity_data'].keys())) == set(
+        ['__entity_type__', 'email', 'first_name']
+    )
 
 
 def test_state_collection(session, unique_name, user):
@@ -463,11 +445,15 @@ def test_state_collection(session, unique_name, user):
 
 def test_get_entity_with_composite_primary_key(session, new_project):
     '''Retrieve entity that uses a composite primary key.'''
-    entity = session.create('Metadata', {
-        'key': 'key', 'value': 'value',
-        'parent_type': new_project.entity_type,
-        'parent_id': new_project['id']
-    })
+    entity = session.create(
+        'Metadata',
+        {
+            'key': 'key',
+            'value': 'value',
+            'parent_type': new_project.entity_type,
+            'parent_id': new_project['id'],
+        },
+    )
 
     session.commit()
 
@@ -482,11 +468,15 @@ def test_get_entity_with_composite_primary_key(session, new_project):
 
 def test_get_entity_with_incomplete_composite_primary_key(session, new_project):
     '''Fail to retrieve entity using incomplete composite primary key.'''
-    entity = session.create('Metadata', {
-        'key': 'key', 'value': 'value',
-        'parent_type': new_project.entity_type,
-        'parent_id': new_project['id']
-    })
+    entity = session.create(
+        'Metadata',
+        {
+            'key': 'key',
+            'value': 'value',
+            'parent_type': new_project.entity_type,
+            'parent_id': new_project['id'],
+        },
+    )
 
     session.commit()
 
@@ -512,9 +502,7 @@ def test_populate_entities(session, unique_name):
     users = []
     for index in range(3):
         users.append(
-            session.create(
-                'User', {'username': '{0}-{1}'.format(unique_name, index)}
-            )
+            session.create('User', {'username': '{0}-{1}'.format(unique_name, index)})
         )
 
     session.commit()
@@ -531,11 +519,15 @@ def test_populate_entities(session, unique_name):
 
 def test_populate_entity_with_composite_primary_key(session, new_project):
     '''Populate entity that uses a composite primary key.'''
-    entity = session.create('Metadata', {
-        'key': 'key', 'value': 'value',
-        'parent_type': new_project.entity_type,
-        'parent_id': new_project['id']
-    })
+    entity = session.create(
+        'Metadata',
+        {
+            'key': 'key',
+            'value': 'value',
+            'parent_type': new_project.entity_type,
+            'parent_id': new_project['id'],
+        },
+    )
 
     session.commit()
 
@@ -555,22 +547,21 @@ def test_populate_entity_with_composite_primary_key(session, new_project):
     assert retrieved_entity['value'] == 'value'
 
 
-@pytest.mark.parametrize('server_information, compatible', [
-    pytest.param({}, False, id='No information'),
-    pytest.param({'version': '3.3.11'}, True, id='Valid current version'),
-    pytest.param({'version': '3.3.12'}, True, id='Valid higher version'),
-    pytest.param({'version': '3.4'}, True, id='Valid higher version'),
-    pytest.param({'version': '3.4.1'}, True, id='Valid higher version'),
-    pytest.param({'version': '3.5.16'}, True, id='Valid higher version'),
-    pytest.param({'version': '3.3.10'}, False, id='Invalid lower version'),
-])
-def test_check_server_compatibility(
-    server_information, compatible, session
-):
+@pytest.mark.parametrize(
+    'server_information, compatible',
+    [
+        pytest.param({}, False, id='No information'),
+        pytest.param({'version': '3.3.11'}, True, id='Valid current version'),
+        pytest.param({'version': '3.3.12'}, True, id='Valid higher version'),
+        pytest.param({'version': '3.4'}, True, id='Valid higher version'),
+        pytest.param({'version': '3.4.1'}, True, id='Valid higher version'),
+        pytest.param({'version': '3.5.16'}, True, id='Valid higher version'),
+        pytest.param({'version': '3.3.10'}, False, id='Invalid lower version'),
+    ],
+)
+def test_check_server_compatibility(server_information, compatible, session):
     '''Check server compatibility.'''
-    with mock.patch.dict(
-        session._server_information, server_information, clear=True
-    ):
+    with mock.patch.dict(session._server_information, server_information, clear=True):
         if compatible:
             session.check_server_compatibility()
         else:
@@ -581,11 +572,7 @@ def test_check_server_compatibility(
 def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
     '''Encode entity using "all" entity_attribute_strategy.'''
     new_bar = mocked_schema_session.create(
-        'Bar',
-        {
-            'name': 'myBar',
-            'id': 'bar_unique_id'
-        }
+        'Bar', {'name': 'myBar', 'id': 'bar_unique_id'}
     )
 
     new_foo = mocked_schema_session.create(
@@ -597,15 +584,16 @@ def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
             'number': 12345678.9,
             'boolean': False,
             'date': arrow.get('2015-11-18 15:24:09'),
-            'bars': [new_bar]
-        }
+            'bars': [new_bar],
+        },
     )
 
-    encoded = mocked_schema_session.encode(
-        new_foo, entity_attribute_strategy='all'
-    )
+    encoded = mocked_schema_session.encode(new_foo, entity_attribute_strategy='all')
 
-    assert encoded == textwrap.dedent('''
+    assert (
+        encoded
+        == textwrap.dedent(
+            '''
         {"__entity_type__": "Foo",
          "bars": [{"__entity_type__": "Bar", "id": "bar_unique_id"}],
          "boolean": false,
@@ -614,71 +602,66 @@ def test_encode_entity_using_all_attributes_strategy(mocked_schema_session):
          "integer": 42,
          "number": 12345678.9,
          "string": "abc"}
-    ''').replace('\n', '')
+    '''
+        ).replace('\n', '')
+    )
 
 
-def test_encode_entity_using_only_set_attributes_strategy(
-    mocked_schema_session
-):
+def test_encode_entity_using_only_set_attributes_strategy(mocked_schema_session):
     '''Encode entity using "set_only" entity_attribute_strategy.'''
     new_foo = mocked_schema_session.create(
-        'Foo',
-        {
-            'id': 'a_unique_id',
-            'string': 'abc',
-            'integer': 42
-        }
+        'Foo', {'id': 'a_unique_id', 'string': 'abc', 'integer': 42}
     )
 
     encoded = mocked_schema_session.encode(
         new_foo, entity_attribute_strategy='set_only'
     )
 
-    assert encoded == textwrap.dedent('''
+    assert (
+        encoded
+        == textwrap.dedent(
+            '''
         {"__entity_type__": "Foo",
          "id": "a_unique_id",
          "integer": 42,
          "string": "abc"}
-    ''').replace('\n', '')
+    '''
+        ).replace('\n', '')
+    )
 
 
 def test_encode_computed_attribute_using_persisted_only_attributes_strategy(
-    mocked_schema_session
+    mocked_schema_session,
 ):
     '''Encode computed attribute, "persisted_only" entity_attribute_strategy.'''
     new_bar = mocked_schema_session._create(
         'Bar',
-        {
-            'name': 'myBar',
-            'id': 'bar_unique_id',
-            'computed_value': 'FOO'
-        },
-        reconstructing=True
+        {'name': 'myBar', 'id': 'bar_unique_id', 'computed_value': 'FOO'},
+        reconstructing=True,
     )
 
     encoded = mocked_schema_session.encode(
         new_bar, entity_attribute_strategy='persisted_only'
     )
 
-    assert encoded == textwrap.dedent('''
+    assert (
+        encoded
+        == textwrap.dedent(
+            '''
         {"__entity_type__": "Bar",
          "id": "bar_unique_id",
          "name": "myBar"}
-    ''').replace('\n', '')
+    '''
+        ).replace('\n', '')
+    )
 
 
-def test_encode_entity_using_only_modified_attributes_strategy(
-    mocked_schema_session
-):
+def test_encode_entity_using_only_modified_attributes_strategy(mocked_schema_session):
     '''Encode entity using "modified_only" entity_attribute_strategy.'''
     new_foo = mocked_schema_session._create(
         'Foo',
-        {
-            'id': 'a_unique_id',
-            'string': 'abc',
-            'integer': 42
-        },
-        reconstructing=True
+        {'id': 'a_unique_id', 'string': 'abc', 'integer': 42},
+        reconstructing=True,
     )
 
     new_foo['string'] = 'Modified'
@@ -687,11 +670,16 @@ def test_encode_entity_using_only_modified_attributes_strategy(
         new_foo, entity_attribute_strategy='modified_only'
     )
 
-    assert encoded == textwrap.dedent('''
+    assert (
+        encoded
+        == textwrap.dedent(
+            '''
         {"__entity_type__": "Foo",
          "id": "a_unique_id",
          "string": "Modified"}
-    ''').replace('\n', '')
+    '''
+        ).replace('\n', '')
+    )
 
 
 def test_encode_entity_using_invalid_strategy(session, new_task):
@@ -707,33 +695,40 @@ def test_encode_operation_payload(session):
     )
     file_component = sequence_component["members"][0]
 
-    encoded = session.encode([
-        ftrack_api.session.OperationPayload({
-            'action': 'create',
-            'entity_data': {
-                '__entity_type__': u'FileComponent',
-                u'container': sequence_component,
-                'id': file_component['id']
-            },
-            'entity_key': [file_component['id']],
-            'entity_type': u'FileComponent'
-        }),
-        ftrack_api.session.OperationPayload({
-            'action': 'update',
-            'entity_data': {
-                '__entity_type__': u'SequenceComponent',
-                u'members': ftrack_api.collection.Collection(
-                    sequence_component,
-                    sequence_component.attributes.get('members'),
-                    data=[file_component]
-                )
-            },
-            'entity_key': [sequence_component['id']],
-            'entity_type': u'SequenceComponent'
-        })
-    ])
+    encoded = session.encode(
+        [
+            ftrack_api.session.OperationPayload(
+                {
+                    'action': 'create',
+                    'entity_data': {
+                        '__entity_type__': u'FileComponent',
+                        u'container': sequence_component,
+                        'id': file_component['id'],
+                    },
+                    'entity_key': [file_component['id']],
+                    'entity_type': u'FileComponent',
+                }
+            ),
+            ftrack_api.session.OperationPayload(
+                {
+                    'action': 'update',
+                    'entity_data': {
+                        '__entity_type__': u'SequenceComponent',
+                        u'members': ftrack_api.collection.Collection(
+                            sequence_component,
+                            sequence_component.attributes.get('members'),
+                            data=[file_component],
+                        ),
+                    },
+                    'entity_key': [sequence_component['id']],
+                    'entity_type': u'SequenceComponent',
+                }
+            ),
+        ]
+    )
 
-    expected = textwrap.dedent('''
+    expected = textwrap.dedent(
+        '''
         [{{"action": "create",
          "entity_data": {{"__entity_type__": "FileComponent",
          "container": {{"__entity_type__": "SequenceComponent",
@@ -746,18 +741,17 @@ def test_encode_operation_payload(session):
          "members": [{{"__entity_type__": "FileComponent", "id": "{1[id]}"}}]}},
          "entity_key": ["{0[id]}"],
          "entity_type": "SequenceComponent"}}]
-    '''.format(sequence_component, file_component)).replace('\n', '')
+    '''.format(
+            sequence_component, file_component
+        )
+    ).replace('\n', '')
 
     assert encoded == expected
 
 
-def test_decode_partial_entity(
-    session, new_task
-):
+def test_decode_partial_entity(session, new_task):
     '''Decode partially encoded entity.'''
-    encoded = session.encode(
-        new_task, entity_attribute_strategy='set_only'
-    )
+    encoded = session.encode(new_task, entity_attribute_strategy='set_only')
 
     entity = session.decode(encoded)
 
@@ -857,6 +851,7 @@ def test_rollback_entity_deletion(session, new_user):
 # Caching
 # ------------------------------------------------------------------------------
 
+
 def test_get_entity_bypassing_cache(session, user, mocker):
     '''Retrieve an entity by type and id bypassing cache.'''
     mocker.patch.object(session, 'call', wraps=session.call)
@@ -908,8 +903,7 @@ def test_get_entity_tree_from_cache(cache, new_project_tree, mocker):
         'select children, children.children, children.children.children, '
         'children.children.children.assignments, '
         'children.children.children.assignments.resource '
-        'from Project where id is "{0}"'
-        .format(new_project_tree['id'])
+        'from Project where id is "{0}"'.format(new_project_tree['id'])
     ).one()
 
     # Disable server calls.
@@ -947,8 +941,7 @@ def test_get_metadata_from_cache(session, mocker, cache, new_task):
     # Prepare cache.
     fresh_session.query(
         'select metadata.key, metadata.value from '
-        'Task where id is "{0}"'
-        .format(new_task['id'])
+        'Task where id is "{0}"'.format(new_task['id'])
     ).all()
 
     # Disable server calls.
@@ -989,9 +982,7 @@ def test_create_with_selective_cache(session):
     session.cache.caches.append(SelectiveCache(cache))
     try:
         user = session.create('User', {'username': 'martin'})
-        cache_key = session.cache_key_maker.key(
-            ftrack_api.inspection.identity(user)
-        )
+        cache_key = session.cache_key_maker.key(ftrack_api.inspection.identity(user))
 
         with pytest.raises(KeyError):
             cache.get(cache_key)
@@ -1008,15 +999,11 @@ def test_correct_file_type_on_sequence_component(session):
     assert sequence_component['file_type'] == '.dpx'
 
 
-def test_read_schemas_from_cache(
-    session, temporary_valid_schema_cache
-):
+def test_read_schemas_from_cache(session, temporary_valid_schema_cache):
     '''Read valid content from schema cache.'''
     expected_hash = 'a98d0627b5e33966e43e1cb89b082db7'
 
-    schemas, hash_ = session._read_schemas_from_cache(
-        temporary_valid_schema_cache
-    )
+    schemas, hash_ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
     assert expected_hash == hash_
 
@@ -1026,38 +1013,28 @@ def test_fail_to_read_schemas_from_invalid_cache(
 ):
     '''Fail to read invalid content from schema cache.'''
     with pytest.raises(ValueError):
-        session._read_schemas_from_cache(
-            temporary_invalid_schema_cache
-        )
+        session._read_schemas_from_cache(temporary_invalid_schema_cache)
 
 
-def test_write_schemas_to_cache(
-    session, temporary_valid_schema_cache
-):
+def test_write_schemas_to_cache(session, temporary_valid_schema_cache):
     '''Write valid content to schema cache.'''
     expected_hash = 'a98d0627b5e33966e43e1cb89b082db7'
     schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
     session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
 
-    schemas, hash_ = session._read_schemas_from_cache(
-        temporary_valid_schema_cache
-    )
+    schemas, hash_ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
     assert expected_hash == hash_
 
 
-def test_fail_to_write_invalid_schemas_to_cache(
-    session, temporary_valid_schema_cache
-):
+def test_fail_to_write_invalid_schemas_to_cache(session, temporary_valid_schema_cache):
     '''Fail to write invalid content to schema cache.'''
     # Datetime not serialisable by default.
     invalid_content = datetime.datetime.now()
 
     with pytest.raises(TypeError):
-        session._write_schemas_to_cache(
-            invalid_content, temporary_valid_schema_cache
-        )
+        session._write_schemas_to_cache(invalid_content, temporary_valid_schema_cache)
 
 
 def test_load_schemas_from_valid_cache(
@@ -1088,9 +1065,7 @@ def test_load_schemas_from_server_when_cache_outdated(
 ):
     '''Load schemas from server when cache outdated.'''
     schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
-    schemas.append({
-        'id': 'NewTest'
-    })
+    schemas.append({'id': 'NewTest'})
     session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
 
     mocked = mocker.patch.object(session, 'call', wraps=session.call)
@@ -1104,15 +1079,12 @@ def test_load_schemas_from_server_not_reporting_schema_hash(
 ):
     '''Load schemas from server when server does not report schema hash.'''
     mocked_write = mocker.patch.object(
-        session, '_write_schemas_to_cache',
-        wraps=session._write_schemas_to_cache
+        session, '_write_schemas_to_cache', wraps=session._write_schemas_to_cache
     )
 
     server_information = session._server_information.copy()
     server_information.pop('schema_hash')
-    mocker.patch.object(
-        session, '_server_information', new=server_information
-    )
+    mocker.patch.object(session, '_server_information', new=server_information)
 
     session._load_schemas(temporary_valid_schema_cache)
 
@@ -1126,9 +1098,7 @@ def test_load_schemas_from_server_not_reporting_schema_hash(
     assert mocked.called
 
 
-def test_load_schemas_bypassing_cache(
-    mocker, session, temporary_valid_schema_cache
-):
+def test_load_schemas_bypassing_cache(mocker, session, temporary_valid_schema_cache):
     '''Load schemas bypassing cache when set to False.'''
     mocker.patch.object(session, 'call', wraps=session.call)
 
@@ -1155,7 +1125,7 @@ def test_get_info_widget_url(session, task):
 
 @pytest.mark.xfail(
     raises=ftrack_api.exception.ServerError,
-    reason='Testing environment does not support encoding'
+    reason='Testing environment does not support encoding',
 )
 def test_encode_media_from_path(session, video_path):
     '''Encode media based on a file path.'''
@@ -1174,15 +1144,12 @@ def test_encode_media_from_path(session, video_path):
 
 @pytest.mark.xfail(
     raises=ftrack_api.exception.ServerError,
-    reason='Testing environment does not support encoding'
+    reason='Testing environment does not support encoding',
 )
 def test_encode_media_from_component(session, video_path):
     '''Encode media based on a component.'''
     location = session.query('Location where name is "ftrack.server"').one()
-    component = session.create_component(
-        video_path,
-        location=location
-    )
+    component = session.create_component(video_path, location=location)
     session.commit()
 
     job = session.encode_media(component)
@@ -1196,50 +1163,40 @@ def test_encode_media_from_component(session, video_path):
 def test_create_sequence_component_with_size(session, temporary_sequence):
     '''Create a sequence component and verify that is has a size.'''
     location = session.query('Location where name is "ftrack.server"').one()
-    component = session.create_component(
-        temporary_sequence
-    )
+    component = session.create_component(temporary_sequence)
 
     assert component['size'] > 0
 
 
 def test_plugin_arguments(mocker):
     '''Pass plugin arguments to plugin discovery mechanism.'''
-    mock = mocker.patch(
-        'ftrack_api.plugin.discover'
-    )
-    session = ftrack_api.Session(
-        plugin_paths=[], plugin_arguments={"test": "value"}
-    )
+    mock = mocker.patch('ftrack_api.plugin.discover')
+    session = ftrack_api.Session(plugin_paths=[], plugin_arguments={"test": "value"})
     assert mock.called
     mock.assert_called_once_with([], [session], {"test": "value"})
 
 
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
-    key_1 = session.reset_remote(
-        'api_key', entity=new_user
-    )
+    key_1 = session.reset_remote('api_key', entity=new_user)
 
-    key_2 = session.reset_remote(
-        'api_key', entity=new_user
-    )
+    key_2 = session.reset_remote('api_key', entity=new_user)
 
     assert key_1 != key_2
 
 
-@pytest.mark.parametrize('attribute', [
-    pytest.param(('id',), id='Fail resetting primary key'),
-    pytest.param(('email',), id='Fail resetting attribute without default value')
-
-])
+@pytest.mark.parametrize(
+    'attribute',
+    [
+        pytest.param(('id',), id='Fail resetting primary key'),
+        pytest.param(('email',), id='Fail resetting attribute without default value'),
+    ],
+)
 def test_fail_remote_reset(session, user, attribute):
     '''Fail trying to rest invalid attributes.'''
 
     with pytest.raises(ftrack_api.exception.ServerError):
-        session.reset_remote(
-            attribute, user
-        )
+        session.reset_remote(attribute, user)
 
 
 def test_close(session):
@@ -1283,9 +1240,7 @@ def test_query_nested_custom_attributes(session, new_asset_version):
 
     '''
     session_one = session
-    session_two = ftrack_api.Session(
-        auto_connect_event_hub=False
-    )
+    session_two = ftrack_api.Session(auto_connect_event_hub=False)
 
     # Read the version via a relation in both sessions.
     def get_versions(sessions):
@@ -1311,20 +1266,18 @@ def test_query_nested_custom_attributes(session, new_asset_version):
         version['custom_attributes']['versiontest']
 
     # Set attribute on session_one.
-    versions[0]['custom_attributes']['versiontest'] = random.randint(
-        0, 99999
-    )
+    versions[0]['custom_attributes']['versiontest'] = random.randint(0, 99999)
 
     session.commit()
 
     # Read version from server for session_two.
-    session_two_version = get_versions((session_two, ))[0]
+    session_two_version = get_versions((session_two,))[0]
 
     # Verify that value in session 2 is the same as set and committed in
     # session 1.
     assert (
-        session_two_version['custom_attributes']['versiontest'] ==
-        versions[0]['custom_attributes']['versiontest']
+        session_two_version['custom_attributes']['versiontest']
+        == versions[0]['custom_attributes']['versiontest']
     )
 
 
@@ -1337,9 +1290,7 @@ def test_query_nested(session):
 
     '''
     session_one = session
-    session_two = ftrack_api.Session(
-        auto_connect_event_hub=False
-    )
+    session_two = ftrack_api.Session(auto_connect_event_hub=False)
 
     query = (
         'select versions.components.name from Asset where id is '
@@ -1363,8 +1314,8 @@ def test_query_nested(session):
     # This assert is not needed, but reading the collections are to ensure they
     # are inflated.
     assert (
-        asset_version2['components'][0]['name'] ==
-        asset_version['components'][0]['name']
+        asset_version2['components'][0]['name']
+        == asset_version['components'][0]['name']
     )
 
     asset_version['components'][0]['name'] = str(uuid.uuid4())
@@ -1374,8 +1325,8 @@ def test_query_nested(session):
     asset_version2 = get_version(session_two)
 
     assert (
-        asset_version['components'][0]['name'] ==
-        asset_version2['components'][0]['name']
+        asset_version['components'][0]['name']
+        == asset_version2['components'][0]['name']
     )
 
 
@@ -1384,9 +1335,7 @@ def test_merge_iterations(session, mocker, project):
     mocker.spy(session, '_merge')
 
     session.query(
-        'select status from Task where project_id is {} limit 10'.format(
-            project['id']
-        )
+        'select status from Task where project_id is {} limit 10'.format(project['id'])
     ).all()
 
     assert session._merge.call_count < 75
@@ -1395,10 +1344,20 @@ def test_merge_iterations(session, mocker, project):
 @pytest.mark.parametrize(
     'get_versions',
     [
-        pytest.param(lambda component, asset_version, asset: component['version']['asset']['versions'], id='from_component'),
-        pytest.param(lambda component, asset_version, asset: asset_version['asset']['versions'], id='from_asset_version'),
-        pytest.param(lambda component, asset_version, asset: asset['versions'], id='from_asset')
-    ]
+        pytest.param(
+            lambda component, asset_version, asset: component['version']['asset'][
+                'versions'
+            ],
+            id='from_component',
+        ),
+        pytest.param(
+            lambda component, asset_version, asset: asset_version['asset']['versions'],
+            id='from_asset_version',
+        ),
+        pytest.param(
+            lambda component, asset_version, asset: asset['versions'], id='from_asset'
+        ),
+    ],
 )
 def test_query_nested2(session, get_versions):
     '''Query version.asset.versions from component and then add new version.
@@ -1409,19 +1368,15 @@ def test_query_nested2(session, get_versions):
 
     '''
     session_one = session
-    session_two = ftrack_api.Session(
-        auto_connect_event_hub=False
-    )
+    session_two = ftrack_api.Session(auto_connect_event_hub=False)
 
     # Get a random component that is linked to a version and asset.
     component_id = session_two.query(
         'FileComponent where version.asset_id != None'
     ).first()['id']
 
-    query = (
-        'select version.asset.versions from Component where id is "{}"'.format(
-            component_id
-        )
+    query = 'select version.asset.versions from Component where id is "{}"'.format(
+        component_id
     )
 
     component = session_one.query(query).one()
@@ -1430,9 +1385,7 @@ def test_query_nested2(session, get_versions):
     versions = component['version']['asset']['versions']
     length = len(versions)
 
-    session_two.create('AssetVersion', {
-        'asset_id': asset['id']
-    })
+    session_two.create('AssetVersion', {'asset_id': asset['id']})
 
     session_two.commit()
 
@@ -1468,10 +1421,7 @@ def test_entity_reference(mocker, session):
 
     reference = session.entity_reference(mock_entity)
 
-    assert reference == {
-        "__entity_type__": "MockEntityType",
-        "id": "mock-id"
-    }
+    assert reference == {"__entity_type__": "MockEntityType", "id": "mock-id"}
 
     mock_auto_populating.assert_called_once_with(False)
     mock_primary_key.assert_called_once_with(mock_entity)
@@ -1479,28 +1429,18 @@ def test_entity_reference(mocker, session):
 
 def test_auto_populate_is_thread_dependent(session, propagating_thread):
     '''Make sure auto_populate is configured per thread'''
-    auto_populate_state = (
-        session.auto_populate
-    )
+    auto_populate_state = session.auto_populate
 
     def _assert_auto_populate():
-        assert (
-            session.auto_populate == auto_populate_state
-        )
+        assert session.auto_populate == auto_populate_state
 
-        task = session.query(
-            u'Task'
-        ).first()
+        task = session.query(u'Task').first()
 
         for attribute in task.attributes:
-            assert (
-                task.get(attribute.name) is not ftrack_api.symbol.NOT_SET
-            )
+            assert task.get(attribute.name) is not ftrack_api.symbol.NOT_SET
 
     with session.auto_populating(not auto_populate_state):
-        t = propagating_thread(
-            target=_assert_auto_populate
-        )
+        t = propagating_thread(target=_assert_auto_populate)
 
         t.start()
         t.join()
@@ -1514,28 +1454,18 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
     with session.operation_recording(False):
         # Create entity in separate thread, should be recorded
         # in the session.
-        t = propagating_thread(
-            target=lambda: session.create(
-                _entity_type, {'id': _id}
-            )
-        )
+        t = propagating_thread(target=lambda: session.create(_entity_type, {'id': _id}))
 
         t.start()
         t.join()
 
         # Create entity that should be thrown away.
-        session.create(
-            _entity_type
-        )
+        session.create(_entity_type)
 
-    assert (
-        len(session.recorded_operations) == 1
-    )
+    assert len(session.recorded_operations) == 1
 
     for operation in session.recorded_operations:
-        assert isinstance(
-            operation, ftrack_api.operation.CreateEntityOperation
-        )
+        assert isinstance(operation, ftrack_api.operation.CreateEntityOperation)
 
         assert operation.entity_type == 'User'
         assert operation.entity_key['id'] == _id
@@ -1544,10 +1474,10 @@ def test_operation_recoding_thread_dependent(session, propagating_thread):
 def test_strict_api_header():
     '''Create ftrack session containing ftrack-strict-api = True header.'''
     new_session = ftrack_api.Session(strict_api=True)
-    
-    assert(
+
+    assert (
         'ftrack-strict-api' in new_session._request.headers.keys(),
-        new_session._request.headers['ftrack-strict-api'] == 'true'
+        new_session._request.headers['ftrack-strict-api'] == 'true',
     )
 
 
@@ -1556,17 +1486,14 @@ def test_custom_cookies_session():
     new_session = ftrack_api.Session(cookies={'abc': 'def'})
     cookies_dict = requests.utils.dict_from_cookiejar(new_session._request.cookies)
 
-    assert(
-        'abc' in cookies_dict.keys(),
-        cookies_dict['abc'] == 'def'
-    )
+    assert ('abc' in cookies_dict.keys(), cookies_dict['abc'] == 'def')
 
 
 def test_custom_headers_session():
     '''Create ftrack session containing custom headers.'''
     new_session = ftrack_api.Session(headers={'abc': 'def'})
 
-    assert(
+    assert (
         'abc' in new_session._request.headers.keys(),
-        new_session._request.headers['abc'] == 'def'
-    )   
+        new_session._request.headers['abc'] == 'def',
+    )

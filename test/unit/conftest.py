@@ -84,9 +84,7 @@ def temporary_sequence(temporary_directory):
     '''
     items = []
     for index in range(3):
-        item_path = os.path.join(
-            temporary_directory, '{0:04d}.jpg'.format(index)
-        )
+        item_path = os.path.join(temporary_directory, '{0:04d}.jpg'.format(index))
         with open(item_path, 'w') as file_descriptor:
             file_descriptor.write(uuid.uuid4().hex)
             file_descriptor.close()
@@ -104,11 +102,7 @@ def video_path():
     '''Return a path to a video file.'''
     video = os.path.abspath(
         os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'fixture',
-            'media',
-            'colour_wheel.mov'
+            os.path.dirname(__file__), '..', 'fixture', 'media', 'colour_wheel.mov'
         )
     )
 
@@ -119,9 +113,7 @@ def video_path():
 def session(request):
     '''Return session instance.'''
     session = ftrack_api.Session(
-        schema_cache_path=tempfile.mkdtemp(
-            suffix='ftrack_cache'
-        )
+        schema_cache_path=tempfile.mkdtemp(suffix='ftrack_cache')
     )
 
     def cleanup():
@@ -130,7 +122,7 @@ def session(request):
     request.addfinalizer(cleanup)
 
     return session
-    
+
 
 @pytest.fixture()
 def session_no_autoconnect_hub():
@@ -191,9 +183,7 @@ def user(session):
 def project_schema(session):
     '''Return project schema.'''
     # VFX Scheme
-    entity = session.get(
-        'ProjectSchema', '69cb7f92-4dbf-11e1-9902-f23c91df25eb'
-    )
+    entity = session.get('ProjectSchema', '69cb7f92-4dbf-11e1-9902-f23c91df25eb')
     assert entity is not None
     return entity
 
@@ -204,43 +194,51 @@ def new_project_tree(request, session, user):
     project_schema = session.query('ProjectSchema').first()
     default_shot_status = project_schema.get_statuses('Shot')[0]
     default_task_type = project_schema.get_types('Task')[0]
-    default_task_status = project_schema.get_statuses(
-        'Task', default_task_type['id']
-    )[0]
+    default_task_status = project_schema.get_statuses('Task', default_task_type['id'])[
+        0
+    ]
 
     project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
-    project = session.create('Project', {
-        'name': project_name,
-        'full_name': project_name + '_full',
-        'project_schema': project_schema
-    })
+    project = session.create(
+        'Project',
+        {
+            'name': project_name,
+            'full_name': project_name + '_full',
+            'project_schema': project_schema,
+        },
+    )
 
     for sequence_number in range(1):
-        sequence = session.create('Sequence', {
-            'name': 'sequence_{0:03d}'.format(sequence_number),
-            'parent': project
-        })
+        sequence = session.create(
+            'Sequence',
+            {'name': 'sequence_{0:03d}'.format(sequence_number), 'parent': project},
+        )
 
         for shot_number in range(1):
-            shot = session.create('Shot', {
-                'name': 'shot_{0:03d}'.format(shot_number * 10),
-                'parent': sequence,
-                'status': default_shot_status
-            })
+            shot = session.create(
+                'Shot',
+                {
+                    'name': 'shot_{0:03d}'.format(shot_number * 10),
+                    'parent': sequence,
+                    'status': default_shot_status,
+                },
+            )
 
             for task_number in range(1):
-                task = session.create('Task', {
-                    'name': 'task_{0:03d}'.format(task_number),
-                    'parent': shot,
-                    'status': default_task_status,
-                    'type': default_task_type
-                })
+                task = session.create(
+                    'Task',
+                    {
+                        'name': 'task_{0:03d}'.format(task_number),
+                        'parent': shot,
+                        'status': default_task_status,
+                        'type': default_task_type,
+                    },
+                )
 
-                session.create('Appointment', {
-                    'type': 'assignment',
-                    'context': task,
-                    'resource': user
-                })
+                session.create(
+                    'Appointment',
+                    {'type': 'assignment', 'context': task, 'resource': user},
+                )
 
     session.commit()
 
@@ -259,11 +257,14 @@ def new_project(request, session, user):
     '''Return new empty project.'''
     project_schema = session.query('ProjectSchema').first()
     project_name = 'python_api_test_{0}'.format(uuid.uuid1().hex)
-    project = session.create('Project', {
-        'name': project_name,
-        'full_name': project_name + '_full',
-        'project_schema': project_schema
-    })
+    project = session.create(
+        'Project',
+        {
+            'name': project_name,
+            'full_name': project_name + '_full',
+            'project_schema': project_schema,
+        },
+    )
 
     session.commit()
 
@@ -295,16 +296,19 @@ def new_task(request, session, unique_name):
     ).one()
     project_schema = project['project_schema']
     default_task_type = project_schema.get_types('Task')[0]
-    default_task_status = project_schema.get_statuses(
-        'Task', default_task_type['id']
-    )[0]
+    default_task_status = project_schema.get_statuses('Task', default_task_type['id'])[
+        0
+    ]
 
-    task = session.create('Task', {
-        'name': unique_name,
-        'parent': project,
-        'status': default_task_status,
-        'type': default_task_type
-    })
+    task = session.create(
+        'Task',
+        {
+            'name': unique_name,
+            'parent': project,
+            'status': default_task_status,
+            'type': default_task_type,
+        },
+    )
 
     session.commit()
 
@@ -331,9 +335,7 @@ def task(session):
 @pytest.fixture()
 def new_scope(request, session, unique_name):
     '''Return a new scope.'''
-    scope = session.create('Scope', {
-        'name': unique_name
-    })
+    scope = session.create('Scope', {'name': unique_name})
 
     session.commit()
 
@@ -350,10 +352,7 @@ def new_scope(request, session, unique_name):
 @pytest.fixture()
 def new_job(request, session, unique_name, user):
     '''Return a new scope.'''
-    job = session.create('Job', {
-        'type': 'api_job',
-        'user': user
-    })
+    job = session.create('Job', {'type': 'api_job', 'user': user})
 
     session.commit()
 
@@ -386,9 +385,9 @@ def new_note(request, session, unique_name, new_task, user):
 @pytest.fixture()
 def new_asset_version(request, session):
     '''Return a new asset version.'''
-    asset_version = session.create('AssetVersion', {
-        'asset_id': 'dd9a7e2e-c5eb-11e1-9885-f23c91df25eb'
-    })
+    asset_version = session.create(
+        'AssetVersion', {'asset_id': 'dd9a7e2e-c5eb-11e1-9885-f23c91df25eb'}
+    )
     session.commit()
 
     # Do not cleanup the version as that will sometimes result in a deadlock
@@ -420,12 +419,8 @@ def new_container_component(request, session, temporary_directory):
 
     # Add to special origin location so that it is possible to add to other
     # locations.
-    origin_location = session.get(
-        'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
-    )
-    origin_location.add_component(
-        component, temporary_directory, recursive=False
-    )
+    origin_location = session.get('Location', ftrack_api.symbol.ORIGIN_LOCATION_ID)
+    origin_location.add_component(component, temporary_directory, recursive=False)
 
     session.commit()
 
@@ -458,84 +453,49 @@ def new_sequence_component(request, session, temporary_sequence):
 @pytest.fixture
 def mocked_schemas():
     '''Return a list of mocked schemas.'''
-    return [{
-        'id': 'Foo',
-        'type': 'object',
-        'properties': {
-            'id': {
-                'type': 'string'
+    return [
+        {
+            'id': 'Foo',
+            'type': 'object',
+            'properties': {
+                'id': {'type': 'string'},
+                'string': {'type': 'string'},
+                'integer': {'type': 'integer'},
+                'number': {'type': 'number'},
+                'boolean': {'type': 'boolean'},
+                'bars': {'type': 'array', 'items': {'ref': '$Bar'}},
+                'date': {'type': 'string', 'format': 'date-time'},
             },
-            'string': {
-                'type': 'string'
-            },
-            'integer': {
-                'type': 'integer'
-            },
-            'number': {
-                'type': 'number'
-            },
-            'boolean': {
-                'type': 'boolean'
-            },
-            'bars': {
-                'type': 'array',
-                'items': {
-                    'ref': '$Bar'
-                }
-            },
-            'date': {
-                'type': 'string',
-                'format': 'date-time'
-            }
+            'immutable': ['id'],
+            'primary_key': ['id'],
+            'required': ['id'],
+            'default_projections': ['id'],
         },
-        'immutable': [
-            'id'
-        ],
-        'primary_key': [
-            'id'
-        ],
-        'required': [
-            'id'
-        ],
-        'default_projections': [
-            'id'
-        ]
-    }, {
-        'id': 'Bar',
-        'type': 'object',
-        'properties': {
-            'id': {
-                'type': 'string'
+        {
+            'id': 'Bar',
+            'type': 'object',
+            'properties': {
+                'id': {'type': 'string'},
+                'name': {'type': 'string'},
+                'computed_value': {
+                    'type': 'string',
+                },
             },
-            'name': {
-                'type': 'string'
-            },
-            'computed_value': {
-                'type': 'string',
-            }
+            'computed': ['computed_value'],
+            'immutable': ['id'],
+            'primary_key': ['id'],
+            'required': ['id'],
+            'default_projections': ['id'],
         },
-        'computed': [
-            'computed_value'
-        ],
-        'immutable': [
-            'id'
-        ],
-        'primary_key': [
-            'id'
-        ],
-        'required': [
-            'id'
-        ],
-        'default_projections': [
-            'id'
-        ]
-    }]
+    ]
 
 
 @pytest.fixture
 def mocked_schema_session(mocker, mocked_schemas):
     '''Return a session instance with mocked schemas.'''
-    mocker.patch.object(ftrack_api.Session,'_load_schemas',return_value=mocked_schemas)
+    mocker.patch.object(
+        ftrack_api.Session, '_load_schemas', return_value=mocked_schemas
+    )
     # Mock _configure_locations since it will fail if no location schemas
     # exist.
     mocker.patch.object(ftrack_api.Session, '_configure_locations')
@@ -555,7 +515,9 @@ def propagating_thread():
             self.exc = None
             try:
                 if hasattr(self, '_Thread__target'):
-                    self.ret = self._Thread__target(*self._Thread__args, **self._Thread__kwargs)
+                    self.ret = self._Thread__target(
+                        *self._Thread__args, **self._Thread__kwargs
+                    )
                 else:
                     self.ret = self._target(*self._args, **self._kwargs)
             except BaseException as e:

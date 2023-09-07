@@ -30,8 +30,7 @@ def register(session, **kw):
         return
 
     session.event_hub.subscribe(
-        'topic=ftrack.api.session.ready',
-        register_with_session_ready
+        'topic=ftrack.api.session.ready', register_with_session_ready
     )
 
     logger.debug('Plugin registered')

@@ -104,9 +104,7 @@ class UnrecognisedEntityTypeError(EntityTypeError):
 
     def __init__(self, entity_type, **kw):
         '''Initialise with *entity_type* that is unrecognised.'''
-        kw.setdefault('details', {}).update(dict(
-            entity_type=entity_type
-        ))
+        kw.setdefault('details', {}).update(dict(entity_type=entity_type))
         super(UnrecognisedEntityTypeError, self).__init__(**kw)
 
 
@@ -132,11 +130,9 @@ class InvalidStateTransitionError(InvalidStateError):
 
     def __init__(self, current_state, target_state, entity, **kw):
         '''Initialise error.'''
-        kw.setdefault('details', {}).update(dict(
-            current_state=current_state,
-            target_state=target_state,
-            entity=entity
-        ))
+        kw.setdefault('details', {}).update(
+            dict(current_state=current_state, target_state=target_state, entity=entity)
+        )
         super(InvalidStateTransitionError, self).__init__(**kw)
 
 
@@ -149,15 +145,11 @@ class AttributeError(Error):
 class ImmutableAttributeError(AttributeError):
     '''Raise when modification of immutable attribute attempted.'''
 
-    default_message = (
-        'Cannot modify value of immutable {attribute.name!r} attribute.'
-    )
+    default_message = 'Cannot modify value of immutable {attribute.name!r} attribute.'
 
     def __init__(self, attribute, **kw):
         '''Initialise error.'''
-        kw.setdefault('details', {}).update(dict(
-            attribute=attribute
-        ))
+        kw.setdefault('details', {}).update(dict(attribute=attribute))
         super(ImmutableAttributeError, self).__init__(**kw)
 
 
@@ -168,32 +160,24 @@ class CollectionError(Error):
 
     def __init__(self, collection, **kw):
         '''Initialise error.'''
-        kw.setdefault('details', {}).update(dict(
-            collection=collection
-        ))
+        kw.setdefault('details', {}).update(dict(collection=collection))
         super(CollectionError, self).__init__(**kw)
 
 
 class ImmutableCollectionError(CollectionError):
     '''Raise when modification of immutable collection attempted.'''
 
-    default_message = (
-        'Cannot modify value of immutable collection {collection!r}.'
-    )
+    default_message = 'Cannot modify value of immutable collection {collection!r}.'
 
 
 class DuplicateItemInCollectionError(CollectionError):
     '''Raise when duplicate item in collection detected.'''
 
-    default_message = (
-        'Item {item!r} already exists in collection {collection!r}.'
-    )
+    default_message = 'Item {item!r} already exists in collection {collection!r}.'
 
     def __init__(self, item, collection, **kw):
         '''Initialise error.'''
-        kw.setdefault('details', {}).update(dict(
-            item=item
-        ))
+        kw.setdefault('details', {}).update(dict(item=item))
         super(DuplicateItemInCollectionError, self).__init__(collection, **kw)
 
 
@@ -251,13 +235,15 @@ class ComponentNotInLocationError(LocationError):
         if isinstance(components, ftrack_api.entity.base.Entity):
             components = [components]
 
-        kw.setdefault('details', {}).update(dict(
-            components=components,
-            formatted_components=', '.join(
-                [str(component) for component in components]
-            ),
-            location=location
-        ))
+        kw.setdefault('details', {}).update(
+            dict(
+                components=components,
+                formatted_components=', '.join(
+                    [str(component) for component in components]
+                ),
+                location=location,
+            )
+        )
 
         super(ComponentNotInLocationError, self).__init__(**kw)
 
@@ -266,8 +252,7 @@ class ComponentInLocationError(LocationError):
     '''Raise when component(s) already exists in location.'''
 
     default_message = (
-        'Component(s) {formatted_components} already exist in location '
-        '{location}.'
+        'Component(s) {formatted_components} already exist in location ' '{location}.'
     )
 
     def __init__(self, components, location, **kw):
@@ -275,13 +260,15 @@ class ComponentInLocationError(LocationError):
         if isinstance(components, ftrack_api.entity.base.Entity):
             components = [components]
 
-        kw.setdefault('details', {}).update(dict(
-            components=components,
-            formatted_components=', '.join(
-                [str(component) for component in components]
-            ),
-            location=location
-        ))
+        kw.setdefault('details', {}).update(
+            dict(
+                components=components,
+                formatted_components=', '.join(
+                    [str(component) for component in components]
+                ),
+                location=location,
+            )
+        )
 
         super(ComponentInLocationError, self).__init__(**kw)
 
@@ -297,14 +284,14 @@ class AccessorOperationFailedError(AccessorError):
 
     default_message = 'Operation {operation} failed: {error}'
 
-    def __init__(
-        self, operation='', resource_identifier=None, error=None, **kw
-    ):
-        kw.setdefault('details', {}).update(dict(
-            operation=operation,
-            resource_identifier=resource_identifier,
-            error=error
-        ))
+    def __init__(self, operation='', resource_identifier=None, error=None, **kw):
+        kw.setdefault('details', {}).update(
+            dict(
+                operation=operation,
+                resource_identifier=resource_identifier,
+                error=error,
+            )
+        )
         super(AccessorOperationFailedError, self).__init__(**kw)
 
 
@@ -317,9 +304,7 @@ class AccessorUnsupportedOperationError(AccessorOperationFailedError):
 class AccessorPermissionDeniedError(AccessorOperationFailedError):
     '''Raise when permission denied.'''
 
-    default_message = (
-        'Cannot {operation} {resource_identifier}. Permission denied.'
-    )
+    default_message = 'Cannot {operation} {resource_identifier}. Permission denied.'
 
 
 class AccessorResourceIdentifierError(AccessorError):
@@ -328,9 +313,9 @@ class AccessorResourceIdentifierError(AccessorError):
     default_message = 'Resource identifier is invalid: {resource_identifier}.'
 
     def __init__(self, resource_identifier, **kw):
-        kw.setdefault('details', {}).update(dict(
-            resource_identifier=resource_identifier
-        ))
+        kw.setdefault('details', {}).update(
+            dict(resource_identifier=resource_identifier)
+        )
         super(AccessorResourceIdentifierError, self).__init__(**kw)
 
 
@@ -348,12 +333,10 @@ class AccessorResourceError(AccessorError):
 
     default_message = 'Unspecified resource error: {resource_identifier}'
 
-    def __init__(self, operation='', resource_identifier=None, error=None,
-                 **kw):
-        kw.setdefault('details', {}).update(dict(
-            operation=operation,
-            resource_identifier=resource_identifier
-        ))
+    def __init__(self, operation='', resource_identifier=None, error=None, **kw):
+        kw.setdefault('details', {}).update(
+            dict(operation=operation, resource_identifier=resource_identifier)
+        )
         super(AccessorResourceError, self).__init__(**kw)
 
 
