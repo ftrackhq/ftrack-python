@@ -47,7 +47,7 @@ jobs:
       - name: Run pytest
         run: |
           curl -sSL https://install.python-poetry.org | python
-          /opt/poetry/bin/poetry install --only test
+          /opt/poetry/bin/poetry install
           #/opt/poetry/bin/poetry run coverage run -m pytest ${{ matrix.pytest_flags }} --disable-pytest-warnings ./test/unit/
           /opt/poetry/bin/poetry run pytest ${{ matrix.pytest_flags }} --disable-pytest-warnings ./test/unit/
         env:
