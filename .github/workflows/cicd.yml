@@ -50,6 +50,8 @@ jobs:
           /opt/poetry/bin/poetry install
           ls -l
           echo $PYTHONPATH
+          export PYTHONPATH="$PYTHONPATH:."
+          python -c "import sys;print(sys.path)"
           /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: http://ftrack:80
