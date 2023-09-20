@@ -45,7 +45,7 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python
           poetry install
-          poetry run -m pytest --disable-pytest-warnings
+          /github/home/.local/bin/poetry run -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
