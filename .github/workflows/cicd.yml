@@ -49,7 +49,7 @@ jobs:
           #python setup.py test
           curl -sSL https://install.python-poetry.org | python
           /opt/poetry/bin/poetry install
-          /opt/poetry/bin/poetry run -C source python -m pytest --disable-pytest-warnings
+          /opt/poetry/bin/poetry run -C . pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
