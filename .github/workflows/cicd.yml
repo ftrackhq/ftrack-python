@@ -48,16 +48,14 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python
           /opt/poetry/bin/poetry install
-          #ls -l
-          #echo $PYTHONPATH
-          #export PYTHONPATH="$PYTHONPATH:."
+          export PYTHONPATH="$PYTHONPATH:./source/ftrack_api/"
           #python -c "import sys;print(sys.path)"
           /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
-          PYTHONPATH: ./source/ftrack_api/
+          PYTHONPATH: ./source/
 
   build:
     runs-on: ubuntu-latest
