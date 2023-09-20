@@ -65,9 +65,8 @@ jobs:
           # twine check dist/*
           curl -sSL https://install.python-poetry.org | python
           poetry install
-          poetry shell
           poetry build --format=wheel
-          twine check dist/*
+          poetry run twine check dist/*
       - uses: actions/upload-artifact@v2
         with:
           name: dist
