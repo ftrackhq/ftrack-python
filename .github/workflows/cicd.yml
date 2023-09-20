@@ -46,19 +46,14 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run pytest
         run: |
-          echo $(PYTHONPATH)
-          python -c "import sys;print(sys.path)"
           #python setup.py test
-          #curl -sSL https://install.python-poetry.org | python
-          #/opt/poetry/bin/poetry install
-          #export PYTHONPATH="$PYTHONPATH:./source/"
-          #python -c "import sys;print(sys.path)"
-          #/opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
+          curl -sSL https://install.python-poetry.org | python
+          /opt/poetry/bin/poetry install
+          /opt/poetry/bin/poetry run -C source python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
-          #PYTHONPATH: ./source/
 
   build:
     runs-on: ubuntu-latest
