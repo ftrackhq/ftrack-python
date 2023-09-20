@@ -66,6 +66,7 @@ jobs:
           curl -sSL https://install.python-poetry.org | python
           poetry install
           poetry -C ./source/ build --format=wheel
+          which twine
           twine check dist/*
       - uses: actions/upload-artifact@v2
         with:
