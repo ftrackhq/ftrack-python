@@ -31,6 +31,9 @@ jobs:
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
     container: python:${{ matrix.python-version }}
+    env:
+      POETRY_VERSION: 1.6.1
+      POETRY_HOME: "/opt/poetry"
     services:
       ftrack:
         image: ftrackdocker/test-server:latest
@@ -44,8 +47,8 @@ jobs:
       - name: Run pytest
         run: |
           curl -sSL https://install.python-poetry.org | python
-          poetry install
-          /github/home/.local/bin/poetry run -m pytest --disable-pytest-warnings
+          /opt/poetry/bin/poetry install
+          /opt/poetry/bin/poetry run -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
