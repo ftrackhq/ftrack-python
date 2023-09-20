@@ -64,8 +64,8 @@ jobs:
           # python setup.py sdist bdist_wheel --universal
           # twine check dist/*
           curl -sSL https://install.python-poetry.org | python
-          /opt/poetry/bin/poetry install
-          /opt/poetry/bin/poetry build
+          poetry install
+          poetry build
           twine check dist/*
       - uses: actions/upload-artifact@v2
         with:
