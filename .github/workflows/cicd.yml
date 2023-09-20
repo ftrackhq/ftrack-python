@@ -48,7 +48,7 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python
           /opt/poetry/bin/poetry install
-          export PYTHONPATH="$PYTHONPATH:./source/ftrack_api/"
+          export PYTHONPATH="$PYTHONPATH:./source/"
           #python -c "import sys;print(sys.path)"
           /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
         env:
