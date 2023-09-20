@@ -47,8 +47,9 @@ jobs:
       - name: Run pytest
         run: |
           curl -sSL https://install.python-poetry.org | python
-          /opt/poetry/bin/poetry install
-          /opt/poetry/bin/poetry run -m pytest --disable-pytest-warnings
+          #/opt/poetry/bin/poetry install
+          #/opt/poetry/bin/poetry run coverage run -m pytest ${{ matrix.pytest_flags }} --disable-pytest-warnings ./test/unit/
+          /opt/poetry/bin/poetry run pytest ${{ matrix.pytest_flags }} --disable-pytest-warnings ./test/unit/
         env:
           FTRACK_SERVER: http://ftrack:80
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
