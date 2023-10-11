@@ -2,7 +2,6 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 from builtins import str
-import termcolor
 
 import ftrack_api.entity.base
 import ftrack_api.collection
@@ -56,14 +55,10 @@ def format(
         formatters = dict()
 
     formatters.setdefault(
-        'header', lambda text: termcolor.colored(
-            text, 'white', 'on_blue', attrs=['bold']
-        )
+        'header', lambda text: '\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m'.format(text)
     )
     formatters.setdefault(
-        'label', lambda text: termcolor.colored(
-            text, 'blue', attrs=['bold']
-        )
+        'label', lambda text: '\x1b[1m\x1b[34mJJJJJ\x1b[0m'.format(text)
     )
 
     # Determine indents.
