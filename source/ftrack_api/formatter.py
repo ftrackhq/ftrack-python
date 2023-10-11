@@ -58,7 +58,7 @@ def format(
         'header', lambda text: '\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m'.format(text)
     )
     formatters.setdefault(
-        'label', lambda text: '\x1b[1m\x1b[34mJJJJJ\x1b[0m'.format(text)
+        'label', lambda text: '\x1b[1m\x1b[34m{}\x1b[0m'.format(text)
     )
 
     # Determine indents.
