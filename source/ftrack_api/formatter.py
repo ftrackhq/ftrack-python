@@ -1,5 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
+import os
+import sys
 
 from builtins import str
 
@@ -15,6 +17,21 @@ FILTER = {
         lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET
     )
 }
+
+
+def _can_do_colors():
+    '''check if we are ( likely ) to be able to handle colors.'''
+    if "ANSI_COLORS_DISABLED" in os.environ:
+        return False
+    if "NO_COLOR" in os.environ:
+        return False
+    if "FORCE_COLOR" in os.environ:
+        return True
+    return (
+        hasattr(sys.stdout, "isatty")
+        and sys.stdout.isatty()
+        and os.environ.get("TERM") != "dumb"
+    )
 
 
 def format(
@@ -55,10 +72,12 @@ def format(
         formatters = dict()
 
     formatters.setdefault(
-        'header', lambda text: '\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m'.format(text)
+        'header',
+        lambda text: '\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m\033[0m'.format(text) if _can_do_colors() else text
     )
     formatters.setdefault(
-        'label', lambda text: '\x1b[1m\x1b[34m{}\x1b[0m'.format(text)
+        'label',
+        lambda text: '\x1b[1m\x1b[34m{}\x1b[0m\033[0m'.format(text) if _can_do_colors() else text
     )
 
     # Determine indents.
