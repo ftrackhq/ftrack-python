@@ -1693,36 +1693,42 @@ class Session(object):
         self.logger.debug(L('Calling server {0} with {1!r}', url, data))
 
         try:
+            result = {}
             response = self._request.post(
                 url,
                 headers=headers,
                 data=data,
                 timeout=self.request_timeout,
             )
+            self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
+            self.logger.debug(L('Response: {0!r}', response.text))
+            
+            result = self.decode(response.text)
             response.raise_for_status()
 
-        except requests.exceptions.HTTPError:
-            error_message = (
-                'Server reported error: {0}'
-                .format(response.text)
-            )
-            self._raise_server_error(error_message)
+        # handle response exceptions and / or other http exceptions
+        # (strict api used => status code returned => raise_for_status() => HTTPError)
+        except requests.exceptions.HTTPError as exc:
+            if 'exception' in result:
+                error_message = 'Server reported error: {0}({1})'.format(
+                    result['exception'], result['content']
+                )
+                self._raise_server_error(error_message)
+            else:
+                self._raise_server_error(str(exc))
 
-        self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
-        self.logger.debug(L('Response: {0!r}', response.text))
-
-        try:        
-            result = self.decode(response.text)
-        except Exception:
+        # JSON response decoding exception
+        except (TypeError, ValueError):
             error_message = (
                 'Server reported error in unexpected format. Raw error was: {0}'
                 .format(response.text)
             )
             self._raise_server_error(error_message)
-
+        
+        # handle possible response exceptions
+        # (strict api not used => 200 returned)
         else:
-            if 'exception' in result:
-                # Handle exceptions.
+            if 'exception' in result:   
                 error_message = 'Server reported error: {0}({1})'.format(
                     result['exception'], result['content']
                 )

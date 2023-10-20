@@ -78,7 +78,6 @@ setup(
     install_requires=[
         'requests >= 2, <3',
         'arrow >= 0.4.4, < 1',
-        'termcolor >= 1.1.0, < 2',
         'pyparsing >= 2.0, < 3',
         'clique == 1.6.1',
         'websocket-client >= 0.40.0, < 1',
@@ -88,6 +87,7 @@ setup(
     ],
     tests_require=[
         'pytest >= 4.6',
+        'termcolor >= 1.1.0, < 2',
         'pytest-mock',
         'mock',
         'flaky'
