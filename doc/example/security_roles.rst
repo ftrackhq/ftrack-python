@@ -77,7 +77,7 @@ Or revoked:
     session.call(
         [
             {
-                "action": "revoke_user_security_role",
+                "action": "remove_user_security_role",
                 "user_id": user["id"],
                 "role_id": project_manager_role["id"]
             }
