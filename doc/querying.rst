@@ -274,6 +274,15 @@ number of tasks in each status::
 
 Read more about how to use group by in :ref:`example/group_by`
 
+Queries that include group by clauses must be executed using the
+:func:`session.call()` method versus :func:`session.query()`.
+
+Not all entities support group by yet. The most common ones that already support
+it include Task and Project. You can find a full list of supported entities in
+the API reference documentation in your ftrack workspace. It available under the
+Help menu and "group by" is visible on entities that support it if you are on
+ftrack 4.13+.
+
 .. note::
 
     group by is available since ftrack 4.12

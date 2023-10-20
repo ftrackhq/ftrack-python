@@ -46,10 +46,14 @@ results are aggregated::
 
     select count(id) from Task group by status_id
 
-.. note::
+Queries that include group by clauses must be executed using the
+:func:`session.call()` method versus :func:`session.query()`.
 
-  Queries that include group by clauses must be executed using the
-  :func:`session.call()` method versus :func:`session.query()`.
+Not all entities support group by yet. The most common ones that already support
+it include Task and Project. You can find a full list of supported entities in
+the API reference documentation in your ftrack workspace. It available under the
+Help menu and "group by" is visible on entities that support it if you are on
+ftrack 4.13+.
 
 Count task totals
 =================
