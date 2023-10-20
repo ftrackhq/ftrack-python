@@ -1,14 +1,14 @@
 ..
-    :copyright: Copyright (c) 2015 ftrack
+    :copyright: Copyright (c) 2023 ftrack
 
-.. _example/aggregations:
+.. _example/group_by:
 
-******************
-Using aggregations
-******************
+*******************************
+Aggregate results with group by
+*******************************
 
-The following aggregation methods are available for summarizing data in a grouped results
-set:
+The following aggregation functions are available for summarizing data using
+group by:
 
 :sum():
 
@@ -41,21 +41,18 @@ configuring the session: ::
         strict_api=True
     )
 
-Aggregation functions also require “group by” clause that specifies
-the attributes that will be used to distinguish how the aggregate results are
-grouped, such as::
+Aggregation functions also require a “group by” clause that specifies how the
+results are aggregated::
 
     select count(id) from Task group by status_id
 
 .. note::
 
-  Queries that include aggregations have to use the operations syntax (see:
-  https://help.ftrack.com/en/articles/1040498-operations) and be passed to the
-  :func:`session.call()` method versus the :func:`session.query()` method.
+  Queries that include group by clauses must be executed using the
+  :func:`session.call()` method versus :func:`session.query()`.
 
-
-Summarize task totals
-=====================
+Count task totals
+=================
 
 Select the total number of Tasks grouped by Status and Project::
 
@@ -94,4 +91,3 @@ Sample output::
     3 Tasks are "In progress" in project napo
     13 Tasks are "Approved" in project napo
     4 Tasks are "Client approved" in project napo
-

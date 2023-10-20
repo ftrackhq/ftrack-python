@@ -261,3 +261,19 @@ nested attributes.
 You can also customise the
 :ref:`working_with_entities/entity_types/default_projections` to use for each
 entity type when none are specified in the query string.
+
+.. _querying/group_by:
+
+Aggregate data with group by
+----------------------------
+
+Group by can be used in a query to aggregate data. For example, to find the
+number of tasks in each status::
+
+    select count(id) from Task group by status_id
+
+Read more about how to use group by in :ref:`example/group_by`
+
+.. note::
+
+    group by is available since ftrack 4.12
