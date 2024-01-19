@@ -16,22 +16,23 @@ jobs:
       matrix:
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
-    container: python:${{ matrix.python-version }}
-    services:
-      ftrack:
-        image: ftrackdocker/test-server:latest
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        ports:
-          - 80:80
+    # container: python:${{ matrix.python-version }}
+    # services:
+    #   ftrack:
+    #     # HERE IS WHERE YOU WILL CHANGE THE TEST SERVER IMAGE
+    #     image: ftrackdocker/test-server:latest
+    #     credentials:
+    #       username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #       password: ${{ secrets.DOCKERHUB_TOKEN }}
+    #     ports:
+    #       - 80:80
     steps:
       - uses: actions/checkout@v3
       - name: Run pytest
         run: |
           python setup.py test
         env:
-          FTRACK_SERVER: http://ftrack:80
+          FTRACK_SERVER: https://python-api-test-server.ftrackapp.com/
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
   build:
