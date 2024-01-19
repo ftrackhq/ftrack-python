@@ -369,7 +369,7 @@ def new_job(request, session, unique_name, user):
 
 @pytest.fixture()
 def new_note(request, session, unique_name, new_task, user):
-    """Return a new note attached to a task."""
+    '''Return a new note attached to a task.'''
     note = new_task.create_note(unique_name, user)
     session.commit()
 
