@@ -83,7 +83,7 @@ setup(
         'websocket-client >= 0.40.0, < 1',
         'future >=0.16.0, < 1',
         'six >= 1.13.0, < 2',
-        'appdirs >=1, <2'
+        'platformdirs >= 4.0.0, <5'
     ],
     tests_require=[
         'pytest >= 4.6',
