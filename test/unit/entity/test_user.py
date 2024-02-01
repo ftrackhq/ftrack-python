@@ -1,7 +1,11 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2016 ftrack
 
+import pytest
 from past.builtins import long
+
+import ftrack_api.exception
+
 
 def test_force_start_timer(new_user, task):
     '''Successfully force starting a timer when another timer is running.'''
@@ -38,6 +42,10 @@ def test_timer_creates_timelog(new_user, task, unique_name):
     assert timelog['duration'] < 60
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError,
+    reason='Due to user permission errors.'
+)
 def test_reset_user_api_key(new_user):
     '''Test resetting of api keys.'''
 

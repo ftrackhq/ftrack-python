@@ -180,6 +180,10 @@ def test_ensure_new_entity(session, unique_name):
     assert entity['username'] == unique_name
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError,
+    reason='UnexpectedCharacters on username in query'
+)
 def test_ensure_entity_with_non_string_data_types(session, mocker):
     '''Ensure entity against non-string data types, creating first.'''
     datetime = arrow.get()
@@ -1215,6 +1219,10 @@ def test_plugin_arguments(mocker):
     mock.assert_called_once_with([], [session], {"test": "value"})
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.ServerError,
+    reason='Due to user permission errors.'
+)
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
