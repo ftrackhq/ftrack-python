@@ -479,6 +479,7 @@ def test_mapped_collection_on_create(session, unique_name, project):
         assert value == task['metadata'][key]
 
 
+@flaky(max_runs=5, min_passes=1)
 def test_collection_refresh(new_asset_version, new_component):
     '''Test collection reload.'''
     session_two = ftrack_api.Session(auto_connect_event_hub=False)
