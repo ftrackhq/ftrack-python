@@ -667,6 +667,10 @@ def test_publish_during_connect(session, mocker):
     assert event_hub._event_send_queue.qsize() == 0
 
 
+@pytest.mark.xfail(
+    raises=AssertionError, 
+    reason='Multiple test runners on same test server.'
+)
 def test_publish_with_reply(event_hub):
     '''Publish asynchronous event with on reply handler.'''
 
@@ -687,6 +691,10 @@ def test_publish_with_reply(event_hub):
     assert called['callback'] == 'Replied'
 
 
+@pytest.mark.xfail(
+    raises=AssertionError, 
+    reason='Multiple test runners on same test server.'
+)
 def test_publish_with_multiple_replies(event_hub):
     '''Publish asynchronous event and retrieve multiple replies.'''
 
@@ -712,6 +720,10 @@ def test_publish_with_multiple_replies(event_hub):
     assert sorted(called['callback']) == ['One', 'Two']
 
 
+@pytest.mark.xfail(
+    raises=AssertionError, 
+    reason='Multiple test runners on same test server.'
+)
 def test_server_heartbeat_response():
     '''Maintain connection by responding to server heartbeat request.'''
     test_script = os.path.join(
