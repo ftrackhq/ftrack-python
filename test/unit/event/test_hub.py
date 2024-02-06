@@ -210,6 +210,10 @@ def test_connect_strict_api_header(session, headers):
     event_hub.disconnect()
 
 
+@pytest.mark.xfail(
+    raises=ftrack_api.exception.EventHubConnectionError,
+    reason='Due to tests running in parallel on same server instance.'
+)
 def test_connect_custom_cookies(session):
     '''Connect with custom cookies passed in.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -224,6 +228,7 @@ def test_connect_custom_cookies(session):
     event_hub.disconnect()
 
 
+@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_connect_when_already_connected(event_hub):
     '''Fail to connect when already connected'''
     assert event_hub.connected is True
@@ -692,6 +697,7 @@ def test_publish_during_connect(session, mocker):
     assert event_hub._event_send_queue.qsize() == 0
 
 
+@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish_with_reply(event_hub):
     '''Publish asynchronous event with on reply handler.'''
 
