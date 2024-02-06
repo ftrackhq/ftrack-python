@@ -11,7 +11,6 @@ import requests
 import logging
 
 import pytest
-from flaky import flaky
 
 import ftrack_api.event.hub
 import ftrack_api.event.subscriber
@@ -685,7 +684,7 @@ def test_synchronous_publish(event_hub):
 
 
 @pytest.mark.xfail(
-    raises=AssertionError,
+    raises=ftrack_api.exception.EventHubConnectionError,
     reason='Due to tests running in parallel on same server instance.'
 )
 def test_publish_during_connect(session, mocker):

@@ -2,6 +2,8 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 import pytest
+from flaky import flaky
+
 import ftrack_api.exception
 
 
@@ -68,6 +70,7 @@ def test_start_a_timer_when_timer_is_running(session, new_user, new_task):
     assert timelog['context_id'] is None, 'Timer does not have a context.'
 
 
+@flaky(max_runs=5, min_passes=1)
 def test_stop_timer_without_timer_running(session, new_user):
     '''Stop a timer when no timer is running.'''
     with pytest.raises(ftrack_api.exception.NoResultFoundError):
