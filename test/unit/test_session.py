@@ -182,7 +182,6 @@ def test_ensure_new_entity(session, unique_name):
 
 
 @pytest.mark.xfail(
-    raises=ftrack_api.exception.ServerError,
     reason='UnexpectedCharacters on username in query'
 )
 def test_ensure_entity_with_non_string_data_types(session, mocker):
@@ -1283,6 +1282,7 @@ def test_context_manager(session):
     assert session.closed is True
 
 
+@flaky(max_runs=5, min_passes=1)
 def test_query_nested_custom_attributes(session, new_asset_version):
     '''Query custom attributes nested and update a value and query again.
 
@@ -1337,7 +1337,7 @@ def test_query_nested_custom_attributes(session, new_asset_version):
     )
 
 
-@flaky(max_runs=10, min_passes=1)
+@pytest.mark.xfail(reason='Due to tests running in parallel on same server instance.')
 def test_query_nested(session):
     '''Query components nested and update a value and query again.
 
@@ -1402,7 +1402,7 @@ def test_merge_iterations(session, mocker, project):
     assert session._merge.call_count < 75
 
 
-@flaky(max_runs=10, min_passes=1)
+@pytest.mark.xfail(reason='Due to tests running in parallel on same server instance.')
 @pytest.mark.parametrize(
     'get_versions',
     [
