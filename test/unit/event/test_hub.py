@@ -121,10 +121,6 @@ def test_secure_property(server_url, expected, mocker):
     assert event_hub.secure is expected
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_connected_property(session):
     '''Return connected state.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -159,10 +155,6 @@ def test_initialise_against_server_url(server_url, expected):
         assert event_hub.get_server_url() == expected
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_connect(session):
     '''Connect.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -174,10 +166,6 @@ def test_connect(session):
     event_hub.disconnect()
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_connect_custom_headers(session):
     '''Connect with custom headers passed in.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -193,10 +181,6 @@ def test_connect_custom_headers(session):
     event_hub.disconnect()
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 @pytest.mark.parametrize(
     'headers', [
         (
@@ -225,10 +209,6 @@ def test_connect_strict_api_header(session, headers):
     event_hub.disconnect()
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_connect_custom_cookies(session):
     '''Connect with custom cookies passed in.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -243,7 +223,6 @@ def test_connect_custom_cookies(session):
     event_hub.disconnect()
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_connect_when_already_connected(event_hub):
     '''Fail to connect when already connected'''
     assert event_hub.connected is True
@@ -296,7 +275,6 @@ def test_connect_missing_required_transport(session, mocker, caplog):
     )
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_disconnect(event_hub):
     '''Disconnect and unsubscribe all subscribers.'''
     event_hub.disconnect()
@@ -308,7 +286,6 @@ def test_disconnect(event_hub):
     assert event_hub.connected is False
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_disconnect_without_unsubscribing(event_hub):
     '''Disconnect without unsubscribing all subscribers.'''
     event_hub.disconnect(unsubscribe=False)
@@ -317,7 +294,6 @@ def test_disconnect_without_unsubscribing(event_hub):
     assert event_hub._connection_initialised is False
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_disconnect_with_reconnect(event_hub):
     '''Disconnect with the intention of reconnecting.'''
     event_hub.disconnect(reconnect=True)
@@ -326,9 +302,6 @@ def test_disconnect_with_reconnect(event_hub):
     assert event_hub.connected is False
 
 
-@pytest.mark.skip(
-    reason="setup error (401 unable to connect to server)"
-) 
 def test_close_connection_from_manually_connected_hub(session_no_autoconnect_hub):
     '''Close connection from manually connected hub.'''
     session_no_autoconnect_hub.event_hub.connect()
@@ -347,9 +320,6 @@ def test_disconnect_when_not_connected(session):
     assert 'Not currently connected' in str(error)
 
 
-@pytest.mark.skip(
-    reason="setup error (401 unable to connect to server)"
-) 
 def test_reconnect(event_hub):
     '''Reconnect successfully.'''
     assert event_hub.connected is True
@@ -392,7 +362,6 @@ def test_fail_to_reconnect(session, mocker):
     assert 'after {} attempts'.format(attempts) in str(error)
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_wait(event_hub):
     '''Wait for event and handle as they arrive.'''
     called = {'callback': False}
@@ -412,7 +381,6 @@ def test_wait(event_hub):
     assert called == {'callback': True}
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_wait_interrupted_by_disconnect(event_hub):
     '''Interrupt wait loop with disconnect event.'''
     wait_time = 5
@@ -427,7 +395,6 @@ def test_wait_interrupted_by_disconnect(event_hub):
     assert time.time() - start < wait_time
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 @pytest.mark.parametrize('identifier, registered', [
     pytest.param('registered-test-subscriber', True, id='registered'),
     pytest.param('unregistered-test-subscriber', False, id='missing')
@@ -451,7 +418,6 @@ def test_get_subscriber_by_identifier(event_hub, identifier, registered):
         assert retrieved is None
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_subscribe(event_hub):
     '''Subscribe to topics.'''
     called = {'a': False, 'b': False}
@@ -471,10 +437,6 @@ def test_subscribe(event_hub):
     assert called == {'a': True, 'b': False}
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_subscribe_before_connected(session):
     '''Subscribe to topic before connected.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -503,7 +465,6 @@ def test_subscribe_before_connected(session):
     assert called == {'callback': True}
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_duplicate_subscriber(event_hub):
     '''Fail to subscribe same subscriber more than once.'''
     subscriber = {'id': 'test-subscriber'}
@@ -515,7 +476,6 @@ def test_duplicate_subscriber(event_hub):
     assert '{0} already exists'.format(subscriber['id']) in str(error)
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_unsubscribe(event_hub):
     '''Unsubscribe a specific callback.'''
     def callback_a(event):
@@ -538,9 +498,6 @@ def test_unsubscribe(event_hub):
     assert_callbacks(event_hub, [callback_b])
 
 
-@pytest.mark.skip(
-    reason="setup error (401 unable to connect to server)"  
-)
 def test_unsubscribe_whilst_disconnected(event_hub):
     '''Unsubscribe whilst disconnected.'''
     identifier = event_hub.subscribe('topic=test', None)
@@ -550,9 +507,6 @@ def test_unsubscribe_whilst_disconnected(event_hub):
     assert_callbacks(event_hub, [])
 
 
-@pytest.mark.skip(
-    reason="setup error (401 unable to connect to server)"  
-)
 def test_unsubscribe_missing_subscriber(event_hub):
     '''Fail to unsubscribe a non-subscribed subscriber.'''
     identifier = 'non-subscribed-subscriber'
@@ -610,7 +564,6 @@ def test_prepare_reply_event(session):
     assert reply_event['source'] == {'id': 'source'}
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish(event_hub):
     '''Publish asynchronous event.'''
     called = {'callback': False}
@@ -626,7 +579,6 @@ def test_publish(event_hub):
     assert called == {'callback': True}
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish_raising_error(event_hub):
     '''Raise error, when configured, on failed publish.'''
     # Note that the event hub currently only fails publish when not connected.
@@ -638,7 +590,6 @@ def test_publish_raising_error(event_hub):
         event_hub.publish(event, on_error='raise')
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish_ignoring_error(event_hub):
     '''Ignore error, when configured, on failed publish.'''
     # Note that the event hub currently only fails publish when not connected.
@@ -648,7 +599,6 @@ def test_publish_ignoring_error(event_hub):
     event_hub.publish(event, on_error='ignore')
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish_logs_other_errors(event_hub, caplog, mocker):
     '''Log publish errors other than connection error.'''
     # Mock connection to force error.
@@ -665,7 +615,6 @@ def test_publish_logs_other_errors(event_hub, caplog, mocker):
     assert expected in messages, 'Expected log message missing in output.'
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_synchronous_publish(event_hub):
     '''Publish event synchronously and collect results.'''
     def callback_a(event):
@@ -685,10 +634,6 @@ def test_synchronous_publish(event_hub):
     assert results == ['A', 'B', 'C']
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.EventHubConnectionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_publish_during_connect(session, mocker):
     '''Test publishing while connection is initialising.'''
     event_hub = ftrack_api.event.hub.EventHub(
@@ -722,7 +667,6 @@ def test_publish_during_connect(session, mocker):
     assert event_hub._event_send_queue.qsize() == 0
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish_with_reply(event_hub):
     '''Publish asynchronous event with on reply handler.'''
 
@@ -743,7 +687,6 @@ def test_publish_with_reply(event_hub):
     assert called['callback'] == 'Replied'
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_publish_with_multiple_replies(event_hub):
     '''Publish asynchronous event and retrieve multiple replies.'''
 
@@ -769,10 +712,6 @@ def test_publish_with_multiple_replies(event_hub):
     assert sorted(called['callback']) == ['One', 'Two']
 
 
-@pytest.mark.xfail(
-    raises=AssertionError,
-    reason='Due to tests running in parallel on same server instance.'
-)
 def test_server_heartbeat_response():
     '''Maintain connection by responding to server heartbeat request.'''
     test_script = os.path.join(
@@ -794,7 +733,6 @@ def test_server_heartbeat_response():
     assert subscriber.returncode == 0
 
 
-@pytest.mark.skip(reason="setup error (401 unable to connect to server)")
 def test_stop_event(event_hub):
     '''Stop processing of subsequent local handlers when stop flag set.'''
     called = {
