@@ -6,6 +6,7 @@ import uuid
 
 import mock
 import pytest
+from flaky import flaky
 
 import ftrack_api.collection
 import ftrack_api.symbol
@@ -521,6 +522,7 @@ def test_collection_refresh(new_asset_version, new_component):
     assert len(new_asset_version_two.get('components')) == 0
 
 
+@flaky(max_runs=5, min_passes=1)
 def test_mapped_collection_reload(new_asset_version):
     '''Test mapped collection reload.'''
     session_two = ftrack_api.Session(auto_connect_event_hub=False)

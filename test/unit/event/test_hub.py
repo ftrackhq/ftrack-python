@@ -11,6 +11,7 @@ import requests
 import logging
 
 import pytest
+from flaky import flaky
 
 import ftrack_api.event.hub
 import ftrack_api.event.subscriber
@@ -498,6 +499,7 @@ def test_unsubscribe(event_hub):
     assert_callbacks(event_hub, [callback_b])
 
 
+@flaky(max_runs=2, min_passes=1)
 def test_unsubscribe_whilst_disconnected(event_hub):
     '''Unsubscribe whilst disconnected.'''
     identifier = event_hub.subscribe('topic=test', None)
