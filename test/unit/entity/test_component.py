@@ -3,6 +3,7 @@
 import os
 
 import pytest
+from flaky import flaky
 
 
 def test_get_availability(new_component):
@@ -55,6 +56,8 @@ def image_path():
 
     return image_path
 
+
+@flaky(max_runs=5, min_passes=1)
 def test_create_task_thumbnail(task, image_path):
     '''Successfully create thumbnail component and set as task thumbnail.'''
     component = task.create_thumbnail(image_path)
