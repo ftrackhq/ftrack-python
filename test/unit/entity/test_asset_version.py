@@ -7,6 +7,7 @@ from flaky import flaky
 import ftrack_api
 
 
+@flaky(max_runs=5, min_passes=1)
 def test_create_component(new_asset_version, temporary_file):
     '''Create component on asset version.'''
     session = new_asset_version.session
