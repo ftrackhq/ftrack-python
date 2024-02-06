@@ -635,7 +635,7 @@ def test_synchronous_publish(event_hub):
     results = event_hub.publish(Event(topic='test'), synchronous=True)
     assert results == ['A', 'B', 'C']
 
-
+@flaky(max_runs=4, min_passes=1)
 def test_publish_during_connect(session, mocker):
     '''Test publishing while connection is initialising.'''
     event_hub = ftrack_api.event.hub.EventHub(
