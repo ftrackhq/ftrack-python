@@ -4,7 +4,6 @@
 import uuid
 
 import pytest
-from flaky import flaky
 
 import ftrack_api
 
@@ -202,7 +201,6 @@ def test_batch_create_entity_and_custom_attributes(
     assert entity['custom_attributes'][name] == value
 
 
-@flaky(max_runs=5, min_passes=1)
 def test_refresh_custom_attribute(new_asset_version):
     '''Test custom attribute refresh.'''
     session_two = ftrack_api.Session()
@@ -223,6 +221,3 @@ def test_refresh_custom_attribute(new_asset_version):
         new_asset_version['custom_attributes']['versiontest'] ==
         asset_version_two['custom_attributes']['versiontest']
     )
-
-
-
