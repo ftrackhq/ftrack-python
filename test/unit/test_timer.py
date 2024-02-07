@@ -29,7 +29,7 @@ def test_create_multiple_timers_with_error(session, new_user):
     '''Fail to create a second timer.'''
     new_user.start_timer()
 
-    with pytest.raises(ftrack_api.exception.ServerError):
+    with pytest.raises(ftrack_api.exception.NotUniqueError):
         new_user.start_timer()
 
     session.reset()
