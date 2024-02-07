@@ -162,7 +162,7 @@ def temporary_path(request):
 
 
 @pytest.fixture()
-def new_user(request, session):
+def new_user(request, session, unique_name):
     '''Return a newly created unique user.'''
     entity = session.create('User', {'username': unique_name})
     session.commit()
