@@ -55,7 +55,6 @@ def image_path():
 
     return image_path
 
-
 def test_create_task_thumbnail(task, image_path):
     '''Successfully create thumbnail component and set as task thumbnail.'''
     component = task.create_thumbnail(image_path)
