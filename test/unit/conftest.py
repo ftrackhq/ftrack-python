@@ -146,9 +146,11 @@ def unique_name():
 
 
 @pytest.fixture()
-def random_int():
-    '''Return a random int [0-10000].'''
-    return random.randint(0, 10000)
+def generate_random_int():
+    '''Return a function that generates a random int [0-10000].'''
+    def _generate_random_int():
+        return random.randint(0, 10000)
+    return _generate_random_int
 
 
 @pytest.fixture()
@@ -391,11 +393,11 @@ def new_note(request, session, unique_name, new_task, user):
 
 
 @pytest.fixture()
-def new_asset_version(request, session, random_int):
+def new_asset_version(request, session, generate_random_int):
     '''Return a new asset version.'''
     asset_version = session.create('AssetVersion', {
         'asset_id': 'dd9a7e2e-c5eb-11e1-9885-f23c91df25eb',
-        'version': random_int
+        'version': generate_random_int()
     })
     session.commit()
 
