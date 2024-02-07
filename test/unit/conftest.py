@@ -384,17 +384,28 @@ def new_note(request, session, unique_name, new_task, user):
 
 
 @pytest.fixture()
-def new_asset_version(request, session):
+def new_asset_version(request, session, unique_name):
     '''Return a new asset version.'''
-    asset = session.query('Asset').first()
+    task = session.query('Task').first()
+    asset_parent = task.get('parent')
+    asset_type = session.query('AssetType').first()
+
+    asset = session.create('Asset', {
+        'name': unique_name,
+        'type': asset_type,
+        'parent': asset_parent
+    })
     asset_version = session.create('AssetVersion', {
         'asset_id': asset.get('id'),
+        'asset': asset,
+        'task': task
     })
     session.commit()
 
     def cleanup():
-        '''Remove created entity.'''
+        '''Remove created entities.'''
         session.delete(asset_version)
+        session.delete(asset)
         session.commit()
     
     request.addfinalizer(cleanup)
