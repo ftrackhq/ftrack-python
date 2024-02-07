@@ -139,14 +139,6 @@ def session_no_autoconnect_hub():
 
 
 @pytest.fixture()
-def generate_unique_name():
-    '''Return a function that returns a unique name.'''
-    def _generate_unique_name():
-        return "test-{0}".format(uuid.uuid4())
-    return _generate_unique_name
-
-
-@pytest.fixture()
 def unique_name():
     '''Return a unique name.'''
     return 'test-{0}'.format(uuid.uuid4())
@@ -170,9 +162,9 @@ def temporary_path(request):
 
 
 @pytest.fixture()
-def new_user(request, session, generate_unique_name):
+def new_user(request, session):
     '''Return a newly created unique user.'''
-    entity = session.create('User', {'username': generate_unique_name()})
+    entity = session.create('User', {'username': unique_name})
     session.commit()
 
     def cleanup():
