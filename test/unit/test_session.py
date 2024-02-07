@@ -1219,10 +1219,6 @@ def test_plugin_arguments(mocker):
     mock.assert_called_once_with([], [session], {"test": "value"})
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.ServerError,
-    reason='Due to user permission errors.'
-)
 def test_remote_reset(session, new_user):
     '''Reset user api key.'''
     key_1 = session.reset_remote(
