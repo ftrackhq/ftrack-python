@@ -3,7 +3,6 @@
 
 from past.builtins import long
 
-
 def test_force_start_timer(new_user, task):
     '''Successfully force starting a timer when another timer is running.'''
     first_timer = new_user.start_timer(context=task)
