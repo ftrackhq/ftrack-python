@@ -221,3 +221,5 @@ def test_refresh_custom_attribute(new_asset_version):
         new_asset_version['custom_attributes']['versiontest'] ==
         asset_version_two['custom_attributes']['versiontest']
     )
+
+
