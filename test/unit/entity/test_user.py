@@ -1,10 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2016 ftrack
 
-import pytest
 from past.builtins import long
-
-import ftrack_api.exception
 
 
 def test_force_start_timer(new_user, task):
@@ -42,16 +39,12 @@ def test_timer_creates_timelog(new_user, task, unique_name):
     assert timelog['duration'] < 60
 
 
-@pytest.mark.xfail(
-    raises=ftrack_api.exception.ServerError,
-    reason='Due to user permission errors.'
-)
-def test_reset_user_api_key(new_user):
+def test_reset_user_api_key(new_admin):
     '''Test resetting of api keys.'''
 
     api_keys = list()
     for i in range(0, 10):
-        api_keys.append(new_user.reset_api_key())
+        api_keys.append(new_admin.reset_api_key())
 
     # make sure all api keys are unique
     assert len(set(api_keys)) == 10
