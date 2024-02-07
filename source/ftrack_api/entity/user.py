@@ -46,7 +46,7 @@ class User(ftrack_api.entity.base.Entity):
         try:
             self.session.commit()
         except ftrack_api.exception.ServerError as error:
-            if 'IntegrityError' in str(error):
+            if any(err in str(error) for err in {'IntegrityError', 'DuplicateEntryError'}):
                 raise ftrack_api.exception.NotUniqueError(
                     ('Failed to start a timelog for user with id: {0}, it is '
                      'likely that a timer is already running. Either use '
