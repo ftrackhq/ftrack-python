@@ -39,12 +39,12 @@ def test_timer_creates_timelog(new_user, task, unique_name):
     assert timelog['duration'] < 60
 
 
-def test_reset_user_api_key(new_admin):
+def test_reset_user_api_key(new_user):
     '''Test resetting of api keys.'''
 
     api_keys = list()
     for i in range(0, 10):
-        api_keys.append(new_admin.reset_api_key())
+        api_keys.append(new_user.reset_api_key())
 
     # make sure all api keys are unique
     assert len(set(api_keys)) == 10

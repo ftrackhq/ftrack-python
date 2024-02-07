@@ -178,33 +178,6 @@ def new_user(request, session, unique_name):
 
 
 @pytest.fixture()
-def new_admin(request, session, unique_name):
-    '''Return a newly created unique user.'''
-    admin_role = session.query('SecurityRole where name is "Administrator"').first()
-    entity = session.create('User', {'username': unique_name})
-    session.commit()
-
-    session.call([
-        {
-            "action": "add_user_security_role",
-            "user_id": entity.get("id"),
-            "role_id": admin_role.get("id")
-        }
-    ])
-    session.commit()
-
-    def cleanup():
-        '''Remove created entity.'''
-        session.delete(entity)
-        session.commit()
-
-    request.addfinalizer(cleanup)
-
-    return entity
-
-
-
-@pytest.fixture()
 def user(session):
     '''Return the same user entity for entire session.'''
     # Jenkins user
