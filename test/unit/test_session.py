@@ -15,7 +15,6 @@ import mock
 import arrow
 import requests
 import requests.utils
-from flaky import flaky
 
 import ftrack_api
 import ftrack_api.cache
@@ -1282,7 +1281,6 @@ def test_context_manager(session):
     assert session.closed is True
 
 
-@flaky(max_runs=5, min_passes=1)
 def test_query_nested_custom_attributes(session, new_asset_version):
     '''Query custom attributes nested and update a value and query again.
 
@@ -1337,7 +1335,6 @@ def test_query_nested_custom_attributes(session, new_asset_version):
     )
 
 
-@pytest.mark.xfail(reason='Due to tests running in parallel on same server instance.')
 def test_query_nested(session):
     '''Query components nested and update a value and query again.
 
@@ -1402,7 +1399,6 @@ def test_merge_iterations(session, mocker, project):
     assert session._merge.call_count < 75
 
 
-@pytest.mark.xfail(reason='Due to tests running in parallel on same server instance.')
 @pytest.mark.parametrize(
     'get_versions',
     [
