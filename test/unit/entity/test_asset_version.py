@@ -2,12 +2,10 @@
 # :copyright: Copyright (c) 2015 ftrack
 import json
 import pytest
-from flaky import flaky
 
 import ftrack_api
 
 
-@flaky(max_runs=5, min_passes=1)
 def test_create_component(new_asset_version, temporary_file):
     '''Create component on asset version.'''
     session = new_asset_version.session
@@ -20,7 +18,6 @@ def test_create_component(new_asset_version, temporary_file):
     session.delete(component)
 
 
-@flaky(max_runs=5, min_passes=1)
 def test_create_component_specifying_different_version(
     new_asset_version, temporary_file
 ):
