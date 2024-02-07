@@ -391,8 +391,6 @@ def new_asset_version(request, session):
     })
     session.commit()
 
-    # Do not cleanup the version as that will sometimes result in a deadlock
-    # database error.
     def cleanup():
         '''Remove created entity.'''
         session.delete(asset_version)
