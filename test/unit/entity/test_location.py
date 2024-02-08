@@ -57,6 +57,7 @@ def new_location(request, session, unique_name, temporary_directory):
         'name': 'test-location-{}'.format(unique_name)
     })
 
+
     session.commit()
 
     location.accessor = ftrack_api.accessor.disk.DiskAccessor(
@@ -562,4 +563,4 @@ def test_transfer_component_from_server(
         multi_location.get_component_availability(server_image_component)
         == 100.0
     )
-
+    
