@@ -562,3 +562,4 @@ def test_transfer_component_from_server(
         multi_location.get_component_availability(server_image_component)
         == 100.0
     )
+
