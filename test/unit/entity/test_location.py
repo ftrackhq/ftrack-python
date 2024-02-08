@@ -53,12 +53,9 @@ class Base64ResourceIdentifierTransformer(
 def new_location(request, session, unique_name, temporary_directory):
     '''Return new managed location.'''
 
-    from builtins import str
-
-    location = session.create(str('Location'), {
-        str('name'): str('test-location-{}'.format(unique_name))
+    location = session.create('Location', {
+        'name': 'test-location-{}'.format(unique_name)
     })
-
 
     session.commit()
 
@@ -72,8 +69,15 @@ def new_location(request, session, unique_name, temporary_directory):
 
     def cleanup():
         '''Remove created entity.'''
+
+        location_components = session.query(
+            'ComponentLocation where location_id is {0}'.format(
+                location.get("id")
+            )
+        ).all()
+
         # First auto-remove all components in location.
-        for location_component in location['location_components']:
+        for location_component in location_components:
             session.delete(location_component)
 
         # At present, need this intermediate commit otherwise server errors
@@ -108,8 +112,14 @@ def new_unmanaged_location(request, session, unique_name):
 
     def cleanup():
         '''Remove created entity.'''
+        location_components = session.query(
+            'ComponentLocation where location_id is {0}'.format(
+                location.get("id")
+            )
+        ).all()
+
         # First auto-remove all components in location.
-        for location_component in location['location_components']:
+        for location_component in location_components:
             session.delete(location_component)
 
         # At present, need this intermediate commit otherwise server errors
@@ -173,9 +183,6 @@ def test_string_representation(session, name):
         assert str(location) == '<Location(1)>'
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_components(new_location, origin_location, session, temporary_file):
     '''Add components.'''
     component_a = session.create_component(
@@ -207,9 +214,6 @@ def test_add_components(new_location, origin_location, session, temporary_file):
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_components_from_single_location(
     new_location, origin_location, session, temporary_file
 ):
@@ -241,18 +245,12 @@ def test_add_components_from_single_location(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_components_with_mismatching_sources(new_location, new_component):
     '''Fail to add components when sources mismatched.'''
     with pytest.raises(ValueError):
         new_location.add_components([new_component], [])
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_components_with_undefined_structure(new_location, mocker):
     '''Fail to add components when location structure undefined.'''
     mocker.patch.object(new_location, 'structure', None)
@@ -261,9 +259,6 @@ def test_add_components_with_undefined_structure(new_location, mocker):
         new_location.add_components([], [])
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_components_already_in_location(
     session, temporary_file, new_location, new_component, origin_location
 ):
@@ -280,9 +275,6 @@ def test_add_components_already_in_location(
         )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_component_when_data_already_exists(
     new_location, new_component, origin_location
 ):
@@ -300,9 +292,6 @@ def test_add_component_when_data_already_exists(
         new_location.add_component(new_component, origin_location)
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_component_missing_source_accessor(
     new_location, new_component, origin_location, mocker
 ):
@@ -313,9 +302,6 @@ def test_add_component_missing_source_accessor(
         new_location.add_component(new_component, origin_location)
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_component_missing_target_accessor(
     new_location, new_component, origin_location, mocker
 ):
@@ -326,9 +312,6 @@ def test_add_component_missing_target_accessor(
         new_location.add_component(new_component, origin_location)
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_container_component(
     new_container_component, new_location, origin_location
 ):
@@ -341,9 +324,6 @@ def test_add_container_component(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_sequence_component_recursively(
     new_sequence_component, new_location, origin_location
 ):
@@ -358,9 +338,6 @@ def test_add_sequence_component_recursively(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_add_sequence_component_non_recursively(
     new_sequence_component, new_location, origin_location
 ):
@@ -375,9 +352,6 @@ def test_add_sequence_component_non_recursively(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_remove_components(
     session, new_location, origin_location, temporary_file
 ):
@@ -412,9 +386,6 @@ def test_remove_components(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_remove_sequence_component_recursively(
     new_sequence_component, new_location, origin_location
 ):
@@ -433,9 +404,6 @@ def test_remove_sequence_component_recursively(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_remove_sequence_component_non_recursively(
     new_sequence_component, new_location, origin_location
 ):
@@ -454,9 +422,6 @@ def test_remove_sequence_component_non_recursively(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_remove_component_missing_accessor(
     new_location, new_component, origin_location, mocker
 ):
@@ -468,9 +433,6 @@ def test_remove_component_missing_accessor(
         new_location.remove_component(new_component)
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_resource_identifier_transformer(
     new_component, new_unmanaged_location, origin_location, mocker
 ):
@@ -498,9 +460,6 @@ def test_resource_identifier_transformer(
     )
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_get_filesystem_path(new_component, new_location, origin_location):
     '''Retrieve filesystem path.'''
     new_location.add_component(new_component, origin_location)
@@ -513,9 +472,6 @@ def test_get_filesystem_path(new_component, new_location, origin_location):
     assert new_location.get_filesystem_path(new_component) == expected
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_get_context(new_component, new_location, origin_location):
     '''Retrieve context for component.'''
     resource_identifier = origin_location.get_resource_identifier(
@@ -527,18 +483,12 @@ def test_get_context(new_component, new_location, origin_location):
     }
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_get_context_for_component_not_in_source(new_component, new_location):
     '''Retrieve context for component not in source location.'''
     context = new_location._get_context(new_component, new_location)
     assert context == {}
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_data_transfer(session, new_location, origin_location):
     '''Transfer a real file and make sure it is identical.'''
     video_file = os.path.abspath(
@@ -602,9 +552,6 @@ def multi_location(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.mark.skip(
-    reason="teardown error (relationship not yet projectable)"
-)
 def test_transfer_component_from_server(
     server_location, server_image_component, multi_location
 ):
