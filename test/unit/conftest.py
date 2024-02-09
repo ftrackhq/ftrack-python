@@ -387,7 +387,7 @@ def new_note(request, session, unique_name, new_task, user):
 def new_asset_version_with_component(request, session, unique_name):
     '''Return a new asset version with one component attached.'''
     task = session.query('Task').first()
-    asset_parent = task.get('parent')
+    asset_parent = task['parent']
     asset_type = session.query('AssetType').first()
 
     asset = session.create('Asset', {
@@ -396,13 +396,13 @@ def new_asset_version_with_component(request, session, unique_name):
         'parent': asset_parent
     })
     asset_version = session.create('AssetVersion', {
-        'asset_id': asset.get('id'),
+        'asset_id': asset['id'],
         'asset': asset,
         'task': task
     })
     component = session.create('Component', {
         'name': unique_name,
-        'version_id': asset_version.get('id'),
+        'version_id': asset_version['id'],
     })
     session.commit()
 
@@ -422,7 +422,7 @@ def new_asset_version_with_component(request, session, unique_name):
 def new_asset_version(request, session, unique_name):
     '''Return a new asset version.'''
     task = session.query('Task').first()
-    asset_parent = task.get('parent')
+    asset_parent = task['parent']
     asset_type = session.query('AssetType').first()
 
     asset = session.create('Asset', {
@@ -431,7 +431,7 @@ def new_asset_version(request, session, unique_name):
         'parent': asset_parent
     })
     asset_version = session.create('AssetVersion', {
-        'asset_id': asset.get('id'),
+        'asset_id': asset['id'],
         'asset': asset,
         'task': task
     })

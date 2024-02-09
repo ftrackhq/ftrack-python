@@ -1337,9 +1337,6 @@ def test_query_nested(session, new_asset_version_with_component):
     the new value.
 
     '''
-    # new_asset_version.get('components').append(new_component)
-    # session.commit()
-
     session_one = session
     session_two = ftrack_api.Session(
         auto_connect_event_hub=False
