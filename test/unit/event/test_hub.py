@@ -9,6 +9,7 @@ import subprocess
 import sys
 import requests
 import logging
+import uuid
 
 import pytest
 from flaky import flaky
@@ -722,24 +723,22 @@ def test_publish_with_multiple_replies(event_hub):
     assert sorted(called['callback']) == ['One', 'Two']
 
 
-@pytest.mark.xfail(
-    raises=AssertionError, 
-    reason='Multiple test runners on same test server.'
-)
 def test_server_heartbeat_response():
     '''Maintain connection by responding to server heartbeat request.'''
     test_script = os.path.join(
         os.path.dirname(__file__), 'event_hub_server_heartbeat.py'
     )
+    # set the topic name to something unique
+    topic = 'test_event_hub_server_heartbeat_{0}'.format(uuid.uuid4())
 
     # Start subscriber that will listen for all three messages.
-    subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe'])
+    subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe', topic])
 
     # Give subscriber time to connect to server.
     time.sleep(10)
 
     # Start publisher to publish three messages.
-    publisher = subprocess.Popen([sys.executable, test_script, 'publish'])
+    publisher = subprocess.Popen([sys.executable, test_script, 'publish', topic])
 
     publisher.wait()
     subscriber.wait()
