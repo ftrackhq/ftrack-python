@@ -1409,7 +1409,7 @@ def test_query_nested2(session, new_asset_version_with_component, get_versions):
     )
 
     # Get a component that is linked to a version and asset.
-    component_id = new_asset_version_with_component["components"][0]["id"]
+    component_id = new_asset_version_with_component['components'][0]['id']
     query = (
         'select version.asset.versions from Component where id is "{}"'.format(component_id)
     )
