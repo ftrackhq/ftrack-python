@@ -685,7 +685,7 @@ def test_publish_with_reply(event_hub):
     def on_reply(event):
         called['callback'] = event['data']
 
-    event_hub.publish(Event(topic='test'), on_reply=on_reply)
+    event_hub.publish(Event(topic=topic_name), on_reply=on_reply)
     event_hub.wait(2)
 
     assert called['callback'] == 'Replied'
