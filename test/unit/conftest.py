@@ -384,10 +384,9 @@ def new_note(request, session, unique_name, new_task, user):
 
 
 @pytest.fixture()
-def new_asset_version_with_component(request, session, unique_name):
+def new_asset_version_with_component(request, session, new_task, unique_name):
     '''Return a new asset version with one component attached.'''
-    task = session.query('Task').first()
-    asset_parent = task['parent']
+    asset_parent = new_task['parent']
     asset_type = session.query('AssetType').first()
 
     asset = session.create('Asset', {
@@ -398,7 +397,7 @@ def new_asset_version_with_component(request, session, unique_name):
     asset_version = session.create('AssetVersion', {
         'asset_id': asset['id'],
         'asset': asset,
-        'task': task
+        'task': new_task
     })
     component = session.create('Component', {
         'name': unique_name,
@@ -419,10 +418,9 @@ def new_asset_version_with_component(request, session, unique_name):
 
 
 @pytest.fixture()
-def new_asset_version(request, session, unique_name):
+def new_asset_version(request, session, new_task, unique_name):
     '''Return a new asset version.'''
-    task = session.query('Task').first()
-    asset_parent = task['parent']
+    asset_parent = new_task['parent']
     asset_type = session.query('AssetType').first()
 
     asset = session.create('Asset', {
@@ -433,7 +431,7 @@ def new_asset_version(request, session, unique_name):
     asset_version = session.create('AssetVersion', {
         'asset_id': asset['id'],
         'asset': asset,
-        'task': task
+        'task': new_task
     })
     session.commit()
 
