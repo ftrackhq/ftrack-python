@@ -1344,7 +1344,7 @@ def test_query_nested(session, new_asset_version_with_component):
 
     query = (
         'select versions.components.name from Asset where id is '
-        '{0}'.format(new_asset_version_with_component.get('asset_id'))
+        '{0}'.format(new_asset_version_with_component['asset_id'])
     )
 
     def get_version(session):

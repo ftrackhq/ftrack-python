@@ -73,7 +73,7 @@ def new_location(request, session, unique_name, temporary_directory):
 
         location_components = session.query(
             'ComponentLocation where location_id is {0}'.format(
-                location.get("id")
+                location['id']
             )
         ).all()
 
@@ -115,7 +115,7 @@ def new_unmanaged_location(request, session, unique_name):
         '''Remove created entity.'''
         location_components = session.query(
             'ComponentLocation where location_id is {0}'.format(
-                location.get("id")
+                location['id']
             )
         ).all()
 
