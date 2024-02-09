@@ -1329,7 +1329,7 @@ def test_query_nested_custom_attributes(session, new_asset_version):
     )
 
 
-def test_query_nested(session, new_asset_version):
+def test_query_nested(session, new_asset_version, new_component):
     '''Query components nested and update a value and query again.
 
     This test will query components via 2 relations, then update the
@@ -1337,6 +1337,9 @@ def test_query_nested(session, new_asset_version):
     the new value.
 
     '''
+    new_asset_version.get('components').append(new_component)
+    session.commit()
+
     session_one = session
     session_two = ftrack_api.Session(
         auto_connect_event_hub=False

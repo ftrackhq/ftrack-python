@@ -400,15 +400,10 @@ def new_asset_version(request, session, unique_name):
         'asset': asset,
         'task': task
     })
-    component = session.create('Component', {
-        'name': unique_name,
-        'version_id': asset_version.get('id'),
-    })
     session.commit()
 
     def cleanup():
         '''Remove created entities.'''
-        session.delete(component)
         session.delete(asset_version)
         session.delete(asset)
         session.commit()
