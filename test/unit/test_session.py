@@ -180,14 +180,12 @@ def test_ensure_new_entity(session, unique_name):
     assert entity['username'] == unique_name
 
 
-@pytest.mark.xfail(
-    reason='UnexpectedCharacters on username in query'
-)
 def test_ensure_entity_with_non_string_data_types(session, mocker):
     '''Ensure entity against non-string data types, creating first.'''
     datetime = arrow.get()
 
     task = session.query('Task').first()
+    # if session.api_user contained '@', we'd need to work some more on queries.
     user = session.query(
         'User where username is {}'.format(session.api_user)
     ).first()
@@ -1331,11 +1329,7 @@ def test_query_nested_custom_attributes(session, new_asset_version):
     )
 
 
-@pytest.mark.xfail(
-    raises=AssertionError,
-    reason='Cause yet to be determined'
-)
-def test_query_nested(session):
+def test_query_nested(session, new_asset_version):
     '''Query components nested and update a value and query again.
 
     This test will query components via 2 relations, then update the
@@ -1350,19 +1344,13 @@ def test_query_nested(session):
 
     query = (
         'select versions.components.name from Asset where id is '
-        '"12939d0c-6766-11e1-8104-f23c91df25eb"'
+        '{0}'.format(new_asset_version.get('asset_id'))
     )
 
     def get_version(session):
         '''Return the test version from *session*.'''
         asset = session.query(query).first()
-        asset_version = None
-        for version in asset['versions']:
-            if version['version'] == 8:
-                asset_version = version
-                break
-
-        return asset_version
+        return asset['versions'][0]
 
     asset_version = get_version(session_one)
     asset_version2 = get_version(session_two)
