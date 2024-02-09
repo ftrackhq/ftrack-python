@@ -1329,7 +1329,7 @@ def test_query_nested_custom_attributes(session, new_asset_version):
     )
 
 
-def test_query_nested(session, new_asset_version, new_component):
+def test_query_nested(session, new_asset_version_with_component):
     '''Query components nested and update a value and query again.
 
     This test will query components via 2 relations, then update the
@@ -1337,8 +1337,8 @@ def test_query_nested(session, new_asset_version, new_component):
     the new value.
 
     '''
-    new_asset_version.get('components').append(new_component)
-    session.commit()
+    # new_asset_version.get('components').append(new_component)
+    # session.commit()
 
     session_one = session
     session_two = ftrack_api.Session(
@@ -1347,7 +1347,7 @@ def test_query_nested(session, new_asset_version, new_component):
 
     query = (
         'select versions.components.name from Asset where id is '
-        '{0}'.format(new_asset_version.get('asset_id'))
+        '{0}'.format(new_asset_version_with_component.get('asset_id'))
     )
 
     def get_version(session):
@@ -1390,10 +1390,6 @@ def test_merge_iterations(session, mocker, project):
     assert session._merge.call_count < 75
 
 
-@pytest.mark.xfail(
-    raises=AssertionError,
-    reason='Cause yet to be determined'
-)
 @pytest.mark.parametrize(
     'get_versions',
     [
@@ -1402,7 +1398,7 @@ def test_merge_iterations(session, mocker, project):
         pytest.param(lambda component, asset_version, asset: asset['versions'], id='from_asset')
     ]
 )
-def test_query_nested2(session, get_versions):
+def test_query_nested2(session, new_asset_version_with_component, get_versions):
     '''Query version.asset.versions from component and then add new version.
 
     This test will query versions via multiple relations and ensure a new
@@ -1415,15 +1411,10 @@ def test_query_nested2(session, get_versions):
         auto_connect_event_hub=False
     )
 
-    # Get a random component that is linked to a version and asset.
-    component_id = session_two.query(
-        'FileComponent where version.asset_id != None'
-    ).first()['id']
-
+    # Get a component that is linked to a version and asset.
+    component_id = new_asset_version_with_component["components"][0]["id"]
     query = (
-        'select version.asset.versions from Component where id is "{}"'.format(
-            component_id
-        )
+        'select version.asset.versions from Component where id is "{}"'.format(component_id)
     )
 
     component = session_one.query(query).one()
