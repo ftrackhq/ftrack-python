@@ -22,7 +22,7 @@ jobs:
         run: |
           python setup.py test
         env:
-          FTRACK_SERVER: https://python-api-test-server.ftrackapp.com/
+          FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
   build:
