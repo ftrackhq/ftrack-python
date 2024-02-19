@@ -44,7 +44,7 @@ jobs:
           /opt/poetry/bin/poetry install
           # python setup.py test
           # /opt/poetry/bin/poetry run pytest --disable-pytest-warnings
-          /opt/poetry/bin/poetry run pytest --disable-pytest-warnings ./test/unit/
+          /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings ./test/unit/
         env:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
