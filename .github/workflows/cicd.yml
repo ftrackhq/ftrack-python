@@ -48,7 +48,6 @@ jobs:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
-          PYTHONPATH: "source"
 
   build:
     runs-on: ubuntu-latest
