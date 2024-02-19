@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ftrack-python"
+name = "ftrack-python-api"
 version = "0.1.0"
 description = "Python API for ftrack."
 authors = ["ftrack <support@ftrack.com>"]
