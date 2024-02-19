@@ -10,7 +10,6 @@ import ftrack_api
 from ftrack_api.event.base import Event
 
 
-TOPIC = 'test_event_hub_server_heartbeat'
 RECEIVED = []
 
 
@@ -25,6 +24,7 @@ def main(arguments=None):
     '''Publish and receive heartbeat test.'''
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', choices=['publish', 'subscribe'])
+    parser.add_argument('topic')
 
     namespace = parser.parse_args(arguments)
     logging.basicConfig(level=logging.INFO)
@@ -53,14 +53,16 @@ def main(arguments=None):
         print('Sending {0} messages...'.format(message_count))
 
         for counter in range(1, message_count + 1):
-            session.event_hub.publish(Event(topic=TOPIC, data=dict(counter=counter)))
+            session.event_hub.publish(
+                Event(topic=namespace.topic, data=dict(counter=counter))
+            )
             print('Sent message {0}'.format(counter))
 
             if counter < message_count:
                 time.sleep(sleep_time_per_message)
 
     elif namespace.mode == 'subscribe':
-        session.event_hub.subscribe('topic={0}'.format(TOPIC), callback)
+        session.event_hub.subscribe('topic={0}'.format(namespace.topic), callback)
         session.event_hub.wait(
             duration=(((message_count - 1) * sleep_time_per_message) + 15)
         )

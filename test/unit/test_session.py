@@ -182,6 +182,7 @@ def test_ensure_entity_with_non_string_data_types(session, mocker):
     datetime = arrow.get()
 
     task = session.query('Task').first()
+    # if session.api_user contained '@', we'd need to work some more on queries.
     user = session.query('User where username is {}'.format(session.api_user)).first()
 
     first = session.ensure(
@@ -1281,7 +1282,7 @@ def test_query_nested_custom_attributes(session, new_asset_version):
     )
 
 
-def test_query_nested(session):
+def test_query_nested(session, new_asset_version_with_component):
     '''Query components nested and update a value and query again.
 
     This test will query components via 2 relations, then update the
@@ -1292,21 +1293,14 @@ def test_query_nested(session):
     session_one = session
     session_two = ftrack_api.Session(auto_connect_event_hub=False)
 
-    query = (
-        'select versions.components.name from Asset where id is '
-        '"12939d0c-6766-11e1-8104-f23c91df25eb"'
+    query = 'select versions.components.name from Asset where id is ' '{0}'.format(
+        new_asset_version_with_component['asset_id']
     )
 
     def get_version(session):
         '''Return the test version from *session*.'''
         asset = session.query(query).first()
-        asset_version = None
-        for version in asset['versions']:
-            if version['version'] == 8:
-                asset_version = version
-                break
-
-        return asset_version
+        return asset['versions'][0]
 
     asset_version = get_version(session_one)
     asset_version2 = get_version(session_two)
@@ -1359,7 +1353,7 @@ def test_merge_iterations(session, mocker, project):
         ),
     ],
 )
-def test_query_nested2(session, get_versions):
+def test_query_nested2(session, new_asset_version_with_component, get_versions):
     '''Query version.asset.versions from component and then add new version.
 
     This test will query versions via multiple relations and ensure a new
@@ -1370,11 +1364,8 @@ def test_query_nested2(session, get_versions):
     session_one = session
     session_two = ftrack_api.Session(auto_connect_event_hub=False)
 
-    # Get a random component that is linked to a version and asset.
-    component_id = session_two.query(
-        'FileComponent where version.asset_id != None'
-    ).first()['id']
-
+    # Get a component that is linked to a version and asset.
+    component_id = new_asset_version_with_component['components'][0]['id']
     query = 'select version.asset.versions from Component where id is "{}"'.format(
         component_id
     )

@@ -261,3 +261,28 @@ nested attributes.
 You can also customise the
 :ref:`working_with_entities/entity_types/default_projections` to use for each
 entity type when none are specified in the query string.
+
+.. _querying/group_by:
+
+Aggregate data with group by
+----------------------------
+
+Group by can be used in a query to aggregate data. For example, to find the
+number of tasks in each status::
+
+    select count(id) from Task group by status_id
+
+Read more about how to use group by in :ref:`example/group_by`
+
+Queries that include group by clauses must be executed using the
+:func:`session.call()` method versus :func:`session.query()`.
+
+Not all entities support group by yet. The most common ones that already support
+it include Task and Project. You can find a full list of supported entities in
+the API reference documentation in your ftrack workspace. It available under the
+Help menu and "group by" is visible on entities that support it if you are on
+ftrack 4.13+.
+
+.. note::
+
+    group by is available since ftrack 4.12

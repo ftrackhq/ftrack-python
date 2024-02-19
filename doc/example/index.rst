@@ -51,4 +51,5 @@ already constructed a :class:`Session`::
     sync_ldap_users
     invite_user
     workflow_schema
+    group_by
 

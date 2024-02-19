@@ -55,8 +55,9 @@ if not os.environ.get('READTHEDOCS', None) == 'True':
     # Only import and set the theme if building locally.
     import sphinx_rtd_theme
 
-    html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
+html_theme = 'sphinx_rtd_theme'
 
 html_static_path = ['_static']
 html_style = 'ftrack.css'
@@ -67,7 +68,11 @@ html_copy_source = True
 
 # -- Autodoc ------------------------------------------------------------------
 
-autodoc_default_flags = ['members', 'undoc-members', 'inherited-members']
+autodoc_default_options = {
+    "members": None,
+    'undoc-members': None,
+    'inherited-members': None,
+}
 autodoc_member_order = 'bysource'
 
 

@@ -47,10 +47,8 @@ class Base64ResourceIdentifierTransformer(_transformer.ResourceIdentifierTransfo
 def new_location(request, session, unique_name, temporary_directory):
     '''Return new managed location.'''
 
-    from builtins import str
-
     location = session.create(
-        str('Location'), {str('name'): str('test-location-{}'.format(unique_name))}
+        'Location', {'name': 'test-location-{}'.format(unique_name)}
     )
 
     session.commit()
@@ -65,8 +63,13 @@ def new_location(request, session, unique_name, temporary_directory):
 
     def cleanup():
         '''Remove created entity.'''
+
+        location_components = session.query(
+            'ComponentLocation where location_id is {0}'.format(location['id'])
+        ).all()
+
         # First auto-remove all components in location.
-        for location_component in location['location_components']:
+        for location_component in location_components:
             session.delete(location_component)
 
         # At present, need this intermediate commit otherwise server errors
@@ -102,8 +105,12 @@ def new_unmanaged_location(request, session, unique_name):
 
     def cleanup():
         '''Remove created entity.'''
+        location_components = session.query(
+            'ComponentLocation where location_id is {0}'.format(location['id'])
+        ).all()
+
         # First auto-remove all components in location.
-        for location_component in location['location_components']:
+        for location_component in location_components:
             session.delete(location_component)
 
         # At present, need this intermediate commit otherwise server errors
