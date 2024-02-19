@@ -10,6 +10,19 @@ on:
   pull_request:
 
 jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Check formatting
+        uses: psf/black@stable
+        with:
+          options: "--check"
+          src: .
+          version: "~= 22.0"
   run-tests:
     name: Run tests (${{ matrix.python-version }})
     strategy:
