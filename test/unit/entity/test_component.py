@@ -55,11 +55,11 @@ def image_path():
 
     return image_path
 
-def test_create_task_thumbnail(task, image_path):
+def test_create_task_thumbnail(new_task, image_path):
     '''Successfully create thumbnail component and set as task thumbnail.'''
-    component = task.create_thumbnail(image_path)
+    component = new_task.create_thumbnail(image_path)
     component.session.commit()
-    assert component['id'] == task['thumbnail_id']
+    assert component['id'] == new_task['thumbnail_id']
 
 
 def test_create_thumbnail_with_data(task, image_path, unique_name):

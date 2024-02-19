@@ -384,15 +384,64 @@ def new_note(request, session, unique_name, new_task, user):
 
 
 @pytest.fixture()
-def new_asset_version(request, session):
-    '''Return a new asset version.'''
+def new_asset_version_with_component(request, session, new_task, unique_name):
+    '''Return a new asset version with one component attached.'''
+    asset_parent = new_task['parent']
+    asset_type = session.query('AssetType').first()
+
+    asset = session.create('Asset', {
+        'name': unique_name,
+        'type': asset_type,
+        'parent': asset_parent
+    })
     asset_version = session.create('AssetVersion', {
-        'asset_id': 'dd9a7e2e-c5eb-11e1-9885-f23c91df25eb'
+        'asset_id': asset['id'],
+        'asset': asset,
+        'task': new_task
+    })
+    component = session.create('Component', {
+        'name': unique_name,
+        'version_id': asset_version['id'],
     })
     session.commit()
 
-    # Do not cleanup the version as that will sometimes result in a deadlock
-    # database error.
+    def cleanup():
+        '''Remove created entities.'''
+        session.delete(component)
+        session.delete(asset_version)
+        session.delete(asset)
+        session.commit()
+    
+    request.addfinalizer(cleanup)
+
+    return asset_version
+
+
+@pytest.fixture()
+def new_asset_version(request, session, new_task, unique_name):
+    '''Return a new asset version.'''
+    asset_parent = new_task['parent']
+    asset_type = session.query('AssetType').first()
+
+    asset = session.create('Asset', {
+        'name': unique_name,
+        'type': asset_type,
+        'parent': asset_parent
+    })
+    asset_version = session.create('AssetVersion', {
+        'asset_id': asset['id'],
+        'asset': asset,
+        'task': new_task
+    })
+    session.commit()
+
+    def cleanup():
+        '''Remove created entities.'''
+        session.delete(asset_version)
+        session.delete(asset)
+        session.commit()
+    
+    request.addfinalizer(cleanup)
 
     return asset_version
 

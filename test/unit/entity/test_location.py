@@ -53,10 +53,8 @@ class Base64ResourceIdentifierTransformer(
 def new_location(request, session, unique_name, temporary_directory):
     '''Return new managed location.'''
 
-    from builtins import str
-
-    location = session.create(str('Location'), {
-        str('name'): str('test-location-{}'.format(unique_name))
+    location = session.create('Location', {
+        'name': 'test-location-{}'.format(unique_name)
     })
 
 
@@ -72,8 +70,15 @@ def new_location(request, session, unique_name, temporary_directory):
 
     def cleanup():
         '''Remove created entity.'''
+
+        location_components = session.query(
+            'ComponentLocation where location_id is {0}'.format(
+                location['id']
+            )
+        ).all()
+
         # First auto-remove all components in location.
-        for location_component in location['location_components']:
+        for location_component in location_components:
             session.delete(location_component)
 
         # At present, need this intermediate commit otherwise server errors
@@ -108,8 +113,14 @@ def new_unmanaged_location(request, session, unique_name):
 
     def cleanup():
         '''Remove created entity.'''
+        location_components = session.query(
+            'ComponentLocation where location_id is {0}'.format(
+                location['id']
+            )
+        ).all()
+
         # First auto-remove all components in location.
-        for location_component in location['location_components']:
+        for location_component in location_components:
             session.delete(location_component)
 
         # At present, need this intermediate commit otherwise server errors
@@ -548,3 +559,4 @@ def test_transfer_component_from_server(
         multi_location.get_component_availability(server_image_component)
         == 100.0
     )
+    
