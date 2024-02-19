@@ -13,6 +13,18 @@ Installation is simple with `pip <http://www.pip-installer.org/>`_::
 
     pip install ftrack-python-api
 
+Development
+===========
+
+.. highlight:: bash
+
+Install Poetry and pre-commit (for MacOS, this can be achieved using homebrew):
+
+    brew install Poetry
+    poetry shell
+    poetry install
+    pre-commit install
+
 Building from source
 ====================
 
@@ -53,7 +65,7 @@ Dependencies
 ============
 
 * `ftrack server <http://ftrack.rtd.ftrack.com/en/stable/>`_ >= 3.3.11
-* `Python <http://python.org>`_ >=2.7.9, <4.0
+* `Python <http://python.org>`_ >=3.8, <4.0
 * `Requests <http://docs.python-requests.org>`_ >= 2, <3
 * `Arrow <http://crsmithdev.com/arrow/>`_ >= 0.4.4, < 1
 * `termcolor <https://pypi.python.org/pypi/termcolor>`_ >= 1.1.0, < 2
