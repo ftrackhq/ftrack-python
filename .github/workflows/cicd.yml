@@ -41,7 +41,7 @@ jobs:
       - name: Run pytest
         run: |
           curl -sSL https://install.python-poetry.org | python
-          # /opt/poetry/bin/poetry self add "poetry-dynamic-versioning[plugin]"
+          /opt/poetry/bin/poetry self add "poetry-dynamic-versioning[plugin]"
           /opt/poetry/bin/poetry install
           /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
         env:
