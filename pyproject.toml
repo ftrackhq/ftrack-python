@@ -11,6 +11,12 @@ packages = [
 [tool.poetry-dynamic-versioning]
 enable = true
 
+[tool.poetry-dynamic-versioning.substitution]
+files = ["source/ftrack_api/_version.py"]
+
+[tool.poetry-dynamic-versioning.files."source/ftrack_api/_version.py"]
+persistent-substitution = true
+
 [tool.poetry.dependencies]
 python = "^3.8"
 sphinx = ">=1.2.2, <1.6"

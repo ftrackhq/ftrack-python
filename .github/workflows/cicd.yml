@@ -41,8 +41,9 @@ jobs:
       - name: Run pytest
         run: |
           curl -sSL https://install.python-poetry.org | python
-          /opt/poetry/bin/poetry install
-          /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
+          poetry self add "poetry-dynamic-versioning[plugin]"
+          poetry install
+          poetry run python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
@@ -60,8 +61,8 @@ jobs:
       - name: Build
         run: |
           curl -sSL https://install.python-poetry.org | python
-          poetry install
           poetry self add "poetry-dynamic-versioning[plugin]"
+          poetry install
           poetry build --format=wheel
           poetry run twine check dist/*
       - uses: actions/upload-artifact@v2
