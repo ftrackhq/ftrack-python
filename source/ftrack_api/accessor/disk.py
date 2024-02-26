@@ -17,25 +17,25 @@ from ftrack_api.exception import (
     AccessorPermissionDeniedError,
     AccessorResourceInvalidError,
     AccessorContainerNotEmptyError,
-    AccessorParentResourceNotFoundError
+    AccessorParentResourceNotFoundError,
 )
 
 
 class DiskAccessor(ftrack_api.accessor.base.Accessor):
-    '''Provide disk access to a location.
+    """Provide disk access to a location.
 
     Expect resource identifiers to refer to relative filesystem paths.
 
-    '''
+    """
 
     def __init__(self, prefix, **kw):
-        '''Initialise location accessor.
+        """Initialise location accessor.
 
         *prefix* specifies the base folder for the disk based structure and
         will be prepended to any path. It should be specified in the syntax of
         the current OS.
 
-        '''
+        """
         if prefix:
             prefix = os.path.expanduser(os.path.expandvars(prefix))
             prefix = os.path.abspath(prefix)
@@ -44,7 +44,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
         super(DiskAccessor, self).__init__(**kw)
 
     def list(self, resource_identifier):
-        '''Return list of entries in *resource_identifier* container.
+        """Return list of entries in *resource_identifier* container.
 
         Each entry in the returned list should be a valid resource identifier.
 
@@ -53,12 +53,10 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
         :exc:`~ftrack_api.exception.AccessorResourceInvalidError` if
         *resource_identifier* is not a container.
 
-        '''
+        """
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
-        with error_handler(
-            operation='list', resource_identifier=resource_identifier
-        ):
+        with error_handler(operation="list", resource_identifier=resource_identifier):
             listing = []
             for entry in os.listdir(filesystem_path):
                 listing.append(os.path.join(resource_identifier, entry))
@@ -66,71 +64,67 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
         return listing
 
     def exists(self, resource_identifier):
-        '''Return if *resource_identifier* is valid and exists in location.'''
+        """Return if *resource_identifier* is valid and exists in location."""
         filesystem_path = self.get_filesystem_path(resource_identifier)
         return os.path.exists(filesystem_path)
 
     def is_file(self, resource_identifier):
-        '''Return whether *resource_identifier* refers to a file.'''
+        """Return whether *resource_identifier* refers to a file."""
         filesystem_path = self.get_filesystem_path(resource_identifier)
         return os.path.isfile(filesystem_path)
 
     def is_container(self, resource_identifier):
-        '''Return whether *resource_identifier* refers to a container.'''
+        """Return whether *resource_identifier* refers to a container."""
         filesystem_path = self.get_filesystem_path(resource_identifier)
         return os.path.isdir(filesystem_path)
 
     def is_sequence(self, resource_identifier):
-        '''Return whether *resource_identifier* refers to a file sequence.'''
-        raise AccessorUnsupportedOperationError(operation='is_sequence')
+        """Return whether *resource_identifier* refers to a file sequence."""
+        raise AccessorUnsupportedOperationError(operation="is_sequence")
 
-    def open(self, resource_identifier, mode='rb'):
-        '''Return :class:`~ftrack_api.Data` for *resource_identifier*.'''
+    def open(self, resource_identifier, mode="rb"):
+        """Return :class:`~ftrack_api.Data` for *resource_identifier*."""
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
-        with error_handler(
-            operation='open', resource_identifier=resource_identifier
-        ):
+        with error_handler(operation="open", resource_identifier=resource_identifier):
             data = ftrack_api.data.File(filesystem_path, mode)
 
         return data
 
     def remove(self, resource_identifier):
-        '''Remove *resource_identifier*.
+        """Remove *resource_identifier*.
 
         Raise :exc:`~ftrack_api.exception.AccessorResourceNotFoundError` if
         *resource_identifier* does not exist.
 
-        '''
+        """
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
         if self.is_file(resource_identifier):
             with error_handler(
-                operation='remove', resource_identifier=resource_identifier
+                operation="remove", resource_identifier=resource_identifier
             ):
                 os.remove(filesystem_path)
 
         elif self.is_container(resource_identifier):
             with error_handler(
-                operation='remove', resource_identifier=resource_identifier
+                operation="remove", resource_identifier=resource_identifier
             ):
                 os.rmdir(filesystem_path)
 
         else:
-            raise AccessorResourceNotFoundError(
-                resource_identifier=resource_identifier
-            )
+            raise AccessorResourceNotFoundError(resource_identifier=resource_identifier)
 
     def make_container(self, resource_identifier, recursive=True):
-        '''Make a container at *resource_identifier*.
+        """Make a container at *resource_identifier*.
 
         If *recursive* is True, also make any intermediate containers.
 
-        '''
+        """
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
         with error_handler(
-            operation='makeContainer', resource_identifier=resource_identifier
+            operation="makeContainer", resource_identifier=resource_identifier
         ):
             try:
                 if recursive:
@@ -151,12 +145,12 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
                     raise
 
     def get_container(self, resource_identifier):
-        '''Return resource_identifier of container for *resource_identifier*.
+        """Return resource_identifier of container for *resource_identifier*.
 
         Raise :exc:`~ftrack_api.exception.AccessorParentResourceNotFoundError` if
         container of *resource_identifier* could not be determined.
 
-        '''
+        """
         filesystem_path = self.get_filesystem_path(resource_identifier)
 
         container = os.path.dirname(filesystem_path)
@@ -165,24 +159,24 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
             if not container.startswith(self.prefix):
                 raise AccessorParentResourceNotFoundError(
                     resource_identifier=resource_identifier,
-                    message='Could not determine container for '
-                            '{resource_identifier} as container falls outside '
-                            'of configured prefix.'
+                    message="Could not determine container for "
+                    "{resource_identifier} as container falls outside "
+                    "of configured prefix.",
                 )
 
             # Convert container filesystem path into resource identifier.
-            container = container[len(self.prefix):]
+            container = container[len(self.prefix) :]
             if ntpath.isabs(container):
                 # Ensure that resulting path is relative by stripping any
                 # leftover prefixed slashes from string.
                 # E.g. If prefix was '/tmp' and path was '/tmp/foo/bar' the
                 # result will be 'foo/bar'.
-                container = container.lstrip('\\/')
+                container = container.lstrip("\\/")
 
         return container
 
     def get_filesystem_path(self, resource_identifier):
-        '''Return filesystem path for *resource_identifier*.
+        """Return filesystem path for *resource_identifier*.
 
         For example::
 
@@ -195,7 +189,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
         Raise :exc:`ftrack_api.exception.AccessorFilesystemPathError` if filesystem
         path could not be determined from *resource_identifier*.
 
-        '''
+        """
         filesystem_path = resource_identifier
         if filesystem_path:
             filesystem_path = os.path.normpath(filesystem_path)
@@ -209,9 +203,9 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
             if not filesystem_path.startswith(self.prefix):
                 raise AccessorFilesystemPathError(
                     resource_identifier=resource_identifier,
-                    message='Could not determine access path for '
-                            'resource_identifier outside of configured prefix: '
-                            '{resource_identifier}.'
+                    message="Could not determine access path for "
+                    "resource_identifier outside of configured prefix: "
+                    "{resource_identifier}.",
                 )
 
         return filesystem_path
@@ -219,16 +213,15 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
 
 @contextlib.contextmanager
 def error_handler(**kw):
-    '''Conform raised OSError/IOError exception to appropriate FTrack error.'''
+    """Conform raised OSError/IOError exception to appropriate FTrack error."""
     try:
         yield
 
     except (OSError, IOError) as error:
         (exception_type, exception_value, traceback) = sys.exc_info()
-        kw.setdefault('error', error)
+        kw.setdefault("error", error)
 
-
-        error_code = getattr(error, 'errno')
+        error_code = getattr(error, "errno")
         if not error_code:
             raise AccessorOperationFailedError(**kw)
 

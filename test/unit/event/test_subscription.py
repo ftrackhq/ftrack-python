@@ -8,18 +8,21 @@ from ftrack_api.event.base import Event
 
 
 def test_string_representation():
-    '''String representation is subscription expression.'''
-    expression = 'topic=some-topic'
+    """String representation is subscription expression."""
+    expression = "topic=some-topic"
     subscription = ftrack_api.event.subscription.Subscription(expression)
 
     assert str(subscription) == expression
 
 
-@pytest.mark.parametrize('expression, event, expected', [
-    pytest.param('topic=test', Event(topic='test'), True,id='match'),
-    pytest.param('topic=test', Event(topic='other-test'), False, id='no match')
-])
+@pytest.mark.parametrize(
+    "expression, event, expected",
+    [
+        pytest.param("topic=test", Event(topic="test"), True, id="match"),
+        pytest.param("topic=test", Event(topic="other-test"), False, id="no match"),
+    ],
+)
 def test_includes(expression, event, expected):
-    '''Subscription includes event.'''
+    """Subscription includes event."""
     subscription = ftrack_api.event.subscription.Subscription(expression)
     assert subscription.includes(event) is expected

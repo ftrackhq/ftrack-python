@@ -3,8 +3,10 @@
 
 
 from builtins import object
+
+
 class ResourceIdentifierTransformer(object):
-    '''Transform resource identifiers.
+    """Transform resource identifiers.
 
     Provide ability to modify resource identifier before it is stored centrally
     (:meth:`encode`), or after it has been retrieved, but before it is used
@@ -20,32 +22,32 @@ class ResourceIdentifierTransformer(object):
         :class:`ftrack_api.accessor.base.Accessor` may perform and is targeted
         towards common transformations.
 
-    '''
+    """
 
     def __init__(self, session):
-        '''Initialise resource identifier transformer.
+        """Initialise resource identifier transformer.
 
         *session* should be the :class:`ftrack_api.session.Session` instance
         to use for communication with the server.
 
-        '''
+        """
         self.session = session
         super(ResourceIdentifierTransformer, self).__init__()
 
     def encode(self, resource_identifier, context=None):
-        '''Return encoded *resource_identifier* for storing centrally.
+        """Return encoded *resource_identifier* for storing centrally.
 
         A mapping of *context* values may be supplied to guide the
         transformation.
 
-        '''
+        """
         return resource_identifier
 
     def decode(self, resource_identifier, context=None):
-        '''Return decoded *resource_identifier* for use locally.
+        """Return decoded *resource_identifier* for use locally.
 
         A mapping of *context* values may be supplied to guide the
         transformation.
 
-        '''
+        """
         return resource_identifier

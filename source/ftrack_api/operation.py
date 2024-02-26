@@ -6,43 +6,43 @@ import copy
 
 
 class Operations(object):
-    '''Stack of operations.'''
+    """Stack of operations."""
 
     def __init__(self):
-        '''Initialise stack.'''
+        """Initialise stack."""
         self._stack = []
         super(Operations, self).__init__()
 
     def clear(self):
-        '''Clear all operations.'''
+        """Clear all operations."""
         del self._stack[:]
 
     def push(self, operation):
-        '''Push *operation* onto stack.'''
+        """Push *operation* onto stack."""
         self._stack.append(operation)
 
     def pop(self):
-        '''Pop and return most recent operation from stack.'''
+        """Pop and return most recent operation from stack."""
         return self._stack.pop()
 
     def __len__(self):
-        '''Return count of operations.'''
+        """Return count of operations."""
         return len(self._stack)
 
     def __iter__(self):
-        '''Return iterator over operations.'''
+        """Return iterator over operations."""
         return iter(self._stack)
 
 
 class Operation(object):
-    '''Represent an operation.'''
+    """Represent an operation."""
 
 
 class CreateEntityOperation(Operation):
-    '''Represent create entity operation.'''
+    """Represent create entity operation."""
 
     def __init__(self, entity_type, entity_key, entity_data):
-        '''Initialise operation.
+        """Initialise operation.
 
         *entity_type* should be the type of entity in string form (as returned
         from :attr:`ftrack_api.entity.base.Entity.entity_type`).
@@ -57,7 +57,7 @@ class CreateEntityOperation(Operation):
 
             Shallow copies will be made of each value in *entity_data*.
 
-        '''
+        """
         super(CreateEntityOperation, self).__init__()
         self.entity_type = entity_type
         self.entity_key = entity_key
@@ -67,12 +67,10 @@ class CreateEntityOperation(Operation):
 
 
 class UpdateEntityOperation(Operation):
-    '''Represent update entity operation.'''
+    """Represent update entity operation."""
 
-    def __init__(
-        self, entity_type, entity_key, attribute_name, old_value, new_value
-    ):
-        '''Initialise operation.
+    def __init__(self, entity_type, entity_key, attribute_name, old_value, new_value):
+        """Initialise operation.
 
         *entity_type* should be the type of entity in string form (as returned
         from :attr:`ftrack_api.entity.base.Entity.entity_type`).
@@ -88,7 +86,7 @@ class UpdateEntityOperation(Operation):
 
             Shallow copies will be made of both *old_value* and *new_value*.
 
-        '''
+        """
         super(UpdateEntityOperation, self).__init__()
         self.entity_type = entity_type
         self.entity_key = entity_key
@@ -98,10 +96,10 @@ class UpdateEntityOperation(Operation):
 
 
 class DeleteEntityOperation(Operation):
-    '''Represent delete entity operation.'''
+    """Represent delete entity operation."""
 
     def __init__(self, entity_type, entity_key):
-        '''Initialise operation.
+        """Initialise operation.
 
         *entity_type* should be the type of entity in string form (as returned
         from :attr:`ftrack_api.entity.base.Entity.entity_type`).
@@ -109,8 +107,7 @@ class DeleteEntityOperation(Operation):
         *entity_key* should be the unique key for the entity and should follow
         the form returned from :func:`ftrack_api.inspection.primary_key`.
 
-        '''
+        """
         super(DeleteEntityOperation, self).__init__()
         self.entity_type = entity_type
         self.entity_key = entity_key
-

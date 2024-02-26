@@ -5,10 +5,10 @@ import ftrack_api.entity.base
 
 
 class Job(ftrack_api.entity.base.Entity):
-    '''Represent job.'''
+    """Represent job."""
 
     def __init__(self, session, data=None, reconstructing=False):
-        '''Initialise entity.
+        """Initialise entity.
 
         *session* is an instance of :class:`ftrack_api.session.Session` that
         this entity instance is bound to.
@@ -33,16 +33,12 @@ class Job(ftrack_api.entity.base.Entity):
         such as from a query, and therefore should not have any special creation
         logic applied, such as initialising defaults for missing data.
 
-        '''
+        """
 
         if not reconstructing:
-            if data.get('type') not in ('api_job', None):
+            if data.get("type") not in ("api_job", None):
                 raise ValueError(
-                    'Invalid job type "{0}". Must be "api_job"'.format(
-                        data.get('type')
-                    )
+                    'Invalid job type "{0}". Must be "api_job"'.format(data.get("type"))
                 )
 
-        super(Job, self).__init__(
-            session, data=data, reconstructing=reconstructing
-        )
+        super(Job, self).__init__(session, data=data, reconstructing=reconstructing)

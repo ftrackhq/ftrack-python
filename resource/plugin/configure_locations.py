@@ -9,8 +9,8 @@ import ftrack_api.accessor.disk
 
 
 def configure_locations(event):
-    '''Configure locations for session.'''
-    session = event['data']['session']
+    """Configure locations for session."""
+    session = event["data"]["session"]
 
     # Find location(s) and customise instances.
     #
@@ -20,20 +20,19 @@ def configure_locations(event):
 
 
 def register(session):
-    '''Register plugin with *session*.'''
-    logger = logging.getLogger('ftrack_plugin:configure_locations.register')
+    """Register plugin with *session*."""
+    logger = logging.getLogger("ftrack_plugin:configure_locations.register")
 
     # Validate that session is an instance of ftrack_api.Session. If not, assume
     # that register is being called from an old or incompatible API and return
     # without doing anything.
     if not isinstance(session, ftrack_api.Session):
         logger.debug(
-            'Not subscribing plugin as passed argument {0} is not an '
-            'ftrack_api.Session instance.'.format(session)
+            "Not subscribing plugin as passed argument {0} is not an "
+            "ftrack_api.Session instance.".format(session)
         )
         return
 
     session.event_hub.subscribe(
-        'topic=ftrack.api.session.configure-location',
-        configure_locations
+        "topic=ftrack.api.session.configure-location", configure_locations
     )

@@ -62,33 +62,43 @@ except ImportError:
 
 
 class SessionAuthentication(requests.auth.AuthBase):
-    '''Attach ftrack session authentication information to requests.'''
+    """Attach ftrack session authentication information to requests."""
 
     def __init__(self, api_key, api_user):
-        '''Initialise with *api_key* and *api_user*.'''
+        """Initialise with *api_key* and *api_user*."""
         self.api_key = api_key
         self.api_user = api_user
         super(SessionAuthentication, self).__init__()
 
     def __call__(self, request):
-        '''Modify *request* to have appropriate headers.'''
-        request.headers.update({
-            'ftrack-api-key': self.api_key,
-            'ftrack-user': self.api_user
-        })
+        """Modify *request* to have appropriate headers."""
+        request.headers.update(
+            {"ftrack-api-key": self.api_key, "ftrack-user": self.api_user}
+        )
         return request
 
 
 class Session(object):
-    '''An isolated session for interaction with an ftrack server.'''
+    """An isolated session for interaction with an ftrack server."""
 
     def __init__(
-        self, server_url=None, api_key=None, api_user=None, auto_populate=True,
-        plugin_paths=None, cache=None, cache_key_maker=None,
-        auto_connect_event_hub=False, schema_cache_path=None,
-        plugin_arguments=None, timeout=60, cookies=None, headers=None, strict_api=False
+        self,
+        server_url=None,
+        api_key=None,
+        api_user=None,
+        auto_populate=True,
+        plugin_paths=None,
+        cache=None,
+        cache_key_maker=None,
+        auto_connect_event_hub=False,
+        schema_cache_path=None,
+        plugin_arguments=None,
+        timeout=60,
+        cookies=None,
+        headers=None,
+        strict_api=False,
     ):
-        '''Initialise session.
+        """Initialise session.
 
         *server_url* should be the URL of the ftrack server to connect to
         including any port number. If not specified attempt to look up from
@@ -170,41 +180,39 @@ class Session(object):
         specified) indicating whether to add the 'ftrack-strict-api': 'true' header
         to the request or not.
 
-        '''
+        """
         super(Session, self).__init__()
-        self.logger = logging.getLogger(
-            __name__ + '.' + self.__class__.__name__
-        )
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self._closed = False
 
         if server_url is None:
-            server_url = os.environ.get('FTRACK_SERVER')
+            server_url = os.environ.get("FTRACK_SERVER")
 
         if not server_url:
             raise TypeError(
                 'Required "server_url" not specified. Pass as argument or set '
-                'in environment variable FTRACK_SERVER.'
+                "in environment variable FTRACK_SERVER."
             )
 
         self._server_url = server_url.rstrip("/")
 
         if api_key is None:
             api_key = os.environ.get(
-                'FTRACK_API_KEY',
+                "FTRACK_API_KEY",
                 # Backwards compatibility
-                os.environ.get('FTRACK_APIKEY')
+                os.environ.get("FTRACK_APIKEY"),
             )
 
         if not api_key:
             raise TypeError(
                 'Required "api_key" not specified. Pass as argument or set in '
-                'environment variable FTRACK_API_KEY.'
+                "environment variable FTRACK_API_KEY."
             )
 
         self._api_key = api_key
 
         if api_user is None:
-            api_user = os.environ.get('FTRACK_API_USER')
+            api_user = os.environ.get("FTRACK_API_USER")
             if not api_user:
                 try:
                     api_user = getpass.getuser()
@@ -214,17 +222,15 @@ class Session(object):
         if not api_user:
             raise TypeError(
                 'Required "api_user" not specified. Pass as argument, set in '
-                'environment variable FTRACK_API_USER or one of the standard '
-                'environment variables used by Python\'s getpass module.'
+                "environment variable FTRACK_API_USER or one of the standard "
+                "environment variables used by Python's getpass module."
             )
 
         self._api_user = api_user
 
         # Currently pending operations.
         self.recorded_operations = ftrack_api.operation.Operations()
-        self._record_operations = collections.defaultdict(
-            lambda: True
-        )
+        self._record_operations = collections.defaultdict(lambda: True)
 
         self.cache_key_maker = cache_key_maker
         if self.cache_key_maker is None:
@@ -232,9 +238,7 @@ class Session(object):
 
         # Enforce always having a memory cache at top level so that the same
         # in-memory instance is returned from session.
-        self.cache = ftrack_api.cache.LayeredCache([
-            ftrack_api.cache.MemoryCache()
-        ])
+        self.cache = ftrack_api.cache.LayeredCache([ftrack_api.cache.MemoryCache()])
 
         if cache is not None:
             if callable(cache):
@@ -249,38 +253,32 @@ class Session(object):
 
         self._managed_request = None
         self._request = requests.Session()
-        
+
         if cookies:
             if not isinstance(cookies, collections_abc.Mapping):
-                raise TypeError('The cookies argument is required to be a mapping.')
+                raise TypeError("The cookies argument is required to be a mapping.")
             self._request.cookies.update(cookies)
 
         if headers:
             if not isinstance(headers, collections_abc.Mapping):
-                raise TypeError('The headers argument is required to be a mapping.')
+                raise TypeError("The headers argument is required to be a mapping.")
 
             headers = dict(headers)
 
         else:
             headers = {}
-        
-        if not isinstance(strict_api, bool):
-            raise TypeError('The strict_api argument is required to be a boolean.')
 
-        headers.update(
-            {'ftrack-strict-api': 'true' if strict_api is True else 'false'}
-        )
+        if not isinstance(strict_api, bool):
+            raise TypeError("The strict_api argument is required to be a boolean.")
+
+        headers.update({"ftrack-strict-api": "true" if strict_api is True else "false"})
 
         self._request.headers.update(headers)
-        self._request.auth = SessionAuthentication(
-            self._api_key, self._api_user
-        )
+        self._request.auth = SessionAuthentication(self._api_key, self._api_user)
         self.request_timeout = timeout
 
         # Auto populating state is now thread-local
-        self._auto_populate = collections.defaultdict(
-            lambda: auto_populate
-        )
+        self._auto_populate = collections.defaultdict(lambda: auto_populate)
 
         # Fetch server information and in doing so also check credentials.
         self._server_information = self._fetch_server_information()
@@ -294,7 +292,7 @@ class Session(object):
             self._api_user,
             self._api_key,
             headers=headers,
-            cookies=requests.utils.dict_from_cookiejar(self._request.cookies)
+            cookies=requests.utils.dict_from_cookiejar(self._request.cookies),
         )
 
         self._auto_connect_event_hub_thread = None
@@ -317,9 +315,9 @@ class Session(object):
 
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
-            self._plugin_paths = os.environ.get(
-                'FTRACK_EVENT_PLUGIN_PATH', ''
-            ).split(os.pathsep)
+            self._plugin_paths = os.environ.get("FTRACK_EVENT_PLUGIN_PATH", "").split(
+                os.pathsep
+            )
 
         self._discover_plugins(plugin_arguments=plugin_arguments)
 
@@ -329,11 +327,11 @@ class Session(object):
             if schema_cache_path is None:
                 schema_cache_path = appdirs.user_cache_dir()
                 schema_cache_path = os.environ.get(
-                    'FTRACK_API_SCHEMA_CACHE_PATH', schema_cache_path
+                    "FTRACK_API_SCHEMA_CACHE_PATH", schema_cache_path
                 )
 
             schema_cache_path = os.path.join(
-                schema_cache_path, 'ftrack_api_schema_cache.json'
+                schema_cache_path, "ftrack_api_schema_cache.json"
             )
 
         self.schemas = self._load_schemas(schema_cache_path)
@@ -344,30 +342,27 @@ class Session(object):
         self._configure_locations()
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.ready',
-                data=dict(
-                    session=self
-                )
+                topic="ftrack.api.session.ready", data=dict(session=self)
             ),
-            synchronous=True
+            synchronous=True,
         )
 
     def __enter__(self):
-        '''Return session as context manager.'''
+        """Return session as context manager."""
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
-        '''Exit session context, closing session in process.'''
+        """Exit session context, closing session in process."""
         self.close()
 
     @property
     def _request(self):
-        '''Return request session.
+        """Return request session.
 
         Raise :exc:`ftrack_api.exception.ConnectionClosedError` if session has
         been closed and connection unavailable.
 
-        '''
+        """
         if self._managed_request is None:
             raise ftrack_api.exception.ConnectionClosedError()
 
@@ -375,107 +370,104 @@ class Session(object):
 
     @_request.setter
     def _request(self, value):
-        '''Set request session to *value*.'''
+        """Set request session to *value*."""
         self._managed_request = value
 
     @property
     def auto_populate(self):
-        '''The current state of auto populate, stored per thread.'''
+        """The current state of auto populate, stored per thread."""
         return self._auto_populate[threading.current_thread().ident]
 
     @auto_populate.setter
     def auto_populate(self, value):
-        '''Setter for auto_populate, stored per thread.'''
+        """Setter for auto_populate, stored per thread."""
         self._auto_populate[threading.current_thread().ident] = value
 
     @property
     def record_operations(self):
-        '''The current state of record operations, stored per thread.'''
+        """The current state of record operations, stored per thread."""
         return self._record_operations[threading.current_thread().ident]
 
     @record_operations.setter
     def record_operations(self, value):
-        '''Setter for record operations, stored per thread.'''
+        """Setter for record operations, stored per thread."""
         self._record_operations[threading.current_thread().ident] = value
-
 
     @property
     def closed(self):
-        '''Return whether session has been closed.'''
+        """Return whether session has been closed."""
         return self._closed
 
     @property
     def server_information(self):
-        '''Return server information such as server version.'''
+        """Return server information such as server version."""
         return self._server_information.copy()
 
     @property
     def server_url(self):
-        '''Return server ulr used for session.'''
+        """Return server ulr used for session."""
         return self._server_url
 
     @property
     def api_user(self):
-        '''Return username used for session.'''
+        """Return username used for session."""
         return self._api_user
 
     @property
     def api_key(self):
-        '''Return API key used for session.'''
+        """Return API key used for session."""
         return self._api_key
 
     @property
     def event_hub(self):
-        '''Return event hub.'''
+        """Return event hub."""
         return self._event_hub
 
     @property
     def _local_cache(self):
-        '''Return top level memory cache.'''
+        """Return top level memory cache."""
         return self.cache.caches[0]
 
     def check_server_compatibility(self):
-        '''Check compatibility with connected server.'''
-        server_version = self.server_information.get('version')
+        """Check compatibility with connected server."""
+        server_version = self.server_information.get("version")
         if server_version is None:
             raise ftrack_api.exception.ServerCompatibilityError(
-                'Could not determine server version.'
+                "Could not determine server version."
             )
 
         # Perform basic version check.
-        if server_version != 'dev':
-            min_server_version = '3.3.11'
-            if (
-                distutils.version.LooseVersion(min_server_version)
-                > distutils.version.LooseVersion(server_version)
-            ):
+        if server_version != "dev":
+            min_server_version = "3.3.11"
+            if distutils.version.LooseVersion(
+                min_server_version
+            ) > distutils.version.LooseVersion(server_version):
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {0} incompatible with this version of the '
-                    'API which requires a server version >= {1}'.format(
-                        server_version,
-                        min_server_version
+                    "Server version {0} incompatible with this version of the "
+                    "API which requires a server version >= {1}".format(
+                        server_version, min_server_version
                     )
                 )
 
     def close(self):
-        '''Close session.
+        """Close session.
 
         Close connections to server. Clear any pending operations and local
         cache.
 
         Use this to ensure that session is cleaned up properly after use.
 
-        '''
+        """
         if self.closed:
-            self.logger.debug('Session already closed.')
+            self.logger.debug("Session already closed.")
             return
 
         self._closed = True
 
-        self.logger.debug('Closing session.')
+        self.logger.debug("Closing session.")
         if self.recorded_operations:
             self.logger.warning(
-                'Closing session with pending operations not persisted.'
+                "Closing session with pending operations not persisted."
             )
 
         # Clear pending operations.
@@ -495,10 +487,10 @@ class Session(object):
         except ftrack_api.exception.EventHubConnectionError:
             pass
 
-        self.logger.debug('Session closed.')
+        self.logger.debug("Session closed.")
 
     def reset(self):
-        '''Reset session clearing local state.
+        """Reset session clearing local state.
 
         Clear all pending operations and expunge all entities from session.
 
@@ -515,10 +507,10 @@ class Session(object):
             Previously attached entities are not reset in memory and will retain
             their state, but should not be used. Doing so will cause errors.
 
-        '''
+        """
         if self.recorded_operations:
             self.logger.warning(
-                'Resetting session with pending operations not persisted.'
+                "Resetting session with pending operations not persisted."
             )
 
         # Clear pending operations.
@@ -532,16 +524,13 @@ class Session(object):
 
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.reset',
-                data=dict(
-                    session=self
-                )
+                topic="ftrack.api.session.reset", data=dict(session=self)
             ),
-            synchronous=True
+            synchronous=True,
         )
 
     def auto_populating(self, auto_populate):
-        '''Temporarily set auto populate to *auto_populate*.
+        """Temporarily set auto populate to *auto_populate*.
 
         The current setting will be restored automatically when done.
 
@@ -550,11 +539,11 @@ class Session(object):
             with session.auto_populating(False):
                 print entity['name']
 
-        '''
+        """
         return AutoPopulatingContext(self, auto_populate)
 
     def operation_recording(self, record_operations):
-        '''Temporarily set operation recording to *record_operations*.
+        """Temporarily set operation recording to *record_operations*.
 
         The current setting will be restored automatically when done.
 
@@ -563,71 +552,68 @@ class Session(object):
             with session.operation_recording(False):
                 entity['name'] = 'change_not_recorded'
 
-        '''
+        """
         return OperationRecordingContext(self, record_operations)
 
     @property
     def created(self):
-        '''Return list of newly created entities.'''
+        """Return list of newly created entities."""
         entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in zip(entities, states)
+            entity
+            for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.CREATED
         ]
 
     @property
     def modified(self):
-        '''Return list of locally modified entities.'''
+        """Return list of locally modified entities."""
         entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in zip(entities, states)
+            entity
+            for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.MODIFIED
         ]
 
     @property
     def deleted(self):
-        '''Return list of deleted entities.'''
+        """Return list of deleted entities."""
         entities = list(self._local_cache.values())
         states = ftrack_api.inspection.states(entities)
 
         return [
-            entity for (entity, state) in zip(entities, states)
+            entity
+            for (entity, state) in zip(entities, states)
             if state is ftrack_api.symbol.DELETED
         ]
 
     def reset_remote(self, reset_type, entity=None):
-        '''Perform a server side reset.
+        """Perform a server side reset.
 
         *reset_type* is a server side supported reset type,
         passing the optional *entity* to perform the option upon.
 
         Please refer to ftrack documentation for a complete list of
         supported server side reset types.
-        '''
+        """
 
-        payload = {
-            'action': 'reset_remote',
-            'reset_type': reset_type
-        }
+        payload = {"action": "reset_remote", "reset_type": reset_type}
 
         if entity is not None:
-            payload.update({
-                'entity_type': entity.entity_type,
-                'entity_key': entity.get('id')
-            })
+            payload.update(
+                {"entity_type": entity.entity_type, "entity_key": entity.get("id")}
+            )
 
-        result = self.call(
-            [payload]
-        )
+        result = self.call([payload])
 
-        return result[0]['data']
+        return result[0]["data"]
 
     def create(self, entity_type, data=None, reconstructing=False):
-        '''Create and return an entity of *entity_type* with initial *data*.
+        """Create and return an entity of *entity_type* with initial *data*.
 
         If specified, *data* should be a dictionary of key, value pairs that
         should be used to populate attributes on the entity.
@@ -639,13 +625,13 @@ class Session(object):
         Constructed entity will be automatically :meth:`merged <Session.merge>`
         into the session.
 
-        '''
+        """
         entity = self._create(entity_type, data, reconstructing=reconstructing)
         entity = self.merge(entity)
         return entity
 
     def _create(self, entity_type, data, reconstructing):
-        '''Create and return an entity of *entity_type* with initial *data*.'''
+        """Create and return an entity of *entity_type* with initial *data*."""
         try:
             EntityTypeClass = self.types[entity_type]
         except KeyError:
@@ -654,7 +640,7 @@ class Session(object):
         return EntityTypeClass(self, data=data, reconstructing=reconstructing)
 
     def ensure(self, entity_type, data, identifying_keys=None):
-        '''Retrieve entity of *entity_type* with *data*, creating if necessary.
+        """Retrieve entity of *entity_type* with *data*, creating if necessary.
 
         *data* should be a dictionary of the same form passed to :meth:`create`.
 
@@ -704,23 +690,28 @@ class Session(object):
                 'User', {'username': 'martin', 'email': 'martin@example.com'}
             )
 
-        '''
+        """
         if not identifying_keys:
             identifying_keys = list(data.keys())
 
-        self.logger.debug(L(
-            'Ensuring entity {0!r} with data {1!r} using identifying keys '
-            '{2!r}', entity_type, data, identifying_keys
-        ))
+        self.logger.debug(
+            L(
+                "Ensuring entity {0!r} with data {1!r} using identifying keys " "{2!r}",
+                entity_type,
+                data,
+                identifying_keys,
+            )
+        )
 
         if not identifying_keys:
             raise ValueError(
-                'Could not determine any identifying data to check against '
-                'when ensuring {0!r} with data {1!r}. Identifying keys: {2!r}'
-                .format(entity_type, data, identifying_keys)
+                "Could not determine any identifying data to check against "
+                "when ensuring {0!r} with data {1!r}. Identifying keys: {2!r}".format(
+                    entity_type, data, identifying_keys
+                )
             )
 
-        expression = '{0} where'.format(entity_type)
+        expression = "{0} where".format(entity_type)
         criteria = []
         for identifying_key in identifying_keys:
             value = data[identifying_key]
@@ -728,35 +719,29 @@ class Session(object):
             if isinstance(value, string_types):
                 value = '"{0}"'.format(value)
 
-            elif isinstance(
-                value, (arrow.Arrow, datetime.datetime, datetime.date)
-            ):
+            elif isinstance(value, (arrow.Arrow, datetime.datetime, datetime.date)):
                 # Server does not store microsecond or timezone currently so
                 # need to strip from query.
                 # TODO: When datetime handling improved, update this logic.
-                value = (
-                    arrow.get(value).naive.replace(microsecond=0).isoformat()
-                )
+                value = arrow.get(value).naive.replace(microsecond=0).isoformat()
                 value = '"{0}"'.format(value)
 
-            criteria.append('{0} is {1}'.format(identifying_key, value))
+            criteria.append("{0} is {1}".format(identifying_key, value))
 
-        expression = '{0} {1}'.format(
-            expression, ' and '.join(criteria)
-        )
+        expression = "{0} {1}".format(expression, " and ".join(criteria))
 
         try:
             entity = self.query(expression).one()
 
         except ftrack_api.exception.NoResultFoundError:
-            self.logger.debug('Creating entity as did not already exist.')
+            self.logger.debug("Creating entity as did not already exist.")
 
             # Create entity.
             entity = self.create(entity_type, data)
             self.commit()
 
         else:
-            self.logger.debug('Retrieved matching existing entity.')
+            self.logger.debug("Retrieved matching existing entity.")
 
             # Update entity if required.
             updated = False
@@ -766,31 +751,30 @@ class Session(object):
                     updated = True
 
             if updated:
-                self.logger.debug('Updating existing entity to match new data.')
+                self.logger.debug("Updating existing entity to match new data.")
                 self.commit()
 
         return entity
 
     def delete(self, entity):
-        '''Mark *entity* for deletion.'''
+        """Mark *entity* for deletion."""
         if self.record_operations:
             self.recorded_operations.push(
                 ftrack_api.operation.DeleteEntityOperation(
-                    entity.entity_type,
-                    ftrack_api.inspection.primary_key(entity)
+                    entity.entity_type, ftrack_api.inspection.primary_key(entity)
                 )
             )
 
     def get(self, entity_type, entity_key):
-        '''Return entity of *entity_type* with unique *entity_key*.
+        """Return entity of *entity_type* with unique *entity_key*.
 
         First check for an existing entry in the configured cache, otherwise
         issue a query to the server.
 
         If no matching entity found, return None.
 
-        '''
-        self.logger.debug(L('Get {0} with key {1}', entity_type, entity_key))
+        """
+        self.logger.debug(L("Get {0} with key {1}", entity_type, entity_key))
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
         if isinstance(entity_key, string_types):
@@ -798,11 +782,12 @@ class Session(object):
 
         if len(entity_key) != len(primary_key_definition):
             raise ValueError(
-                'Incompatible entity_key {0!r} supplied. Entity type {1} '
-                'expects a primary key composed of {2} values ({3}).'
-                .format(
-                    entity_key, entity_type, len(primary_key_definition),
-                    ', '.join(primary_key_definition)
+                "Incompatible entity_key {0!r} supplied. Entity type {1} "
+                "expects a primary key composed of {2} values ({3}).".format(
+                    entity_key,
+                    entity_type,
+                    len(primary_key_definition),
+                    ", ".join(primary_key_definition),
                 )
             )
 
@@ -810,20 +795,14 @@ class Session(object):
         try:
             entity = self._get(entity_type, entity_key)
 
-
         except KeyError:
-
             # Query for matching entity.
-            self.logger.debug(
-                'Entity not present in cache. Issuing new query.'
-            )
+            self.logger.debug("Entity not present in cache. Issuing new query.")
             condition = []
             for key, value in zip(primary_key_definition, entity_key):
                 condition.append('{0} is "{1}"'.format(key, value))
 
-            expression = '{0} where ({1})'.format(
-                entity_type, ' and '.join(condition)
-            )
+            expression = "{0} where ({1})".format(entity_type, " and ".join(condition))
 
             results = self.query(expression).all()
             if results:
@@ -832,29 +811,26 @@ class Session(object):
         return entity
 
     def _get(self, entity_type, entity_key):
-        '''Return cached entity of *entity_type* with unique *entity_key*.
+        """Return cached entity of *entity_type* with unique *entity_key*.
 
         Raise :exc:`KeyError` if no such entity in the cache.
 
-        '''
+        """
         # Check cache for existing entity emulating
         # ftrack_api.inspection.identity result object to pass to key maker.
         cache_key = self.cache_key_maker.key(
             (str(entity_type), list(map(str, entity_key)))
         )
-        self.logger.debug(L(
-            'Checking cache for entity with key {0}', cache_key
-        ))
+        self.logger.debug(L("Checking cache for entity with key {0}", cache_key))
         entity = self.cache.get(cache_key)
-        self.logger.debug(L(
-            'Retrieved existing entity from cache: {0} at {1}',
-            entity, id(entity)
-        ))
+        self.logger.debug(
+            L("Retrieved existing entity from cache: {0} at {1}", entity, id(entity))
+        )
 
         return entity
 
     def query(self, expression, page_size=500):
-        '''Query against remote data according to *expression*.
+        """Query against remote data according to *expression*.
 
         *expression* is not executed directly. Instead return an
         :class:`ftrack_api.query.QueryResult` instance that will execute remote
@@ -865,21 +841,20 @@ class Session(object):
 
         .. seealso:: :ref:`querying`
 
-        '''
-        self.logger.debug(L('Query {0!r}', expression))
+        """
+        self.logger.debug(L("Query {0!r}", expression))
 
         # Add in sensible projections if none specified. Note that this is
         # done here rather than on the server to allow local modification of the
         # schema setting to include commonly used custom attributes for example.
         # TODO: Use a proper parser perhaps?
-        if not expression.startswith('select'):
-            entity_type = expression.split(' ', 1)[0]
+        if not expression.startswith("select"):
+            entity_type = expression.split(" ", 1)[0]
             EntityTypeClass = self.types[entity_type]
             projections = EntityTypeClass.default_projections
 
-            expression = 'select {0} from {1}'.format(
-                ', '.join(projections),
-                expression
+            expression = "select {0} from {1}".format(
+                ", ".join(projections), expression
             )
 
         query_result = ftrack_api.query.QueryResult(
@@ -888,18 +863,15 @@ class Session(object):
         return query_result
 
     def _query(self, expression):
-        '''Execute *query* and return (records, metadata).
+        """Execute *query* and return (records, metadata).
 
         Records will be a list of entities retrieved via the query and metadata
         a dictionary of accompanying information about the result set.
 
-        '''
+        """
         # TODO: Actually support batching several queries together.
         # TODO: Should batches have unique ids to match them up later.
-        batch = [{
-            'action': 'query',
-            'expression': expression
-        }]
+        batch = [{"action": "query", "expression": expression}]
 
         # TODO: When should this execute? How to handle background=True?
         results = self.call(batch)
@@ -907,19 +879,19 @@ class Session(object):
         # Merge entities into local cache and return merged entities.
         data = []
         merged = dict()
-        for entity in results[0]['data']:
+        for entity in results[0]["data"]:
             data.append(self._merge_recursive(entity, merged))
 
-        return data, results[0]['metadata']
+        return data, results[0]["metadata"]
 
     def merge(self, value, merged=None):
-        '''Merge *value* into session and return merged value.
+        """Merge *value* into session and return merged value.
 
         *merged* should be a mapping to record merges during run and should be
         used to avoid infinite recursion. If not set will default to a
         dictionary.
 
-        '''
+        """
         if merged is None:
             merged = {}
 
@@ -927,43 +899,40 @@ class Session(object):
             return self._merge(value, merged)
 
     def _merge(self, value, merged):
-        '''Return merged *value*.'''
+        """Return merged *value*."""
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
         with self.merge_lock:
             if isinstance(value, ftrack_api.entity.base.Entity):
                 log_debug and self.logger.debug(
-                    'Merging entity into session: {0} at {1}'
-                    .format(value, id(value))
+                    "Merging entity into session: {0} at {1}".format(value, id(value))
                 )
 
                 return self._merge_entity(value, merged=merged)
 
             elif isinstance(value, ftrack_api.collection.Collection):
                 log_debug and self.logger.debug(
-                    'Merging collection into session: {0!r} at {1}'
-                    .format(value, id(value))
+                    "Merging collection into session: {0!r} at {1}".format(
+                        value, id(value)
+                    )
                 )
 
                 merged_collection = []
                 for entry in value:
-                    merged_collection.append(
-                        self._merge(entry, merged=merged)
-                    )
+                    merged_collection.append(self._merge(entry, merged=merged))
 
                 return merged_collection
 
             elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
                 log_debug and self.logger.debug(
-                    'Merging mapped collection into session: {0!r} at {1}'
-                    .format(value, id(value))
+                    "Merging mapped collection into session: {0!r} at {1}".format(
+                        value, id(value)
+                    )
                 )
 
                 merged_collection = []
                 for entry in value.collection:
-                    merged_collection.append(
-                        self._merge(entry, merged=merged)
-                    )
+                    merged_collection.append(self._merge(entry, merged=merged))
 
                 return merged_collection
 
@@ -971,7 +940,7 @@ class Session(object):
                 return value
 
     def _merge_recursive(self, entity, merged=None):
-        '''Merge *entity* and all its attributes recursivly.'''
+        """Merge *entity* and all its attributes recursivly."""
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
         if merged is None:
@@ -988,19 +957,17 @@ class Session(object):
                 (
                     ftrack_api.entity.base.Entity,
                     ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy
-                )
+                    ftrack_api.collection.MappedCollectionProxy,
+                ),
             ):
                 log_debug and self.logger.debug(
-                    'Merging remote value for attribute {0}.'.format(attribute)
+                    "Merging remote value for attribute {0}.".format(attribute)
                 )
 
                 if isinstance(remote_value, ftrack_api.entity.base.Entity):
                     self._merge_recursive(remote_value, merged=merged)
 
-                elif isinstance(
-                    remote_value, ftrack_api.collection.Collection
-                ):
+                elif isinstance(remote_value, ftrack_api.collection.Collection):
                     for entry in remote_value:
                         self._merge_recursive(entry, merged=merged)
 
@@ -1013,7 +980,7 @@ class Session(object):
         return attached
 
     def _merge_entity(self, entity, merged=None):
-        '''Merge *entity* into session returning merged entity.
+        """Merge *entity* into session returning merged entity.
 
         Merge is recursive so any references to other entities will also be
         merged.
@@ -1021,7 +988,7 @@ class Session(object):
         *entity* will never be modified in place. Ensure that the returned
         merged entity instance is used.
 
-        '''
+        """
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
         if merged is None:
@@ -1036,27 +1003,28 @@ class Session(object):
             attached_entity = merged.get(entity_key)
             if attached_entity is not None:
                 log_debug and self.logger.debug(
-                    'Entity already processed for key {0} as {1} at {2}'
-                    .format(entity_key, attached_entity, id(attached_entity))
+                    "Entity already processed for key {0} as {1} at {2}".format(
+                        entity_key, attached_entity, id(attached_entity)
+                    )
                 )
 
                 return attached_entity
             else:
                 log_debug and self.logger.debug(
-                    'Entity not already processed for key {0}.'
-                    .format(entity_key)
+                    "Entity not already processed for key {0}.".format(entity_key)
                 )
 
             # Check for existing instance of entity in cache.
             log_debug and self.logger.debug(
-                'Checking for entity in cache with key {0}'.format(entity_key)
+                "Checking for entity in cache with key {0}".format(entity_key)
             )
             try:
                 attached_entity = self.cache.get(entity_key)
 
                 log_debug and self.logger.debug(
-                    'Retrieved existing entity from cache: {0} at {1}'
-                    .format(attached_entity, id(attached_entity))
+                    "Retrieved existing entity from cache: {0} at {1}".format(
+                        attached_entity, id(attached_entity)
+                    )
                 )
 
             except KeyError:
@@ -1066,8 +1034,8 @@ class Session(object):
                 )
 
                 log_debug and self.logger.debug(
-                    'Entity not present in cache. Constructed new instance: '
-                    '{0} at {1}'.format(attached_entity, id(attached_entity))
+                    "Entity not present in cache. Constructed new instance: "
+                    "{0} at {1}".format(attached_entity, id(attached_entity))
                 )
 
             # Mark entity as seen to avoid infinite loops.
@@ -1076,18 +1044,18 @@ class Session(object):
             changes = attached_entity.merge(entity, merged=merged)
             if changes:
                 self.cache.set(entity_key, attached_entity)
-                self.logger.debug('Cache updated with merged entity.')
+                self.logger.debug("Cache updated with merged entity.")
 
             else:
                 self.logger.debug(
-                    'Cache not updated with merged entity as no differences '
-                    'detected.'
+                    "Cache not updated with merged entity as no differences "
+                    "detected."
                 )
 
         return attached_entity
 
     def populate(self, entities, projections):
-        '''Populate *entities* with attributes specified by *projections*.
+        """Populate *entities* with attributes specified by *projections*.
 
         Any locally set values included in the *projections* will not be
         overwritten with the retrieved remote value. If this 'synchronise'
@@ -1106,14 +1074,12 @@ class Session(object):
             Entities that have been created and not yet persisted will be
             skipped as they have no remote values to fetch.
 
-        '''
-        self.logger.debug(L(
-            'Populate {0!r} projections for {1}.', projections, entities
-        ))
+        """
+        self.logger.debug(
+            L("Populate {0!r} projections for {1}.", projections, entities)
+        )
 
-        if not isinstance(
-            entities, (list, tuple, ftrack_api.query.QueryResult)
-        ):
+        if not isinstance(entities, (list, tuple, ftrack_api.query.QueryResult)):
             entities = [entities]
 
         # TODO: How to handle a mixed collection of different entity types
@@ -1129,10 +1095,13 @@ class Session(object):
                 # values. Don't raise an error here as it is reasonable to
                 # iterate over an entities properties and see that some of them
                 # are NOT_SET.
-                self.logger.debug(L(
-                    'Skipping newly created entity {0!r} for population as no '
-                    'data will exist in the remote for this entity yet.', entity
-                ))
+                self.logger.debug(
+                    L(
+                        "Skipping newly created entity {0!r} for population as no "
+                        "data will exist in the remote for this entity yet.",
+                        entity,
+                    )
+                )
                 continue
 
             entities_to_process.append(entity)
@@ -1140,7 +1109,7 @@ class Session(object):
         if entities_to_process:
             reference_entity = entities_to_process[0]
             entity_type = reference_entity.entity_type
-            query = 'select {0} from {1}'.format(projections, entity_type)
+            query = "select {0} from {1}".format(projections, entity_type)
 
             primary_key_definition = reference_entity.primary_key_attributes
             entity_keys = [
@@ -1156,22 +1125,21 @@ class Session(object):
                     for key, value in zip(primary_key_definition, entity_key):
                         condition.append('{0} is "{1}"'.format(key, value))
 
-                    conditions.append('({0})'.format('and '.join(condition)))
+                    conditions.append("({0})".format("and ".join(condition)))
 
-                query = '{0} where {1}'.format(query, ' or '.join(conditions))
+                query = "{0} where {1}".format(query, " or ".join(conditions))
 
             else:
                 primary_key = primary_key_definition[0]
 
                 if len(entity_keys) > 1:
-                    query = '{0} where {1} in ({2})'.format(
-                        query, primary_key,
-                        ','.join([
-                            str(entity_key[0]) for entity_key in entity_keys
-                        ])
+                    query = "{0} where {1} in ({2})".format(
+                        query,
+                        primary_key,
+                        ",".join([str(entity_key[0]) for entity_key in entity_keys]),
                     )
                 else:
-                    query = '{0} where {1} is {2}'.format(
+                    query = "{0} where {1} is {2}".format(
                         query, primary_key, str(entity_keys[0][0])
                     )
 
@@ -1187,61 +1155,60 @@ class Session(object):
 
     # TODO: Make atomic.
     def commit(self):
-        '''Commit all local changes to the server.'''
+        """Commit all local changes to the server."""
         batch = []
 
         with self.auto_populating(False):
             for operation in self.recorded_operations:
-
                 # Convert operation to payload.
-                if isinstance(
-                    operation, ftrack_api.operation.CreateEntityOperation
-                ):
+                if isinstance(operation, ftrack_api.operation.CreateEntityOperation):
                     # At present, data payload requires duplicating entity
                     # type in data and also ensuring primary key added.
                     entity_data = {
-                        '__entity_type__': operation.entity_type,
+                        "__entity_type__": operation.entity_type,
                     }
                     entity_data.update(operation.entity_key)
                     entity_data.update(operation.entity_data)
 
-                    payload = OperationPayload({
-                        'action': 'create',
-                        'entity_type': operation.entity_type,
-                        'entity_key': list(operation.entity_key.values()),
-                        'entity_data': entity_data
-                    })
+                    payload = OperationPayload(
+                        {
+                            "action": "create",
+                            "entity_type": operation.entity_type,
+                            "entity_key": list(operation.entity_key.values()),
+                            "entity_data": entity_data,
+                        }
+                    )
 
-                elif isinstance(
-                    operation, ftrack_api.operation.UpdateEntityOperation
-                ):
+                elif isinstance(operation, ftrack_api.operation.UpdateEntityOperation):
                     entity_data = {
                         # At present, data payload requires duplicating entity
                         # type.
-                        '__entity_type__': operation.entity_type,
-                        operation.attribute_name: operation.new_value
+                        "__entity_type__": operation.entity_type,
+                        operation.attribute_name: operation.new_value,
                     }
 
-                    payload = OperationPayload({
-                        'action': 'update',
-                        'entity_type': operation.entity_type,
-                        'entity_key': list(operation.entity_key.values()),
-                        'entity_data': entity_data
-                    })
+                    payload = OperationPayload(
+                        {
+                            "action": "update",
+                            "entity_type": operation.entity_type,
+                            "entity_key": list(operation.entity_key.values()),
+                            "entity_data": entity_data,
+                        }
+                    )
 
-                elif isinstance(
-                    operation, ftrack_api.operation.DeleteEntityOperation
-                ):
-                    payload = OperationPayload({
-                        'action': 'delete',
-                        'entity_type': operation.entity_type,
-                        'entity_key': list(operation.entity_key.values())
-                    })
+                elif isinstance(operation, ftrack_api.operation.DeleteEntityOperation):
+                    payload = OperationPayload(
+                        {
+                            "action": "delete",
+                            "entity_type": operation.entity_type,
+                            "entity_key": list(operation.entity_key.values()),
+                        }
+                    )
 
                 else:
                     raise ValueError(
-                        'Cannot commit. Unrecognised operation type {0} '
-                        'detected.'.format(type(operation))
+                        "Cannot commit. Unrecognised operation type {0} "
+                        "detected.".format(type(operation))
                     )
 
                 batch.append(payload)
@@ -1256,22 +1223,18 @@ class Session(object):
         deleted = set()
 
         for payload in batch:
-            if payload['action'] == 'create':
-                created.add(
-                    (payload['entity_type'], str(payload['entity_key']))
-                )
+            if payload["action"] == "create":
+                created.add((payload["entity_type"], str(payload["entity_key"])))
 
-            elif payload['action'] == 'delete':
-                deleted.add(
-                    (payload['entity_type'], str(payload['entity_key']))
-                )
+            elif payload["action"] == "delete":
+                deleted.add((payload["entity_type"], str(payload["entity_key"])))
 
         created_then_deleted = deleted.intersection(created)
         if created_then_deleted:
             optimised_batch = []
             for payload in batch:
-                entity_type = payload.get('entity_type')
-                entity_key = str(payload.get('entity_key'))
+                entity_type = payload.get("entity_type")
+                entity_key = str(payload.get("entity_key"))
 
                 if (entity_type, entity_key) in created_then_deleted:
                     continue
@@ -1284,22 +1247,20 @@ class Session(object):
         # attribute is applied server side.
         updates_map = set()
         for payload in reversed(batch):
-            if payload['action'] in ('update', ):
-                for key, value in list(payload['entity_data'].items()):
-                    if key == '__entity_type__':
+            if payload["action"] in ("update",):
+                for key, value in list(payload["entity_data"].items()):
+                    if key == "__entity_type__":
                         continue
 
-                    identity = (
-                        payload['entity_type'], str(payload['entity_key']), key
-                    )
+                    identity = (payload["entity_type"], str(payload["entity_key"]), key)
                     if identity in updates_map:
-                        del payload['entity_data'][key]
+                        del payload["entity_data"][key]
                     else:
                         updates_map.add(identity)
 
         # Remove NOT_SET values from entity_data.
         for payload in batch:
-            entity_data = payload.get('entity_data', {})
+            entity_data = payload.get("entity_data", {})
             for key, value in list(entity_data.items()):
                 if value is ftrack_api.symbol.NOT_SET:
                     del entity_data[key]
@@ -1307,10 +1268,10 @@ class Session(object):
         # Remove payloads with redundant entity_data.
         optimised_batch = []
         for payload in batch:
-            entity_data = payload.get('entity_data')
+            entity_data = payload.get("entity_data")
             if entity_data is not None:
                 keys = list(entity_data.keys())
-                if not keys or keys == ['__entity_type__']:
+                if not keys or keys == ["__entity_type__"]:
                     continue
 
             optimised_batch.append(payload)
@@ -1325,12 +1286,12 @@ class Session(object):
         for payload in batch:
             if (
                 previous_payload is not None
-                and payload['action'] == 'update'
-                and previous_payload['action'] in ('create', 'update')
-                and previous_payload['entity_type'] == payload['entity_type']
-                and previous_payload['entity_key'] == payload['entity_key']
+                and payload["action"] == "update"
+                and previous_payload["action"] in ("create", "update")
+                and previous_payload["entity_type"] == payload["entity_type"]
+                and previous_payload["entity_key"] == payload["entity_key"]
             ):
-                previous_payload['entity_data'].update(payload['entity_data'])
+                previous_payload["entity_data"].update(payload["entity_data"])
                 continue
 
             else:
@@ -1358,12 +1319,11 @@ class Session(object):
 
             # Process results merging into cache relevant data.
             for entry in result:
-
-                if entry['action'] in ('create', 'update'):
+                if entry["action"] in ("create", "update"):
                     # Merge returned entities into local cache.
-                    self.merge(entry['data'])
+                    self.merge(entry["data"])
 
-                elif entry['action'] == 'delete':
+                elif entry["action"] == "delete":
                     # TODO: Detach entity - need identity returned?
                     # TODO: Expunge entity from cache.
                     pass
@@ -1375,7 +1335,7 @@ class Session(object):
                         entity.clear()
 
     def rollback(self):
-        '''Clear all recorded operations and local state.
+        """Clear all recorded operations and local state.
 
         Typically this would be used following a failed :meth:`commit` in order
         to revert the session to a known good state.
@@ -1385,10 +1345,9 @@ class Session(object):
         objects are not deleted from memory. They should no longer be used and
         doing so could cause errors.
 
-        '''
+        """
         with self.auto_populating(False):
             with self.operation_recording(False):
-
                 # Detach all newly created entities and remove from cache. This
                 # is done because simply clearing the local values of newly
                 # created entities would result in entities with no identity as
@@ -1399,10 +1358,12 @@ class Session(object):
                     if isinstance(
                         operation, ftrack_api.operation.CreateEntityOperation
                     ):
-                        entity_key = str((
-                            str(operation.entity_type),
-                            list(operation.entity_key.values())
-                        ))
+                        entity_key = str(
+                            (
+                                str(operation.entity_type),
+                                list(operation.entity_key.values()),
+                            )
+                        )
                         try:
                             self.cache.remove(entity_key)
                         except KeyError:
@@ -1415,12 +1376,12 @@ class Session(object):
         self.recorded_operations.clear()
 
     def _fetch_server_information(self):
-        '''Return server information.'''
-        result = self.call([{'action': 'query_server_information'}])
+        """Return server information."""
+        result = self.call([{"action": "query_server_information"}])
         return result[0]
 
     def _discover_plugins(self, plugin_arguments=None):
-        '''Find and load plugins in search paths.
+        """Find and load plugins in search paths.
 
         Each discovered module should implement a register function that
         accepts this session as first argument. Typically the function should
@@ -1435,54 +1396,48 @@ class Session(object):
         *plugin_arguments* should be an optional mapping of keyword arguments
         and values to pass to plugin register functions upon discovery.
 
-        '''
+        """
         plugin_arguments = plugin_arguments or {}
-        ftrack_api.plugin.discover(
-            self._plugin_paths, [self], plugin_arguments
-        )
+        ftrack_api.plugin.discover(self._plugin_paths, [self], plugin_arguments)
 
     def _read_schemas_from_cache(self, schema_cache_path):
-        '''Return schemas and schema hash from *schema_cache_path*.
+        """Return schemas and schema hash from *schema_cache_path*.
 
         *schema_cache_path* should be the path to the file containing the
         schemas in JSON format.
 
-        '''
-        self.logger.debug(L(
-            'Reading schemas from cache {0!r}', schema_cache_path
-        ))
+        """
+        self.logger.debug(L("Reading schemas from cache {0!r}", schema_cache_path))
 
         if not os.path.exists(schema_cache_path):
-            self.logger.info(L(
-                'Cache file not found at {0!r}.', schema_cache_path
-            ))
+            self.logger.info(L("Cache file not found at {0!r}.", schema_cache_path))
 
             return [], None
 
-        with open(schema_cache_path, 'r') as schema_file:
+        with open(schema_cache_path, "r") as schema_file:
             schemas = json.load(schema_file)
             hash_ = hashlib.md5(
-                json.dumps(schemas, sort_keys=True).encode('utf-8')
+                json.dumps(schemas, sort_keys=True).encode("utf-8")
             ).hexdigest()
 
         return schemas, hash_
 
     def _write_schemas_to_cache(self, schemas, schema_cache_path):
-        '''Write *schemas* to *schema_cache_path*.
+        """Write *schemas* to *schema_cache_path*.
 
         *schema_cache_path* should be a path to a file that the schemas can be
         written to in JSON format.
 
-        '''
-        self.logger.debug(L(
-            'Updating schema cache {0!r} with new schemas.', schema_cache_path
-        ))
+        """
+        self.logger.debug(
+            L("Updating schema cache {0!r} with new schemas.", schema_cache_path)
+        )
 
-        with open(schema_cache_path, 'w') as local_cache_file:
+        with open(schema_cache_path, "w") as local_cache_file:
             json.dump(schemas, local_cache_file, indent=4)
 
     def _load_schemas(self, schema_cache_path):
-        '''Load schemas.
+        """Load schemas.
 
         First try to load schemas from cache at *schema_cache_path*. If the
         cache is not available or the cache appears outdated then load schemas
@@ -1491,7 +1446,7 @@ class Session(object):
         If *schema_cache_path* is set to `False`, always load schemas from
         server bypassing cache.
 
-        '''
+        """
         local_schema_hash = None
         schemas = []
 
@@ -1503,70 +1458,69 @@ class Session(object):
             except (IOError, TypeError, AttributeError, ValueError):
                 # Catch any known exceptions when trying to read the local
                 # schema cache to prevent API from being unusable.
-                self.logger.exception(L(
-                    'Schema cache could not be loaded from {0!r}',
-                    schema_cache_path
-                ))
+                self.logger.exception(
+                    L("Schema cache could not be loaded from {0!r}", schema_cache_path)
+                )
 
         # Use `dictionary.get` to retrieve hash to support older version of
         # ftrack server not returning a schema hash.
-        server_hash = self._server_information.get(
-            'schema_hash', False
-        )
+        server_hash = self._server_information.get("schema_hash", False)
         if local_schema_hash != server_hash:
-            self.logger.debug(L(
-                'Loading schemas from server due to hash not matching.'
-                'Local: {0!r} != Server: {1!r}', local_schema_hash, server_hash
-            ))
-            schemas = self.call([{'action': 'query_schemas'}])[0]
+            self.logger.debug(
+                L(
+                    "Loading schemas from server due to hash not matching."
+                    "Local: {0!r} != Server: {1!r}",
+                    local_schema_hash,
+                    server_hash,
+                )
+            )
+            schemas = self.call([{"action": "query_schemas"}])[0]
 
             if schema_cache_path:
                 try:
                     self._write_schemas_to_cache(schemas, schema_cache_path)
                 except (IOError, TypeError):
-                    self.logger.exception(L(
-                        'Failed to update schema cache {0!r}.',
-                        schema_cache_path
-                    ))
+                    self.logger.exception(
+                        L("Failed to update schema cache {0!r}.", schema_cache_path)
+                    )
 
         else:
-            self.logger.debug(L(
-                'Using cached schemas from {0!r}', schema_cache_path
-            ))
+            self.logger.debug(L("Using cached schemas from {0!r}", schema_cache_path))
 
         return schemas
 
     def _build_entity_type_classes(self, schemas):
-        '''Build default entity type classes.'''
+        """Build default entity type classes."""
         fallback_factory = ftrack_api.entity.factory.StandardFactory()
         classes = {}
 
         for schema in schemas:
             results = self.event_hub.publish(
                 ftrack_api.event.base.Event(
-                    topic='ftrack.api.session.construct-entity-type',
-                    data=dict(
-                        schema=schema,
-                        schemas=schemas
-                    )
+                    topic="ftrack.api.session.construct-entity-type",
+                    data=dict(schema=schema, schemas=schemas),
                 ),
-                synchronous=True
+                synchronous=True,
             )
 
             results = [result for result in results if result is not None]
 
             if not results:
-                self.logger.debug(L(
-                    'Using default StandardFactory to construct entity type '
-                    'class for "{0}"', schema['id']
-                ))
+                self.logger.debug(
+                    L(
+                        "Using default StandardFactory to construct entity type "
+                        'class for "{0}"',
+                        schema["id"],
+                    )
+                )
                 entity_type_class = fallback_factory.create(schema)
 
             elif len(results) > 1:
                 raise ValueError(
                     'Expected single entity type to represent schema "{0}" but '
-                    'received {1} entity types instead.'
-                    .format(schema['id'], len(results))
+                    "received {1} entity types instead.".format(
+                        schema["id"], len(results)
+                    )
                 )
 
             else:
@@ -1577,40 +1531,38 @@ class Session(object):
         return classes
 
     def _configure_locations(self):
-        '''Configure locations.'''
+        """Configure locations."""
         # First configure builtin locations, by injecting them into local cache.
 
         # Origin.
         location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.origin',
-                id=ftrack_api.symbol.ORIGIN_LOCATION_ID
-            ),
-            reconstructing=True
+            "Location",
+            data=dict(name="ftrack.origin", id=ftrack_api.symbol.ORIGIN_LOCATION_ID),
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.OriginLocationMixin,
-            name='OriginLocation'
+            location,
+            ftrack_api.entity.location.OriginLocationMixin,
+            name="OriginLocation",
         )
-        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix="")
         location.structure = ftrack_api.structure.origin.OriginStructure()
         location.priority = 100
 
         # Unmanaged.
         location = self.create(
-            'Location',
+            "Location",
             data=dict(
-                name='ftrack.unmanaged',
-                id=ftrack_api.symbol.UNMANAGED_LOCATION_ID
+                name="ftrack.unmanaged", id=ftrack_api.symbol.UNMANAGED_LOCATION_ID
             ),
-            reconstructing=True
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.UnmanagedLocationMixin,
-            name='UnmanagedLocation'
+            location,
+            ftrack_api.entity.location.UnmanagedLocationMixin,
+            name="UnmanagedLocation",
         )
-        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix="")
         location.structure = ftrack_api.structure.origin.OriginStructure()
         # location.resource_identifier_transformer = (
         #     ftrack_api.resource_identifier_transformer.internal.InternalResourceIdentifierTransformer(session)
@@ -1619,78 +1571,61 @@ class Session(object):
 
         # Review.
         location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.review',
-                id=ftrack_api.symbol.REVIEW_LOCATION_ID
-            ),
-            reconstructing=True
+            "Location",
+            data=dict(name="ftrack.review", id=ftrack_api.symbol.REVIEW_LOCATION_ID),
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.UnmanagedLocationMixin,
-            name='UnmanagedLocation'
+            location,
+            ftrack_api.entity.location.UnmanagedLocationMixin,
+            name="UnmanagedLocation",
         )
-        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix='')
+        location.accessor = ftrack_api.accessor.disk.DiskAccessor(prefix="")
         location.structure = ftrack_api.structure.origin.OriginStructure()
         location.priority = 110
 
         # Server.
         location = self.create(
-            'Location',
-            data=dict(
-                name='ftrack.server',
-                id=ftrack_api.symbol.SERVER_LOCATION_ID
-            ),
-            reconstructing=True
+            "Location",
+            data=dict(name="ftrack.server", id=ftrack_api.symbol.SERVER_LOCATION_ID),
+            reconstructing=True,
         )
         ftrack_api.mixin(
-            location, ftrack_api.entity.location.ServerLocationMixin,
-            name='ServerLocation'
+            location,
+            ftrack_api.entity.location.ServerLocationMixin,
+            name="ServerLocation",
         )
-        location.accessor = ftrack_api.accessor.server._ServerAccessor(
-            session=self
-        )
+        location.accessor = ftrack_api.accessor.server._ServerAccessor(session=self)
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
         # Master location based on server scenario.
-        storage_scenario = self.server_information.get('storage_scenario')
+        storage_scenario = self.server_information.get("storage_scenario")
 
-        if (
-            storage_scenario and
-            storage_scenario.get('scenario')
-        ):
+        if storage_scenario and storage_scenario.get("scenario"):
             self.event_hub.publish(
                 ftrack_api.event.base.Event(
-                    topic='ftrack.storage-scenario.activate',
-                    data=dict(
-                        storage_scenario=storage_scenario
-                    )
+                    topic="ftrack.storage-scenario.activate",
+                    data=dict(storage_scenario=storage_scenario),
                 ),
-                synchronous=True
+                synchronous=True,
             )
 
         # Next, allow further configuration of locations via events.
         self.event_hub.publish(
             ftrack_api.event.base.Event(
-                topic='ftrack.api.session.configure-location',
-                data=dict(
-                    session=self
-                )
+                topic="ftrack.api.session.configure-location", data=dict(session=self)
             ),
-            synchronous=True
+            synchronous=True,
         )
 
     def call(self, data):
-        '''Make request to server with *data* batch describing the actions.'''
-        url = self._server_url + '/api'
-        headers = {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        }
-        data = self.encode(data, entity_attribute_strategy='modified_only')
+        """Make request to server with *data* batch describing the actions."""
+        url = self._server_url + "/api"
+        headers = {"content-type": "application/json", "accept": "application/json"}
+        data = self.encode(data, entity_attribute_strategy="modified_only")
 
-        self.logger.debug(L('Calling server {0} with {1!r}', url, data))
+        self.logger.debug(L("Calling server {0} with {1!r}", url, data))
 
         try:
             result = {}
@@ -1700,18 +1635,18 @@ class Session(object):
                 data=data,
                 timeout=self.request_timeout,
             )
-            self.logger.debug(L('Call took: {0}', response.elapsed.total_seconds()))
-            self.logger.debug(L('Response: {0!r}', response.text))
-            
+            self.logger.debug(L("Call took: {0}", response.elapsed.total_seconds()))
+            self.logger.debug(L("Response: {0!r}", response.text))
+
             result = self.decode(response.text)
             response.raise_for_status()
 
         # handle response exceptions and / or other http exceptions
         # (strict api used => status code returned => raise_for_status() => HTTPError)
         except requests.exceptions.HTTPError as exc:
-            if 'exception' in result:
-                error_message = 'Server reported error: {0}({1})'.format(
-                    result['exception'], result['content']
+            if "exception" in result:
+                error_message = "Server reported error: {0}({1})".format(
+                    result["exception"], result["content"]
                 )
                 self._raise_server_error(error_message)
             else:
@@ -1720,17 +1655,18 @@ class Session(object):
         # JSON response decoding exception
         except (TypeError, ValueError):
             error_message = (
-                'Server reported error in unexpected format. Raw error was: {0}'
-                .format(response.text)
+                "Server reported error in unexpected format. Raw error was: {0}".format(
+                    response.text
+                )
             )
             self._raise_server_error(error_message)
-        
+
         # handle possible response exceptions
         # (strict api not used => 200 returned)
         else:
-            if 'exception' in result:   
-                error_message = 'Server reported error: {0}({1})'.format(
-                    result['exception'], result['content']
+            if "exception" in result:
+                error_message = "Server reported error: {0}({1})".format(
+                    result["exception"], result["content"]
                 )
                 self._raise_server_error(error_message)
         return result
@@ -1739,8 +1675,8 @@ class Session(object):
         self.logger.exception(error_message)
         raise ftrack_api.exception.ServerError(error_message)
 
-    def encode(self, data, entity_attribute_strategy='set_only'):
-        '''Return *data* encoded as JSON formatted string.
+    def encode(self, data, entity_attribute_strategy="set_only"):
+        """Return *data* encoded as JSON formatted string.
 
         *entity_attribute_strategy* specifies how entity attributes should be
         handled. The following strategies are available:
@@ -1752,16 +1688,18 @@ class Session(object):
           locally.
         * *persisted_only* - Encode only remote (persisted) attribute values.
 
-        '''
+        """
         entity_attribute_strategies = (
-            'all', 'set_only', 'modified_only', 'persisted_only'
+            "all",
+            "set_only",
+            "modified_only",
+            "persisted_only",
         )
         if entity_attribute_strategy not in entity_attribute_strategies:
             raise ValueError(
                 'Unsupported entity_attribute_strategy "{0}". Must be one of '
-                '{1}'.format(
-                    entity_attribute_strategy,
-                    ', '.join(entity_attribute_strategies)
+                "{1}".format(
+                    entity_attribute_strategy, ", ".join(entity_attribute_strategies)
                 )
             )
 
@@ -1769,23 +1707,19 @@ class Session(object):
             data,
             sort_keys=True,
             default=functools.partial(
-                self._encode,
-                entity_attribute_strategy=entity_attribute_strategy
-            )
+                self._encode, entity_attribute_strategy=entity_attribute_strategy
+            ),
         )
 
-    def _encode(self, item, entity_attribute_strategy='set_only'):
-        '''Return JSON encodable version of *item*.
+    def _encode(self, item, entity_attribute_strategy="set_only"):
+        """Return JSON encodable version of *item*.
 
         *entity_attribute_strategy* specifies how entity attributes should be
         handled. See :meth:`Session.encode` for available strategies.
 
-        '''
+        """
         if isinstance(item, (arrow.Arrow, datetime.datetime, datetime.date)):
-            return {
-                '__type__': 'datetime',
-                'value': item.isoformat()
-            }
+            return {"__type__": "datetime", "value": item.isoformat()}
 
         if isinstance(item, OperationPayload):
             data = dict(list(item.items()))
@@ -1800,24 +1734,23 @@ class Session(object):
             data = self.entity_reference(item)
 
             with self.auto_populating(True):
-
                 for attribute in item.attributes:
                     value = ftrack_api.symbol.NOT_SET
 
-                    if entity_attribute_strategy == 'all':
+                    if entity_attribute_strategy == "all":
                         value = attribute.get_value(item)
 
-                    elif entity_attribute_strategy == 'set_only':
+                    elif entity_attribute_strategy == "set_only":
                         if attribute.is_set(item):
                             value = attribute.get_local_value(item)
                             if value is ftrack_api.symbol.NOT_SET:
                                 value = attribute.get_remote_value(item)
 
-                    elif entity_attribute_strategy == 'modified_only':
+                    elif entity_attribute_strategy == "modified_only":
                         if attribute.is_modified(item):
                             value = attribute.get_local_value(item)
 
-                    elif entity_attribute_strategy == 'persisted_only':
+                    elif entity_attribute_strategy == "persisted_only":
                         if not attribute.computed:
                             value = attribute.get_remote_value(item)
 
@@ -1832,9 +1765,7 @@ class Session(object):
 
             return data
 
-        if isinstance(
-            item, ftrack_api.collection.MappedCollectionProxy
-        ):
+        if isinstance(item, ftrack_api.collection.MappedCollectionProxy):
             # Use proxied collection for serialisation.
             item = item.collection
 
@@ -1845,65 +1776,59 @@ class Session(object):
 
             return data
 
-        raise TypeError('{0!r} is not JSON serializable'.format(item))
+        raise TypeError("{0!r} is not JSON serializable".format(item))
 
     def entity_reference(self, entity):
-        '''Return entity reference that uniquely identifies *entity*.
+        """Return entity reference that uniquely identifies *entity*.
 
         Return a mapping containing the __entity_type__ of the entity along with
         the key, value pairs that make up it's primary key.
 
-        '''
-        reference = {
-            '__entity_type__': entity.entity_type
-        }
+        """
+        reference = {"__entity_type__": entity.entity_type}
         with self.auto_populating(False):
             reference.update(ftrack_api.inspection.primary_key(entity))
 
         return reference
 
     def decode(self, string):
-        '''Return decoded JSON *string* as Python object.'''
+        """Return decoded JSON *string* as Python object."""
         with self.operation_recording(False):
             return json.loads(string, object_hook=self._decode)
 
     def _decode(self, item):
-        '''Return *item* transformed into appropriate representation.'''
+        """Return *item* transformed into appropriate representation."""
         if isinstance(item, collections_abc.Mapping):
-            if '__type__' in item:
-                if item['__type__'] == 'datetime':
-                    item = arrow.get(item['value'])
+            if "__type__" in item:
+                if item["__type__"] == "datetime":
+                    item = arrow.get(item["value"])
 
-            elif '__entity_type__' in item:
-                item = self._create(
-                    item['__entity_type__'], item, reconstructing=True
-                )
+            elif "__entity_type__" in item:
+                item = self._create(item["__entity_type__"], item, reconstructing=True)
 
         return item
 
     def _get_locations(self, filter_inaccessible=True):
-        '''Helper to returns locations ordered by priority.
+        """Helper to returns locations ordered by priority.
 
         If *filter_inaccessible* is True then only accessible locations will be
         included in result.
 
-        '''
+        """
         # Optimise this call.
-        locations = self.query('Location')
+        locations = self.query("Location")
 
         # Filter.
         if filter_inaccessible:
             locations = [location for location in locations if location.accessor]
 
         # Sort by priority.
-        locations = sorted(
-            locations, key=lambda location: location.priority
-        )
+        locations = sorted(locations, key=lambda location: location.priority)
 
         return locations
 
     def pick_location(self, component=None):
-        '''Return suitable location to use.
+        """Return suitable location to use.
 
         If no *component* specified then return highest priority accessible
         location. Otherwise, return highest priority accessible location that
@@ -1911,7 +1836,7 @@ class Session(object):
 
         Return None if no suitable location could be picked.
 
-        '''
+        """
         if component:
             return self.pick_locations([component])[0]
 
@@ -1923,14 +1848,14 @@ class Session(object):
                 return None
 
     def pick_locations(self, components):
-        '''Return suitable locations for *components*.
+        """Return suitable locations for *components*.
 
         Return list of locations corresponding to *components* where each
         picked location is the highest priority accessible location for that
         component. If a component has no location available then its
         corresponding entry will be None.
 
-        '''
+        """
         candidate_locations = self._get_locations()
         availabilities = self.get_component_availabilities(
             components, locations=candidate_locations
@@ -1941,7 +1866,7 @@ class Session(object):
             location = None
 
             for candidate_location in candidate_locations:
-                if availability.get(candidate_location['id']) > 0.0:
+                if availability.get(candidate_location["id"]) > 0.0:
                     location = candidate_location
                     break
 
@@ -1949,10 +1874,8 @@ class Session(object):
 
         return locations
 
-    def create_component(
-        self, path, data=None, location='auto'
-    ):
-        '''Create a new component from *path* with additional *data*
+    def create_component(self, path, data=None, location="auto"):
+        """Create a new component from *path* with additional *data*
 
         .. note::
 
@@ -1985,40 +1908,36 @@ class Session(object):
             A :meth:`Session.commit<ftrack_api.session.Session.commit>` may be
             automatically issued as part of the components registration in the
             location.
-        '''
+        """
         if data is None:
             data = {}
 
-        if location == 'auto':
+        if location == "auto":
             # Check if the component name matches one of the ftrackreview
             # specific names. Add the component to the ftrack.review location if
             # so. This is used to not break backwards compatibility.
-            if data.get('name') in (
-                'ftrackreview-mp4', 'ftrackreview-webm', 'ftrackreview-image'
+            if data.get("name") in (
+                "ftrackreview-mp4",
+                "ftrackreview-webm",
+                "ftrackreview-image",
             ):
-                location = self.get(
-                    'Location', ftrack_api.symbol.REVIEW_LOCATION_ID
-                )
+                location = self.get("Location", ftrack_api.symbol.REVIEW_LOCATION_ID)
 
             else:
                 location = self.pick_location()
 
         def retrieve_file_type(_path):
-            '''try to retrive the file type from any registered plugins. If
-            none are available fall back to os.path.splitext'''
+            """try to retrive the file type from any registered plugins. If
+            none are available fall back to os.path.splitext"""
             response = self.event_hub.publish(
                 ftrack_api.event.base.Event(
-                    topic='ftrack.api.session.get-file-type-from-string',
-                    data=dict(
-                        file_path=_path
-                    )
+                    topic="ftrack.api.session.get-file-type-from-string",
+                    data=dict(file_path=_path),
                 ),
-                synchronous=True
+                synchronous=True,
             )
 
-            _file_type = next(
-                (result for result in response if result), None
-            )
+            _file_type = next((result for result in response if result), None)
 
             if not _file_type:
                 return os.path.splitext(_path)[-1]
@@ -2030,29 +1949,23 @@ class Session(object):
 
         except ValueError:
             # Assume is a single file.
-            if 'size' not in data:
-                data['size'] = self._get_filesystem_size(path)
+            if "size" not in data:
+                data["size"] = self._get_filesystem_size(path)
 
-            file_type = retrieve_file_type(
-                path
-            )
+            file_type = retrieve_file_type(path)
 
-            data.setdefault('file_type', file_type)
+            data.setdefault("file_type", file_type)
 
-            return self._create_component(
-                'FileComponent', path, data, location
-            )
+            return self._create_component("FileComponent", path, data, location)
 
         else:
             # Calculate size of container and members.
             member_sizes = {}
-            container_size = data.get('size')
+            container_size = data.get("size")
 
             if container_size is not None:
                 if len(collection.indexes) > 0:
-                    member_size = int(
-                        round(container_size / len(collection.indexes))
-                    )
+                    member_size = int(round(container_size / len(collection.indexes)))
                     for item in collection:
                         member_sizes[item] = member_size
 
@@ -2064,56 +1977,50 @@ class Session(object):
 
             # Create sequence component
 
-            container_path = collection.format('{head}{padding}{tail}')
-            file_type = retrieve_file_type(
-                container_path
-            )
+            container_path = collection.format("{head}{padding}{tail}")
+            file_type = retrieve_file_type(container_path)
 
-            data.setdefault('padding', collection.padding)
-            data.setdefault('file_type', file_type)
-            data.setdefault('size', container_size)
+            data.setdefault("padding", collection.padding)
+            data.setdefault("file_type", file_type)
+            data.setdefault("size", container_size)
 
             container = self._create_component(
-                'SequenceComponent', container_path, data, location=None
+                "SequenceComponent", container_path, data, location=None
             )
 
             # Create member components for sequence.
             for member_path in collection:
                 member_data = {
-                    'name': collection.match(member_path).group('index'),
-                    'container': container,
-                    'size': member_sizes[member_path],
-                    'file_type': file_type
+                    "name": collection.match(member_path).group("index"),
+                    "container": container,
+                    "size": member_sizes[member_path],
+                    "file_type": file_type,
                 }
 
                 component = self._create_component(
-                    'FileComponent', member_path, member_data, location=None
+                    "FileComponent", member_path, member_data, location=None
                 )
-                container['members'].append(component)
+                container["members"].append(component)
 
             if location:
                 origin_location = self.get(
-                    'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
+                    "Location", ftrack_api.symbol.ORIGIN_LOCATION_ID
                 )
-                location.add_component(
-                    container, origin_location, recursive=True
-                )
+                location.add_component(container, origin_location, recursive=True)
 
             return container
 
     def _create_component(self, entity_type, path, data, location):
-        '''Create and return component.
+        """Create and return component.
 
         See public function :py:func:`createComponent` for argument details.
 
-        '''
+        """
         component = self.create(entity_type, data)
 
         # Add to special origin location so that it is possible to add to other
         # locations.
-        origin_location = self.get(
-            'Location', ftrack_api.symbol.ORIGIN_LOCATION_ID
-        )
+        origin_location = self.get("Location", ftrack_api.symbol.ORIGIN_LOCATION_ID)
         origin_location.add_component(component, path, recursive=False)
 
         if location:
@@ -2122,7 +2029,7 @@ class Session(object):
         return component
 
     def _get_filesystem_size(self, path):
-        '''Return size from *path*'''
+        """Return size from *path*"""
         try:
             size = os.path.getsize(path)
         except OSError:
@@ -2131,20 +2038,18 @@ class Session(object):
         return size
 
     def get_component_availability(self, component, locations=None):
-        '''Return availability of *component*.
+        """Return availability of *component*.
 
         If *locations* is set then limit result to availability of *component*
         in those *locations*.
 
         Return a dictionary of {location_id:percentage_availability}
 
-        '''
-        return self.get_component_availabilities(
-            [component], locations=locations
-        )[0]
+        """
+        return self.get_component_availabilities([component], locations=locations)[0]
 
     def get_component_availabilities(self, components, locations=None):
-        '''Return availabilities of *components*.
+        """Return availabilities of *components*.
 
         If *locations* is set then limit result to availabilities of
         *components* in those *locations*.
@@ -2152,11 +2057,11 @@ class Session(object):
         Return a list of dictionaries of {location_id:percentage_availability}.
         The list indexes correspond to those of *components*.
 
-        '''
+        """
         availabilities = []
 
         if locations is None:
-            locations = self.query('Location')
+            locations = self.query("Location")
 
         # Separate components into two lists, those that are containers and
         # those that are not, so that queries can be optimised.
@@ -2164,47 +2069,42 @@ class Session(object):
         container_components = []
 
         for component in components:
-            if 'members' in list(component.keys()):
+            if "members" in list(component.keys()):
                 container_components.append(component)
             else:
                 standard_components.append(component)
 
         # Perform queries.
         if standard_components:
-            self.populate(
-                standard_components, 'component_locations.location_id'
-            )
+            self.populate(standard_components, "component_locations.location_id")
 
         if container_components:
             self.populate(
-                container_components,
-                'members, component_locations.location_id'
+                container_components, "members, component_locations.location_id"
             )
 
         base_availability = {}
         for location in locations:
-            base_availability[location['id']] = 0.0
+            base_availability[location["id"]] = 0.0
 
         for component in components:
             availability = base_availability.copy()
             availabilities.append(availability)
 
-            is_container = 'members' in list(component.keys())
-            if is_container and len(component['members']):
+            is_container = "members" in list(component.keys())
+            if is_container and len(component["members"]):
                 member_availabilities = self.get_component_availabilities(
-                    component['members'], locations=locations
+                    component["members"], locations=locations
                 )
-                multiplier = 1.0 / len(component['members'])
+                multiplier = 1.0 / len(component["members"])
                 for member, member_availability in zip(
-                    component['members'], member_availabilities
+                    component["members"], member_availabilities
                 ):
                     for location_id, ratio in list(member_availability.items()):
-                        availability[location_id] += (
-                            ratio * multiplier
-                        )
+                        availability[location_id] += ratio * multiplier
             else:
-                for component_location in component['component_locations']:
-                    location_id = component_location['location_id']
+                for component_location in component["component_locations"]:
+                    location_id = component_location["location_id"]
                     if location_id in availability:
                         availability[location_id] = 100.0
 
@@ -2218,7 +2118,7 @@ class Session(object):
         return availabilities
 
     def get_widget_url(self, name, entity=None, theme=None):
-        '''Return an authenticated URL for widget with *name* and given options.
+        """Return an authenticated URL for widget with *name* and given options.
 
         The returned URL will be authenticated using a token which will expire
         after 6 minutes.
@@ -2232,16 +2132,12 @@ class Session(object):
         *theme* sets the theme of the widget and can be either 'light' or 'dark'
         (defaulting to 'dark' if an invalid option given).
 
-        '''
-        operation = {
-            'action': 'get_widget_url',
-            'name': name,
-            'theme': theme
-        }
+        """
+        operation = {"action": "get_widget_url", "name": name, "theme": theme}
         if entity:
-            operation['entity_type'] = entity.entity_type
-            operation['entity_key'] = (
-                list(ftrack_api.inspection.primary_key(entity).values())
+            operation["entity_type"] = entity.entity_type
+            operation["entity_key"] = list(
+                ftrack_api.inspection.primary_key(entity).values()
             )
 
         try:
@@ -2249,21 +2145,21 @@ class Session(object):
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'get_widget_url\'' in error.message:
+            if "Invalid action u'get_widget_url'" in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support "get_widget_url", '
-                    'please update server and try again.'.format(
-                        self.server_information.get('version')
+                    "please update server and try again.".format(
+                        self.server_information.get("version")
                     )
                 )
             else:
                 raise
 
         else:
-            return result[0]['widget_url']
+            return result[0]["widget_url"]
 
-    def encode_media(self, media, version_id=None, keep_original='auto'):
-        '''Return a new Job that encode *media* to make it playable in browsers.
+    def encode_media(self, media, version_id=None, keep_original="auto"):
+        """Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
         location.
@@ -2303,13 +2199,11 @@ class Session(object):
         If *keep_original* is not set, the original media will be kept if it
         is a FileComponent, and deleted if it is a file path. You can specify
         True or False to change this behavior.
-        '''
+        """
         if isinstance(media, string_types):
             # Media is a path to a file.
-            server_location = self.get(
-                'Location', ftrack_api.symbol.SERVER_LOCATION_ID
-            )
-            if keep_original == 'auto':
+            server_location = self.get("Location", ftrack_api.symbol.SERVER_LOCATION_ID)
+            if keep_original == "auto":
                 keep_original = False
 
             component_data = None
@@ -2317,33 +2211,26 @@ class Session(object):
                 component_data = dict(version_id=version_id)
 
             component = self.create_component(
-                path=media,
-                data=component_data,
-                location=server_location
+                path=media, data=component_data, location=server_location
             )
 
             # Auto commit to ensure component exists when sent to server.
             self.commit()
 
-        elif (
-            hasattr(media, 'entity_type') and
-            media.entity_type in ('FileComponent',)
-        ):
+        elif hasattr(media, "entity_type") and media.entity_type in ("FileComponent",):
             # Existing file component.
             component = media
-            if keep_original == 'auto':
+            if keep_original == "auto":
                 keep_original = True
 
         else:
-            raise ValueError(
-                'Unable to encode media of type: {0}'.format(type(media))
-            )
+            raise ValueError("Unable to encode media of type: {0}".format(type(media)))
 
         operation = {
-            'action': 'encode_media',
-            'component_id': component['id'],
-            'version_id': version_id,
-            'keep_original': keep_original
+            "action": "encode_media",
+            "component_id": component["id"],
+            "version_id": version_id,
+            "keep_original": keep_original,
         }
 
         try:
@@ -2351,22 +2238,20 @@ class Session(object):
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'encode_media\'' in error.message:
+            if "Invalid action u'encode_media'" in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
                     'Server version {0!r} does not support "encode_media", '
-                    'please update server and try again.'.format(
-                        self.server_information.get('version')
+                    "please update server and try again.".format(
+                        self.server_information.get("version")
                     )
                 )
             else:
                 raise
 
-        return self.get('Job', result[0]['job_id'])
+        return self.get("Job", result[0]["job_id"])
 
-    def get_upload_metadata(
-        self, component_id, file_name, file_size, checksum=None
-    ):
-        '''Return URL and headers used to upload data for *component_id*.
+    def get_upload_metadata(self, component_id, file_name, file_size, checksum=None):
+        """Return URL and headers used to upload data for *component_id*.
 
         *file_name* and *file_size* should match the components details.
 
@@ -2377,13 +2262,13 @@ class Session(object):
         the base64-encoded 128-bit MD5 digest of the message (without the
         headers) according to RFC 1864. This can be used as a message integrity
         check to verify that the data is the same data that was originally sent.
-        '''
+        """
         operation = {
-            'action': 'get_upload_metadata',
-            'component_id': component_id,
-            'file_name': file_name,
-            'file_size': file_size,
-            'checksum': checksum
+            "action": "get_upload_metadata",
+            "component_id": component_id,
+            "file_name": file_name,
+            "file_size": file_size,
+            "checksum": checksum,
         }
 
         try:
@@ -2391,13 +2276,11 @@ class Session(object):
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'get_upload_metadata\'' in error.message:
+            if "Invalid action u'get_upload_metadata'" in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {0!r} does not support '
+                    "Server version {0!r} does not support "
                     '"get_upload_metadata", please update server and try '
-                    'again.'.format(
-                        self.server_information.get('version')
-                    )
+                    "again.".format(self.server_information.get("version"))
                 )
             else:
                 raise
@@ -2405,51 +2288,42 @@ class Session(object):
         return result[0]
 
     def send_user_invite(self, user):
-        '''Send a invitation to the provided *user*.
+        """Send a invitation to the provided *user*.
 
         *user* is a User instance
 
-        '''
+        """
 
-        self.send_user_invites(
-            [user]
-        )
+        self.send_user_invites([user])
 
     def send_user_invites(self, users):
-        '''Send a invitation to the provided *user*.
+        """Send a invitation to the provided *user*.
 
         *users* is a list of User instances
 
-        '''
+        """
 
         operations = []
 
         for user in users:
-            operations.append(
-                {
-                    'action':'send_user_invite',
-                    'user_id': user['id']
-                }
-            )
+            operations.append({"action": "send_user_invite", "user_id": user["id"]})
 
         try:
             self.call(operations)
 
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'send_user_invite\'' in error.message:
+            if "Invalid action u'send_user_invite'" in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {0!r} does not support '
+                    "Server version {0!r} does not support "
                     '"send_user_invite", please update server and '
-                    'try again.'.format(
-                        self.server_information.get('version')
-                    )
+                    "try again.".format(self.server_information.get("version"))
                 )
             else:
                 raise
 
     def send_review_session_invite(self, invitee):
-        '''Send an invite to a review session to *invitee*.
+        """Send an invite to a review session to *invitee*.
 
         *invitee* is a instance of ReviewSessionInvitee.
 
@@ -2457,11 +2331,11 @@ class Session(object):
 
             The *invitee* must be committed.
 
-        '''
+        """
         self.send_review_session_invites([invitee])
 
     def send_review_session_invites(self, invitees):
-        '''Send an invite to a review session to a list of *invitees*.
+        """Send an invite to a review session to a list of *invitees*.
 
         *invitee* is a list of ReviewSessionInvitee objects.
 
@@ -2469,14 +2343,14 @@ class Session(object):
 
             All *invitees* must be committed.
 
-        '''
+        """
         operations = []
 
         for invitee in invitees:
             operations.append(
                 {
-                    'action': 'send_review_session_invite',
-                    'review_session_invitee_id': invitee['id']
+                    "action": "send_review_session_invite",
+                    "review_session_invitee_id": invitee["id"],
                 }
             )
 
@@ -2484,89 +2358,85 @@ class Session(object):
             self.call(operations)
         except ftrack_api.exception.ServerError as error:
             # Raise informative error if the action is not supported.
-            if 'Invalid action u\'send_review_session_invite\'' in error.message:
+            if "Invalid action u'send_review_session_invite'" in error.message:
                 raise ftrack_api.exception.ServerCompatibilityError(
-                    'Server version {0!r} does not support '
+                    "Server version {0!r} does not support "
                     '"send_review_session_invite", please update server and '
-                    'try again.'.format(
-                        self.server_information.get('version')
-                    )
+                    "try again.".format(self.server_information.get("version"))
                 )
             else:
                 raise
 
 
 class AutoPopulatingContext(object):
-    '''Context manager for temporary change of session auto_populate value.'''
+    """Context manager for temporary change of session auto_populate value."""
 
     def __init__(self, session, auto_populate):
-        '''Initialise context.'''
+        """Initialise context."""
         super(AutoPopulatingContext, self).__init__()
         self._session = session
         self._auto_populate = auto_populate
         self._current_auto_populate = None
 
     def __enter__(self):
-        '''Enter context switching to desired auto populate setting.'''
+        """Enter context switching to desired auto populate setting."""
         self._current_auto_populate = self._session.auto_populate
         self._session.auto_populate = self._auto_populate
 
     def __exit__(self, exception_type, exception_value, traceback):
-        '''Exit context resetting auto populate to original setting.'''
+        """Exit context resetting auto populate to original setting."""
         self._session.auto_populate = self._current_auto_populate
 
 
 class OperationRecordingContext(object):
-    '''Context manager for temporary change of session record_operations.'''
+    """Context manager for temporary change of session record_operations."""
 
     def __init__(self, session, record_operations):
-        '''Initialise context.'''
+        """Initialise context."""
         super(OperationRecordingContext, self).__init__()
         self._session = session
         self._record_operations = record_operations
         self._current_record_operations = None
 
     def __enter__(self):
-        '''Enter context.'''
+        """Enter context."""
         self._current_record_operations = self._session.record_operations
         self._session.record_operations = self._record_operations
 
     def __exit__(self, exception_type, exception_value, traceback):
-        '''Exit context.'''
+        """Exit context."""
         self._session.record_operations = self._current_record_operations
 
 
 class OperationPayload(collections_abc.MutableMapping):
-    '''Represent operation payload.'''
+    """Represent operation payload."""
 
     def __init__(self, *args, **kwargs):
-        '''Initialise payload.'''
+        """Initialise payload."""
         super(OperationPayload, self).__init__()
         self._data = dict()
         self.update(dict(*args, **kwargs))
 
     def __str__(self):
-        '''Return string representation.'''
-        return '<{0} {1}>'.format(
-            self.__class__.__name__, str(self._data)
-        )
+        """Return string representation."""
+        return "<{0} {1}>".format(self.__class__.__name__, str(self._data))
 
     def __getitem__(self, key):
-        '''Return value for *key*.'''
+        """Return value for *key*."""
         return self._data[key]
 
     def __setitem__(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         self._data[key] = value
 
     def __delitem__(self, key):
-        '''Remove *key*.'''
+        """Remove *key*."""
         del self._data[key]
 
     def __iter__(self):
-        '''Iterate over all keys.'''
+        """Iterate over all keys."""
         return iter(self._data)
 
     def __len__(self):
-        '''Return count of keys.'''
+        """Return count of keys."""
         return len(self._data)

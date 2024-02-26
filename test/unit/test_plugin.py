@@ -13,95 +13,107 @@ import ftrack_api.plugin
 
 @pytest.fixture()
 def valid_plugin(temporary_path):
-    '''Return path to directory containing a valid plugin.'''
-    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
+    """Return path to directory containing a valid plugin."""
+    with open(os.path.join(temporary_path, "plugin.py"), "w") as file_object:
+        file_object.write(
+            textwrap.dedent(
+                """
             from __future__ import print_function
             def register(*args, **kw):
                 print("Registered", args, kw)
-        '''))
+        """
+            )
+        )
 
     return temporary_path
 
 
 @pytest.fixture()
 def python_non_plugin(temporary_path):
-    '''Return path to directory containing Python file that is non plugin.'''
-    with open(os.path.join(temporary_path, 'non.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
+    """Return path to directory containing Python file that is non plugin."""
+    with open(os.path.join(temporary_path, "non.py"), "w") as file_object:
+        file_object.write(
+            textwrap.dedent(
+                """
             from __future__ import print_function
 
             print("Not a plugin")
 
             def not_called():
                 print("Not called")
-        '''))
+        """
+            )
+        )
 
     return temporary_path
 
 
 @pytest.fixture()
 def non_plugin(temporary_path):
-    '''Return path to directory containing file that is non plugin.'''
-    with open(os.path.join(temporary_path, 'non.txt'), 'w') as file_object:
-        file_object.write('Never seen')
+    """Return path to directory containing file that is non plugin."""
+    with open(os.path.join(temporary_path, "non.txt"), "w") as file_object:
+        file_object.write("Never seen")
 
     return temporary_path
 
 
 @pytest.fixture()
 def broken_plugin(temporary_path):
-    '''Return path to directory containing broken plugin.'''
-    with open(os.path.join(temporary_path, 'broken.py'), 'w') as file_object:
-        file_object.write('syntax error')
+    """Return path to directory containing broken plugin."""
+    with open(os.path.join(temporary_path, "broken.py"), "w") as file_object:
+        file_object.write("syntax error")
 
     return temporary_path
 
 
 @pytest.fixture()
 def plugin(request, temporary_path):
-    '''Return path containing a plugin with requested specification.'''
+    """Return path containing a plugin with requested specification."""
     specification = request.param
-    output = re.sub('(\w+)=\w+', '"\g<1>={}".format(\g<1>)', specification)
-    output = re.sub('\*args', 'args', output)
-    output = re.sub('\*\*kwargs', 'sorted(kwargs.items())', output)
+    output = re.sub("(\w+)=\w+", '"\g<1>={}".format(\g<1>)', specification)
+    output = re.sub("\*args", "args", output)
+    output = re.sub("\*\*kwargs", "sorted(kwargs.items())", output)
 
-    with open(os.path.join(temporary_path, 'plugin.py'), 'w') as file_object:
-        content = textwrap.dedent('''
+    with open(os.path.join(temporary_path, "plugin.py"), "w") as file_object:
+        content = textwrap.dedent(
+            """
             from __future__ import print_function
             def register({}):
                 print({})
-        '''.format(specification, output))
+        """.format(
+                specification, output
+            )
+        )
         file_object.write(content)
 
     return temporary_path
 
 
 def test_discover_empty_paths(capsys):
-    '''Discover no plugins when paths are empty.'''
-    ftrack_api.plugin.discover(['   '])
+    """Discover no plugins when paths are empty."""
+    ftrack_api.plugin.discover(["   "])
     output, error = capsys.readouterr()
     assert not output
     assert not error
 
 
 def test_discover_valid_plugin(valid_plugin, capsys):
-    '''Discover valid plugin.'''
-    ftrack_api.plugin.discover([valid_plugin], (1, 2), {'3': 4})
+    """Discover valid plugin."""
+    ftrack_api.plugin.discover([valid_plugin], (1, 2), {"3": 4})
     output, error = capsys.readouterr()
-    assert 'Registered (1, 2) {\'3\': 4}' in output
+    assert "Registered (1, 2) {'3': 4}" in output
 
 
 def test_discover_python_non_plugin(python_non_plugin, capsys):
-    '''Discover Python non plugin.'''
+    """Discover Python non plugin."""
     ftrack_api.plugin.discover([python_non_plugin])
     output, error = capsys.readouterr()
-    assert 'Not a plugin' in output
-    assert 'Not called' not in output
+    assert "Not a plugin" in output
+    assert "Not called" not in output
 
 
 def test_discover_non_plugin(non_plugin, capsys):
-    '''Discover non plugin.'''
+    """Discover non plugin."""
     ftrack_api.plugin.discover([non_plugin])
     output, error = capsys.readouterr()
     assert not output
@@ -109,88 +121,99 @@ def test_discover_non_plugin(non_plugin, capsys):
 
 
 def test_discover_broken_plugin(broken_plugin, caplog):
-    '''Discover broken plugin.'''
+    """Discover broken plugin."""
     caplog.set_level(logging.DEBUG)
     ftrack_api.plugin.discover([broken_plugin])
 
-    records = caplog.get_records(when='call')
+    records = caplog.get_records(when="call")
 
     assert len(records) == 2
     assert records[0].levelno is logging.WARNING
     assert records[1].levelno is logging.DEBUG
-    assert 'Failed to load plugin' in records[0].message
-    assert 'Traceback' in records[1].message
+    assert "Failed to load plugin" in records[0].message
+    assert "Traceback" in records[1].message
 
 
 @pytest.mark.parametrize(
-    'plugin, positional, keyword, expected',
+    "plugin, positional, keyword, expected",
     [
         pytest.param(
-            'a, b=False, c=False, d=False',
-            (1, 2), {'c': True, 'd': True, 'e': True},
-            '1 b=2 c=True d=True', id='mixed-explicit'
+            "a, b=False, c=False, d=False",
+            (1, 2),
+            {"c": True, "d": True, "e": True},
+            "1 b=2 c=True d=True",
+            id="mixed-explicit",
         ),
         pytest.param(
-            '*args',
-            (1, 2), {'b': True, 'c': False},
-            '(1, 2)', id='variable-args-only'
+            "*args", (1, 2), {"b": True, "c": False}, "(1, 2)", id="variable-args-only"
         ),
         pytest.param(
-            '**kwargs',
-            tuple(), {'b': True, 'c': False},
-            '[(\'b\', True), (\'c\', False)]', id='variable-kwargs-only'
+            "**kwargs",
+            tuple(),
+            {"b": True, "c": False},
+            "[('b', True), ('c', False)]",
+            id="variable-kwargs-only",
         ),
         pytest.param(
-            'a=False, b=False',
-            (True,), {'b': True},
-            'a=True b=True', id='keyword-from-positional'
+            "a=False, b=False",
+            (True,),
+            {"b": True},
+            "a=True b=True",
+            id="keyword-from-positional",
         ),
         pytest.param(
-            'a, c=False, *args',
-            (1, 2, 3, 4), {},
-            '1 c=2 (3, 4)', id='trailing-variable-args'
+            "a, c=False, *args",
+            (1, 2, 3, 4),
+            {},
+            "1 c=2 (3, 4)",
+            id="trailing-variable-args",
         ),
         pytest.param(
-            'a, c=False, **kwargs',
-            tuple(), {'a': 1, 'b': 2, 'c': 3, 'd': 4},
-            '1 c=3 [(\'b\', 2), (\'d\', 4)]', id='trailing-keyword-args'
+            "a, c=False, **kwargs",
+            tuple(),
+            {"a": 1, "b": 2, "c": 3, "d": 4},
+            "1 c=3 [('b', 2), ('d', 4)]",
+            id="trailing-keyword-args",
         ),
     ],
-    indirect=['plugin'],
+    indirect=["plugin"],
 )
 def test_discover_plugin_with_specific_signature(
     plugin, positional, keyword, expected, capsys
 ):
-    '''Discover plugin passing only supported arguments.'''
-    ftrack_api.plugin.discover(
-        [plugin], positional, keyword
-    )
+    """Discover plugin passing only supported arguments."""
+    ftrack_api.plugin.discover([plugin], positional, keyword)
     output, error = capsys.readouterr()
     assert expected in output
 
 
 def test_discover_plugin_varying_signatures(temporary_path, capsys):
-    '''Discover multiple plugins with varying signatures.'''
+    """Discover multiple plugins with varying signatures."""
 
-    with open(os.path.join(temporary_path, 'plugin_a.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
+    with open(os.path.join(temporary_path, "plugin_a.py"), "w") as file_object:
+        file_object.write(
+            textwrap.dedent(
+                """
             from __future__ import print_function
             def register(a):
                 print((a,))
-        '''))
+        """
+            )
+        )
 
-    with open(os.path.join(temporary_path, 'plugin_b.py'), 'w') as file_object:
-        file_object.write(textwrap.dedent('''
+    with open(os.path.join(temporary_path, "plugin_b.py"), "w") as file_object:
+        file_object.write(
+            textwrap.dedent(
+                """
             from __future__ import print_function
             def register(a, b=False):
                 print((a,), {'b': b})
-        '''))
+        """
+            )
+        )
 
-    ftrack_api.plugin.discover(
-        [temporary_path], (True,), {'b': True}
-    )
-
+    ftrack_api.plugin.discover([temporary_path], (True,), {"b": True})
 
     output, error = capsys.readouterr()
-    assert '(True,)' in output
-    assert '(True,) {\'b\': True}' in output
+    assert "(True,)" in output
+    assert "(True,) {'b': True}" in output
