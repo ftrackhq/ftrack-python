@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run pytest
         run: |
-          git config --global --add.directory "*"
+          git config --global --add safe.directory "*"
           curl -sSL https://install.python-poetry.org | python
           /opt/poetry/bin/poetry self add "poetry-dynamic-versioning[plugin]"
           /opt/poetry/bin/poetry install
