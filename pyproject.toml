@@ -16,6 +16,10 @@ files = ["source/ftrack_api/_version.py"]
 
 [tool.poetry-dynamic-versioning.files."source/ftrack_api/_version.py"]
 persistent-substitution = true
+initial-content = """
+  # These version placeholders will be replaced later during substitution.
+  __version__ = "0.0.0"
+"""
 
 [tool.poetry.dependencies]
 python = "^3.8"
