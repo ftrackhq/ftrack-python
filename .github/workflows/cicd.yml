@@ -61,6 +61,7 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python
           poetry self add "poetry-dynamic-versioning[plugin]"
+          poetry install --only-dev --no-interaction
           poetry build --format=wheel
           poetry run twine check dist/*
       - uses: actions/upload-artifact@v2
