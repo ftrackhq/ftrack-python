@@ -40,10 +40,8 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run pytest
         run: |
-          git config --global --add safe.directory "*"
           curl -sSL https://install.python-poetry.org | python
-          /opt/poetry/bin/poetry self add "poetry-dynamic-versioning[plugin]"
-          /opt/poetry/bin/poetry install
+          /opt/poetry/bin/oetry install
           /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
@@ -63,7 +61,6 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python
           poetry self add "poetry-dynamic-versioning[plugin]"
-          poetry install
           poetry build --format=wheel
           poetry run twine check dist/*
       - uses: actions/upload-artifact@v2

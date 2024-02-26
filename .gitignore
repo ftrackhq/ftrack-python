@@ -44,5 +44,3 @@ Thumbs.db
 test-reports/*
 .pytest_cache/*
 
-# SCM VERSION
-source/ftrack_api/_version.py
