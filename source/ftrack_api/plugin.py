@@ -41,6 +41,23 @@ except ImportError:
             annotations={}
         )
 
+try:
+    from imp import load_source
+
+except ImportError:
+    # The imp module is deprecated in version 3.12. Use importlib instead.
+    import importlib.util
+    import importlib.machinery
+
+    def load_source(modname, filename):
+        # https://docs.python.org/3/whatsnew/3.12.html#imp
+
+        loader = importlib.machinery.SourceFileLoader(modname, filename)
+        module = importlib.util.module_from_spec(
+            importlib.util.spec_from_file_location(modname, filename, loader=loader)
+        )
+
+        return loader.exec_module(module)
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
@@ -77,7 +94,7 @@ def discover(paths, positional_arguments=None, keyword_arguments=None):
                 unique_name = uuid.uuid4().hex
 
                 try:
-                    module = imp.load_source(unique_name, module_path)
+                    module = load_source(unique_name, module_path)
                 except Exception as error:
                     logger.warning(
                         'Failed to load plugin from "{0}": {1}'
