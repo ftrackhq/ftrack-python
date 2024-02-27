@@ -33,21 +33,21 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:${{ matrix.python-version }}
-    env:
-      POETRY_VERSION: 1.6.1
-      POETRY_HOME: "/opt/poetry"
+    # env:
+    #   POETRY_VERSION: 1.6.1
+    #   POETRY_HOME: "/opt/poetry"
     steps:
       - uses: actions/checkout@v3
       - name: Run pytest
         run: |
           curl -sSL https://install.python-poetry.org | python
-          /opt/poetry/bin/poetry install
-          /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
+          poetry install
+          poetry run python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
-          PYTHONPATH: ./source
+          # PYTHONPATH: ./source
 
   build:
     runs-on: ubuntu-latest
