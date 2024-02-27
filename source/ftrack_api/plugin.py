@@ -7,7 +7,6 @@ import logging
 import collections
 import os
 import uuid
-import imp
 import traceback
 
 try:
