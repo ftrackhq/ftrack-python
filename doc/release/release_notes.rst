@@ -17,6 +17,11 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: changed
+        :tags: path resolve
+
+        Replaced deprecated appdirs with platformdirs.
+
+    .. change:: changed
         :tags: events, security
 
         Auth info sent via request headers instead of GET variables.
