@@ -9,6 +9,7 @@ import subprocess
 import sys
 import requests
 import logging
+import uuid
 
 import pytest
 from flaky import flaky
@@ -676,14 +677,15 @@ def test_publish_with_reply(event_hub):
         '''Replier.'''
         return 'Replied'
 
-    event_hub.subscribe('topic=test', replier)
+    topic_name = 'test_{0}'.format(uuid.uuid4())
+    event_hub.subscribe('topic={0}'.format(topic_name), replier)
 
     called = {'callback': None}
 
     def on_reply(event):
         called['callback'] = event['data']
 
-    event_hub.publish(Event(topic='test'), on_reply=on_reply)
+    event_hub.publish(Event(topic=topic_name), on_reply=on_reply)
     event_hub.wait(2)
 
     assert called['callback'] == 'Replied'
@@ -700,15 +702,16 @@ def test_publish_with_multiple_replies(event_hub):
         '''Replier.'''
         return 'Two'
 
-    event_hub.subscribe('topic=test', replier_one)
-    event_hub.subscribe('topic=test', replier_two)
+    topic_name = 'test_{0}'.format(uuid.uuid4())
+    event_hub.subscribe('topic={0}'.format(topic_name), replier_one)
+    event_hub.subscribe('topic={0}'.format(topic_name), replier_two)
 
     called = {'callback': []}
 
     def on_reply(event):
         called['callback'].append(event['data'])
 
-    event_hub.publish(Event(topic='test'), on_reply=on_reply)
+    event_hub.publish(Event(topic=topic_name), on_reply=on_reply)
     event_hub.wait(2)
 
     assert sorted(called['callback']) == ['One', 'Two']
@@ -719,15 +722,17 @@ def test_server_heartbeat_response():
     test_script = os.path.join(
         os.path.dirname(__file__), 'event_hub_server_heartbeat.py'
     )
+    # set the topic name to something unique
+    topic = 'test_event_hub_server_heartbeat_{0}'.format(uuid.uuid4())
 
     # Start subscriber that will listen for all three messages.
-    subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe'])
+    subscriber = subprocess.Popen([sys.executable, test_script, 'subscribe', topic])
 
     # Give subscriber time to connect to server.
     time.sleep(10)
 
     # Start publisher to publish three messages.
-    publisher = subprocess.Popen([sys.executable, test_script, 'publish'])
+    publisher = subprocess.Popen([sys.executable, test_script, 'publish', topic])
 
     publisher.wait()
     subscriber.wait()
