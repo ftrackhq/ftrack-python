@@ -22,9 +22,9 @@ Release Notes
         Added support for Python 3.12
 
     .. change:: new
-        :tags: linting
+        :tags: formatting
 
-        Added automatic code linting using Black
+        Added automatic code format checking using Black
 
     .. change:: changed
         :tags: compatibility
