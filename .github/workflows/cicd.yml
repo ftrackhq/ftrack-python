@@ -31,18 +31,21 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
-    container:
-      image: python:${{ matrix.python-version }}
+    # container:
+    #   image: python:${{ matrix.python-version }}
     # env:
     #   POETRY_VERSION: 1.6.1
     #   POETRY_HOME: "/opt/poetry"
     steps:
       - uses: actions/checkout@v3
-      - name: Run pytest
+      - name: Run pytest for ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
         run: |
           curl -sSL https://install.python-poetry.org | python
-          poetry install
-          poetry run python -m pytest --disable-pytest-warnings
+          /opt/poetry/bin/poetry install
+          /opt/poetry/bin/poetry run python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
