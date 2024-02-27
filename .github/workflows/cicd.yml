@@ -33,9 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:${{ matrix.python-version }}
-    # env:
-    #   POETRY_VERSION: 1.6.1
-    #   POETRY_HOME: "/opt/poetry"
+    env:
+      POETRY_VERSION: 1.6.1
     steps:
       - uses: actions/checkout@v3
       - name: Run pytest
@@ -47,6 +46,7 @@ jobs:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
           FTRACK_API_KEY: ${{ secrets.FTRACK_API_KEY_UNITTEST }}
+          POETRY_HOME: "/opt/poetry"
           # PYTHONPATH: ./source
 
   build:
