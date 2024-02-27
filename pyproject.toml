@@ -5,7 +5,7 @@ description = "Python API for ftrack."
 authors = ["ftrack <support@ftrack.com>"]
 readme = "README.rst"
 packages = [
-    { include = "source/ftrack_api" },
+    { include = "ftrack_api", from = "source" },
 ]
 
 [tool.poetry-dynamic-versioning]
