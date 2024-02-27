@@ -33,9 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: python:${{ matrix.python-version }}
-    # env:
-    #   POETRY_VERSION: 1.6.1
-    #   POETRY_HOME: "/opt/poetry"
+    env:
+      POETRY_VERSION: 1.6.1
+      POETRY_HOME: "/opt/poetry"
     steps:
       - uses: actions/checkout@v3
       - name: Run pytest
