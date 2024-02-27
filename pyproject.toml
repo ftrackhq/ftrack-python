@@ -36,7 +36,7 @@ clique = "==1.6.1"
 websocket-client = ">=0.40.0,<1"
 future = ">=0.16.0,<1"
 six = ">=1.13.0,<2"
-appdirs = ">=1,<2"
+platformdirs = ">=4.0.0,<5"
 wheel = "^0.41.2"
 
 [tool.poetry.group.dev.dependencies]
