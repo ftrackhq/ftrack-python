@@ -16,6 +16,26 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: compatibility
+
+        Added support for Python 3.12
+
+    .. change:: new
+        :tags: linting
+
+        Added automatic code linting using Black
+
+    .. change:: changed
+        :tags: compatibility
+
+        Dropped support for Python 2.7, 3.6 and 3.7
+
+    .. change:: changed
+        :tags: Tests
+
+        Refactored unit tests
+
     .. change:: changed
         :tags: path resolve
 
