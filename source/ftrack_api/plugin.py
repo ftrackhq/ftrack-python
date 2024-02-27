@@ -56,7 +56,10 @@ except ImportError:
             importlib.util.spec_from_file_location(modname, filename, loader=loader)
         )
 
-        return loader.exec_module(module)
+        loader.exec_module(module)
+
+        return module
+
 
 def discover(paths, positional_arguments=None, keyword_arguments=None):
     '''Find and load plugins in search *paths*.
