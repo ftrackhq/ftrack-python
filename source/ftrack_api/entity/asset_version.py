@@ -5,12 +5,10 @@ import ftrack_api.entity.base
 
 
 class AssetVersion(ftrack_api.entity.base.Entity):
-    '''Represent asset version.'''
+    """Represent asset version."""
 
-    def create_component(
-        self, path, data=None, location=None
-    ):
-        '''Create a new component from *path* with additional *data*
+    def create_component(self, path, data=None, location=None):
+        """Create a new component from *path* with additional *data*
 
         .. note::
 
@@ -37,17 +35,17 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         If *location* is specified then automatically add component to that
         location.
 
-        '''
+        """
         if data is None:
             data = {}
 
-        data.pop('version_id', None)
-        data['version'] = self
+        data.pop("version_id", None)
+        data["version"] = self
 
         return self.session.create_component(path, data=data, location=location)
 
-    def encode_media(self, media, keep_original='auto'):
-        '''Return a new Job that encode *media* to make it playable in browsers.
+    def encode_media(self, media, keep_original="auto"):
+        """Return a new Job that encode *media* to make it playable in browsers.
 
         *media* can be a path to a file or a FileComponent in the ftrack.server
         location.
@@ -70,7 +68,7 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         The output components are associated with the job via the job_components
         relation.
 
-        An image component will always be generated if possible, and will be 
+        An image component will always be generated if possible, and will be
         set as the version's thumbnail.
 
         The new components will automatically be associated with the version.
@@ -85,7 +83,7 @@ class AssetVersion(ftrack_api.entity.base.Entity):
         If *keep_original* is not set, the original media will be kept if it
         is a FileComponent, and deleted if it is a file path. You can specify
         True or False to change this behavior.
-        '''
+        """
         return self.session.encode_media(
-            media, version_id=self['id'], keep_original=keep_original
+            media, version_id=self["id"], keep_original=keep_original
         )

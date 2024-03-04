@@ -5,7 +5,7 @@ import pytest
 
 
 def test_hash(project, task, user):
-    '''Entities can be hashed.'''
+    """Entities can be hashed."""
     test_set = set()
     test_set.add(project)
     test_set.add(task)

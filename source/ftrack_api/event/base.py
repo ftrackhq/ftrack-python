@@ -7,11 +7,19 @@ from six.moves import collections_abc
 
 
 class Event(collections_abc.MutableMapping):
-    '''Represent a single event.'''
+    """Represent a single event."""
 
-    def __init__(self, topic, id=None, data=None, sent=None,
-                 source=None, target='', in_reply_to_event=None):
-        '''Initialise event.
+    def __init__(
+        self,
+        topic,
+        id=None,
+        data=None,
+        sent=None,
+        source=None,
+        target="",
+        in_reply_to_event=None,
+    ):
+        """Initialise event.
 
         *topic* is the required topic for the event. It can use a dotted
         notation to demarcate groupings. For example, 'ftrack.update'.
@@ -38,7 +46,7 @@ class Event(collections_abc.MutableMapping):
         *in_reply_to_event* is used when replying to an event and should contain
         the unique id of the event being replied to.
 
-        '''
+        """
         super(Event, self).__init__()
         self._data = dict(
             id=id or uuid.uuid4().hex,
@@ -47,40 +55,38 @@ class Event(collections_abc.MutableMapping):
             sent=sent,
             source=source or {},
             target=target,
-            in_reply_to_event=in_reply_to_event
+            in_reply_to_event=in_reply_to_event,
         )
         self._stopped = False
 
     def stop(self):
-        '''Stop further processing of this event.'''
+        """Stop further processing of this event."""
         self._stopped = True
 
     def is_stopped(self):
-        '''Return whether event has been stopped.'''
+        """Return whether event has been stopped."""
         return self._stopped
 
     def __str__(self):
-        '''Return string representation.'''
-        return '<{0} {1}>'.format(
-            self.__class__.__name__, str(self._data)
-        )
+        """Return string representation."""
+        return "<{0} {1}>".format(self.__class__.__name__, str(self._data))
 
     def __getitem__(self, key):
-        '''Return value for *key*.'''
+        """Return value for *key*."""
         return self._data[key]
 
     def __setitem__(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         self._data[key] = value
 
     def __delitem__(self, key):
-        '''Remove *key*.'''
+        """Remove *key*."""
         del self._data[key]
 
     def __iter__(self):
-        '''Iterate over all keys.'''
+        """Iterate over all keys."""
         return iter(self._data)
 
     def __len__(self):
-        '''Return count of keys.'''
+        """Return count of keys."""
         return len(self._data)

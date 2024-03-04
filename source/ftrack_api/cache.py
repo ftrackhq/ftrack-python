@@ -1,7 +1,7 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2014 ftrack
 
-'''Caching framework.
+"""Caching framework.
 
 Defines a standardised :class:`Cache` interface for storing data against
 specific keys. Key generation is also standardised using a :class:`KeyMaker`
@@ -13,7 +13,7 @@ respect to the arguments used by using a :class:`Memoiser`.
 As a convenience a simple :func:`memoise` decorator is included for quick
 memoisation of function using a global cache and standard key maker.
 
-'''
+"""
 
 from builtins import str
 from six import string_types
@@ -52,46 +52,46 @@ import ftrack_api.symbol
 
 
 class Cache(with_metaclass(abc.ABCMeta, object)):
-    '''Cache interface.
+    """Cache interface.
 
     Derive from this to define concrete cache implementations. A cache is
     centered around the concept of key:value pairings where the key is unique
     across the cache.
 
-    '''
+    """
 
     @abc.abstractmethod
     def get(self, key):
-        '''Return value for *key*.
+        """Return value for *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
 
     @abc.abstractmethod
     def set(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
 
     @abc.abstractmethod
     def remove(self, key):
-        '''Remove *key* and return stored value.
+        """Remove *key* and return stored value.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
 
     def keys(self):
-        '''Return list of keys at this current time.
+        """Return list of keys at this current time.
 
         .. warning::
 
             Actual keys may differ from those returned due to timing of access.
 
-        '''
+        """
         raise NotImplementedError()  # pragma: no cover
 
     def values(self):
-        '''Return values for current keys.'''
+        """Return values for current keys."""
         values = []
         for key in list(self.keys()):
             try:
@@ -104,13 +104,13 @@ class Cache(with_metaclass(abc.ABCMeta, object)):
         return values
 
     def clear(self, pattern=None):
-        '''Remove all keys matching *pattern*.
+        """Remove all keys matching *pattern*.
 
         *pattern* should be a regular expression string.
 
         If *pattern* is None then all keys will be removed.
 
-        '''
+        """
 
         if pattern is not None:
             pattern = re.compile(pattern)
@@ -127,54 +127,54 @@ class Cache(with_metaclass(abc.ABCMeta, object)):
 
 
 class ProxyCache(Cache):
-    '''Proxy another cache.'''
+    """Proxy another cache."""
 
     def __init__(self, proxied):
-        '''Initialise cache with *proxied* cache instance.'''
+        """Initialise cache with *proxied* cache instance."""
         self.proxied = proxied
         super(ProxyCache, self).__init__()
 
     def get(self, key):
-        '''Return value for *key*.
+        """Return value for *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         return self.proxied.get(key)
 
     def set(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         return self.proxied.set(key, value)
 
     def remove(self, key):
-        '''Remove *key* and return stored value.
+        """Remove *key* and return stored value.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         return self.proxied.remove(key)
 
     def keys(self):
-        '''Return list of keys at this current time.
+        """Return list of keys at this current time.
 
         .. warning::
 
             Actual keys may differ from those returned due to timing of access.
 
-        '''
+        """
         return list(self.proxied.keys())
 
 
 class LayeredCache(Cache):
-    '''Layered cache.'''
+    """Layered cache."""
 
     def __init__(self, caches):
-        '''Initialise cache with *caches*.'''
+        """Initialise cache with *caches*."""
         super(LayeredCache, self).__init__()
         self.caches = caches
 
     def get(self, key):
-        '''Return value for *key*.
+        """Return value for *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
@@ -182,7 +182,7 @@ class LayeredCache(Cache):
         If value retrieved, then also set the value in each higher level cache
         up from where retrieved.
 
-        '''
+        """
         target_caches = []
         value = ftrack_api.symbol.NOT_SET
 
@@ -205,16 +205,16 @@ class LayeredCache(Cache):
         return value
 
     def set(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         for cache in self.caches:
             cache.set(key, value)
 
     def remove(self, key):
-        '''Remove *key*.
+        """Remove *key*.
 
         Raise :exc:`KeyError` if *key* not found in any layer.
 
-        '''
+        """
         removed = False
         for cache in self.caches:
             try:
@@ -228,13 +228,13 @@ class LayeredCache(Cache):
             raise KeyError(key)
 
     def keys(self):
-        '''Return list of keys at this current time.
+        """Return list of keys at this current time.
 
         .. warning::
 
             Actual keys may differ from those returned due to timing of access.
 
-        '''
+        """
         keys = []
         for cache in self.caches:
             keys.extend(list(cache.keys()))
@@ -243,127 +243,127 @@ class LayeredCache(Cache):
 
 
 class MemoryCache(Cache):
-    '''Memory based cache.'''
+    """Memory based cache."""
 
     def __init__(self):
-        '''Initialise cache.'''
+        """Initialise cache."""
         self._cache = {}
         super(MemoryCache, self).__init__()
 
     def get(self, key):
-        '''Return value for *key*.
+        """Return value for *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         return self._cache[key]
 
     def set(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         self._cache[key] = value
 
     def remove(self, key):
-        '''Remove *key*.
+        """Remove *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         del self._cache[key]
 
     def keys(self):
-        '''Return list of keys at this current time.
+        """Return list of keys at this current time.
 
         .. warning::
 
             Actual keys may differ from those returned due to timing of access.
 
-        '''
+        """
         return list(self._cache.keys())
 
 
 class FileCache(Cache):
-    '''File based cache that uses :mod:`anydbm` module.
+    """File based cache that uses :mod:`anydbm` module.
 
     .. note::
 
         No locking of the underlying file is performed.
 
-    '''
+    """
 
     def __init__(self, path):
-        '''Initialise cache at *path*.'''
+        """Initialise cache at *path*."""
         self.path = path
 
         # Initialise cache.
-        cache = anydbm.open(self.path, 'c')
+        cache = anydbm.open(self.path, "c")
         cache.close()
 
         super(FileCache, self).__init__()
 
     @contextlib.contextmanager
     def _database(self):
-        '''Yield opened database file.'''
-        cache = anydbm.open(self.path, 'w')
+        """Yield opened database file."""
+        cache = anydbm.open(self.path, "w")
         try:
             yield cache
         finally:
             cache.close()
 
     def get(self, key):
-        '''Return value for *key*.
+        """Return value for *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         with self._database() as cache:
-            return cache[key.encode('ascii')].decode('utf-8')
+            return cache[key.encode("ascii")].decode("utf-8")
 
     def set(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         with self._database() as cache:
-            cache[key.encode('ascii')] = value
+            cache[key.encode("ascii")] = value
 
     def remove(self, key):
-        '''Remove *key*.
+        """Remove *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         with self._database() as cache:
-            del cache[key.encode('ascii')]
+            del cache[key.encode("ascii")]
 
     def keys(self):
-        '''Return list of keys at this current time.
+        """Return list of keys at this current time.
 
         .. warning::
 
             Actual keys may differ from those returned due to timing of access.
 
-        '''
+        """
         with self._database() as cache:
-            return [s.decode('utf-8') for s in cache.keys()]
-            #return list(map(str, cache.keys()))
+            return [s.decode("utf-8") for s in cache.keys()]
+            # return list(map(str, cache.keys()))
 
 
 class SerialisedCache(ProxyCache):
-    '''Proxied cache that stores values as serialised data.'''
+    """Proxied cache that stores values as serialised data."""
 
     def __init__(self, proxied, encode=None, decode=None):
-        '''Initialise cache with *encode* and *decode* callables.
+        """Initialise cache with *encode* and *decode* callables.
 
         *proxied* is the underlying cache to use for storage.
 
-        '''
+        """
         self.encode = encode
         self.decode = decode
         super(SerialisedCache, self).__init__(proxied)
 
     def get(self, key):
-        '''Return value for *key*.
+        """Return value for *key*.
 
         Raise :exc:`KeyError` if *key* not found.
 
-        '''
+        """
         value = super(SerialisedCache, self).get(key)
         if self.decode:
             value = self.decode(value)
@@ -371,7 +371,7 @@ class SerialisedCache(ProxyCache):
         return value
 
     def set(self, key, value):
-        '''Set *value* for *key*.'''
+        """Set *value* for *key*."""
         if self.encode:
             value = self.encode(value)
 
@@ -379,15 +379,15 @@ class SerialisedCache(ProxyCache):
 
 
 class KeyMaker(with_metaclass(abc.ABCMeta, object)):
-    '''Generate unique keys.'''
+    """Generate unique keys."""
 
     def __init__(self):
-        '''Initialise key maker.'''
+        """Initialise key maker."""
         super(KeyMaker, self).__init__()
-        self.item_separator = ''
+        self.item_separator = ""
 
     def key(self, *items):
-        '''Return key for *items*.'''
+        """Return key for *items*."""
         keys = []
         for item in items:
             keys.append(self._key(item))
@@ -396,34 +396,34 @@ class KeyMaker(with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractmethod
     def _key(self, obj):
-        '''Return key for *obj*.'''
+        """Return key for *obj*."""
 
 
 class StringKeyMaker(KeyMaker):
-    '''Generate string key.'''
+    """Generate string key."""
 
     def _key(self, obj):
-        '''Return key for *obj*.'''
+        """Return key for *obj*."""
         return str(obj)
 
 
 class ObjectKeyMaker(KeyMaker):
-    '''Generate unique keys for objects.'''
+    """Generate unique keys for objects."""
 
     def __init__(self):
-        '''Initialise key maker.'''
+        """Initialise key maker."""
         super(ObjectKeyMaker, self).__init__()
-        self.item_separator = b'\0'
-        self.mapping_identifier = b'\1'
-        self.mapping_pair_separator = b'\2'
-        self.iterable_identifier = b'\3'
-        self.name_identifier = b'\4'
+        self.item_separator = b"\0"
+        self.mapping_identifier = b"\1"
+        self.mapping_pair_separator = b"\2"
+        self.iterable_identifier = b"\3"
+        self.name_identifier = b"\4"
 
     def _key(self, item):
         return self.__key(item)
 
     def __key(self, item):
-        '''Return key for *item*.
+        """Return key for *item*.
 
         Returned key will be a pickle like string representing the *item*. This
         allows for typically non-hashable objects to be used in key generation
@@ -447,7 +447,7 @@ class ObjectKeyMaker(KeyMaker):
             >>> key_maker.key(add, (1, 3))
             '\x04add\x00__main__\x00\x03\x80\x02K\x01.\x00\x80\x02K\x03.\x03'
 
-        '''
+        """
 
         # Ensure p3k uses a protocol available in py2 so can decode it.
         pickle_protocol = 2
@@ -455,53 +455,47 @@ class ObjectKeyMaker(KeyMaker):
         # TODO: Consider using a more robust and comprehensive solution such as
         # dill (https://github.com/uqfoundation/dill).
         if isinstance(item, collections_abc.Iterable):
-
             if isinstance(item, string_types):
                 return pickle.dumps(item, pickle_protocol)
 
             if isinstance(item, collections_abc.Mapping):
-                contents = self.item_separator.join([
-                    (
-                        self._key(key) +
-                        self.mapping_pair_separator +
-                        self._key(value)
-                    )
-                    for key, value in sorted(item.items())
-                ])
+                contents = self.item_separator.join(
+                    [
+                        (
+                            self._key(key)
+                            + self.mapping_pair_separator
+                            + self._key(value)
+                        )
+                        for key, value in sorted(item.items())
+                    ]
+                )
 
-                return (
-                    self.mapping_identifier +
-                    contents +
-                    self.mapping_identifier
-                )
+                return self.mapping_identifier + contents + self.mapping_identifier
             else:
-                contents = self.item_separator.join([
-                    self._key(item) for item in item
-                ])
-                return (
-                    self.iterable_identifier +
-                    contents +
-                    self.iterable_identifier
-                )
+                contents = self.item_separator.join([self._key(item) for item in item])
+                return self.iterable_identifier + contents + self.iterable_identifier
 
         elif inspect.ismethod(item):
-
-            return b''.join((
-                self.name_identifier,
-                item.__name__.encode(),
-                self.item_separator,
-                item.__self__.__class__.__name__.encode(),
-                self.item_separator,
-                item.__module__.encode()
-            ))
+            return b"".join(
+                (
+                    self.name_identifier,
+                    item.__name__.encode(),
+                    self.item_separator,
+                    item.__self__.__class__.__name__.encode(),
+                    self.item_separator,
+                    item.__module__.encode(),
+                )
+            )
 
         elif inspect.isfunction(item) or inspect.isclass(item):
-            return b''.join((
-                self.name_identifier,
-                item.__name__.encode(),
-                self.item_separator,
-                item.__module__.encode()
-            ))
+            return b"".join(
+                (
+                    self.name_identifier,
+                    item.__name__.encode(),
+                    self.item_separator,
+                    item.__module__.encode(),
+                )
+            )
 
         elif inspect.isbuiltin(item):
             return self.name_identifier + item.__name__.encode()
@@ -511,7 +505,7 @@ class ObjectKeyMaker(KeyMaker):
 
 
 class Memoiser(object):
-    '''Memoise function calls using a :class:`KeyMaker` and :class:`Cache`.
+    """Memoise function calls using a :class:`KeyMaker` and :class:`Cache`.
 
     Example::
 
@@ -527,10 +521,10 @@ class Memoiser(object):
         >>> memoiser.call(add, (1, 3), {})
         Called
 
-    '''
+    """
 
     def __init__(self, cache=None, key_maker=None, return_copies=True):
-        '''Initialise with *cache* and *key_maker* to use.
+        """Initialise with *cache* and *key_maker* to use.
 
         If *cache* is not specified a default :class:`MemoryCache` will be
         used. Similarly, if *key_maker* is not specified a default
@@ -539,7 +533,7 @@ class Memoiser(object):
         If *return_copies* is True then all results returned from the cache will
         be deep copies to avoid indirect mutation of cached values.
 
-        '''
+        """
         self.cache = cache
         if self.cache is None:
             self.cache = MemoryCache()
@@ -552,14 +546,14 @@ class Memoiser(object):
         super(Memoiser, self).__init__()
 
     def call(self, function, args=None, kw=None):
-        '''Call *function* with *args* and *kw* and return result.
+        """Call *function* with *args* and *kw* and return result.
 
         If *function* was previously called with exactly the same arguments
         then return cached result if available.
 
         Store result for call in cache.
 
-        '''
+        """
         if args is None:
             args = ()
 
@@ -586,9 +580,9 @@ class Memoiser(object):
 
 
 def memoise_decorator(memoiser):
-    '''Decorator to memoise function calls using *memoiser*.'''
-    def outer(function):
+    """Decorator to memoise function calls using *memoiser*."""
 
+    def outer(function):
         @functools.wraps(function)
         def inner(*args, **kw):
             return memoiser.call(function, args, kw)

@@ -13,14 +13,12 @@ import ftrack_api.inspection
 
 #: Useful filters to pass to :func:`format`.`
 FILTER = {
-    'ignore_unset': (
-        lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET
-    )
+    "ignore_unset": (lambda entity, name, value: value is not ftrack_api.symbol.NOT_SET)
 }
 
 
 def _can_do_colors():
-    '''check if we are ( likely ) to be able to handle colors.'''
+    """check if we are ( likely ) to be able to handle colors."""
     if "ANSI_COLORS_DISABLED" in os.environ:
         return False
     if "NO_COLOR" in os.environ:
@@ -35,10 +33,15 @@ def _can_do_colors():
 
 
 def format(
-    entity, formatters=None, attribute_filter=None, recursive=False,
-    indent=0, indent_first_line=True, _seen=None
+    entity,
+    formatters=None,
+    attribute_filter=None,
+    recursive=False,
+    indent=0,
+    indent_first_line=True,
+    _seen=None,
 ):
-    '''Return formatted string representing *entity*.
+    """Return formatted string representing *entity*.
 
     *formatters* can be used to customise formatting of elements. It should be a
     mapping with one or more of the following keys:
@@ -66,26 +69,30 @@ def format(
         Iterates over all *entity* attributes which may cause multiple queries
         to the server. Turn off auto populating in the session to prevent this.
 
-    '''
+    """
     # Initialise default formatters.
     if formatters is None:
         formatters = dict()
 
     formatters.setdefault(
-        'header',
-        lambda text: '\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m\033[0m'.format(text) if _can_do_colors() else text
+        "header",
+        lambda text: "\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m\033[0m".format(text)
+        if _can_do_colors()
+        else text,
     )
     formatters.setdefault(
-        'label',
-        lambda text: '\x1b[1m\x1b[34m{}\x1b[0m\033[0m'.format(text) if _can_do_colors() else text
+        "label",
+        lambda text: "\x1b[1m\x1b[34m{}\x1b[0m\033[0m".format(text)
+        if _can_do_colors()
+        else text,
     )
 
     # Determine indents.
-    spacer = ' ' * indent
+    spacer = " " * indent
     if indent_first_line:
         first_line_spacer = spacer
     else:
-        first_line_spacer = ''
+        first_line_spacer = ""
 
     # Avoid infinite recursion on circular references.
     if _seen is None:
@@ -93,17 +100,12 @@ def format(
 
     identifier = str(ftrack_api.inspection.identity(entity))
     if identifier in _seen:
-        return (
-            first_line_spacer +
-            formatters['header'](entity.entity_type) + '{...}'
-        )
+        return first_line_spacer + formatters["header"](entity.entity_type) + "{...}"
 
     _seen.add(identifier)
     information = list()
 
-    information.append(
-        first_line_spacer + formatters['header'](entity.entity_type)
-    )
+    information.append(first_line_spacer + formatters["header"](entity.entity_type))
     for key, value in sorted(entity.items()):
         if attribute_filter is not None:
             if not attribute_filter(entity, key, value):
@@ -119,7 +121,7 @@ def format(
                 recursive=recursive,
                 indent=child_indent,
                 indent_first_line=False,
-                _seen=_seen.copy()
+                _seen=_seen.copy(),
             )
 
         if isinstance(value, ftrack_api.collection.Collection):
@@ -133,14 +135,12 @@ def format(
                         recursive=recursive,
                         indent=child_indent,
                         indent_first_line=index != 0,
-                        _seen=_seen.copy()
+                        _seen=_seen.copy(),
                     )
                     child_values.append(child_value)
 
-                value = '\n'.join(child_values)
+                value = "\n".join(child_values)
 
-        information.append(
-            spacer + u' {0}: {1}'.format(formatters['label'](key), value)
-        )
+        information.append(spacer + " {0}: {1}".format(formatters["label"](key), value))
 
-    return '\n'.join(information)
+    return "\n".join(information)

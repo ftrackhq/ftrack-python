@@ -19,33 +19,39 @@ from future.utils import with_metaclass
 
 
 class _EntityBase(object):
-    '''Base class to allow for mixins, we need a common base.'''
+    """Base class to allow for mixins, we need a common base."""
+
     pass
 
 
 class DynamicEntityTypeMetaclass(abc.ABCMeta):
-    '''Custom metaclass to customise representation of dynamic classes.
+    """Custom metaclass to customise representation of dynamic classes.
 
     .. note::
 
         Derive from same metaclass as derived bases to avoid conflicts.
 
-    '''
+    """
+
     def __repr__(self):
-        '''Return representation of class.'''
-        return '<dynamic ftrack class \'{0}\'>'.format(self.__name__)
+        """Return representation of class."""
+        return "<dynamic ftrack class '{0}'>".format(self.__name__)
 
 
-class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections_abc.MutableMapping)):
-    '''Base class for all entities.'''
+class Entity(
+    with_metaclass(
+        DynamicEntityTypeMetaclass, _EntityBase, collections_abc.MutableMapping
+    )
+):
+    """Base class for all entities."""
 
-    entity_type = 'Entity'
+    entity_type = "Entity"
     attributes = None
     primary_key_attributes = None
     default_projections = None
 
     def __init__(self, session, data=None, reconstructing=False):
-        '''Initialise entity.
+        """Initialise entity.
 
         *session* is an instance of :class:`ftrack_api.session.Session` that
         this entity instance is bound to.
@@ -57,30 +63,31 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         such as from a query, and therefore should not have any special creation
         logic applied, such as initialising defaults for missing data.
 
-        '''
+        """
         super(Entity, self).__init__()
-        self.logger = logging.getLogger(
-            __name__ + '.' + self.__class__.__name__
-        )
+        self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self.session = session
         self._inflated = set()
 
         if data is None:
             data = {}
 
-        self.logger.debug(L(
-            '{0} entity from {1!r}.',
-            ('Reconstructing' if reconstructing else 'Constructing'), data
-        ))
+        self.logger.debug(
+            L(
+                "{0} entity from {1!r}.",
+                ("Reconstructing" if reconstructing else "Constructing"),
+                data,
+            )
+        )
 
-        self._ignore_data_keys = ['__entity_type__']
+        self._ignore_data_keys = ["__entity_type__"]
         if not reconstructing:
             self._construct(data)
         else:
             self._reconstruct(data)
 
     def _construct(self, data):
-        '''Construct from *data*.'''
+        """Construct from *data*."""
         # Suspend operation recording so that all modifications can be applied
         # in single create operation. In addition, recording a modification
         # operation requires a primary key which may not be available yet.
@@ -97,7 +104,6 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
                     attribute.set_local_value(self, default_value)
 
-
             # Data represents locally set values.
             for key, value in list(data.items()):
                 if key in self._ignore_data_keys:
@@ -105,16 +111,18 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
                 attribute = self.__class__.attributes.get(key)
                 if attribute is None:
-                    self.logger.debug(L(
-                        'Cannot populate {0!r} attribute as no such '
-                        'attribute found on entity {1!r}.', key, self
-                    ))
+                    self.logger.debug(
+                        L(
+                            "Cannot populate {0!r} attribute as no such "
+                            "attribute found on entity {1!r}.",
+                            key,
+                            self,
+                        )
+                    )
                     continue
 
                 if not isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                    relational_attributes.setdefault(
-                        attribute, value
-                    )
+                    relational_attributes.setdefault(attribute, value)
 
                 else:
                     attribute.set_local_value(self, value)
@@ -146,7 +154,7 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                 ftrack_api.operation.CreateEntityOperation(
                     self.entity_type,
                     ftrack_api.inspection.primary_key(self),
-                    entity_data
+                    entity_data,
                 )
             )
 
@@ -156,12 +164,10 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
             # in the correct order as the newly created attributes might
             # contain references to the newly created entity.
 
-            attribute.set_local_value(
-                self, value
-            )
+            attribute.set_local_value(self, value)
 
     def _reconstruct(self, data):
-        '''Reconstruct from *data*.'''
+        """Reconstruct from *data*."""
         # Data represents remote values.
         for key, value in list(data.items()):
             if key in self._ignore_data_keys:
@@ -169,56 +175,57 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
 
             attribute = self.__class__.attributes.get(key)
             if attribute is None:
-                self.logger.debug(L(
-                    'Cannot populate {0!r} attribute as no such attribute '
-                    'found on entity {1!r}.', key, self
-                ))
+                self.logger.debug(
+                    L(
+                        "Cannot populate {0!r} attribute as no such attribute "
+                        "found on entity {1!r}.",
+                        key,
+                        self,
+                    )
+                )
                 continue
 
             attribute.set_remote_value(self, value)
 
     def __repr__(self):
-        '''Return representation of instance.'''
-        return '<dynamic ftrack {0} object {1}>'.format(
+        """Return representation of instance."""
+        return "<dynamic ftrack {0} object {1}>".format(
             self.__class__.__name__, id(self)
         )
 
     def __str__(self):
-        '''Return string representation of instance.'''
+        """Return string representation of instance."""
         with self.session.auto_populating(False):
-            primary_key = ['Unknown']
+            primary_key = ["Unknown"]
             try:
                 primary_key = list(ftrack_api.inspection.primary_key(self).values())
             except KeyError:
                 pass
 
-        return '<{0}({1})>'.format(
-            self.__class__.__name__, ', '.join(primary_key)
-        )
+        return "<{0}({1})>".format(self.__class__.__name__, ", ".join(primary_key))
 
     def __hash__(self):
-        '''Return hash representing instance.'''
+        """Return hash representing instance."""
         return hash(str(ftrack_api.inspection.identity(self)))
 
     def __eq__(self, other):
-        '''Return whether *other* is equal to this instance.
+        """Return whether *other* is equal to this instance.
 
         .. note::
 
             Equality is determined by both instances having the same identity.
             Values of attributes are not considered.
 
-        '''
+        """
         try:
-            return (
-                ftrack_api.inspection.identity(other)
-                == ftrack_api.inspection.identity(self)
-            )
+            return ftrack_api.inspection.identity(
+                other
+            ) == ftrack_api.inspection.identity(self)
         except (AttributeError, KeyError):
             return False
 
     def __getitem__(self, key):
-        '''Return attribute value for *key*.'''
+        """Return attribute value for *key*."""
         attribute = self.__class__.attributes.get(key)
         if attribute is None:
             raise KeyError(key)
@@ -226,7 +233,7 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         return attribute.get_value(self)
 
     def __setitem__(self, key, value):
-        '''Set attribute *value* for *key*.'''
+        """Set attribute *value* for *key*."""
         attribute = self.__class__.attributes.get(key)
         if attribute is None:
             raise KeyError(key)
@@ -234,54 +241,54 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         attribute.set_local_value(self, value)
 
     def __delitem__(self, key):
-        '''Clear attribute value for *key*.
+        """Clear attribute value for *key*.
 
         .. note::
 
             Will not remove the attribute, but instead clear any local value
             and revert to the last known server value.
 
-        '''
+        """
         attribute = self.__class__.attributes.get(key)
         attribute.set_local_value(self, ftrack_api.symbol.NOT_SET)
 
     def __iter__(self):
-        '''Iterate over all attributes keys.'''
+        """Iterate over all attributes keys."""
         for attribute in self.__class__.attributes:
             yield attribute.name
 
     def __len__(self):
-        '''Return count of attributes.'''
+        """Return count of attributes."""
         return len(self.__class__.attributes)
 
     def values(self):
-        '''Return list of values.'''
+        """Return list of values."""
         if self.session.auto_populate:
             self._populate_unset_scalar_attributes()
 
         return list(super(Entity, self).values())
 
     def items(self):
-        '''Return list of tuples of (key, value) pairs.
+        """Return list of tuples of (key, value) pairs.
 
         .. note::
 
             Will fetch all values from the server if not already fetched or set
             locally.
 
-        '''
+        """
         if self.session.auto_populate:
             self._populate_unset_scalar_attributes()
 
         return list(super(Entity, self).items())
 
     def clear(self):
-        '''Reset all locally modified attribute values.'''
+        """Reset all locally modified attribute values."""
         for attribute in self:
             del self[attribute]
 
     def merge(self, entity, merged=None):
-        '''Merge *entity* attribute values and other data into this entity.
+        """Merge *entity* attribute values and other data into this entity.
 
         Only merge values from *entity* that are not
         :attr:`ftrack_api.symbol.NOT_SET`.
@@ -294,7 +301,7 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
             * old_value - The previous value.
             * new_value - The new merged value.
 
-        '''
+        """
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
         if merged is None:
@@ -329,15 +336,15 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                     )
 
                     attribute.set_local_value(self, merged_local_value)
-                    changes.append({
-                        'type': 'local_attribute',
-                        'name': attribute.name,
-                        'old_value': local_value,
-                        'new_value': merged_local_value
-                    })
-                    log_debug and self.logger.debug(
-                        log_message.format(**changes[-1])
+                    changes.append(
+                        {
+                            "type": "local_attribute",
+                            "name": attribute.name,
+                            "old_value": local_value,
+                            "new_value": merged_local_value,
+                        }
                     )
+                    log_debug and self.logger.debug(log_message.format(**changes[-1]))
 
             # Remote attributes.
             other_remote_value = other_attribute.get_remote_value(entity)
@@ -348,20 +355,18 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                         other_remote_value, merged=merged
                     )
 
-                    attribute.set_remote_value(
-                        self, merged_remote_value
+                    attribute.set_remote_value(self, merged_remote_value)
+
+                    changes.append(
+                        {
+                            "type": "remote_attribute",
+                            "name": attribute.name,
+                            "old_value": remote_value,
+                            "new_value": merged_remote_value,
+                        }
                     )
 
-                    changes.append({
-                        'type': 'remote_attribute',
-                        'name': attribute.name,
-                        'old_value': remote_value,
-                        'new_value': merged_remote_value
-                    })
-
-                    log_debug and self.logger.debug(
-                        log_message.format(**changes[-1])
-                    )
+                    log_debug and self.logger.debug(log_message.format(**changes[-1]))
 
                     # We need to handle collections separately since
                     # they may store a local copy of the remote attribute
@@ -371,24 +376,22 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                     ):
                         continue
 
-                    local_value = attribute.get_local_value(
-                        self
-                    )
+                    local_value = attribute.get_local_value(self)
 
                     # Populated but not modified, update it.
                     if (
-                        local_value is not ftrack_api.symbol.NOT_SET and
-                        local_value == remote_value
+                        local_value is not ftrack_api.symbol.NOT_SET
+                        and local_value == remote_value
                     ):
-                        attribute.set_local_value(
-                            self, merged_remote_value
+                        attribute.set_local_value(self, merged_remote_value)
+                        changes.append(
+                            {
+                                "type": "local_attribute",
+                                "name": attribute.name,
+                                "old_value": local_value,
+                                "new_value": merged_remote_value,
+                            }
                         )
-                        changes.append({
-                            'type': 'local_attribute',
-                            'name': attribute.name,
-                            'old_value': local_value,
-                            'new_value': merged_remote_value
-                        })
 
                         log_debug and self.logger.debug(
                             log_message.format(**changes[-1])
@@ -397,7 +400,7 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
         return changes
 
     def _populate_unset_scalar_attributes(self):
-        '''Populate all unset scalar attributes in one query.'''
+        """Populate all unset scalar attributes in one query."""
         projections = []
         for attribute in self.attributes:
             if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
@@ -405,4 +408,4 @@ class Entity(with_metaclass(DynamicEntityTypeMetaclass, _EntityBase, collections
                     projections.append(attribute.name)
 
         if projections:
-            self.session.populate([self], ', '.join(projections))
+            self.session.populate([self], ", ".join(projections))

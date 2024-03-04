@@ -5,13 +5,13 @@ import ftrack_api.operation
 
 
 def test_operations_initialise():
-    '''Initialise empty operations stack.'''
+    """Initialise empty operations stack."""
     operations = ftrack_api.operation.Operations()
     assert len(operations) == 0
 
 
 def test_operations_push():
-    '''Push new operation onto stack.'''
+    """Push new operation onto stack."""
     operations = ftrack_api.operation.Operations()
     assert len(operations) == 0
 
@@ -21,7 +21,7 @@ def test_operations_push():
 
 
 def test_operations_pop():
-    '''Pop and return operation from stack.'''
+    """Pop and return operation from stack."""
     operations = ftrack_api.operation.Operations()
     assert len(operations) == 0
 
@@ -37,7 +37,7 @@ def test_operations_pop():
 
 
 def test_operations_count():
-    '''Count operations in stack.'''
+    """Count operations in stack."""
     operations = ftrack_api.operation.Operations()
     assert len(operations) == 0
 
@@ -49,7 +49,7 @@ def test_operations_count():
 
 
 def test_operations_clear():
-    '''Clear operations stack.'''
+    """Clear operations stack."""
     operations = ftrack_api.operation.Operations()
     operations.push(ftrack_api.operation.Operation())
     operations.push(ftrack_api.operation.Operation())
@@ -61,7 +61,7 @@ def test_operations_clear():
 
 
 def test_operations_iter():
-    '''Iterate over operations stack.'''
+    """Iterate over operations stack."""
     operations = ftrack_api.operation.Operations()
     operation_a = ftrack_api.operation.Operation()
     operation_b = ftrack_api.operation.Operation()
@@ -72,8 +72,5 @@ def test_operations_iter():
     operations.push(operation_c)
 
     assert len(operations) == 3
-    for operation, expected in zip(
-        operations, [operation_a, operation_b, operation_c]
-    ):
+    for operation, expected in zip(operations, [operation_a, operation_b, operation_c]):
         assert operation is expected
-
