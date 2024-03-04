@@ -1,0 +1,11 @@
+# Ignored revisions for git blame
+# To apply to your local git: 
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Learn more:
+# https://www.moxio.com/blog/43/ignoring-bulk-change-commits-with-git-blame#:~:text=In%20your%20repository%2C%20create%20a,to%20be%20a%20common%20convention.&text=This%20causes%20git%20to%20automatically,every%20call%20to%20git%20blame%20.
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# Formatting: black
+f9b267e3a6545b009f3fcd911292977a1114a637
