@@ -16,6 +16,21 @@ Release Notes
 
 .. release:: Upcoming
 
+    .. change:: new
+        :tags: compatibility
+
+        Added support for Python 3.12
+
+    .. change:: changed
+        :tags: compatibility
+
+        Dropped support for Python 2.7, 3.6 and 3.7
+
+    .. change:: changed
+        :tags: path resolve
+
+        Replaced deprecated appdirs with platformdirs.
+
     .. change:: changed
         :tags: events, security
 

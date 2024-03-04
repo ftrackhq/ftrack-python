@@ -15,20 +15,15 @@ memoisation of function using a global cache and standard key maker.
 
 """
 
-from future import standard_library
-
-standard_library.install_aliases()
 from builtins import str
 from six import string_types
 from builtins import object
-import collections
 from six.moves import collections_abc
 import functools
 import abc
 import copy
 import inspect
 import re
-import six
 
 try:
     # Python 2.x
