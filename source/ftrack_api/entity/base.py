@@ -149,7 +149,7 @@ class Entity(
             # collections that are automatically generated on access.
             for attribute in self.attributes:
                 value = attribute.get_local_value(self)
-                if value is not NOT_SET:
+                if value is not ftrack_api.symbol.NOT_SET:
                     entity_data[attribute.name] = value
 
             self.session.recorded_operations.push(
@@ -252,7 +252,7 @@ class Entity(
 
         """
         attribute = self.__class__.attributes.get(key)
-        attribute.set_local_value(self, NOT_SET)
+        attribute.set_local_value(self, ftrack_api.symbol.NOT_SET)
 
     def __iter__(self):
         """Iterate over all attributes keys."""
@@ -329,6 +329,8 @@ class Entity(
                 attributes.append(_attribute)
 
         for attribute_name in attributes:
+            attribute = self.attributes.get(attribute_name)
+
             # Local attributes.
             other_local_value = other_storage.get_local(attribute_name)
             if other_local_value is not NOT_SET:
@@ -338,7 +340,7 @@ class Entity(
                         other_local_value, merged=merged
                     )
 
-                    storage.set_local(attribute_name, merged_local_value)
+                    attribute.set_local_value(self, merged_local_value)
 
                     changes.append(
                         {
@@ -359,7 +361,7 @@ class Entity(
                         other_remote_value, merged=merged
                     )
 
-                    storage.set_remote(attribute_name, merged_remote_value)
+                    attribute.set_remote_value(self, merged_remote_value)
 
                     changes.append(
                         {
@@ -376,25 +378,22 @@ class Entity(
                     # they may store a local copy of the remote attribute
                     # even though it may not be modified.
                     if not isinstance(
-                        self.attributes.get(attribute_name),
-                        ftrack_api.attribute.AbstractCollectionAttribute,
+                        attribute, ftrack_api.attribute.AbstractCollectionAttribute
                     ):
                         continue
 
-                    local_value = storage.get_local(
-                        attribute_name
-                    )  # attribute.get_local_value(self)
+                    local_value = attribute.get_local_value(self)
 
                     # Populated but not modified, update it.
                     if (
                         local_value is not ftrack_api.symbol.NOT_SET
                         and local_value == remote_value
                     ):
-                        storage.set_local(attribute_name, merged_remote_value)
+                        attribute.set_local_value(self, merged_remote_value)
                         changes.append(
                             {
                                 "type": "local_attribute",
-                                "name": attribute_name,
+                                "name": attribute.name,
                                 "old_value": local_value,
                                 "new_value": merged_remote_value,
                             }
