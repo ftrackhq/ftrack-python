@@ -12,12 +12,12 @@ import logging
 import warnings
 import functools
 
-import ftrack_api.symbol
 import ftrack_api.exception
 import ftrack_api.collection
 import ftrack_api.inspection
 import ftrack_api.operation
 
+from ftrack_api.symbol import NOT_SET
 from ftrack_api.attribute_storage import get_entity_storage
 
 logger = logging.getLogger(__name__)
@@ -140,7 +140,7 @@ class Attribute(object):
     def __init__(
         self,
         name,
-        default_value=ftrack_api.symbol.NOT_SET,
+        default_value=NOT_SET,
         mutable=True,
         computed=False,
     ):
@@ -210,10 +210,10 @@ class Attribute(object):
             self.name
         )
 
-        if local_value is not ftrack_api.symbol.NOT_SET:
+        if local_value is not NOT_SET:
             return local_value
 
-        if remote_remote is not ftrack_api.symbol.NOT_SET:
+        if remote_remote is not NOT_SET:
             return remote_remote
 
         if not entity.session.auto_populate:
@@ -239,11 +239,7 @@ class Attribute(object):
 
     def set_local_value(self, entity, value):
         """Set local *value* for *entity*."""
-        if (
-            not self.mutable
-            and self.is_set(entity)
-            and value is not ftrack_api.symbol.NOT_SET
-        ):
+        if not self.mutable and self.is_set(entity) and value is not NOT_SET:
             raise ftrack_api.exception.ImmutableAttributeError(self)
 
         old_value = self.get_local_value(entity)
@@ -289,9 +285,7 @@ class Attribute(object):
             self.name
         )
 
-        return (
-            local_value is not ftrack_api.symbol.NOT_SET and local_value != remote_value
-        )
+        return local_value is not NOT_SET and local_value != remote_value
 
     def is_set(self, entity):
         """Return whether a value is set for *entity*."""
@@ -301,8 +295,8 @@ class Attribute(object):
 
         return any(
             [
-                local_value is not ftrack_api.symbol.NOT_SET,
-                remote_value is not ftrack_api.symbol.NOT_SET,
+                local_value is not NOT_SET,
+                remote_value is not NOT_SET,
             ]
         )
 
@@ -356,10 +350,10 @@ class ReferenceAttribute(Attribute):
             self.name
         )
 
-        if local_value is ftrack_api.symbol.NOT_SET:
+        if local_value is NOT_SET:
             return False
 
-        if remote_value is ftrack_api.symbol.NOT_SET:
+        if remote_value is NOT_SET:
             return True
 
         if ftrack_api.inspection.identity(
@@ -401,9 +395,7 @@ class AbstractCollectionAttribute(Attribute):
         # mutated without side effects.
         local_value = self.get_local_value(entity)
         remote_value = self.get_remote_value(entity)
-        if local_value is ftrack_api.symbol.NOT_SET and isinstance(
-            remote_value, self.collection_class
-        ):
+        if local_value is NOT_SET and isinstance(remote_value, self.collection_class):
             try:
                 with entity.session.operation_recording(False):
                     self.set_local_value(entity, copy.copy(remote_value))
@@ -418,7 +410,7 @@ class AbstractCollectionAttribute(Attribute):
         # newly created entity for example. It *could* be done as a simple
         # default value, but that would incur cost for every collection even
         # when they are not modified before commit.
-        if value is ftrack_api.symbol.NOT_SET:
+        if value is NOT_SET:
             try:
                 with entity.session.operation_recording(False):
                     self.set_local_value(
@@ -433,7 +425,7 @@ class AbstractCollectionAttribute(Attribute):
 
     def set_local_value(self, entity, value):
         """Set local *value* for *entity*."""
-        if value is not ftrack_api.symbol.NOT_SET:
+        if value is not NOT_SET:
             value = self._adapt_to_collection(entity, value)
             value.mutable = self.mutable
 
@@ -447,7 +439,7 @@ class AbstractCollectionAttribute(Attribute):
             Only set locally stored remote value, do not persist to remote.
 
         """
-        if value is not ftrack_api.symbol.NOT_SET:
+        if value is not NOT_SET:
             value = self._adapt_to_collection(entity, value)
             value.mutable = False
 

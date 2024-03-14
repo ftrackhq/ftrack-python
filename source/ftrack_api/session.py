@@ -54,6 +54,7 @@ import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
+from ftrack_api.symbol import NOT_SET
 from ftrack_api.attribute import get_entity_storage
 
 try:
@@ -1263,7 +1264,7 @@ class Session(object):
         for payload in batch:
             entity_data = payload.get("entity_data", {})
             for key, value in list(entity_data.items()):
-                if value is ftrack_api.symbol.NOT_SET:
+                if value is NOT_SET:
                     del entity_data[key]
 
         # Remove payloads with redundant entity_data.
@@ -1736,7 +1737,7 @@ class Session(object):
 
             with self.auto_populating(True):
                 for attribute in item.attributes:
-                    value = ftrack_api.symbol.NOT_SET
+                    value = NOT_SET
 
                     if entity_attribute_strategy == "all":
                         value = attribute.get_value(item)
@@ -1744,7 +1745,7 @@ class Session(object):
                     elif entity_attribute_strategy == "set_only":
                         if attribute.is_set(item):
                             value = attribute.get_local_value(item)
-                            if value is ftrack_api.symbol.NOT_SET:
+                            if value is NOT_SET:
                                 value = attribute.get_remote_value(item)
 
                     elif entity_attribute_strategy == "modified_only":
@@ -1755,7 +1756,7 @@ class Session(object):
                         if not attribute.computed:
                             value = attribute.get_remote_value(item)
 
-                    if value is not ftrack_api.symbol.NOT_SET:
+                    if value is not NOT_SET:
                         if isinstance(
                             attribute, ftrack_api.attribute.ReferenceAttribute
                         ):
