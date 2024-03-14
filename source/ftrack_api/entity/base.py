@@ -16,6 +16,8 @@ import ftrack_api.exception
 import ftrack_api.operation
 from ftrack_api.logging import LazyLogMessage as L
 from future.utils import with_metaclass
+from ftrack_api.attribute import get_entity_storage
+from ftrack_api.symbol import NOT_SET
 
 
 class _EntityBase(object):
@@ -147,7 +149,7 @@ class Entity(
             # collections that are automatically generated on access.
             for attribute in self.attributes:
                 value = attribute.get_local_value(self)
-                if value is not ftrack_api.symbol.NOT_SET:
+                if value is not NOT_SET:
                     entity_data[attribute.name] = value
 
             self.session.recorded_operations.push(
@@ -250,7 +252,7 @@ class Entity(
 
         """
         attribute = self.__class__.attributes.get(key)
-        attribute.set_local_value(self, ftrack_api.symbol.NOT_SET)
+        attribute.set_local_value(self, NOT_SET)
 
     def __iter__(self):
         """Iterate over all attributes keys."""
@@ -310,6 +312,9 @@ class Entity(
         log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
         changes = []
 
+        storage = get_entity_storage(self)
+        other_storage = get_entity_storage(entity)
+
         # Attributes.
 
         # Prioritise by type so that scalar values are set first. This should
@@ -317,19 +322,19 @@ class Entity(
         # are merged before merging any collections that may have references to
         # this entity.
         attributes = collections.deque()
-        for attribute in entity.attributes:
+        for attribute_name in other_storage.keys():
+            attribute = self.attributes.get(attribute_name)
             if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                attributes.appendleft(attribute)
+                attributes.appendleft(attribute_name)
             else:
-                attributes.append(attribute)
+                attributes.append(attribute_name)
 
-        for other_attribute in attributes:
-            attribute = self.attributes.get(other_attribute.name)
+        for attribute_name in attributes:
 
             # Local attributes.
-            other_local_value = other_attribute.get_local_value(entity)
-            if other_local_value is not ftrack_api.symbol.NOT_SET:
-                local_value = attribute.get_local_value(self)
+            other_local_value = other_storage.get_local(attribute_name)
+            if other_local_value is not NOT_SET:
+                local_value = storage.get_local(attribute_name)
                 if local_value != other_local_value:
                     merged_local_value = self.session.merge(
                         other_local_value, merged=merged
@@ -347,9 +352,11 @@ class Entity(
                     log_debug and self.logger.debug(log_message.format(**changes[-1]))
 
             # Remote attributes.
-            other_remote_value = other_attribute.get_remote_value(entity)
-            if other_remote_value is not ftrack_api.symbol.NOT_SET:
-                remote_value = attribute.get_remote_value(self)
+            other_remote_value = other_storage.get_remote(attribute_name)
+
+            if other_remote_value is not NOT_SET:
+                remote_value = storage.get_remote(attribute_name)
+
                 if remote_value != other_remote_value:
                     merged_remote_value = self.session.merge(
                         other_remote_value, merged=merged
@@ -376,13 +383,10 @@ class Entity(
                     ):
                         continue
 
-                    local_value = attribute.get_local_value(self)
+                    local_value = storage.get_local(attribute_name)
 
                     # Populated but not modified, update it.
-                    if (
-                        local_value is not ftrack_api.symbol.NOT_SET
-                        and local_value == remote_value
-                    ):
+                    if local_value is not NOT_SET and local_value == remote_value:
                         attribute.set_local_value(self, merged_remote_value)
                         changes.append(
                             {
@@ -404,7 +408,7 @@ class Entity(
         projections = []
         for attribute in self.attributes:
             if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                if attribute.get_remote_value(self) is ftrack_api.symbol.NOT_SET:
+                if attribute.get_remote_value(self) is NOT_SET:
                     projections.append(attribute.name)
 
         if projections:

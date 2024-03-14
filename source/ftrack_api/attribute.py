@@ -7,7 +7,9 @@ from builtins import object
 import collections
 from six.moves import collections_abc
 import copy
+import typing
 import logging
+import warnings
 import functools
 
 import ftrack_api.symbol
@@ -15,6 +17,8 @@ import ftrack_api.exception
 import ftrack_api.collection
 import ftrack_api.inspection
 import ftrack_api.operation
+
+from ftrack_api.attribute_storage import get_entity_storage
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +29,11 @@ def merge_references(function):
     @functools.wraps(function)
     def get_value(attribute, entity):
         """Merge the attribute with the local cache."""
+        mergable_types = (
+            ftrack_api.entity.base.Entity,
+            ftrack_api.collection.Collection,
+            ftrack_api.collection.MappedCollectionProxy,
+        )
 
         if attribute.name not in entity._inflated:
             # Only merge on first access to avoid
@@ -39,11 +48,7 @@ def merge_references(function):
             local_value = attribute.get_local_value(entity)
             if isinstance(
                 local_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy,
-                ),
+                mergable_types,
             ):
                 logger.debug("Merging local value for attribute {0}.".format(attribute))
 
@@ -57,11 +62,7 @@ def merge_references(function):
             remote_value = attribute.get_remote_value(entity)
             if isinstance(
                 remote_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy,
-                ),
+                mergable_types,
             ):
                 logger.debug(
                     "Merging remote value for attribute {0}.".format(attribute)
@@ -164,29 +165,23 @@ class Attribute(object):
         self._computed = computed
         self.default_value = default_value
 
-        self._local_key = "local"
-        self._remote_key = "remote"
-
     def __repr__(self):
         """Return representation of entity."""
         return "<{0}.{1}({2}) object at {3}>".format(
             self.__module__, self.__class__.__name__, self.name, id(self)
         )
 
-    def get_entity_storage(self, entity):
+    @staticmethod
+    def get_entity_storage(entity):
         """Return attribute storage on *entity* creating if missing."""
-        storage_key = "_ftrack_attribute_storage"
-        storage = getattr(entity, storage_key, None)
-        if storage is None:
-            storage = collections.defaultdict(
-                lambda: {
-                    self._local_key: ftrack_api.symbol.NOT_SET,
-                    self._remote_key: ftrack_api.symbol.NOT_SET,
-                }
-            )
-            setattr(entity, storage_key, storage)
 
-        return storage
+        warnings.warn(
+            "Use of Attribute.get_entity_storage is deprecated, use ftrack_api.attribute_storage"
+            ".get_entity_storage function instead.",
+            DeprecationWarning,
+        )
+
+        return get_entity_storage(entity)
 
     @property
     def name(self):
@@ -211,24 +206,26 @@ class Attribute(object):
         via the session and block until available.
 
         """
-        value = self.get_local_value(entity)
-        if value is not ftrack_api.symbol.NOT_SET:
-            return value
+        local_value, remote_remote = get_entity_storage(entity).get_local_remote_pair(
+            self.name
+        )
 
-        value = self.get_remote_value(entity)
-        if value is not ftrack_api.symbol.NOT_SET:
-            return value
+        if local_value is not ftrack_api.symbol.NOT_SET:
+            return local_value
+
+        if remote_remote is not ftrack_api.symbol.NOT_SET:
+            return remote_remote
 
         if not entity.session.auto_populate:
-            return value
+            return remote_remote
 
         self.populate_remote_value(entity)
+
         return self.get_remote_value(entity)
 
     def get_local_value(self, entity):
         """Return locally set value for *entity*."""
-        storage = self.get_entity_storage(entity)
-        return storage[self.name][self._local_key]
+        return get_entity_storage(entity).get_local(self.name)
 
     def get_remote_value(self, entity):
         """Return remote value for *entity*.
@@ -238,8 +235,7 @@ class Attribute(object):
             Only return locally stored remote value, do not fetch from remote.
 
         """
-        storage = self.get_entity_storage(entity)
-        return storage[self.name][self._remote_key]
+        return get_entity_storage(entity).get_remote(self.name)
 
     def set_local_value(self, entity, value):
         """Set local *value* for *entity*."""
@@ -252,8 +248,7 @@ class Attribute(object):
 
         old_value = self.get_local_value(entity)
 
-        storage = self.get_entity_storage(entity)
-        storage[self.name][self._local_key] = value
+        get_entity_storage(entity).set_local(self.name, value)
 
         # Record operation.
         if entity.session.record_operations:
@@ -275,8 +270,7 @@ class Attribute(object):
             Only set locally stored remote value, do not persist to remote.
 
         """
-        storage = self.get_entity_storage(entity)
-        storage[self.name][self._remote_key] = value
+        get_entity_storage(entity).set_remote(self.name, value)
 
     def populate_remote_value(self, entity):
         """Populate remote value for *entity*."""
@@ -291,18 +285,24 @@ class Attribute(object):
             are the same on the remote.
 
         """
-        local_value = self.get_local_value(entity)
-        remote_value = self.get_remote_value(entity)
+        local_value, remote_value = get_entity_storage(entity).get_local_remote_pair(
+            self.name
+        )
+
         return (
             local_value is not ftrack_api.symbol.NOT_SET and local_value != remote_value
         )
 
     def is_set(self, entity):
         """Return whether a value is set for *entity*."""
+        local_value, remote_value = get_entity_storage(entity).get_local_remote_pair(
+            self.name
+        )
+
         return any(
             [
-                self.get_local_value(entity) is not ftrack_api.symbol.NOT_SET,
-                self.get_remote_value(entity) is not ftrack_api.symbol.NOT_SET,
+                local_value is not ftrack_api.symbol.NOT_SET,
+                remote_value is not ftrack_api.symbol.NOT_SET,
             ]
         )
 
@@ -352,8 +352,9 @@ class ReferenceAttribute(Attribute):
             are the same on the remote.
 
         """
-        local_value = self.get_local_value(entity)
-        remote_value = self.get_remote_value(entity)
+        local_value, remote_value = get_entity_storage(entity).get_local_remote_pair(
+            self.name
+        )
 
         if local_value is ftrack_api.symbol.NOT_SET:
             return False

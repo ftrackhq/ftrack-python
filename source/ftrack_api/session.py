@@ -54,6 +54,7 @@ import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
+from ftrack_api.attribute import get_entity_storage
 
 try:
     from weakref import WeakMethod
@@ -946,22 +947,22 @@ class Session(object):
         if merged is None:
             merged = {}
 
+        mergable_types = (
+            ftrack_api.entity.base.Entity,
+            ftrack_api.collection.Collection,
+            ftrack_api.collection.MappedCollectionProxy,
+        )
+
         attached = self.merge(entity, merged)
+        entity_storage = get_entity_storage(entity)
 
-        for attribute in entity.attributes:
+        for attribute_name in entity_storage.keys():
             # Remote attributes.
-            remote_value = attribute.get_remote_value(entity)
+            remote_value = entity_storage.get_remote(attribute_name)
 
-            if isinstance(
-                remote_value,
-                (
-                    ftrack_api.entity.base.Entity,
-                    ftrack_api.collection.Collection,
-                    ftrack_api.collection.MappedCollectionProxy,
-                ),
-            ):
+            if isinstance(remote_value, mergable_types):
                 log_debug and self.logger.debug(
-                    "Merging remote value for attribute {0}.".format(attribute)
+                    "Merging remote value for attribute {0}.".format(attribute_name)
                 )
 
                 if isinstance(remote_value, ftrack_api.entity.base.Entity):
