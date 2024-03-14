@@ -57,10 +57,20 @@ from ftrack_api.logging import LazyLogMessage as L
 from ftrack_api.symbol import NOT_SET
 from ftrack_api.attribute import get_entity_storage
 
+from ftrack_api.entity.base import Entity
+from ftrack_api.collection import Collection, MappedCollectionProxy
+
 try:
     from weakref import WeakMethod
 except ImportError:
     from ftrack_api._weakref import WeakMethod
+
+
+_MERGABLE_TYPES = (
+    Entity,
+    Collection,
+    MappedCollectionProxy,
+)
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -905,14 +915,14 @@ class Session(object):
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
         with self.merge_lock:
-            if isinstance(value, ftrack_api.entity.base.Entity):
+            if isinstance(value, Entity):
                 log_debug and self.logger.debug(
                     "Merging entity into session: {0} at {1}".format(value, id(value))
                 )
 
                 return self._merge_entity(value, merged=merged)
 
-            elif isinstance(value, ftrack_api.collection.Collection):
+            elif isinstance(value, Collection):
                 log_debug and self.logger.debug(
                     "Merging collection into session: {0!r} at {1}".format(
                         value, id(value)
@@ -925,7 +935,7 @@ class Session(object):
 
                 return merged_collection
 
-            elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+            elif isinstance(value, MappedCollectionProxy):
                 log_debug and self.logger.debug(
                     "Merging mapped collection into session: {0!r} at {1}".format(
                         value, id(value)
@@ -948,12 +958,6 @@ class Session(object):
         if merged is None:
             merged = {}
 
-        mergable_types = (
-            ftrack_api.entity.base.Entity,
-            ftrack_api.collection.Collection,
-            ftrack_api.collection.MappedCollectionProxy,
-        )
-
         attached = self.merge(entity, merged)
         entity_storage = get_entity_storage(entity)
 
@@ -961,21 +965,19 @@ class Session(object):
             # Remote attributes.
             remote_value = entity_storage.get_remote(attribute_name)
 
-            if isinstance(remote_value, mergable_types):
+            if isinstance(remote_value, _MERGABLE_TYPES):
                 log_debug and self.logger.debug(
                     "Merging remote value for attribute {0}.".format(attribute_name)
                 )
 
-                if isinstance(remote_value, ftrack_api.entity.base.Entity):
+                if isinstance(remote_value, Entity):
                     self._merge_recursive(remote_value, merged=merged)
 
-                elif isinstance(remote_value, ftrack_api.collection.Collection):
+                elif isinstance(remote_value, Collection):
                     for entry in remote_value:
                         self._merge_recursive(entry, merged=merged)
 
-                elif isinstance(
-                    remote_value, ftrack_api.collection.MappedCollectionProxy
-                ):
+                elif isinstance(remote_value, MappedCollectionProxy):
                     for entry in remote_value.collection:
                         self._merge_recursive(entry, merged=merged)
 
