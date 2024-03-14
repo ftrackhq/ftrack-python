@@ -322,15 +322,13 @@ class Entity(
         # are merged before merging any collections that may have references to
         # this entity.
         attributes = collections.deque()
-        for attribute_name in other_storage.keys():
-            attribute = self.attributes.get(attribute_name)
-            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                attributes.appendleft(attribute_name)
+        for _attribute in other_storage.keys():
+            if isinstance(_attribute, ftrack_api.attribute.ScalarAttribute):
+                attributes.appendleft(_attribute)
             else:
-                attributes.append(attribute_name)
+                attributes.append(_attribute)
 
         for attribute_name in attributes:
-
             # Local attributes.
             other_local_value = other_storage.get_local(attribute_name)
             if other_local_value is not NOT_SET:
@@ -340,11 +338,12 @@ class Entity(
                         other_local_value, merged=merged
                     )
 
-                    attribute.set_local_value(self, merged_local_value)
+                    storage.set_local(attribute_name, merged_local_value)
+
                     changes.append(
                         {
                             "type": "local_attribute",
-                            "name": attribute.name,
+                            "name": attribute_name,
                             "old_value": local_value,
                             "new_value": merged_local_value,
                         }
@@ -353,21 +352,19 @@ class Entity(
 
             # Remote attributes.
             other_remote_value = other_storage.get_remote(attribute_name)
-
             if other_remote_value is not NOT_SET:
                 remote_value = storage.get_remote(attribute_name)
-
                 if remote_value != other_remote_value:
                     merged_remote_value = self.session.merge(
                         other_remote_value, merged=merged
                     )
 
-                    attribute.set_remote_value(self, merged_remote_value)
+                    storage.set_remote(attribute_name, merged_remote_value)
 
                     changes.append(
                         {
                             "type": "remote_attribute",
-                            "name": attribute.name,
+                            "name": attribute_name,
                             "old_value": remote_value,
                             "new_value": merged_remote_value,
                         }
@@ -379,19 +376,25 @@ class Entity(
                     # they may store a local copy of the remote attribute
                     # even though it may not be modified.
                     if not isinstance(
-                        attribute, ftrack_api.attribute.AbstractCollectionAttribute
+                        self.attributes.get(attribute_name),
+                        ftrack_api.attribute.AbstractCollectionAttribute,
                     ):
                         continue
 
-                    local_value = storage.get_local(attribute_name)
+                    local_value = storage.get_local(
+                        attribute_name
+                    )  # attribute.get_local_value(self)
 
                     # Populated but not modified, update it.
-                    if local_value is not NOT_SET and local_value == remote_value:
-                        attribute.set_local_value(self, merged_remote_value)
+                    if (
+                        local_value is not ftrack_api.symbol.NOT_SET
+                        and local_value == remote_value
+                    ):
+                        storage.set_local(attribute_name, merged_remote_value)
                         changes.append(
                             {
                                 "type": "local_attribute",
-                                "name": attribute.name,
+                                "name": attribute_name,
                                 "old_value": local_value,
                                 "new_value": merged_remote_value,
                             }
