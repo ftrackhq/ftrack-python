@@ -26,7 +26,6 @@ import re
 
 import pickle
 import contextlib
-from future.utils import with_metaclass
 
 import dbm as anydbm
 
@@ -34,7 +33,7 @@ import ftrack_api.inspection
 import ftrack_api.symbol
 
 
-class Cache(with_metaclass(abc.ABCMeta, object)):
+class Cache(metaclass=abc.ABCMeta):
     """Cache interface.
 
     Derive from this to define concrete cache implementations. A cache is
@@ -361,7 +360,7 @@ class SerialisedCache(ProxyCache):
         super(SerialisedCache, self).set(key, value)
 
 
-class KeyMaker(with_metaclass(abc.ABCMeta, object)):
+class KeyMaker(metaclass=abc.ABCMeta):
     """Generate unique keys."""
 
     def __init__(self):

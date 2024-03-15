@@ -1,14 +1,12 @@
 # :coding: utf-8
 # :copyright: Copyright (c) 2013 ftrack
 
-from builtins import object
 import abc
 
 import ftrack_api.exception
-from future.utils import with_metaclass
 
 
-class Accessor(with_metaclass(abc.ABCMeta, object)):
+class Accessor(metaclass=abc.ABCMeta):
     """Provide data access to a location.
 
     A location represents a specific storage, but access to that storage may

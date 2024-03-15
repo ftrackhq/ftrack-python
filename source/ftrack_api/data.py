@@ -5,10 +5,9 @@ from builtins import object
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
-from future.utils import with_metaclass
 
 
-class Data(with_metaclass(ABCMeta, object)):
+class Data(metaclass=ABCMeta):
     """File-like object for manipulating data."""
 
     def __init__(self):
