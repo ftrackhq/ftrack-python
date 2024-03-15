@@ -772,7 +772,7 @@ class Session(object):
         self.logger.debug(L("Get {0} with key {1}", entity_type, entity_key))
 
         primary_key_definition = self.types[entity_type].primary_key_attributes
-        if isinstance(entity_key, string_types):
+        if isinstance(entity_key, str):
             entity_key = [entity_key]
 
         if len(entity_key) != len(primary_key_definition):
@@ -2195,7 +2195,7 @@ class Session(object):
         is a FileComponent, and deleted if it is a file path. You can specify
         True or False to change this behavior.
         """
-        if isinstance(media, string_types):
+        if isinstance(media, str):
             # Media is a path to a file.
             server_location = self.get("Location", ftrack_api.symbol.SERVER_LOCATION_ID)
             if keep_original == "auto":
