@@ -2,12 +2,12 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 import re
-from six.moves import collections_abc
+import collections.abc
 
 import ftrack_api.exception
 
 
-class QueryResult(collections_abc.Sequence):
+class QueryResult(collections.abc.Sequence):
     """Results from a query."""
 
     OFFSET_EXPRESSION = re.compile("(?P<offset>offset (?P<value>\d+))")

@@ -2,7 +2,6 @@
 # :copyright: Copyright (c) 2014 ftrack
 
 from builtins import map
-from six import string_types
 from builtins import object
 from operator import eq, ne, ge, le, gt, lt
 
@@ -266,7 +265,7 @@ class Condition(Expression):
 
         if (
             self._operator is eq
-            and isinstance(self._value, string_types)
+            and isinstance(self._value, str)
             and self._value[-1] == self._wildcard
         ):
             return self._value[:-1] in value

@@ -6,8 +6,7 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import range
 from builtins import object
-import collections
-from six.moves import collections_abc
+import collections.abc
 import urllib.parse
 import threading
 import queue as queue
@@ -18,7 +17,6 @@ import operator
 import functools
 import json
 import socket
-import warnings
 import ssl
 
 import requests
@@ -129,7 +127,7 @@ class EventHub(object):
 
         def _validate_mapping(mapping):
             """Validate mapping is a mapping type and return as dict."""
-            if not isinstance(mapping, collections_abc.Mapping):
+            if not isinstance(mapping, collections.abc.Mapping):
                 raise TypeError("Expected mapping, got {0!r}.".format(mapping))
 
             return dict(mapping)
@@ -1014,7 +1012,7 @@ class EventHub(object):
 
             if len(args) == 1:
                 event_payload = args[0]
-                if isinstance(event_payload, collections_abc.Mapping):
+                if isinstance(event_payload, collections.abc.Mapping):
                     try:
                         event = ftrack_api.event.base.Event(**event_payload)
                     except Exception:

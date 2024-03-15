@@ -4,8 +4,7 @@
 from __future__ import absolute_import
 
 from builtins import object
-import collections
-from six.moves import collections_abc
+import collections.abc
 import copy
 import logging
 import functools
@@ -538,7 +537,7 @@ class KeyValueMappedCollectionAttribute(AbstractCollectionAttribute):
                     value, self.creator, self.key_attribute, self.value_attribute
                 )
 
-            elif isinstance(value, collections_abc.Mapping):
+            elif isinstance(value, collections.abc.Mapping):
                 # Convert mapping.
                 # TODO: When backend model improves, revisit this logic.
                 # First get existing value and delete all references. This is
@@ -612,7 +611,7 @@ class CustomAttributeCollectionAttribute(AbstractCollectionAttribute):
 
                 value = ftrack_api.collection.CustomAttributeCollectionProxy(value)
 
-            elif isinstance(value, collections_abc.Mapping):
+            elif isinstance(value, collections.abc.Mapping):
                 # Convert mapping.
                 # TODO: When backend model improves, revisit this logic.
                 # First get existing value and delete all references. This is

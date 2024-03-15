@@ -7,8 +7,7 @@ from __future__ import unicode_literals
 from builtins import str
 import logging
 
-import collections
-from six.moves import collections_abc
+import collections.abc
 import copy
 
 import ftrack_api.exception
@@ -19,7 +18,7 @@ import ftrack_api.cache
 from ftrack_api.logging import LazyLogMessage as L
 
 
-class Collection(collections_abc.MutableSequence):
+class Collection(collections.abc.MutableSequence):
     """A collection of entities."""
 
     def __init__(self, entity, attribute, mutable=True, data=None):
@@ -152,7 +151,7 @@ class Collection(collections_abc.MutableSequence):
         return not self == other
 
 
-class MappedCollectionProxy(collections_abc.MutableMapping):
+class MappedCollectionProxy(collections.abc.MutableMapping):
     """Common base class for mapped collection of entities."""
 
     def __init__(self, collection):

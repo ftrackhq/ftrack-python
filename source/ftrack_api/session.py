@@ -7,12 +7,10 @@ from __future__ import division
 from builtins import zip
 from builtins import map
 from builtins import str
-from six import string_types
 from builtins import object
 import json
 import logging
-import collections
-from six.moves import collections_abc
+import collections.abc
 import datetime
 import os
 import getpass
@@ -55,10 +53,7 @@ import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
 
-try:
-    from weakref import WeakMethod
-except ImportError:
-    from ftrack_api._weakref import WeakMethod
+from weakref import WeakMethod
 
 
 class SessionAuthentication(requests.auth.AuthBase):
@@ -255,12 +250,12 @@ class Session(object):
         self._request = requests.Session()
 
         if cookies:
-            if not isinstance(cookies, collections_abc.Mapping):
+            if not isinstance(cookies, collections.abc.Mapping):
                 raise TypeError("The cookies argument is required to be a mapping.")
             self._request.cookies.update(cookies)
 
         if headers:
-            if not isinstance(headers, collections_abc.Mapping):
+            if not isinstance(headers, collections.abc.Mapping):
                 raise TypeError("The headers argument is required to be a mapping.")
 
             headers = dict(headers)
@@ -716,7 +711,7 @@ class Session(object):
         for identifying_key in identifying_keys:
             value = data[identifying_key]
 
-            if isinstance(value, string_types):
+            if isinstance(value, str):
                 value = '"{0}"'.format(value)
 
             elif isinstance(value, (arrow.Arrow, datetime.datetime, datetime.date)):
@@ -1798,7 +1793,7 @@ class Session(object):
 
     def _decode(self, item):
         """Return *item* transformed into appropriate representation."""
-        if isinstance(item, collections_abc.Mapping):
+        if isinstance(item, collections.abc.Mapping):
             if "__type__" in item:
                 if item["__type__"] == "datetime":
                     item = arrow.get(item["value"])
@@ -2408,7 +2403,7 @@ class OperationRecordingContext(object):
         self._session.record_operations = self._current_record_operations
 
 
-class OperationPayload(collections_abc.MutableMapping):
+class OperationPayload(collections.abc.MutableMapping):
     """Represent operation payload."""
 
     def __init__(self, *args, **kwargs):

@@ -2,10 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 from builtins import zip
-from six import string_types
-from builtins import object
-import collections
-from six.moves import collections_abc
+import collections.abc
 import functools
 
 import ftrack_api.entity.base
@@ -21,7 +18,7 @@ from future.utils import with_metaclass
 MixinBaseClass = with_metaclass(
     ftrack_api.entity.base.DynamicEntityTypeMetaclass,
     ftrack_api.entity.base._EntityBase,
-    collections_abc.MutableMapping,
+    collections.abc.MutableMapping,
 )
 
 
@@ -129,8 +126,8 @@ class Location(ftrack_api.entity.base.Entity):
             issues and any transferred data under the 'transferred' detail key.
 
         """
-        if isinstance(sources, string_types) or not isinstance(
-            sources, collections_abc.Sequence
+        if isinstance(sources, str) or not isinstance(
+            sources, collections.abc.Sequence
         ):
             sources = [sources]
 
@@ -512,10 +509,10 @@ class Location(ftrack_api.entity.base.Entity):
         # Optionally decode resource identifier.
         if self.resource_identifier_transformer:
             for index, resource_identifier in enumerate(resource_identifiers):
-                resource_identifiers[
-                    index
-                ] = self.resource_identifier_transformer.decode(
-                    resource_identifier, context={"component": components[index]}
+                resource_identifiers[index] = (
+                    self.resource_identifier_transformer.decode(
+                        resource_identifier, context={"component": components[index]}
+                    )
                 )
 
         return resource_identifiers
@@ -544,9 +541,9 @@ class Location(ftrack_api.entity.base.Entity):
 
         resource_identifiers_map = {}
         for component_location in component_locations:
-            resource_identifiers_map[
-                component_location["component_id"]
-            ] = component_location["resource_identifier"]
+            resource_identifiers_map[component_location["component_id"]] = (
+                component_location["resource_identifier"]
+            )
 
         resource_identifiers = []
         missing = []

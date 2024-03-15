@@ -3,10 +3,10 @@
 
 from builtins import str
 import uuid
-from six.moves import collections_abc
+import collections.abc
 
 
-class Event(collections_abc.MutableMapping):
+class Event(collections.abc.MutableMapping):
     """Represent a single event."""
 
     def __init__(
