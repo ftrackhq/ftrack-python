@@ -76,15 +76,17 @@ def format(
 
     formatters.setdefault(
         "header",
-        lambda text: "\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m\033[0m".format(text)
-        if _can_do_colors()
-        else text,
+        lambda text: (
+            "\x1b[1m\x1b[44m\x1b[97m{}\x1b[0m\033[0m".format(text)
+            if _can_do_colors()
+            else text
+        ),
     )
     formatters.setdefault(
         "label",
-        lambda text: "\x1b[1m\x1b[34m{}\x1b[0m\033[0m".format(text)
-        if _can_do_colors()
-        else text,
+        lambda text: (
+            "\x1b[1m\x1b[34m{}\x1b[0m\033[0m".format(text) if _can_do_colors() else text
+        ),
     )
 
     # Determine indents.
