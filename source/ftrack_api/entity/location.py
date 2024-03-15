@@ -500,10 +500,10 @@ class Location(ftrack_api.entity.base.Entity):
         # Optionally decode resource identifier.
         if self.resource_identifier_transformer:
             for index, resource_identifier in enumerate(resource_identifiers):
-                resource_identifiers[index] = (
-                    self.resource_identifier_transformer.decode(
-                        resource_identifier, context={"component": components[index]}
-                    )
+                resource_identifiers[
+                    index
+                ] = self.resource_identifier_transformer.decode(
+                    resource_identifier, context={"component": components[index]}
                 )
 
         return resource_identifiers
@@ -532,9 +532,9 @@ class Location(ftrack_api.entity.base.Entity):
 
         resource_identifiers_map = {}
         for component_location in component_locations:
-            resource_identifiers_map[component_location["component_id"]] = (
-                component_location["resource_identifier"]
-            )
+            resource_identifiers_map[
+                component_location["component_id"]
+            ] = component_location["resource_identifier"]
 
         resource_identifiers = []
         missing = []
