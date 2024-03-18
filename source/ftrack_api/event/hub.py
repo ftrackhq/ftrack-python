@@ -127,7 +127,7 @@ class EventHub(object):
 
         def _validate_mapping(mapping):
             """Validate mapping is a mapping type and return as dict."""
-            if not isinstance(mapping, collections.abc.Mapping):
+            if not isinstance(mapping, collections_abc.Mapping):
                 raise TypeError("Expected mapping, got {0!r}.".format(mapping))
 
             return dict(mapping)
@@ -1070,7 +1070,7 @@ class EventHub(object):
 
     def _decode_object_hook(self, item):
         """Return *item* transformed."""
-        if isinstance(item, collections_abc.Mapping):
+        if isinstance(item, collections.abc.Mapping):
             if "inReplyToEvent" in item:
                 item["in_reply_to_event"] = item.pop("inReplyToEvent")
 
