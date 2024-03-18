@@ -127,7 +127,7 @@ class EventHub(object):
 
         def _validate_mapping(mapping):
             """Validate mapping is a mapping type and return as dict."""
-            if not isinstance(mapping, collections_abc.Mapping):
+            if not isinstance(mapping, collections.abc.Mapping):
                 raise TypeError("Expected mapping, got {0!r}.".format(mapping))
 
             return dict(mapping)
