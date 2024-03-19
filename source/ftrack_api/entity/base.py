@@ -16,6 +16,8 @@ import ftrack_api.exception
 import ftrack_api.operation
 from ftrack_api.logging import LazyLogMessage as L
 from future.utils import with_metaclass
+from ftrack_api.attribute import get_entity_storage
+from ftrack_api.symbol import NOT_SET
 
 
 class _EntityBase(object):
@@ -310,6 +312,9 @@ class Entity(
         log_message = 'Merged {type} "{name}": {old_value!r} -> {new_value!r}'
         changes = []
 
+        storage = get_entity_storage(self)
+        other_storage = get_entity_storage(entity)
+
         # Attributes.
 
         # Prioritise by type so that scalar values are set first. This should
@@ -317,29 +322,30 @@ class Entity(
         # are merged before merging any collections that may have references to
         # this entity.
         attributes = collections.deque()
-        for attribute in entity.attributes:
-            if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                attributes.appendleft(attribute)
+        for _attribute in other_storage.keys():
+            if isinstance(_attribute, ftrack_api.attribute.ScalarAttribute):
+                attributes.appendleft(_attribute)
             else:
-                attributes.append(attribute)
+                attributes.append(_attribute)
 
-        for other_attribute in attributes:
-            attribute = self.attributes.get(other_attribute.name)
+        for attribute_name in attributes:
+            attribute = self.attributes.get(attribute_name)
 
             # Local attributes.
-            other_local_value = other_attribute.get_local_value(entity)
-            if other_local_value is not ftrack_api.symbol.NOT_SET:
-                local_value = attribute.get_local_value(self)
+            other_local_value = other_storage.get_local(attribute_name)
+            if other_local_value is not NOT_SET:
+                local_value = storage.get_local(attribute_name)
                 if local_value != other_local_value:
                     merged_local_value = self.session.merge(
                         other_local_value, merged=merged
                     )
 
                     attribute.set_local_value(self, merged_local_value)
+
                     changes.append(
                         {
                             "type": "local_attribute",
-                            "name": attribute.name,
+                            "name": attribute_name,
                             "old_value": local_value,
                             "new_value": merged_local_value,
                         }
@@ -347,9 +353,9 @@ class Entity(
                     log_debug and self.logger.debug(log_message.format(**changes[-1]))
 
             # Remote attributes.
-            other_remote_value = other_attribute.get_remote_value(entity)
-            if other_remote_value is not ftrack_api.symbol.NOT_SET:
-                remote_value = attribute.get_remote_value(self)
+            other_remote_value = other_storage.get_remote(attribute_name)
+            if other_remote_value is not NOT_SET:
+                remote_value = storage.get_remote(attribute_name)
                 if remote_value != other_remote_value:
                     merged_remote_value = self.session.merge(
                         other_remote_value, merged=merged
@@ -360,7 +366,7 @@ class Entity(
                     changes.append(
                         {
                             "type": "remote_attribute",
-                            "name": attribute.name,
+                            "name": attribute_name,
                             "old_value": remote_value,
                             "new_value": merged_remote_value,
                         }
@@ -404,7 +410,7 @@ class Entity(
         projections = []
         for attribute in self.attributes:
             if isinstance(attribute, ftrack_api.attribute.ScalarAttribute):
-                if attribute.get_remote_value(self) is ftrack_api.symbol.NOT_SET:
+                if attribute.get_remote_value(self) is NOT_SET:
                     projections.append(attribute.name)
 
         if projections:

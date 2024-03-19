@@ -48,7 +48,7 @@ except:
         import pickle
 
 import ftrack_api.inspection
-import ftrack_api.symbol
+from ftrack_api.symbol import NOT_SET
 
 
 class Cache(with_metaclass(abc.ABCMeta, object)):
@@ -184,7 +184,7 @@ class LayeredCache(Cache):
 
         """
         target_caches = []
-        value = ftrack_api.symbol.NOT_SET
+        value = NOT_SET
 
         for cache in self.caches:
             try:
@@ -195,7 +195,7 @@ class LayeredCache(Cache):
             else:
                 break
 
-        if value is ftrack_api.symbol.NOT_SET:
+        if value is NOT_SET:
             raise KeyError(key)
 
         # Set value on all higher level caches.

@@ -8,6 +8,9 @@ import collections
 import ftrack_api.symbol
 import ftrack_api.operation
 
+from ftrack_api.symbol import NOT_SET
+from ftrack_api.attribute_storage import get_entity_storage
+
 
 def identity(entity):
     """Return unique identity of *entity*."""
@@ -23,9 +26,12 @@ def primary_key(entity):
 
     """
     primary_key = collections.OrderedDict()
+    entity_storage = get_entity_storage(entity)
+
     for name in entity.primary_key_attributes:
-        value = entity[name]
-        if value is ftrack_api.symbol.NOT_SET:
+        value = entity_storage.get(name)
+
+        if value is NOT_SET:
             raise KeyError(
                 'Missing required value for primary key attribute "{0}" on '
                 "entity {1!r}.".format(name, entity)
@@ -41,13 +47,13 @@ def _state(operation, state):
     """Return state following *operation* against current *state*."""
     if (
         isinstance(operation, ftrack_api.operation.CreateEntityOperation)
-        and state is ftrack_api.symbol.NOT_SET
+        and state is NOT_SET
     ):
         state = ftrack_api.symbol.CREATED
 
     elif (
         isinstance(operation, ftrack_api.operation.UpdateEntityOperation)
-        and state is ftrack_api.symbol.NOT_SET
+        and state is NOT_SET
     ):
         state = ftrack_api.symbol.MODIFIED
 
@@ -63,7 +69,7 @@ def state(entity):
     .. seealso:: :func:`ftrack_api.inspection.states`.
 
     """
-    value = ftrack_api.symbol.NOT_SET
+    value = NOT_SET
 
     for operation in entity.session.recorded_operations:
         # Determine if operation refers to an entity and whether that entity
@@ -106,7 +112,7 @@ def states(entities):
     entities_by_identity = collections.OrderedDict()
     for entity in entities:
         key = (entity.entity_type, str(list(primary_key(entity).values())))
-        entities_by_identity[key] = ftrack_api.symbol.NOT_SET
+        entities_by_identity[key] = NOT_SET
 
     for operation in session.recorded_operations:
         if isinstance(

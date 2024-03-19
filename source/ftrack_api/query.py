@@ -10,8 +10,8 @@ import ftrack_api.exception
 class QueryResult(collections_abc.Sequence):
     """Results from a query."""
 
-    OFFSET_EXPRESSION = re.compile("(?P<offset>offset (?P<value>\d+))")
-    LIMIT_EXPRESSION = re.compile("(?P<limit>limit (?P<value>\d+))")
+    OFFSET_EXPRESSION = re.compile(r"(?P<offset>offset (?P<value>\d+))")
+    LIMIT_EXPRESSION = re.compile(r"(?P<limit>limit (?P<value>\d+))")
 
     def __init__(self, session, expression, page_size=500):
         """Initialise result set.
