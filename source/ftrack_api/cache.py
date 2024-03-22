@@ -16,42 +16,24 @@ memoisation of function using a global cache and standard key maker.
 """
 
 from builtins import str
-from six import string_types
 from builtins import object
-from six.moves import collections_abc
 import functools
 import abc
+import collections.abc
 import copy
 import inspect
 import re
 
-try:
-    # Python 2.x
-    import anydbm
-except ImportError:
-    import dbm as anydbm
-
-
+import pickle
 import contextlib
-from future.utils import with_metaclass
 
-try:
-    try:
-        import _pickle as pickle
-    except:
-        import six
-        from six.moves import cPickle as pickle
-except:
-    try:
-        import cPickle as pickle
-    except:
-        import pickle
+import dbm as anydbm
 
 import ftrack_api.inspection
 import ftrack_api.symbol
 
 
-class Cache(with_metaclass(abc.ABCMeta, object)):
+class Cache(metaclass=abc.ABCMeta):
     """Cache interface.
 
     Derive from this to define concrete cache implementations. A cache is
@@ -378,7 +360,7 @@ class SerialisedCache(ProxyCache):
         super(SerialisedCache, self).set(key, value)
 
 
-class KeyMaker(with_metaclass(abc.ABCMeta, object)):
+class KeyMaker(metaclass=abc.ABCMeta):
     """Generate unique keys."""
 
     def __init__(self):
@@ -454,11 +436,11 @@ class ObjectKeyMaker(KeyMaker):
 
         # TODO: Consider using a more robust and comprehensive solution such as
         # dill (https://github.com/uqfoundation/dill).
-        if isinstance(item, collections_abc.Iterable):
-            if isinstance(item, string_types):
+        if isinstance(item, collections.abc.Iterable):
+            if isinstance(item, str):
                 return pickle.dumps(item, pickle_protocol)
 
-            if isinstance(item, collections_abc.Mapping):
+            if isinstance(item, collections.abc.Mapping):
                 contents = self.item_separator.join(
                     [
                         (

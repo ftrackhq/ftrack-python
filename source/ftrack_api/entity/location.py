@@ -2,10 +2,7 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 from builtins import zip
-from six import string_types
-from builtins import object
-import collections
-from six.moves import collections_abc
+import collections.abc
 import functools
 
 import ftrack_api.entity.base
@@ -14,15 +11,6 @@ import ftrack_api.event.base
 import ftrack_api.symbol
 import ftrack_api.inspection
 from ftrack_api.logging import LazyLogMessage as L
-
-from future.utils import with_metaclass
-
-
-MixinBaseClass = with_metaclass(
-    ftrack_api.entity.base.DynamicEntityTypeMetaclass,
-    ftrack_api.entity.base._EntityBase,
-    collections_abc.MutableMapping,
-)
 
 
 class Location(ftrack_api.entity.base.Entity):
@@ -129,8 +117,8 @@ class Location(ftrack_api.entity.base.Entity):
             issues and any transferred data under the 'transferred' detail key.
 
         """
-        if isinstance(sources, string_types) or not isinstance(
-            sources, collections_abc.Sequence
+        if isinstance(sources, str) or not isinstance(
+            sources, collections.abc.Sequence
         ):
             sources = [sources]
 
@@ -590,7 +578,11 @@ class Location(ftrack_api.entity.base.Entity):
         return self.accessor.get_url(resource_identifier)
 
 
-class MemoryLocationMixin(MixinBaseClass):
+class MemoryLocationMixin(
+    ftrack_api.entity.base._EntityBase,
+    collections.abc.MutableMapping,
+    metaclass=ftrack_api.entity.base.DynamicEntityTypeMetaclass,
+):
     """Represent storage for components.
 
     Unlike a standard location, only store metadata for components in this
@@ -652,7 +644,11 @@ class MemoryLocationMixin(MixinBaseClass):
         return resource_identifiers
 
 
-class UnmanagedLocationMixin(MixinBaseClass):
+class UnmanagedLocationMixin(
+    ftrack_api.entity.base._EntityBase,
+    collections.abc.MutableMapping,
+    metaclass=ftrack_api.entity.base.DynamicEntityTypeMetaclass,
+):
     """Location that does not manage data."""
 
     def _add_data(self, component, resource_identifier, source):
@@ -687,7 +683,11 @@ class OriginLocationMixin(MemoryLocationMixin, UnmanagedLocationMixin):
         return context
 
 
-class ServerLocationMixin(MixinBaseClass):
+class ServerLocationMixin(
+    ftrack_api.entity.base._EntityBase,
+    collections.abc.MutableMapping,
+    metaclass=ftrack_api.entity.base.DynamicEntityTypeMetaclass,
+):
     """Location representing ftrack server.
 
     Adds convenience methods to location, specific to ftrack server.

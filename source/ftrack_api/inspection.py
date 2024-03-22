@@ -2,7 +2,6 @@
 # :copyright: Copyright (c) 2015 ftrack
 
 from builtins import str
-from future.utils import native_str
 import collections
 
 import ftrack_api.symbol
@@ -32,7 +31,7 @@ def primary_key(entity):
             )
 
         # todo: Compatiblity fix, review for better implementation.
-        primary_key[native_str(name)] = native_str(value)
+        primary_key[str(name)] = str(value)
 
     return primary_key
 

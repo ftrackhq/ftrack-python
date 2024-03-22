@@ -5,8 +5,7 @@ from __future__ import absolute_import
 
 from builtins import str
 import abc
-import collections
-from six.moves import collections_abc
+import collections.abc
 import logging
 
 import ftrack_api.symbol
@@ -15,7 +14,6 @@ import ftrack_api.inspection
 import ftrack_api.exception
 import ftrack_api.operation
 from ftrack_api.logging import LazyLogMessage as L
-from future.utils import with_metaclass
 
 
 class _EntityBase(object):
@@ -39,9 +37,7 @@ class DynamicEntityTypeMetaclass(abc.ABCMeta):
 
 
 class Entity(
-    with_metaclass(
-        DynamicEntityTypeMetaclass, _EntityBase, collections_abc.MutableMapping
-    )
+    _EntityBase, collections.abc.MutableMapping, metaclass=DynamicEntityTypeMetaclass
 ):
     """Base class for all entities."""
 
