@@ -32,7 +32,6 @@ termcolor = ">=1.1.0,<2"
 pyparsing = ">=2.0,<3"
 clique = "==1.6.1"
 websocket-client = ">=0.40.0,<1"
-future = ">=0.16.0,<1"
 platformdirs = ">=4.0.0,<5"
 wheel = "^0.41.2"
 

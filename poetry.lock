@@ -432,16 +432,6 @@ files = [
 ]
 
 [[package]]
-name = "future"
-version = "0.18.3"
-description = "Clean single-source support for Python 3 and 2"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-files = [
-    {file = "future-0.18.3.tar.gz", hash = "sha256:34a17436ed1e96697a86f9de3d15a3b0be01d8bc8de9c1dffd59fb8234ed5307"},
-]
-
-[[package]]
 name = "identify"
 version = "2.5.35"
 description = "File identification library for Python"
@@ -1495,4 +1485,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "9ad60cf82d221f5dec9dab8e151aec981fd38a0c8955812c27a80cad7bed9ceb"
+content-hash = "bbcd65bc4c3c6670b39d3442bdbdb98569b938ece98d62ecd3287a3e75fb5ee7"
