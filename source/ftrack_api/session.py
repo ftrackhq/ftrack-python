@@ -18,7 +18,6 @@ import os
 import getpass
 import functools
 import itertools
-import distutils.version
 import hashlib
 import tempfile
 import threading
@@ -438,10 +437,14 @@ class Session(object):
 
         # Perform basic version check.
         if server_version != "dev":
-            min_server_version = "3.3.11"
-            if distutils.version.LooseVersion(
-                min_server_version
-            ) > distutils.version.LooseVersion(server_version):
+            import re
+
+            match = re.match(r"(\d+)\.(\d+)\.(\d+)", server_version)
+            if not match:
+                return
+
+            min_server_version = (3, 3, 11)
+            if tuple(map(int, match.groups())) < min_server_version:
                 raise ftrack_api.exception.ServerCompatibilityError(
                     "Server version {0} incompatible with this version of the "
                     "API which requires a server version >= {1}".format(
