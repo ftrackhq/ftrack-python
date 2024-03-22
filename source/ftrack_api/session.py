@@ -444,7 +444,8 @@ class Session(object):
                 return
 
             min_server_version = (3, 3, 11)
-            if tuple(map(int, match.groups())) < min_server_version:
+            server_version = tuple(map(int, match.groups()))
+            if server_version < min_server_version:
                 raise ftrack_api.exception.ServerCompatibilityError(
                     "Server version {0} incompatible with this version of the "
                     "API which requires a server version >= {1}".format(
