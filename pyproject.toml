@@ -23,17 +23,12 @@ initial-content = """
 
 [tool.poetry.dependencies]
 python = "^3.8"
-lowdown = ">=0.1.0,<2"
-setuptools = ">=30.3.0"
-setuptools-scm = "^7.1.0"
 requests = ">=2,<3"
 arrow = ">=0.4.4,<1"
-termcolor = ">=1.1.0,<2"
 pyparsing = ">=2.0,<3"
 clique = "==1.6.1"
 websocket-client = ">=0.40.0,<1"
 platformdirs = ">=4.0.0,<5"
-wheel = "^0.41.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
@@ -41,12 +36,16 @@ pre-commit = "^3.4.0"
 twine = "^4.0.2"
 sphinx = "^7.0.6"
 sphinx_rtd_theme = ">=2.0.0,<3"
+wheel = "^0.41.2"
+lowdown = ">=0.1.0,<2"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.1"
 pytest-mock = "^3.11.1"
 mock = "^5.1.0"
 flaky = "^3.7.0"
+termcolor = ">=1.1.0,<2"
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
