@@ -18,6 +18,7 @@ import functools
 import json
 import socket
 import ssl
+import platform
 
 import requests
 import requests.exceptions
@@ -590,6 +591,7 @@ class EventHub(object):
         """Prepare *event* for sending."""
         event["source"].setdefault("id", self.id)
         event["source"].setdefault("user", {"username": self._api_user})
+        event["source"].setdefault("host", platform.node())
 
     def _prepare_reply_event(self, event, source_event, source=None):
         """Prepare *event* as a reply to another *source_event*.
