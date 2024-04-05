@@ -532,9 +532,7 @@ def test_unsubscribe_missing_subscriber(event_hub):
 @pytest.mark.parametrize(
     "event_data",
     [
-        pytest.param(
-            dict(source=dict(id="1", user=dict(username="auto"),host=platform.node())), id="pre-prepared"
-        ),
+        pytest.param(dict(source=dict(id="1", user=dict(username="auto"), host=platform.node())), id="pre-prepared"),
         pytest.param(dict(source=dict(user=dict(username="auto"), host=platform.node())), id="missing id"),
         pytest.param(dict(source=dict(id="1", host=platform.node())), id="missing user"),
         pytest.param(dict(source=dict(id="1", user=dict(username="auto"))), id="missing host"),
