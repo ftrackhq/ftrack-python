@@ -532,10 +532,20 @@ def test_unsubscribe_missing_subscriber(event_hub):
 @pytest.mark.parametrize(
     "event_data",
     [
-        pytest.param(dict(source=dict(id="1", user=dict(username="auto"), host=platform.node())), id="pre-prepared"),
-        pytest.param(dict(source=dict(user=dict(username="auto"), host=platform.node())), id="missing id"),
-        pytest.param(dict(source=dict(id="1", host=platform.node())), id="missing user"),
-        pytest.param(dict(source=dict(id="1", user=dict(username="auto"))), id="missing host"),
+        pytest.param(
+            dict(source=dict(id="1", user=dict(username="auto"), host=platform.node())),
+            id="pre-prepared",
+        ),
+        pytest.param(
+            dict(source=dict(user=dict(username="auto"), host=platform.node())),
+            id="missing id",
+        ),
+        pytest.param(
+            dict(source=dict(id="1", host=platform.node())), id="missing user"
+        ),
+        pytest.param(
+            dict(source=dict(id="1", user=dict(username="auto"))), id="missing host"
+        ),
         pytest.param(dict(), id="no source"),
     ],
 )
@@ -555,7 +565,9 @@ def test_prepare_event(session, event_data):
 
     event = Event("test", id="event-id", **event_data)
     expected = Event(
-        "test", id="event-id", source=dict(id="1", user=dict(username=session.api_user), host=platform.node())
+        "test",
+        id="event-id",
+        source=dict(id="1", user=dict(username=session.api_user), host=platform.node()),
     )
     event_hub._prepare_event(event)
     assert event == expected
