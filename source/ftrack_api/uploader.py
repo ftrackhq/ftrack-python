@@ -81,9 +81,11 @@ class Uploader:
         self.http = httpx.AsyncClient()
 
     def _single_upload(self, url, headers):
+        self.file.seek(0)
+
         response = httpx.put(
             url,
-            data=self.file,
+            content=self.file,
             headers=headers,
         )
 
