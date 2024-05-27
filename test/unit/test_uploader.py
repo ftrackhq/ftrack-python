@@ -37,6 +37,7 @@ def make_dummy_file():
     for f in files:
         f.close()
 
+
 @pytest.mark.parametrize("size", [1 * SIZE_MEGABYTES, 10 * SIZE_MEGABYTES])
 def test_uploader(session, make_dummy_file, size):
     file = make_dummy_file(size)
