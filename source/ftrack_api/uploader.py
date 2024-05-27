@@ -78,7 +78,6 @@ class Uploader:
         self.upload_id: Optional[str] = None
         self.upload_urls: List[dict] = []
         self.uploaded_parts: List[dict] = []
-        self.http = httpx.AsyncClient()
 
     def _single_upload(self, url, headers):
         self.file.seek(0)
@@ -91,9 +90,9 @@ class Uploader:
 
         response.raise_for_status()
 
-    async def _upload_part_task(self):
+    async def _upload_part_task(self, http: httpx.AsyncClient):
         async def send_data(part_num, url, content):
-            resp = await self.http.put(url=url, content=content)
+            resp = await http.put(url=url, content=content)
             resp.raise_for_status()
 
             return {
@@ -117,9 +116,10 @@ class Uploader:
             self.uploaded_parts.append(uploaded_part)
 
     async def _multi_upload(self):
-        async with anyio.create_task_group() as tg:
-            for _ in range(self.max_concurrency):
-                tg.start_soon(self._upload_part_task)
+        async with httpx.AsyncClient() as http:
+            async with anyio.create_task_group() as tg:
+                for _ in range(self.max_concurrency):
+                    tg.start_soon(self._upload_part_task, http)
 
     def start(self):
         metadata = self.session.get_upload_metadata(
