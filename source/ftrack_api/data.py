@@ -81,7 +81,7 @@ class FileWrapper(Data):
 
     def seek(self, offset, whence=os.SEEK_SET):
         """Move internal pointer by *offset*."""
-        self.wrapped_file.seek(offset, whence)
+        return self.wrapped_file.seek(offset, whence)
 
     def tell(self):
         """Return current position of internal pointer."""

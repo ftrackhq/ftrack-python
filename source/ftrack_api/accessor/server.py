@@ -4,13 +4,13 @@
 import os
 import hashlib
 import base64
-import json
 
 import requests
 
 from .base import Accessor
 from ..data import String
 import ftrack_api.exception
+from ftrack_api.uploader import Uploader
 import ftrack_api.symbol
 
 
@@ -72,7 +72,6 @@ class ServerFile(String):
     def _write(self):
         """Write current data to remote key."""
         position = self.tell()
-        self.seek(0)
 
         # Retrieve component from cache to construct a filename.
         component = self._session.get("FileComponent", self.resource_identifier)
@@ -89,28 +88,16 @@ class ServerFile(String):
             name = "{0}.{1}".format(name, component["file_type"].lstrip("."))
 
         try:
-            metadata = self._session.get_upload_metadata(
+            uploader = Uploader(
+                self._session,
                 component_id=self.resource_identifier,
                 file_name=name,
                 file_size=self._get_size(),
+                file=self.wrapped_file,
                 checksum=self._compute_checksum(),
             )
+            uploader.start()
         except Exception as error:
-            raise ftrack_api.exception.AccessorOperationFailedError(
-                "Failed to get put metadata: {0}.".format(error)
-            )
-
-        # Ensure at beginning of file before put.
-        self.seek(0)
-
-        # Put the file based on the metadata.
-        response = requests.put(
-            metadata["url"], data=self.wrapped_file, headers=metadata["headers"]
-        )
-
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 "Failed to put file to server: {0}.".format(error)
             )
@@ -120,8 +107,7 @@ class ServerFile(String):
     def _get_size(self):
         """Return size of file in bytes."""
         position = self.tell()
-        self.seek(0, os.SEEK_END)
-        length = self.tell()
+        length = self.seek(0, os.SEEK_END)
         self.seek(position)
         return length
 
