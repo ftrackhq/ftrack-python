@@ -21,6 +21,7 @@ MAX_PARTS = 10000
 logger = logging.getLogger(__name__)
 ssl_context = httpx.create_ssl_context()
 
+
 def get_chunk_size(file_size: int) -> int:
     chunk_profiles = [
         (0, 8),
