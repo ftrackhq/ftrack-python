@@ -19,7 +19,7 @@ SIZE_GIGABYTES = 1024**3
 MAX_PARTS = 10000
 
 logger = logging.getLogger(__name__)
-
+ssl_context = httpx.create_ssl_context()
 
 def get_chunk_size(file_size: int) -> int:
     chunk_profiles = [
@@ -84,6 +84,7 @@ class Uploader:
 
         response = httpx.put(
             url,
+            verify=ssl_context,
             content=self.file,
             headers=headers,
         )
@@ -116,7 +117,7 @@ class Uploader:
             self.uploaded_parts.append(uploaded_part)
 
     async def _multi_upload(self):
-        async with httpx.AsyncClient() as http:
+        async with httpx.AsyncClient(verify=ssl_context) as http:
             async with anyio.create_task_group() as tg:
                 for _ in range(self.max_concurrency):
                     tg.start_soon(self._upload_part_task, http)
