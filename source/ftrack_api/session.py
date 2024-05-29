@@ -22,9 +22,7 @@ import threading
 import atexit
 import warnings
 
-import requests
-import requests.auth
-import requests.utils
+import httpx
 import arrow
 import clique
 import platformdirs
@@ -50,26 +48,26 @@ import ftrack_api.structure.entity_id
 import ftrack_api.accessor.server
 import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
+from ftrack_api._http import ssl_context
 from ftrack_api.logging import LazyLogMessage as L
 
 from weakref import WeakMethod
 
 
-class SessionAuthentication(requests.auth.AuthBase):
+class SessionAuthentication(httpx.Auth):
     """Attach ftrack session authentication information to requests."""
 
     def __init__(self, api_key, api_user):
         """Initialise with *api_key* and *api_user*."""
         self.api_key = api_key
         self.api_user = api_user
-        super(SessionAuthentication, self).__init__()
 
-    def __call__(self, request):
+    def auth_flow(self, request: httpx.Request):
         """Modify *request* to have appropriate headers."""
         request.headers.update(
             {"ftrack-api-key": self.api_key, "ftrack-user": self.api_user}
         )
-        return request
+        yield request
 
 
 class Session(object):
@@ -246,30 +244,20 @@ class Session(object):
         self.merge_lock = threading.RLock()
 
         self._managed_request = None
-        self._request = requests.Session()
-
-        if cookies:
-            if not isinstance(cookies, collections.abc.Mapping):
-                raise TypeError("The cookies argument is required to be a mapping.")
-            self._request.cookies.update(cookies)
-
-        if headers:
-            if not isinstance(headers, collections.abc.Mapping):
-                raise TypeError("The headers argument is required to be a mapping.")
-
-            headers = dict(headers)
-
-        else:
-            headers = {}
 
         if not isinstance(strict_api, bool):
             raise TypeError("The strict_api argument is required to be a boolean.")
 
-        headers.update({"ftrack-strict-api": "true" if strict_api is True else "false"})
+        headers = httpx.Headers(headers)
+        headers["ftrack-strict-api"] = "true" if strict_api is True else "false"
 
-        self._request.headers.update(headers)
-        self._request.auth = SessionAuthentication(self._api_key, self._api_user)
-        self.request_timeout = timeout
+        self._request = httpx.Client(
+            auth=SessionAuthentication(self._api_key, self._api_user),
+            verify=ssl_context,
+            cookies=cookies,
+            headers=headers,
+            timeout=timeout,
+        )
 
         # Auto populating state is now thread-local
         self._auto_populate = collections.defaultdict(lambda: auto_populate)
@@ -286,7 +274,7 @@ class Session(object):
             self._api_user,
             self._api_key,
             headers=headers,
-            cookies=requests.utils.dict_from_cookiejar(self._request.cookies),
+            cookies=self._request.cookies,
         )
 
         self._auto_connect_event_hub_thread = None
@@ -350,7 +338,7 @@ class Session(object):
         self.close()
 
     @property
-    def _request(self):
+    def _request(self) -> httpx.Client:
         """Return request session.
 
         Raise :exc:`ftrack_api.exception.ConnectionClosedError` if session has
@@ -1631,8 +1619,7 @@ class Session(object):
             response = self._request.post(
                 url,
                 headers=headers,
-                data=data,
-                timeout=self.request_timeout,
+                content=data,
             )
             self.logger.debug(L("Call took: {0}", response.elapsed.total_seconds()))
             self.logger.debug(L("Response: {0!r}", response.text))
@@ -1642,7 +1629,7 @@ class Session(object):
 
         # handle response exceptions and / or other http exceptions
         # (strict api used => status code returned => raise_for_status() => HTTPError)
-        except requests.exceptions.HTTPError as exc:
+        except httpx.HTTPError as exc:
             if "exception" in result:
                 error_message = "Server reported error: {0}({1})".format(
                     result["exception"], result["content"]

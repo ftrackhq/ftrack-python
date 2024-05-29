@@ -5,7 +5,7 @@ from builtins import object
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
-import typing
+from typing import BinaryIO
 
 
 class Data(metaclass=ABCMeta):
@@ -51,7 +51,7 @@ class Data(metaclass=ABCMeta):
 class FileWrapper(Data):
     """Data wrapper for Python file objects."""
 
-    def __init__(self, wrapped_file: typing.IO):
+    def __init__(self, wrapped_file: BinaryIO):
         """Initialise access to *wrapped_file*."""
         self.wrapped_file = wrapped_file
         self._read_since_last_write = False

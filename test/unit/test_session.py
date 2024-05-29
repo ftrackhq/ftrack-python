@@ -13,8 +13,7 @@ import random
 import pytest
 import mock
 import arrow
-import requests
-import requests.utils
+import httpx
 
 import ftrack_api
 import ftrack_api.cache
@@ -1113,14 +1112,14 @@ def test_load_schemas_bypassing_cache(mocker, session, temporary_valid_schema_ca
 def test_get_tasks_widget_url(session):
     """Tasks widget URL returns valid HTTP status."""
     url = session.get_widget_url("tasks")
-    response = requests.get(url)
+    response = httpx.get(url)
     response.raise_for_status()
 
 
 def test_get_info_widget_url(session, task):
     """Info widget URL for *task* returns valid HTTP status."""
     url = session.get_widget_url("info", entity=task, theme="light")
-    response = requests.get(url)
+    response = httpx.get(url)
     response.raise_for_status()
 
 
@@ -1466,25 +1465,18 @@ def test_strict_api_header():
     """Create ftrack session containing ftrack-strict-api = True header."""
     new_session = ftrack_api.Session(strict_api=True)
 
-    assert (
-        "ftrack-strict-api" in new_session._request.headers.keys(),
-        new_session._request.headers["ftrack-strict-api"] == "true",
-    )
+    assert new_session._request.headers.get("ftrack-strict-api") == "true"
 
 
 def test_custom_cookies_session():
     """Create ftrack session containing custom cookies."""
     new_session = ftrack_api.Session(cookies={"abc": "def"})
-    cookies_dict = requests.utils.dict_from_cookiejar(new_session._request.cookies)
 
-    assert ("abc" in cookies_dict.keys(), cookies_dict["abc"] == "def")
+    assert new_session._request.cookies.get("abc") == "def"
 
 
 def test_custom_headers_session():
     """Create ftrack session containing custom headers."""
     new_session = ftrack_api.Session(headers={"abc": "def"})
 
-    assert (
-        "abc" in new_session._request.headers.keys(),
-        new_session._request.headers["abc"] == "def",
-    )
+    assert new_session._request.headers.get("abc") == "def"
