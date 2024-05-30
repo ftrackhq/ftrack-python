@@ -72,6 +72,7 @@ class ServerFile(String):
                 "username": self._session.api_user,
                 "apiKey": self._session.api_key,
             },
+            follow_redirects=True,
         ) as response:
             try:
                 response.raise_for_status()
