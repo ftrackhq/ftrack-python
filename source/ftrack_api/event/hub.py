@@ -875,7 +875,7 @@ class EventHub(object):
                 "Failed to connect to server: {0}.".format(error)
             )
         else:
-            if response.is_success:
+            if not response.is_success:
                 raise ftrack_api.exception.EventHubConnectionError(
                     "Received unexpected status code {0}.".format(response.status_code)
                 )
