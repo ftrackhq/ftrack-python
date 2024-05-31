@@ -9,6 +9,7 @@ import anyio
 
 import anyio.from_thread
 import httpx
+from ._http import ssl_context
 
 if TYPE_CHECKING:
     from ftrack_api.session import Session
@@ -19,7 +20,6 @@ SIZE_GIGABYTES = 1024**3
 MAX_PARTS = 10000
 
 logger = logging.getLogger(__name__)
-ssl_context = httpx.create_ssl_context()
 
 
 def get_chunk_size(file_size: int) -> int:
