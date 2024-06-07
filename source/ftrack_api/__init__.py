@@ -21,19 +21,3 @@ def mixin(instance, mixin_class, name=None):
         return
 
     instance.__class__ = type(name, (mixin_class, instance.__class__), {})
-
-
-def support_requests_cert_env():
-    import os
-
-    requests_ca_env = os.environ.get("REQUESTS_CA_BUNDLE")
-    if not requests_ca_env:
-        return
-
-    if os.path.isfile(requests_ca_env):
-        os.environ.setdefault("SSL_CERT_FILE", requests_ca_env)
-    elif os.path.isdir(requests_ca_env):
-        os.environ.setdefault("SSL_CERT_DIR", requests_ca_env)
-
-
-support_requests_cert_env()
