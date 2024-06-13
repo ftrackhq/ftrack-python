@@ -4,25 +4,43 @@
 import os
 import hashlib
 import base64
+from typing import Optional, TYPE_CHECKING
 
-import requests
+import httpx
 
 from .base import Accessor
 from ..data import String
 import ftrack_api.exception
 from ftrack_api.uploader import Uploader
 import ftrack_api.symbol
+from .._http import ssl_context
+
+if TYPE_CHECKING:
+    from ftrack_api.session import Session
 
 
 class ServerFile(String):
     """Representation of a server file."""
 
-    def __init__(self, resource_identifier, session, mode="rb"):
+    def __init__(
+        self,
+        resource_identifier,
+        session: "Session",
+        mode="rb",
+        http: Optional[httpx.Client] = None,
+    ):
         """Initialise file."""
         self.mode = mode
         self.resource_identifier = resource_identifier
         self._session = session
         self._has_read = False
+        self._http = (
+            http
+            if http is not None
+            else httpx.Client(
+                verify=ssl_context,
+            )
+        )
 
         super(ServerFile, self).__init__()
 
@@ -46,25 +64,25 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        response = requests.get(
+        with self._http.stream(
+            "GET",
             "{0}/component/get".format(self._session.server_url),
             params={
                 "id": self.resource_identifier,
                 "username": self._session.api_user,
                 "apiKey": self._session.api_key,
             },
-            stream=True,
-        )
+            follow_redirects=True,
+        ) as response:
+            try:
+                response.raise_for_status()
+            except httpx.HTTPError as error:
+                raise ftrack_api.exception.AccessorOperationFailedError(
+                    "Failed to read data: {0}.".format(error)
+                )
 
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
-            raise ftrack_api.exception.AccessorOperationFailedError(
-                "Failed to read data: {0}.".format(error)
-            )
-
-        for block in response.iter_content(ftrack_api.symbol.CHUNK_SIZE):
-            self.wrapped_file.write(block)
+            for block in response.iter_bytes(ftrack_api.symbol.CHUNK_SIZE):
+                self.wrapped_file.write(block)
 
         self.flush()
         self.seek(position)
@@ -134,19 +152,24 @@ class ServerFile(String):
 class _ServerAccessor(Accessor):
     """Provide server location access."""
 
-    def __init__(self, session, **kw):
+    def __init__(self, session: "Session", **kw):
         """Initialise location accessor."""
         super(_ServerAccessor, self).__init__(**kw)
 
+        self.http = httpx.Client(
+            verify=ssl_context,
+        )
         self._session = session
 
     def open(self, resource_identifier, mode="rb"):
         """Return :py:class:`~ftrack_api.Data` for *resource_identifier*."""
-        return ServerFile(resource_identifier, session=self._session, mode=mode)
+        return ServerFile(
+            resource_identifier, session=self._session, mode=mode, http=self.http
+        )
 
     def remove(self, resourceIdentifier):
         """Remove *resourceIdentifier*."""
-        response = requests.get(
+        response = self.http.get(
             "{0}/component/remove".format(self._session.server_url),
             params={
                 "id": resourceIdentifier,
@@ -154,7 +177,7 @@ class _ServerAccessor(Accessor):
                 "apiKey": self._session.api_key,
             },
         )
-        if response.status_code != 200:
+        if not response.is_success:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 "Failed to remove file."
             )

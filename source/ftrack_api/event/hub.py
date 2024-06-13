@@ -19,14 +19,14 @@ import json
 import socket
 import ssl
 
-import requests
-import requests.exceptions
+import httpx
 import websocket
 
 import ftrack_api.exception
 import ftrack_api.event.base
 import ftrack_api.event.subscriber
 import ftrack_api.event.expression
+from ftrack_api._http import ssl_context
 from ftrack_api.logging import LazyLogMessage as L
 
 
@@ -859,29 +859,25 @@ class EventHub(object):
             }
             if self._headers:
                 req_headers.update(self._headers)
-            response = requests.get(
+            response = httpx.get(
                 socket_io_url,
+                verify=ssl_context,
                 headers=req_headers,
                 cookies=self._cookies,
                 timeout=60,  # 60 seconds timeout to recieve errors faster.
             )
-        except requests.exceptions.Timeout as error:
+        except httpx.TimeoutException as error:
             raise ftrack_api.exception.EventHubConnectionError(
                 "Timed out connecting to server: {0}.".format(error)
             )
-        except requests.exceptions.SSLError as error:
-            raise ftrack_api.exception.EventHubConnectionError(
-                "Failed to negotiate SSL with server: {0}.".format(error)
-            )
-        except requests.exceptions.ConnectionError as error:
+        except httpx.ConnectError as error:
             raise ftrack_api.exception.EventHubConnectionError(
                 "Failed to connect to server: {0}.".format(error)
             )
         else:
-            status = response.status_code
-            if status != 200:
+            if not response.is_success:
                 raise ftrack_api.exception.EventHubConnectionError(
-                    "Received unexpected status code {0}.".format(status)
+                    "Received unexpected status code {0}.".format(response.status_code)
                 )
 
         # Parse result and return session information.
