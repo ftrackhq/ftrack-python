@@ -5,6 +5,7 @@ import logging
 import math
 import os
 from typing import IO, Awaitable, Callable, TYPE_CHECKING, List, Optional
+import typing
 import anyio
 
 import anyio.from_thread
@@ -38,11 +39,19 @@ def get_chunk_size(file_size: int) -> int:
     raise ValueError("Invalid file size.")
 
 
-async def back_off(func: Callable[..., Awaitable], *args, retries=5, delay=5):
+FuncArgs = typing.ParamSpec("FuncArgs")
+
+
+async def back_off(
+    func: Callable[FuncArgs, Awaitable],
+    *args: FuncArgs.args,
+    retries: int = 5,
+    delay: int = 5,
+):
     for i in range(retries):
         try:
             return await func(*args)
-        except Exception as e:
+        except httpx.HTTPError as e:
             if i == retries - 1:
                 raise e
 
@@ -71,10 +80,6 @@ class Uploader:
         self.checksum = checksum
 
         self.chunk_size = get_chunk_size(self.file_size)
-        self.parts_count = math.ceil(self.file_size / self.chunk_size)
-
-        if self.parts_count > MAX_PARTS:
-            raise ValueError("File is too big.")
 
         self.upload_id: Optional[str] = None
         self.upload_urls: List[dict] = []
@@ -124,12 +129,17 @@ class Uploader:
                     tg.start_soon(self._upload_part_task, http)
 
     def start(self):
+        parts_count = math.ceil(self.file_size / self.chunk_size)
+
+        if parts_count > MAX_PARTS:
+            raise ValueError("File is too big.")
+
         metadata = self.session.get_upload_metadata(
             self.component_id,
             self.file_name,
             self.file_size,
             self.checksum,
-            self.parts_count if self.parts_count > 1 else None,
+            parts_count if parts_count > 1 else None,
         )
 
         if "urls" in metadata:

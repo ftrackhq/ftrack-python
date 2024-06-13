@@ -5,6 +5,7 @@ from builtins import object
 import os
 from abc import ABCMeta, abstractmethod
 import tempfile
+import typing
 
 
 class Data(metaclass=ABCMeta):
@@ -25,7 +26,7 @@ class Data(metaclass=ABCMeta):
     def flush(self):
         """Flush buffers ensuring data written."""
 
-    def seek(self, offset, whence=os.SEEK_SET):
+    def seek(self, offset, whence=os.SEEK_SET) -> int:
         """Move internal pointer by *offset*.
 
         The *whence* argument is optional and defaults to os.SEEK_SET or 0
@@ -33,6 +34,7 @@ class Data(metaclass=ABCMeta):
         (seek relative to the current position) and os.SEEK_END or 2
         (seek relative to the file's end).
 
+        Return the new absolute position.
         """
         raise NotImplementedError("Seek not supported.")
 
@@ -49,7 +51,7 @@ class Data(metaclass=ABCMeta):
 class FileWrapper(Data):
     """Data wrapper for Python file objects."""
 
-    def __init__(self, wrapped_file):
+    def __init__(self, wrapped_file: typing.IO):
         """Initialise access to *wrapped_file*."""
         self.wrapped_file = wrapped_file
         self._read_since_last_write = False
