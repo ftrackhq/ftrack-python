@@ -2249,7 +2249,9 @@ class Session(object):
 
         return self.get("Job", result[0]["job_id"])
 
-    def get_upload_metadata(self, component_id, file_name, file_size, checksum=None):
+    def get_upload_metadata(
+        self, component_id, file_name, file_size, checksum=None, parts=None
+    ):
         """Return URL and headers used to upload data for *component_id*.
 
         *file_name* and *file_size* should match the components details.
@@ -2268,6 +2270,7 @@ class Session(object):
             "file_name": file_name,
             "file_size": file_size,
             "checksum": checksum,
+            "parts": parts,
         }
 
         try:
@@ -2279,6 +2282,29 @@ class Session(object):
                 raise ftrack_api.exception.ServerCompatibilityError(
                     "Server version {0!r} does not support "
                     '"get_upload_metadata", please update server and try '
+                    "again.".format(self.server_information.get("version"))
+                )
+            else:
+                raise
+
+        return result[0]
+
+    def complete_multipart_upload(self, component_id, upload_id, parts):
+        operation = {
+            "action": "complete_multipart_upload",
+            "component_id": component_id,
+            "upload_id": upload_id,
+            "parts": parts,
+        }
+
+        try:
+            result = self.call([operation])
+        except ftrack_api.exception.ServerError as error:
+            # Raise informative error if the action is not supported.
+            if "Invalid action u'complete_multipart_upload'" in error.message:
+                raise ftrack_api.exception.ServerCompatibilityError(
+                    "Server version {0!r} does not support "
+                    '"complete_multipart_upload", please update server and try '
                     "again.".format(self.server_information.get("version"))
                 )
             else:
