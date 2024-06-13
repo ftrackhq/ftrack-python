@@ -39,12 +39,9 @@ def get_chunk_size(file_size: int) -> int:
     raise ValueError("Invalid file size.")
 
 
-FuncArgs = typing.ParamSpec("FuncArgs")
-
-
 async def back_off(
-    func: Callable[FuncArgs, Awaitable],
-    *args: FuncArgs.args,
+    func: Callable[..., Awaitable],
+    *args: typing.Any,
     retries: int = 5,
     delay: int = 5,
 ):
