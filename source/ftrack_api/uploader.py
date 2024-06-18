@@ -4,7 +4,7 @@
 import logging
 import math
 import os
-from typing import IO, Awaitable, Callable, TYPE_CHECKING, List, Optional
+from typing import BinaryIO, Awaitable, Callable, TYPE_CHECKING, List, Optional
 import typing
 import anyio
 
@@ -66,7 +66,7 @@ class Uploader:
         component_id: str,
         file_name: str,
         file_size: int,
-        file: "IO",
+        file: "BinaryIO",
         checksum: Optional[str],
     ):
         self.session = session
