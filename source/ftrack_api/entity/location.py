@@ -5,6 +5,8 @@ from builtins import zip
 import collections.abc
 import functools
 
+import ftrack_api.data
+import ftrack_api.accessor.server
 import ftrack_api.entity.base
 import ftrack_api.exception
 import ftrack_api.event.base
@@ -346,13 +348,19 @@ class Location(ftrack_api.entity.base.Entity):
             )
             target_data = self.accessor.open(resource_identifier, "wb")
 
-            # Read/write data in chunks to avoid reading all into memory at the
-            # same time.
-            chunked_read = functools.partial(
-                source_data.read, ftrack_api.symbol.CHUNK_SIZE
-            )
-            for chunk in iter(chunked_read, b""):
-                target_data.write(chunk)
+            if isinstance(source_data, ftrack_api.data.File) and isinstance(
+                target_data, ftrack_api.accessor.server.ServerFile
+            ):
+                # If source is a file and target is a server, use the server's upload method
+                target_data.upload_to_server(source_data.wrapped_file)
+            else:
+                # Read/write data in chunks to avoid reading all into memory at the
+                # same time.
+                chunked_read = functools.partial(
+                    source_data.read, ftrack_api.symbol.CHUNK_SIZE
+                )
+                for chunk in iter(chunked_read, b""):
+                    target_data.write(chunk)
 
             target_data.close()
             source_data.close()

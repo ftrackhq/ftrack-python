@@ -4,6 +4,7 @@
 import os
 import hashlib
 import base64
+from typing import BinaryIO
 
 import requests
 
@@ -23,6 +24,7 @@ class ServerFile(String):
         self.resource_identifier = resource_identifier
         self._session = session
         self._has_read = False
+        self._has_uploaded = False
 
         super(ServerFile, self).__init__()
 
@@ -30,8 +32,8 @@ class ServerFile(String):
         """Flush all changes."""
         super(ServerFile, self).flush()
 
-        if self.mode == "wb":
-            self._write()
+        if not self._has_uploaded and self.mode == "wb":
+            self._flush_to_server()
 
     def read(self, limit=None):
         """Read file."""
@@ -40,6 +42,12 @@ class ServerFile(String):
             self._has_read = True
 
         return super(ServerFile, self).read(limit)
+
+    def write(self, content):
+        """Write *content* to file."""
+        assert self._has_uploaded is False, "Cannot write to file after upload."
+
+        return super().write(content)
 
     def _read(self):
         """Read all remote content from key into wrapped_file."""
@@ -66,13 +74,22 @@ class ServerFile(String):
         for block in response.iter_content(ftrack_api.symbol.CHUNK_SIZE):
             self.wrapped_file.write(block)
 
-        self.flush()
         self.seek(position)
+        self._has_uploaded = False
 
-    def _write(self):
+    def _flush_to_server(self):
         """Write current data to remote key."""
         position = self.tell()
 
+        self.upload_to_server(self.wrapped_file)
+
+        self.seek(position)
+
+    def upload_to_server(self, source_file: "BinaryIO"):
+        """
+        Direct upload source to server.
+        Use with caution, it will forbid any further write operation until you read the file.
+        """
         # Retrieve component from cache to construct a filename.
         component = self._session.get("FileComponent", self.resource_identifier)
         if not component:
@@ -92,9 +109,9 @@ class ServerFile(String):
                 self._session,
                 component_id=self.resource_identifier,
                 file_name=name,
-                file_size=self._get_size(),
-                file=self.wrapped_file,
-                checksum=self._compute_checksum(),
+                file_size=self._get_size(source_file),
+                file=source_file,
+                checksum=self._compute_checksum(source_file),
             )
             uploader.start()
         except Exception as error:
@@ -102,18 +119,19 @@ class ServerFile(String):
                 "Failed to put file to server: {0}.".format(error)
             )
 
-        self.seek(position)
+        self._has_uploaded = True
 
-    def _get_size(self):
+    @staticmethod
+    def _get_size(file: "BinaryIO"):
         """Return size of file in bytes."""
-        position = self.tell()
-        length = self.seek(0, os.SEEK_END)
-        self.seek(position)
+        position = file.tell()
+        length = file.seek(0, os.SEEK_END)
+        file.seek(position)
         return length
 
-    def _compute_checksum(self):
+    @staticmethod
+    def _compute_checksum(fp: "BinaryIO"):
         """Return checksum for file."""
-        fp = self.wrapped_file
         buf_size = ftrack_api.symbol.CHUNK_SIZE
         hash_obj = hashlib.md5()
         spos = fp.tell()
