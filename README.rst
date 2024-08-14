@@ -3,18 +3,18 @@ ftrack Python API
 #################
 
 Python API for ftrack.
-
-.. important::
-
-    This is the new Python client for the ftrack API. If you are migrating from
-    the old client then please read the dedicated `migration guide <http://ftrack-python-api.rtd.ftrack.com/en/stable/release/migrating_from_old_api.html>`_.
+http://ftrack-python-api.rtd.ftrack.com/en/stable/
 
 *************
 Documentation
 *************
 
 Full documentation, including installation and setup guides, can be found at
-http://ftrack-python-api.rtd.ftrack.com/en/stable/
+https://developer.ftrack.com/api-clients/python/
+
+API reference can be found at
+
+https://ftrack-python-api.readthedocs.io/en/stable/api_reference/index.html
 
 *********************
 Copyright and license
