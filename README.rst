@@ -3,7 +3,6 @@ ftrack Python API
 #################
 
 Python API for ftrack.
-http://ftrack-python-api.rtd.ftrack.com/en/stable/
 
 *************
 Documentation
