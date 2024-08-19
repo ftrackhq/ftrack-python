@@ -17,8 +17,8 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "lowdown",
+    "notfound.extension"
 ]
-
 
 # The suffix of source filenames.
 source_suffix = ".rst"
