@@ -17,7 +17,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "lowdown",
-    "notfound.extension"
+    "notfound.extension",
 ]
 
 # The suffix of source filenames.
