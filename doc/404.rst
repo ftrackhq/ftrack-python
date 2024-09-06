@@ -1,0 +1,8 @@
+:orphan: metadata
+
+#################
+Page not found
+#################
+
+This is the old documentation that will be removed in the future. Visit `new docs page <https://developer.ftrack.com/api-clients/python/>`_ to keep reading. 
+API reference section is still available here. 
