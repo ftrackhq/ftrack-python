@@ -17,11 +17,6 @@ Release Notes
 .. release:: Upcoming
 
     .. change:: new
-        :tags: events
-
-        Added source host information in Event attributes.
-
-    .. change:: new
         :tags: compatibility
 
         Added support for Python 3.12
