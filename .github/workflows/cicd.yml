@@ -67,7 +67,7 @@ jobs:
           poetry install --only=dev --no-interaction
           poetry build --format=wheel
           poetry run twine check dist/*
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist
