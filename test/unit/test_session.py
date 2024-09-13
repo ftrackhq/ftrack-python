@@ -1019,7 +1019,7 @@ def test_fail_to_read_schemas_from_invalid_cache(
 
 def test_write_schemas_to_cache(session, temporary_valid_schema_cache):
     """Write valid content to schema cache."""
-    expected_hash = "a98d0627b5e33966e43e1cb89b082db7"
+    expected_hash = "c8f8bdc59c415a5a96339647e45b751b"
     schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
     session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
