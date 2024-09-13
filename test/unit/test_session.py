@@ -1488,3 +1488,13 @@ def test_custom_headers_session():
         "abc" in new_session._request.headers.keys(),
         new_session._request.headers["abc"] == "def",
     )
+
+
+def test_restricted_projections(mocked_schema_session):
+    """Ensure properties marked with restricted_projection are not added as properties"""
+    entity = mocked_schema_session.create(
+        "RestrictedProjection", {"id": str(uuid.uuid4())}
+    )
+
+    # Ensure the restricted property is not present
+    assert {"id", "normal"} == set([prop.name for prop in entity.attributes])

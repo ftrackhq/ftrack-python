@@ -63,6 +63,9 @@ class Factory(object):
 
             data_type = fragment.get("type", ftrack_api.symbol.NOT_SET)
 
+            if fragment.get("restricted_projection", False):
+                continue
+
             if data_type is not ftrack_api.symbol.NOT_SET:
                 if data_type in (
                     "string",
