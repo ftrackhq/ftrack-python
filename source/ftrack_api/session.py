@@ -838,8 +838,6 @@ class Session(object):
         *page_size* specifies the maximum page size that the returned query
         result object should be configured with.
 
-        .. seealso:: :ref:`querying`
-
         """
         self.logger.debug(L("Query {0!r}", expression))
 
