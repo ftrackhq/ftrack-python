@@ -531,6 +531,19 @@ def mocked_schemas():
             "required": ["id"],
             "default_projections": ["id"],
         },
+        {
+            "id": "RestrictedProjection",
+            "type": "object",
+            "properties": {
+                "id": {"type": "string"},
+                "restricted": {"type": "string", "restricted_projection": True},
+                "normal": {"type": "string", "restricted_projection": False},
+            },
+            "immutable": ["id"],
+            "primary_key": ["id"],
+            "required": ["id"],
+            "default_projections": ["id"],
+        },
     ]
 
 

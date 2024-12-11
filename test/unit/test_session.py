@@ -1002,7 +1002,7 @@ def test_correct_file_type_on_sequence_component(session):
 
 def test_read_schemas_from_cache(session, temporary_valid_schema_cache):
     """Read valid content from schema cache."""
-    expected_hash = "a98d0627b5e33966e43e1cb89b082db7"
+    expected_hash = "c8f8bdc59c415a5a96339647e45b751b"
 
     schemas, hash_ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
@@ -1019,7 +1019,7 @@ def test_fail_to_read_schemas_from_invalid_cache(
 
 def test_write_schemas_to_cache(session, temporary_valid_schema_cache):
     """Write valid content to schema cache."""
-    expected_hash = "a98d0627b5e33966e43e1cb89b082db7"
+    expected_hash = "c8f8bdc59c415a5a96339647e45b751b"
     schemas, _ = session._read_schemas_from_cache(temporary_valid_schema_cache)
 
     session._write_schemas_to_cache(schemas, temporary_valid_schema_cache)
@@ -1488,3 +1488,13 @@ def test_custom_headers_session():
         "abc" in new_session._request.headers.keys(),
         new_session._request.headers["abc"] == "def",
     )
+
+
+def test_restricted_projections(mocked_schema_session):
+    """Ensure properties marked with restricted_projection are not added as properties"""
+    entity = mocked_schema_session.create(
+        "RestrictedProjection", {"id": str(uuid.uuid4())}
+    )
+
+    # Ensure the restricted property is not present
+    assert {"id", "normal"} == set([prop.name for prop in entity.attributes])
