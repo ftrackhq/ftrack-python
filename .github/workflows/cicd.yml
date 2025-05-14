@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   check-formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container:
       image: python:3
     steps:
@@ -31,7 +31,7 @@ jobs:
           version: "~= 22.0"
 
   run-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: Run tests (${{ matrix.python-version }})
     strategy:
       fail-fast: false
