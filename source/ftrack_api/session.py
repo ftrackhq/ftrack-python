@@ -54,13 +54,17 @@ from ftrack_api.logging import LazyLogMessage as L
 
 from weakref import WeakMethod
 
+
 def synchronous(func):
-    """ Decorator to synchronize access to a method or function."""
+    """Decorator to synchronize access to a method or function."""
     lock = threading.RLock()
+
     def wrapper(*args, **kwargs):
         with lock:
             return func(*args, **kwargs)
+
     return wrapper
+
 
 class SessionAuthentication(requests.auth.AuthBase):
     """Attach ftrack session authentication information to requests."""
@@ -912,9 +916,7 @@ class Session(object):
 
         elif isinstance(value, ftrack_api.collection.Collection):
             log_debug and self.logger.debug(
-                "Merging collection into session: {0!r} at {1}".format(
-                    value, id(value)
-                )
+                "Merging collection into session: {0!r} at {1}".format(value, id(value))
             )
 
             merged_collection = []
