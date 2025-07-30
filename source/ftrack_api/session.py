@@ -54,6 +54,13 @@ from ftrack_api.logging import LazyLogMessage as L
 
 from weakref import WeakMethod
 
+def synchronous(func):
+    """ Decorator to synchronize access to a method or function."""
+    lock = threading.RLock()
+    def wrapper(*args, **kwargs):
+        with lock:
+            return func(*args, **kwargs)
+    return wrapper
 
 class SessionAuthentication(requests.auth.AuthBase):
     """Attach ftrack session authentication information to requests."""
@@ -240,10 +247,6 @@ class Session(object):
 
             if cache is not None:
                 self.cache.caches.append(cache)
-
-        # Lock used for making sure only one thread at a time
-        # merges into the cache, updates or creates entities.
-        self.merge_lock = threading.RLock()
 
         self._managed_request = None
         self._request = requests.Session()
@@ -895,46 +898,46 @@ class Session(object):
         with self.operation_recording(False):
             return self._merge(value, merged)
 
+    @synchronous
     def _merge(self, value, merged):
         """Return merged *value*."""
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
-        with self.merge_lock:
-            if isinstance(value, ftrack_api.entity.base.Entity):
-                log_debug and self.logger.debug(
-                    "Merging entity into session: {0} at {1}".format(value, id(value))
+        if isinstance(value, ftrack_api.entity.base.Entity):
+            log_debug and self.logger.debug(
+                "Merging entity into session: {0} at {1}".format(value, id(value))
+            )
+
+            return self._merge_entity(value, merged=merged)
+
+        elif isinstance(value, ftrack_api.collection.Collection):
+            log_debug and self.logger.debug(
+                "Merging collection into session: {0!r} at {1}".format(
+                    value, id(value)
                 )
+            )
 
-                return self._merge_entity(value, merged=merged)
+            merged_collection = []
+            for entry in value:
+                merged_collection.append(self._merge(entry, merged=merged))
 
-            elif isinstance(value, ftrack_api.collection.Collection):
-                log_debug and self.logger.debug(
-                    "Merging collection into session: {0!r} at {1}".format(
-                        value, id(value)
-                    )
+            return merged_collection
+
+        elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
+            log_debug and self.logger.debug(
+                "Merging mapped collection into session: {0!r} at {1}".format(
+                    value, id(value)
                 )
+            )
 
-                merged_collection = []
-                for entry in value:
-                    merged_collection.append(self._merge(entry, merged=merged))
+            merged_collection = []
+            for entry in value.collection:
+                merged_collection.append(self._merge(entry, merged=merged))
 
-                return merged_collection
+            return merged_collection
 
-            elif isinstance(value, ftrack_api.collection.MappedCollectionProxy):
-                log_debug and self.logger.debug(
-                    "Merging mapped collection into session: {0!r} at {1}".format(
-                        value, id(value)
-                    )
-                )
-
-                merged_collection = []
-                for entry in value.collection:
-                    merged_collection.append(self._merge(entry, merged=merged))
-
-                return merged_collection
-
-            else:
-                return value
+        else:
+            return value
 
     def _merge_recursive(self, entity, merged=None):
         """Merge *entity* and all its attributes recursivly."""
@@ -1151,6 +1154,7 @@ class Session(object):
             # repeated calls or perhaps raise an error?
 
     # TODO: Make atomic.
+    @synchronous
     def commit(self):
         """Commit all local changes to the server."""
         batch = []
@@ -1331,6 +1335,7 @@ class Session(object):
                     for entity in list(self._local_cache.values()):
                         entity.clear()
 
+    @synchronous
     def rollback(self):
         """Clear all recorded operations and local state.
 
