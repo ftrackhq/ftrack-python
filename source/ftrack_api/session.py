@@ -55,8 +55,8 @@ from ftrack_api.logging import LazyLogMessage as L
 from weakref import WeakMethod
 
 
-def synchronous(func):
-    """Decorator to synchronize access to a method or function."""
+def _synchronous(func):
+    """Decorator to synchronize access to a method or function across threads."""
     lock = threading.RLock()
 
     def wrapper(*args, **kwargs):
@@ -902,7 +902,7 @@ class Session(object):
         with self.operation_recording(False):
             return self._merge(value, merged)
 
-    @synchronous
+    @_synchronous
     def _merge(self, value, merged):
         """Return merged *value*."""
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
@@ -1155,8 +1155,7 @@ class Session(object):
             # actually populated? If some weren't would we mark that to avoid
             # repeated calls or perhaps raise an error?
 
-    # TODO: Make atomic.
-    @synchronous
+    @_synchronous
     def commit(self):
         """Commit all local changes to the server."""
         batch = []
@@ -1337,7 +1336,7 @@ class Session(object):
                     for entity in list(self._local_cache.values()):
                         entity.clear()
 
-    @synchronous
+    @_synchronous
     def rollback(self):
         """Clear all recorded operations and local state.
 

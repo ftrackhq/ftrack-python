@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ftrack-python-api"
-version = "0.1.0"
+version = "3.0.5.rc1"
 description = "Python API for ftrack."
 authors = ["ftrack <support@ftrack.com>"]
 repository = "https://github.com/ftrackhq/ftrack-python"
