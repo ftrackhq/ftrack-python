@@ -178,7 +178,6 @@ class Session(object):
         super(Session, self).__init__()
         self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
         self._closed = False
-        self._thread_lock = threading.RLock()
 
         if server_url is None:
             server_url = os.environ.get("FTRACK_SERVER")
@@ -242,6 +241,7 @@ class Session(object):
             if cache is not None:
                 self.cache.caches.append(cache)
 
+        self._thread_lock = threading.RLock()
         self._managed_request = None
         self._request = requests.Session()
 
