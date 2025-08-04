@@ -241,10 +241,7 @@ class Session(object):
             if cache is not None:
                 self.cache.caches.append(cache)
 
-        # Lock used for making sure only one thread at a time
-        # merges into the cache, updates or creates entities.
-        self.merge_lock = threading.RLock()
-
+        self._thread_lock = threading.RLock()
         self._managed_request = None
         self._request = requests.Session()
 
@@ -899,7 +896,7 @@ class Session(object):
         """Return merged *value*."""
         log_debug = self.logger.isEnabledFor(logging.DEBUG)
 
-        with self.merge_lock:
+        with self._thread_lock:
             if isinstance(value, ftrack_api.entity.base.Entity):
                 log_debug and self.logger.debug(
                     "Merging entity into session: {0} at {1}".format(value, id(value))
@@ -1150,12 +1147,11 @@ class Session(object):
             # actually populated? If some weren't would we mark that to avoid
             # repeated calls or perhaps raise an error?
 
-    # TODO: Make atomic.
     def commit(self):
         """Commit all local changes to the server."""
         batch = []
 
-        with self.auto_populating(False):
+        with self._thread_lock, self.auto_populating(False):
             for operation in self.recorded_operations:
                 # Convert operation to payload.
                 if isinstance(operation, ftrack_api.operation.CreateEntityOperation):
@@ -1249,7 +1245,11 @@ class Session(object):
                     if key == "__entity_type__":
                         continue
 
-                    identity = (payload["entity_type"], str(payload["entity_key"]), key)
+                    identity = (
+                        payload["entity_type"],
+                        str(payload["entity_key"]),
+                        key,
+                    )
                     if identity in updates_map:
                         del payload["entity_data"][key]
                     else:
@@ -1307,12 +1307,11 @@ class Session(object):
             # As optimisation, clear local values which are not primary keys to
             # avoid redundant merges when merging references. Note: primary keys
             # remain as needed for cache retrieval on new entities.
-            with self.auto_populating(False):
-                with self.operation_recording(False):
-                    for entity in list(self._local_cache.values()):
-                        for attribute in entity:
-                            if attribute not in entity.primary_key_attributes:
-                                del entity[attribute]
+            with self.auto_populating(False), self.operation_recording(False):
+                for entity in list(self._local_cache.values()):
+                    for attribute in entity:
+                        if attribute not in entity.primary_key_attributes:
+                            del entity[attribute]
 
             # Process results merging into cache relevant data.
             for entry in result:
@@ -1326,10 +1325,9 @@ class Session(object):
                     pass
             # Clear remaining local state, including local values for primary
             # keys on entities that were merged.
-            with self.auto_populating(False):
-                with self.operation_recording(False):
-                    for entity in list(self._local_cache.values()):
-                        entity.clear()
+            with self.auto_populating(False), self.operation_recording(False):
+                for entity in list(self._local_cache.values()):
+                    entity.clear()
 
     def rollback(self):
         """Clear all recorded operations and local state.
@@ -1343,8 +1341,8 @@ class Session(object):
         doing so could cause errors.
 
         """
-        with self.auto_populating(False):
-            with self.operation_recording(False):
+        with self._thread_lock:
+            with self.auto_populating(False), self.operation_recording(False):
                 # Detach all newly created entities and remove from cache. This
                 # is done because simply clearing the local values of newly
                 # created entities would result in entities with no identity as
@@ -1370,7 +1368,7 @@ class Session(object):
                 for entity in list(self._local_cache.values()):
                     entity.clear()
 
-        self.recorded_operations.clear()
+            self.recorded_operations.clear()
 
     def _fetch_server_information(self):
         """Return server information."""
