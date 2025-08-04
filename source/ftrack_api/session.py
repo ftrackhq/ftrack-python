@@ -1151,192 +1151,183 @@ class Session(object):
         """Commit all local changes to the server."""
         batch = []
 
-        with self._thread_lock:
-            with self.auto_populating(False):
-                for operation in self.recorded_operations:
-                    # Convert operation to payload.
-                    if isinstance(
-                        operation, ftrack_api.operation.CreateEntityOperation
-                    ):
+        with self._thread_lock, self.auto_populating(False):
+            for operation in self.recorded_operations:
+                # Convert operation to payload.
+                if isinstance(operation, ftrack_api.operation.CreateEntityOperation):
+                    # At present, data payload requires duplicating entity
+                    # type in data and also ensuring primary key added.
+                    entity_data = {
+                        "__entity_type__": operation.entity_type,
+                    }
+                    entity_data.update(operation.entity_key)
+                    entity_data.update(operation.entity_data)
+
+                    payload = OperationPayload(
+                        {
+                            "action": "create",
+                            "entity_type": operation.entity_type,
+                            "entity_key": list(operation.entity_key.values()),
+                            "entity_data": entity_data,
+                        }
+                    )
+
+                elif isinstance(operation, ftrack_api.operation.UpdateEntityOperation):
+                    entity_data = {
                         # At present, data payload requires duplicating entity
-                        # type in data and also ensuring primary key added.
-                        entity_data = {
-                            "__entity_type__": operation.entity_type,
+                        # type.
+                        "__entity_type__": operation.entity_type,
+                        operation.attribute_name: operation.new_value,
+                    }
+
+                    payload = OperationPayload(
+                        {
+                            "action": "update",
+                            "entity_type": operation.entity_type,
+                            "entity_key": list(operation.entity_key.values()),
+                            "entity_data": entity_data,
                         }
-                        entity_data.update(operation.entity_key)
-                        entity_data.update(operation.entity_data)
+                    )
 
-                        payload = OperationPayload(
-                            {
-                                "action": "create",
-                                "entity_type": operation.entity_type,
-                                "entity_key": list(operation.entity_key.values()),
-                                "entity_data": entity_data,
-                            }
-                        )
-
-                    elif isinstance(
-                        operation, ftrack_api.operation.UpdateEntityOperation
-                    ):
-                        entity_data = {
-                            # At present, data payload requires duplicating entity
-                            # type.
-                            "__entity_type__": operation.entity_type,
-                            operation.attribute_name: operation.new_value,
+                elif isinstance(operation, ftrack_api.operation.DeleteEntityOperation):
+                    payload = OperationPayload(
+                        {
+                            "action": "delete",
+                            "entity_type": operation.entity_type,
+                            "entity_key": list(operation.entity_key.values()),
                         }
+                    )
 
-                        payload = OperationPayload(
-                            {
-                                "action": "update",
-                                "entity_type": operation.entity_type,
-                                "entity_key": list(operation.entity_key.values()),
-                                "entity_data": entity_data,
-                            }
-                        )
+                else:
+                    raise ValueError(
+                        "Cannot commit. Unrecognised operation type {0} "
+                        "detected.".format(type(operation))
+                    )
 
-                    elif isinstance(
-                        operation, ftrack_api.operation.DeleteEntityOperation
-                    ):
-                        payload = OperationPayload(
-                            {
-                                "action": "delete",
-                                "entity_type": operation.entity_type,
-                                "entity_key": list(operation.entity_key.values()),
-                            }
-                        )
+                batch.append(payload)
 
-                    else:
-                        raise ValueError(
-                            "Cannot commit. Unrecognised operation type {0} "
-                            "detected.".format(type(operation))
-                        )
+        # Optimise batch.
+        # TODO: Might be better to perform these on the operations list instead
+        # so all operation contextual information available.
 
-                    batch.append(payload)
+        # If entity was created and deleted in one batch then remove all
+        # payloads for that entity.
+        created = set()
+        deleted = set()
 
-            # Optimise batch.
-            # TODO: Might be better to perform these on the operations list instead
-            # so all operation contextual information available.
+        for payload in batch:
+            if payload["action"] == "create":
+                created.add((payload["entity_type"], str(payload["entity_key"])))
 
-            # If entity was created and deleted in one batch then remove all
-            # payloads for that entity.
-            created = set()
-            deleted = set()
+            elif payload["action"] == "delete":
+                deleted.add((payload["entity_type"], str(payload["entity_key"])))
 
-            for payload in batch:
-                if payload["action"] == "create":
-                    created.add((payload["entity_type"], str(payload["entity_key"])))
-
-                elif payload["action"] == "delete":
-                    deleted.add((payload["entity_type"], str(payload["entity_key"])))
-
-            created_then_deleted = deleted.intersection(created)
-            if created_then_deleted:
-                optimised_batch = []
-                for payload in batch:
-                    entity_type = payload.get("entity_type")
-                    entity_key = str(payload.get("entity_key"))
-
-                    if (entity_type, entity_key) in created_then_deleted:
-                        continue
-
-                    optimised_batch.append(payload)
-
-                batch = optimised_batch
-
-            # Remove early update operations so that only last operation on
-            # attribute is applied server side.
-            updates_map = set()
-            for payload in reversed(batch):
-                if payload["action"] in ("update",):
-                    for key, value in list(payload["entity_data"].items()):
-                        if key == "__entity_type__":
-                            continue
-
-                        identity = (
-                            payload["entity_type"],
-                            str(payload["entity_key"]),
-                            key,
-                        )
-                        if identity in updates_map:
-                            del payload["entity_data"][key]
-                        else:
-                            updates_map.add(identity)
-
-            # Remove NOT_SET values from entity_data.
-            for payload in batch:
-                entity_data = payload.get("entity_data", {})
-                for key, value in list(entity_data.items()):
-                    if value is ftrack_api.symbol.NOT_SET:
-                        del entity_data[key]
-
-            # Remove payloads with redundant entity_data.
+        created_then_deleted = deleted.intersection(created)
+        if created_then_deleted:
             optimised_batch = []
             for payload in batch:
-                entity_data = payload.get("entity_data")
-                if entity_data is not None:
-                    keys = list(entity_data.keys())
-                    if not keys or keys == ["__entity_type__"]:
-                        continue
+                entity_type = payload.get("entity_type")
+                entity_key = str(payload.get("entity_key"))
+
+                if (entity_type, entity_key) in created_then_deleted:
+                    continue
 
                 optimised_batch.append(payload)
 
             batch = optimised_batch
 
-            # Collapse updates that are consecutive into one payload. Also, collapse
-            # updates that occur immediately after creation into the create payload.
-            optimised_batch = []
-            previous_payload = None
+        # Remove early update operations so that only last operation on
+        # attribute is applied server side.
+        updates_map = set()
+        for payload in reversed(batch):
+            if payload["action"] in ("update",):
+                for key, value in list(payload["entity_data"].items()):
+                    if key == "__entity_type__":
+                        continue
 
-            for payload in batch:
-                if (
-                    previous_payload is not None
-                    and payload["action"] == "update"
-                    and previous_payload["action"] in ("create", "update")
-                    and previous_payload["entity_type"] == payload["entity_type"]
-                    and previous_payload["entity_key"] == payload["entity_key"]
-                ):
-                    previous_payload["entity_data"].update(payload["entity_data"])
+                    identity = (
+                        payload["entity_type"],
+                        str(payload["entity_key"]),
+                        key,
+                    )
+                    if identity in updates_map:
+                        del payload["entity_data"][key]
+                    else:
+                        updates_map.add(identity)
+
+        # Remove NOT_SET values from entity_data.
+        for payload in batch:
+            entity_data = payload.get("entity_data", {})
+            for key, value in list(entity_data.items()):
+                if value is ftrack_api.symbol.NOT_SET:
+                    del entity_data[key]
+
+        # Remove payloads with redundant entity_data.
+        optimised_batch = []
+        for payload in batch:
+            entity_data = payload.get("entity_data")
+            if entity_data is not None:
+                keys = list(entity_data.keys())
+                if not keys or keys == ["__entity_type__"]:
                     continue
 
-                else:
-                    optimised_batch.append(payload)
-                    previous_payload = payload
+            optimised_batch.append(payload)
 
-            batch = optimised_batch
+        batch = optimised_batch
 
-            # Process batch.
-            if batch:
-                result = self.call(batch)
+        # Collapse updates that are consecutive into one payload. Also, collapse
+        # updates that occur immediately after creation into the create payload.
+        optimised_batch = []
+        previous_payload = None
 
-                # Clear recorded operations.
-                self.recorded_operations.clear()
+        for payload in batch:
+            if (
+                previous_payload is not None
+                and payload["action"] == "update"
+                and previous_payload["action"] in ("create", "update")
+                and previous_payload["entity_type"] == payload["entity_type"]
+                and previous_payload["entity_key"] == payload["entity_key"]
+            ):
+                previous_payload["entity_data"].update(payload["entity_data"])
+                continue
 
-                # As optimisation, clear local values which are not primary keys to
-                # avoid redundant merges when merging references. Note: primary keys
-                # remain as needed for cache retrieval on new entities.
-                with self.auto_populating(False):
-                    with self.operation_recording(False):
-                        for entity in list(self._local_cache.values()):
-                            for attribute in entity:
-                                if attribute not in entity.primary_key_attributes:
-                                    del entity[attribute]
+            else:
+                optimised_batch.append(payload)
+                previous_payload = payload
 
-                # Process results merging into cache relevant data.
-                for entry in result:
-                    if entry["action"] in ("create", "update"):
-                        # Merge returned entities into local cache.
-                        self.merge(entry["data"])
+        batch = optimised_batch
 
-                    elif entry["action"] == "delete":
-                        # TODO: Detach entity - need identity returned?
-                        # TODO: Expunge entity from cache.
-                        pass
-                # Clear remaining local state, including local values for primary
-                # keys on entities that were merged.
-                with self.auto_populating(False):
-                    with self.operation_recording(False):
-                        for entity in list(self._local_cache.values()):
-                            entity.clear()
+        # Process batch.
+        if batch:
+            result = self.call(batch)
+
+            # Clear recorded operations.
+            self.recorded_operations.clear()
+
+            # As optimisation, clear local values which are not primary keys to
+            # avoid redundant merges when merging references. Note: primary keys
+            # remain as needed for cache retrieval on new entities.
+            with self.auto_populating(False), self.operation_recording(False):
+                for entity in list(self._local_cache.values()):
+                    for attribute in entity:
+                        if attribute not in entity.primary_key_attributes:
+                            del entity[attribute]
+
+            # Process results merging into cache relevant data.
+            for entry in result:
+                if entry["action"] in ("create", "update"):
+                    # Merge returned entities into local cache.
+                    self.merge(entry["data"])
+
+                elif entry["action"] == "delete":
+                    # TODO: Detach entity - need identity returned?
+                    # TODO: Expunge entity from cache.
+                    pass
+            # Clear remaining local state, including local values for primary
+            # keys on entities that were merged.
+            with self.auto_populating(False), self.operation_recording(False):
+                for entity in list(self._local_cache.values()):
+                    entity.clear()
 
     def rollback(self):
         """Clear all recorded operations and local state.
@@ -1351,32 +1342,31 @@ class Session(object):
 
         """
         with self._thread_lock:
-            with self.auto_populating(False):
-                with self.operation_recording(False):
-                    # Detach all newly created entities and remove from cache. This
-                    # is done because simply clearing the local values of newly
-                    # created entities would result in entities with no identity as
-                    # primary key was local while not persisted. In addition, it
-                    # makes no sense for failed created entities to exist in session
-                    # or cache.
-                    for operation in self.recorded_operations:
-                        if isinstance(
-                            operation, ftrack_api.operation.CreateEntityOperation
-                        ):
-                            entity_key = str(
-                                (
-                                    str(operation.entity_type),
-                                    list(operation.entity_key.values()),
-                                )
+            with self.auto_populating(False), self.operation_recording(False):
+                # Detach all newly created entities and remove from cache. This
+                # is done because simply clearing the local values of newly
+                # created entities would result in entities with no identity as
+                # primary key was local while not persisted. In addition, it
+                # makes no sense for failed created entities to exist in session
+                # or cache.
+                for operation in self.recorded_operations:
+                    if isinstance(
+                        operation, ftrack_api.operation.CreateEntityOperation
+                    ):
+                        entity_key = str(
+                            (
+                                str(operation.entity_type),
+                                list(operation.entity_key.values()),
                             )
-                            try:
-                                self.cache.remove(entity_key)
-                            except KeyError:
-                                pass
+                        )
+                        try:
+                            self.cache.remove(entity_key)
+                        except KeyError:
+                            pass
 
-                    # Clear locally stored modifications on remaining entities.
-                    for entity in list(self._local_cache.values()):
-                        entity.clear()
+                # Clear locally stored modifications on remaining entities.
+                for entity in list(self._local_cache.values()):
+                    entity.clear()
 
             self.recorded_operations.clear()
 
