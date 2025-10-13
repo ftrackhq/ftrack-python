@@ -87,7 +87,6 @@ jobs:
           fetch-depth: 0
       - name: Checkout workflow-triggering tag
         run: |
-          git fetch --tags
           git checkout "${GITHUB_REF_NAME}"
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -119,7 +118,6 @@ jobs:
           fetch-depth: 0
       - name: Checkout workflow-triggering tag
         run: |
-          git fetch --tags
           git checkout "${GITHUB_REF_NAME}"
       - name: Set up Python
         uses: actions/setup-python@v4
