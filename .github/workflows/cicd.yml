@@ -81,7 +81,13 @@ jobs:
       name: staging
       url: https://test.pypi.org/project/ftrack-python-api/
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout workflow-triggering tag
+        run: |
+          git checkout "${GITHUB_REF_NAME}"
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -106,7 +112,13 @@ jobs:
       name: production
       url: https://pypi.org/project/ftrack-python-api/
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout workflow-triggering tag
+        run: |
+          git checkout "${GITHUB_REF_NAME}"
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
