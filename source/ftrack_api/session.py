@@ -1797,6 +1797,8 @@ class Session(object):
             if "__type__" in item:
                 if item["__type__"] == "datetime":
                     item = arrow.get(item["value"])
+                elif item["__type__"] == "date":
+                    item = arrow.get(item["value"])
 
             elif "__entity_type__" in item:
                 item = self._create(item["__entity_type__"], item, reconstructing=True)
