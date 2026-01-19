@@ -760,6 +760,56 @@ def test_decode_partial_entity(session, new_task):
     assert entity is not new_task
 
 
+@pytest.mark.parametrize(
+    "encoded, decoded_expected",
+    [
+        pytest.param(
+            {"__type__": "datetime", "value": "2023-10-10T09:50:34"},
+            arrow.arrow.Arrow(2023, 10, 10, 9, 50, 34),
+        ),
+        pytest.param(
+            {"__type__": "datetime", "value": "2023-10-10T09:50:34Z"},
+            arrow.arrow.Arrow(2023, 10, 10, 9, 50, 34),
+        ),
+        pytest.param(
+            {"__type__": "datetime", "value": "2023-10-10T09:50:34-05:00"},
+            arrow.arrow.Arrow(2023, 10, 10, 14, 50, 34),
+        ),
+        pytest.param(
+            {"__type__": "datetime", "value": "2023-10-10T03:00:00+05:00"},
+            arrow.arrow.Arrow(2023, 10, 9, 22, 0, 0),
+        ),
+        pytest.param(
+            {"__type__": "date", "value": "2023-10-10"}, arrow.arrow.Arrow(2023, 10, 10)
+        ),
+    ],
+)
+def test_decode_date_and_datetime(session, encoded, decoded_expected):
+    """Test proper decoding of date and datetime values."""
+    decoded = session.decode(
+        json.dumps(
+            [
+                {
+                    "action": "query",
+                    "data": [
+                        {
+                            "__entity_type__": "Task",
+                            "id": "0004902a-a7bc-4363-8e3b-bd18c0bed594",
+                            "created_at": encoded,
+                            "context_type": "task",
+                            "object_type_id": "11c137c0-ee7e-4f9c-91c5-8c77cec22b2c",
+                            "project_id": "5d253dc2-ff1a-49ef-9646-d7fc1196e860",
+                        }
+                    ],
+                    "metadata": {"next": {"offset": 1}},
+                }
+            ]
+        )
+    )
+
+    assert decoded[0]["data"][0]["created_at"] == decoded_expected
+
+
 def test_reset(mocker):
     """Reset session."""
     plugin_path = os.path.abspath(
