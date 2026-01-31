@@ -21,6 +21,7 @@ class ServerFile(String):
         self.mode = mode
         self.resource_identifier = resource_identifier
         self._session = session
+        self._requests_session = session._request
         self._timeout = session.request_timeout
         self._has_read = False
 
@@ -46,7 +47,7 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        response = requests.get(
+        response = self._requests_session.get(
             "{0}/component/get".format(self._session.server_url),
             params={
                 "id": self.resource_identifier,
@@ -105,7 +106,7 @@ class ServerFile(String):
         self.seek(0)
 
         # Put the file based on the metadata.
-        response = requests.put(
+        response = self._requests_session.put(
             metadata["url"],
             data=self.wrapped_file,
             headers=metadata["headers"],
@@ -157,6 +158,7 @@ class _ServerAccessor(Accessor):
         super(_ServerAccessor, self).__init__(**kw)
 
         self._session = session
+        self._requests_session = session._request
         self._timeout = session.request_timeout
 
     def open(self, resource_identifier, mode="rb"):
@@ -165,7 +167,7 @@ class _ServerAccessor(Accessor):
 
     def remove(self, resourceIdentifier):
         """Remove *resourceIdentifier*."""
-        response = requests.get(
+        response = self._requests_session.get(
             "{0}/component/remove".format(self._session.server_url),
             params={
                 "id": resourceIdentifier,

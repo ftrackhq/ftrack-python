@@ -15,12 +15,9 @@ import datetime
 import os
 import getpass
 import functools
-import itertools
 import hashlib
-import tempfile
 import threading
 import atexit
-import warnings
 
 import requests
 import requests.auth
@@ -91,6 +88,7 @@ class Session(object):
         cookies=None,
         headers=None,
         strict_api=False,
+        requests_session=None,
     ):
         """Initialise session.
 
@@ -174,6 +172,16 @@ class Session(object):
         specified) indicating whether to add the 'ftrack-strict-api': 'true' header
         to the request or not.
 
+        If outside control is required over the :class:`requests.Session` object
+        used for making requests, it should be passed as *requests_session*.
+        Otherwise a new Requests Session will be created and configured.
+
+        .. note::
+
+            If *requests_session* is passed, any specified *cookies* and *headers*
+            will mutate the passed session. Also 'ftrack-strict-api' session-wide
+            header will be set ('true' or 'false').
+
         """
         super(Session, self).__init__()
         self.logger = logging.getLogger(__name__ + "." + self.__class__.__name__)
@@ -243,7 +251,11 @@ class Session(object):
 
         self._thread_lock = threading.RLock()
         self._managed_request = None
-        self._request = requests.Session()
+
+        if requests_session is not None:
+            self._request = requests_session
+        else:
+            self._request = requests.Session()
 
         if cookies:
             if not isinstance(cookies, collections.abc.Mapping):
@@ -284,6 +296,8 @@ class Session(object):
             self._api_key,
             headers=headers,
             cookies=requests.utils.dict_from_cookiejar(self._request.cookies),
+            timeout=self.request_timeout,
+            requests_session=self._request,
         )
 
         self._auto_connect_event_hub_thread = None

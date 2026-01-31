@@ -30,7 +30,6 @@ import ftrack_api.event.subscriber
 import ftrack_api.event.expression
 from ftrack_api.logging import LazyLogMessage as L
 
-
 SocketIoSession = collections.namedtuple(
     "SocketIoSession",
     [
@@ -54,7 +53,16 @@ ServerDetails = collections.namedtuple(
 class EventHub(object):
     """Manage routing of events."""
 
-    def __init__(self, server_url, api_user, api_key, headers=None, cookies=None):
+    def __init__(
+        self,
+        server_url,
+        api_user,
+        api_key,
+        headers=None,
+        cookies=None,
+        timeout=60,
+        requests_session=None,
+    ):
         """Initialise hub, connecting to ftrack *server_url*.
 
         *api_user* is the user to authenticate as and *api_key* is the API key
@@ -110,9 +118,15 @@ class EventHub(object):
             dict((name, code) for code, name in list(self._code_name_mapping.items()))
         )
 
+        if requests_session is not None:
+            self._req_session = requests_session
+        else:
+            self._req_session = requests.Session()
+
         self._server_url = server_url
         self._api_user = api_user
         self._api_key = api_key
+        self._timeout = timeout
 
         # Parse server URL and store server details.
         url_parse_result = urllib.parse.urlparse(self._server_url)
@@ -212,7 +226,7 @@ class EventHub(object):
             # https://docs.python.org/2/library/socket.html#socket.socket.setblocking
             self._connection = websocket.create_connection(
                 url,
-                timeout=60,
+                timeout=self._timeout,
                 sslopt={"ssl_version": available_ssl_protocol},
                 enable_multithread=True,
                 header=self._headers,
@@ -861,11 +875,11 @@ class EventHub(object):
             }
             if self._headers:
                 req_headers.update(self._headers)
-            response = requests.get(
+            response = self._req_session.get(
                 socket_io_url,
                 headers=req_headers,
                 cookies=self._cookies,
-                timeout=60,  # 60 seconds timeout to recieve errors faster.
+                timeout=self._timeout,  # timeout to recieve errors faster
             )
         except requests.exceptions.Timeout as error:
             raise ftrack_api.exception.EventHubConnectionError(
