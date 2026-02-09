@@ -1650,6 +1650,7 @@ class Session(object):
         # JSON response decoding exception
         except (TypeError, ValueError) as error:
             if not response:
+                # This is unlikely to happen so we simply re-raise the original error
                 raise error
             else:
                 error_message = "Server reported error in unexpected format. Raw error was: {0}".format(
