@@ -1621,7 +1621,7 @@ class Session(object):
         data = self.encode(data, entity_attribute_strategy="modified_only")
 
         self.logger.debug(L("Calling server {0} with {1!r}", url, data))
-
+        response = None
         try:
             result = {}
             response = self._request.post(
@@ -1648,13 +1648,15 @@ class Session(object):
                 self._raise_server_error(str(exc))
 
         # JSON response decoding exception
-        except (TypeError, ValueError):
-            error_message = (
-                "Server reported error in unexpected format. Raw error was: {0}".format(
+        except (TypeError, ValueError) as error:
+            if not response:
+                # This is unlikely to happen so we simply re-raise the original error
+                raise error
+            else:
+                error_message = "Server reported error in unexpected format. Raw error was: {0}".format(
                     response.text
                 )
-            )
-            self._raise_server_error(error_message)
+                self._raise_server_error(error_message)
 
         # handle possible response exceptions
         # (strict api not used => 200 returned)
