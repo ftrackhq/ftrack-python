@@ -4,7 +4,6 @@
 import os
 import hashlib
 import base64
-import json
 
 import requests
 
@@ -22,6 +21,7 @@ class ServerFile(String):
         self.mode = mode
         self.resource_identifier = resource_identifier
         self._session = session
+        self._timeout = session.request_timeout
         self._has_read = False
 
         super(ServerFile, self).__init__()
@@ -46,15 +46,21 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        response = requests.get(
-            "{0}/component/get".format(self._session.server_url),
-            params={
-                "id": self.resource_identifier,
-                "username": self._session.api_user,
-                "apiKey": self._session.api_key,
-            },
-            stream=True,
-        )
+        try:
+            response = requests.get(
+                "{0}/component/get".format(self._session.server_url),
+                params={
+                    "id": self.resource_identifier,
+                    "username": self._session.api_user,
+                    "apiKey": self._session.api_key,
+                },
+                stream=True,
+                timeout=self._timeout,
+            )
+        except Exception as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                "Failed to read data: {0}.".format(error)
+            )
 
         try:
             response.raise_for_status()
@@ -105,7 +111,10 @@ class ServerFile(String):
 
         # Put the file based on the metadata.
         response = requests.put(
-            metadata["url"], data=self.wrapped_file, headers=metadata["headers"]
+            metadata["url"],
+            data=self.wrapped_file,
+            headers=metadata["headers"],
+            timeout=self._timeout,
         )
 
         try:
@@ -153,6 +162,7 @@ class _ServerAccessor(Accessor):
         super(_ServerAccessor, self).__init__(**kw)
 
         self._session = session
+        self._timeout = session.request_timeout
 
     def open(self, resource_identifier, mode="rb"):
         """Return :py:class:`~ftrack_api.Data` for *resource_identifier*."""
@@ -160,17 +170,26 @@ class _ServerAccessor(Accessor):
 
     def remove(self, resourceIdentifier):
         """Remove *resourceIdentifier*."""
-        response = requests.get(
-            "{0}/component/remove".format(self._session.server_url),
-            params={
-                "id": resourceIdentifier,
-                "username": self._session.api_user,
-                "apiKey": self._session.api_key,
-            },
-        )
-        if response.status_code != 200:
+        try:
+            response = requests.get(
+                "{0}/component/remove".format(self._session.server_url),
+                params={
+                    "id": resourceIdentifier,
+                    "username": self._session.api_user,
+                    "apiKey": self._session.api_key,
+                },
+                timeout=self._timeout,
+            )
+        except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
-                "Failed to remove file."
+                "Failed to remove file: {0}.".format(error)
+            )
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                "Failed to remove file: {0}.".format(error)
             )
 
     def get_container(self, resource_identifier):
