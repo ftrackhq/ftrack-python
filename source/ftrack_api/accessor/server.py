@@ -4,7 +4,6 @@
 import os
 import hashlib
 import base64
-import json
 
 import requests
 
@@ -22,6 +21,7 @@ class ServerFile(String):
         self.mode = mode
         self.resource_identifier = resource_identifier
         self._session = session
+        self._timeout = session.request_timeout
         self._has_read = False
 
         super(ServerFile, self).__init__()
@@ -54,6 +54,7 @@ class ServerFile(String):
                 "apiKey": self._session.api_key,
             },
             stream=True,
+            timeout=self._timeout,
         )
 
         try:
@@ -105,7 +106,10 @@ class ServerFile(String):
 
         # Put the file based on the metadata.
         response = requests.put(
-            metadata["url"], data=self.wrapped_file, headers=metadata["headers"]
+            metadata["url"],
+            data=self.wrapped_file,
+            headers=metadata["headers"],
+            timeout=self._timeout,
         )
 
         try:
@@ -153,6 +157,7 @@ class _ServerAccessor(Accessor):
         super(_ServerAccessor, self).__init__(**kw)
 
         self._session = session
+        self._timeout = session.request_timeout
 
     def open(self, resource_identifier, mode="rb"):
         """Return :py:class:`~ftrack_api.Data` for *resource_identifier*."""
@@ -167,6 +172,7 @@ class _ServerAccessor(Accessor):
                 "username": self._session.api_user,
                 "apiKey": self._session.api_key,
             },
+            timeout=self._timeout,
         )
         if response.status_code != 200:
             raise ftrack_api.exception.AccessorOperationFailedError(
