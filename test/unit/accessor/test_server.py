@@ -11,7 +11,7 @@ import ftrack_api.accessor.server
 import ftrack_api.data
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def random_binary_data():
     return uuid.uuid1().hex.encode()
 
