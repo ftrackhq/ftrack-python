@@ -46,16 +46,21 @@ class ServerFile(String):
         position = self.tell()
         self.seek(0)
 
-        response = requests.get(
-            "{0}/component/get".format(self._session.server_url),
-            params={
-                "id": self.resource_identifier,
-                "username": self._session.api_user,
-                "apiKey": self._session.api_key,
-            },
-            stream=True,
-            timeout=self._timeout,
-        )
+        try:
+            response = requests.get(
+                "{0}/component/get".format(self._session.server_url),
+                params={
+                    "id": self.resource_identifier,
+                    "username": self._session.api_user,
+                    "apiKey": self._session.api_key,
+                },
+                stream=True,
+                timeout=self._timeout,
+            )
+        except Exception as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                "Failed to read data: {0}.".format(error)
+            )
 
         try:
             response.raise_for_status()
@@ -165,18 +170,26 @@ class _ServerAccessor(Accessor):
 
     def remove(self, resourceIdentifier):
         """Remove *resourceIdentifier*."""
-        response = requests.get(
-            "{0}/component/remove".format(self._session.server_url),
-            params={
-                "id": resourceIdentifier,
-                "username": self._session.api_user,
-                "apiKey": self._session.api_key,
-            },
-            timeout=self._timeout,
-        )
-        if response.status_code != 200:
+        try:
+            response = requests.get(
+                "{0}/component/remove".format(self._session.server_url),
+                params={
+                    "id": resourceIdentifier,
+                    "username": self._session.api_user,
+                    "apiKey": self._session.api_key,
+                },
+                timeout=self._timeout,
+            )
+        except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
-                "Failed to remove file."
+                "Failed to remove file: {0}.".format(error)
+            )
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                "Failed to remove file: {0}.".format(error)
             )
 
     def get_container(self, resource_identifier):
