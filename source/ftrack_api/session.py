@@ -298,6 +298,13 @@ class Session(object):
         self._session_subscribers = []
         self._is_shared_hub = not force_new_connection
 
+        # Set plugin paths before creating EventHub (needed for hub key)
+        self._plugin_paths = plugin_paths
+        if self._plugin_paths is None:
+            self._plugin_paths = os.environ.get("FTRACK_EVENT_PLUGIN_PATH", "").split(
+                os.pathsep
+            )
+
         if force_new_connection:
             # Create dedicated EventHub for this session (traditional behavior)
             self._event_hub_impl = ftrack_api.event.hub.EventHub(
@@ -327,12 +334,13 @@ class Session(object):
             # Get shared EventHub from registry (default behavior)
             # Multiple sessions with same credentials will share one connection
             self._hub_registry = ftrack_api.event.hub_registry.get_event_hub_registry()
-            self._hub_key = (self._server_url, self._api_user, self._api_key)
 
-            self._event_hub_impl = self._hub_registry.get_or_create(
+            # Get or create hub - plugin_paths included in key to prevent duplication
+            self._event_hub_impl, self._hub_key = self._hub_registry.get_or_create(
                 self._server_url,
                 self._api_user,
                 self._api_key,
+                plugin_paths=self._plugin_paths,
                 headers=headers,
                 cookies=requests.utils.dict_from_cookiejar(
                     self._request.cookies),
@@ -357,13 +365,21 @@ class Session(object):
         # Register to auto-close session on exit.
         atexit.register(WeakMethod(self.close))
 
-        self._plugin_paths = plugin_paths
-        if self._plugin_paths is None:
-            self._plugin_paths = os.environ.get("FTRACK_EVENT_PLUGIN_PATH", "").split(
-                os.pathsep
-            )
+        # Discover plugins - but skip if already discovered for this shared hub
+        should_discover = True
+        if not force_new_connection and hasattr(self, '_hub_registry'):
+            # Check if plugins already discovered for this shared hub
+            if self._hub_registry.plugins_discovered(self._hub_key):
+                should_discover = False
+                self.logger.debug(
+                    'Skipping plugin discovery - already done for shared EventHub'
+                )
 
-        self._discover_plugins(plugin_arguments=plugin_arguments)
+        if should_discover:
+            self._discover_plugins(plugin_arguments=plugin_arguments)
+            # Mark plugins as discovered for this hub
+            if not force_new_connection and hasattr(self, '_hub_registry'):
+                self._hub_registry.mark_plugins_discovered(self._hub_key)
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?

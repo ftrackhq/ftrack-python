@@ -22,9 +22,10 @@ class EventHubRegistry(object):
 
     def __init__(self):
         """Initialize the registry."""
-        self._hubs = {}  # (server_url, api_user, api_key) -> EventHub
+        self._hubs = {}  # (server_url, api_user, api_key, plugin_paths_key) -> EventHub
         self._hub_sessions = {}  # hub_key -> WeakSet of session weakrefs
         self._hub_connect_locks = {}  # hub_key -> Lock (for first connection)
+        self._hub_plugins_discovered = {}  # hub_key -> bool (plugins discovered?)
         self._lock = threading.RLock()
         self.logger = logging.getLogger(
             __name__ + '.' + self.__class__.__name__)
@@ -34,6 +35,7 @@ class EventHubRegistry(object):
         server_url,
         api_user,
         api_key,
+        plugin_paths=None,
         headers=None,
         cookies=None,
         auto_connect=False,
@@ -44,22 +46,27 @@ class EventHubRegistry(object):
             server_url (str): The ftrack server URL.
             api_user (str): The API user to authenticate as.
             api_key (str): The API key to authenticate with.
+            plugin_paths (list): Optional list of plugin paths (affects hub key).
             headers (dict): Optional custom headers.
             cookies (dict): Optional custom cookies.
             auto_connect (bool): Whether to automatically connect the hub.
 
         Returns:
-            EventHub: Shared EventHub instance for these credentials.
+            tuple: (EventHub, hub_key) - Shared EventHub instance and its key.
 
         Note:
             Headers and cookies are only used when creating a new hub.
             If a hub already exists for these credentials, the provided
             headers/cookies are ignored (the existing hub is returned).
+            
+            Plugin paths are included in the hub key to ensure sessions with
+            different plugin configurations use separate hubs, preventing
+            duplicate plugin subscriptions.
         """
-        # Create key from credentials
-        # Note: headers/cookies not included in key for simplicity
-        # This means sessions with same credentials share hub even if headers differ
-        key = (server_url, api_user, api_key)
+        # Create key from credentials and plugin paths
+        # Include plugin_paths to avoid plugin subscription conflicts
+        plugin_paths_key = tuple(sorted(plugin_paths)) if plugin_paths else ()
+        key = (server_url, api_user, api_key, plugin_paths_key)
 
         with self._lock:
             if key not in self._hubs:
@@ -74,6 +81,7 @@ class EventHubRegistry(object):
                 self._hubs[key] = hub
                 self._hub_sessions[key] = weakref.WeakSet()
                 self._hub_connect_locks[key] = threading.Lock()
+                self._hub_plugins_discovered[key] = False
 
                 self.logger.debug(
                     'Created new shared EventHub for {0}@{1}'.format(
@@ -98,7 +106,7 @@ class EventHubRegistry(object):
 
                 hub = existing_hub
 
-            return hub
+            return hub, key
 
     def _ensure_connected(self, hub_key, hub):
         """Ensure the hub is connected (thread-safe).
@@ -145,6 +153,7 @@ class EventHubRegistry(object):
                 hub = self._hubs.pop(hub_key, None)
                 self._hub_sessions.pop(hub_key, None)
                 self._hub_connect_locks.pop(hub_key, None)
+                self._hub_plugins_discovered.pop(hub_key, None)
 
                 if hub:
                     try:
@@ -175,6 +184,28 @@ class EventHubRegistry(object):
             if hub_key in self._hub_sessions:
                 return len(self._hub_sessions[hub_key])
             return 0
+
+    def mark_plugins_discovered(self, hub_key):
+        """Mark that plugins have been discovered for this hub.
+
+        Args:
+            hub_key: The hub registry key.
+        """
+        with self._lock:
+            if hub_key in self._hub_plugins_discovered:
+                self._hub_plugins_discovered[hub_key] = True
+
+    def plugins_discovered(self, hub_key):
+        """Check if plugins have been discovered for this hub.
+
+        Args:
+            hub_key: The hub registry key.
+
+        Returns:
+            bool: True if plugins already discovered for this hub.
+        """
+        with self._lock:
+            return self._hub_plugins_discovered.get(hub_key, False)
 
 
 # Global singleton instance
