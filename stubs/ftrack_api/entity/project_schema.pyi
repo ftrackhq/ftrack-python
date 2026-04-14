@@ -1,6 +1,0 @@
-import ftrack_api.entity.base
-from _typeshed import Incomplete
-
-class ProjectSchema(ftrack_api.entity.base.Entity):
-    def get_statuses(self, schema, type_id: Incomplete | None = None): ...
-    def get_types(self, schema): ...
