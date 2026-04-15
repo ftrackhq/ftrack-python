@@ -28,7 +28,7 @@ jobs:
         with:
           options: "--check"
           src: .
-          version: "~= 22.0"
+          version: "~= 24.0"
 
   run-tests:
     runs-on: ubuntu-latest
