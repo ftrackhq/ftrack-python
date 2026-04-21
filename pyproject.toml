@@ -10,6 +10,10 @@ readme = "README.rst"
 packages = [
     { include = "ftrack_api", from = "source" },
 ]
+include = [
+    { path = "source/ftrack_api/**/*.pyi", format = ["sdist", "wheel"] },
+    { path = "source/ftrack_api/py.typed", format = ["sdist", "wheel"] },
+]
 
 [tool.poetry-dynamic-versioning]
 enable = true
