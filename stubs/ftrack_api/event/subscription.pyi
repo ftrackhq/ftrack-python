@@ -1,6 +1,0 @@
-from _typeshed import Incomplete
-
-class Subscription:
-    parser: Incomplete
-    def __init__(self, subscription) -> None: ...
-    def includes(self, event): ...

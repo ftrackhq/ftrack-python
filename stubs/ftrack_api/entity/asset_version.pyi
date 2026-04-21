@@ -1,8 +1,0 @@
-import ftrack_api.entity.base
-from _typeshed import Incomplete
-
-class AssetVersion(ftrack_api.entity.base.Entity):
-    def create_component(
-        self, path, data: Incomplete | None = None, location: Incomplete | None = None
-    ): ...
-    def encode_media(self, media, keep_original: str = "auto"): ...
