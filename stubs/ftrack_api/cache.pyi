@@ -46,7 +46,12 @@ class FileCache(Cache):
 class SerialisedCache(ProxyCache):
     encode: Incomplete
     decode: Incomplete
-    def __init__(self, proxied, encode: Incomplete | None = None, decode: Incomplete | None = None) -> None: ...
+    def __init__(
+        self,
+        proxied,
+        encode: Incomplete | None = None,
+        decode: Incomplete | None = None,
+    ) -> None: ...
     def get(self, key): ...
     def set(self, key, value) -> None: ...
 
@@ -69,8 +74,15 @@ class Memoiser:
     cache: Incomplete
     key_maker: Incomplete
     return_copies: Incomplete
-    def __init__(self, cache: Incomplete | None = None, key_maker: Incomplete | None = None, return_copies: bool = True) -> None: ...
-    def call(self, function, args: Incomplete | None = None, kw: Incomplete | None = None): ...
+    def __init__(
+        self,
+        cache: Incomplete | None = None,
+        key_maker: Incomplete | None = None,
+        return_copies: bool = True,
+    ) -> None: ...
+    def call(
+        self, function, args: Incomplete | None = None, kw: Incomplete | None = None
+    ): ...
 
 def memoise_decorator(memoiser): ...
 

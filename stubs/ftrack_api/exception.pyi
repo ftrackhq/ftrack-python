@@ -5,7 +5,9 @@ class Error(Exception):
     message: Incomplete
     details: Incomplete
     traceback: Incomplete
-    def __init__(self, message: Incomplete | None = None, details: Incomplete | None = None) -> None: ...
+    def __init__(
+        self, message: Incomplete | None = None, details: Incomplete | None = None
+    ) -> None: ...
 
 class AuthenticationError(Error):
     default_message: str
@@ -100,7 +102,13 @@ class AccessorError(Error):
 
 class AccessorOperationFailedError(AccessorError):
     default_message: str
-    def __init__(self, operation: str = '', resource_identifier: Incomplete | None = None, error: Incomplete | None = None, **kw) -> None: ...
+    def __init__(
+        self,
+        operation: str = "",
+        resource_identifier: Incomplete | None = None,
+        error: Incomplete | None = None,
+        **kw
+    ) -> None: ...
 
 class AccessorUnsupportedOperationError(AccessorOperationFailedError):
     default_message: str
@@ -117,7 +125,13 @@ class AccessorFilesystemPathError(AccessorResourceIdentifierError):
 
 class AccessorResourceError(AccessorError):
     default_message: str
-    def __init__(self, operation: str = '', resource_identifier: Incomplete | None = None, error: Incomplete | None = None, **kw) -> None: ...
+    def __init__(
+        self,
+        operation: str = "",
+        resource_identifier: Incomplete | None = None,
+        error: Incomplete | None = None,
+        **kw
+    ) -> None: ...
 
 class AccessorResourceNotFoundError(AccessorResourceError):
     default_message: str

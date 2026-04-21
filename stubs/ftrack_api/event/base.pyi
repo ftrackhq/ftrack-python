@@ -2,7 +2,16 @@ import collections.abc
 from _typeshed import Incomplete
 
 class Event(collections.abc.MutableMapping):
-    def __init__(self, topic, id: Incomplete | None = None, data: Incomplete | None = None, sent: Incomplete | None = None, source: Incomplete | None = None, target: str = '', in_reply_to_event: Incomplete | None = None) -> None: ...
+    def __init__(
+        self,
+        topic,
+        id: Incomplete | None = None,
+        data: Incomplete | None = None,
+        sent: Incomplete | None = None,
+        source: Incomplete | None = None,
+        target: str = "",
+        in_reply_to_event: Incomplete | None = None,
+    ) -> None: ...
     def stop(self) -> None: ...
     def is_stopped(self): ...
     def __getitem__(self, key): ...

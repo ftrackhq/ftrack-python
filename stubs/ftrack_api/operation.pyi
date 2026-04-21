@@ -22,7 +22,9 @@ class UpdateEntityOperation(Operation):
     attribute_name: Incomplete
     old_value: Incomplete
     new_value: Incomplete
-    def __init__(self, entity_type, entity_key, attribute_name, old_value, new_value) -> None: ...
+    def __init__(
+        self, entity_type, entity_key, attribute_name, old_value, new_value
+    ) -> None: ...
 
 class DeleteEntityOperation(Operation):
     entity_type: Incomplete

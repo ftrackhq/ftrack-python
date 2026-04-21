@@ -1,4 +1,8 @@
 from _typeshed import Incomplete
 
 def load_source(modname, filename): ...
-def discover(paths, positional_arguments: Incomplete | None = None, keyword_arguments: Incomplete | None = None) -> None: ...
+def discover(
+    paths,
+    positional_arguments: Incomplete | None = None,
+    keyword_arguments: Incomplete | None = None,
+) -> None: ...

@@ -1,7 +1,16 @@
 import ftrack_api.accessor.base
 from _typeshed import Incomplete
 from collections.abc import Generator
-from ftrack_api.exception import AccessorContainerNotEmptyError as AccessorContainerNotEmptyError, AccessorFilesystemPathError as AccessorFilesystemPathError, AccessorOperationFailedError as AccessorOperationFailedError, AccessorParentResourceNotFoundError as AccessorParentResourceNotFoundError, AccessorPermissionDeniedError as AccessorPermissionDeniedError, AccessorResourceInvalidError as AccessorResourceInvalidError, AccessorResourceNotFoundError as AccessorResourceNotFoundError, AccessorUnsupportedOperationError as AccessorUnsupportedOperationError
+from ftrack_api.exception import (
+    AccessorContainerNotEmptyError as AccessorContainerNotEmptyError,
+    AccessorFilesystemPathError as AccessorFilesystemPathError,
+    AccessorOperationFailedError as AccessorOperationFailedError,
+    AccessorParentResourceNotFoundError as AccessorParentResourceNotFoundError,
+    AccessorPermissionDeniedError as AccessorPermissionDeniedError,
+    AccessorResourceInvalidError as AccessorResourceInvalidError,
+    AccessorResourceNotFoundError as AccessorResourceNotFoundError,
+    AccessorUnsupportedOperationError as AccessorUnsupportedOperationError,
+)
 
 class DiskAccessor(ftrack_api.accessor.base.Accessor):
     prefix: Incomplete
@@ -11,7 +20,7 @@ class DiskAccessor(ftrack_api.accessor.base.Accessor):
     def is_file(self, resource_identifier): ...
     def is_container(self, resource_identifier): ...
     def is_sequence(self, resource_identifier) -> None: ...
-    def open(self, resource_identifier, mode: str = 'rb'): ...
+    def open(self, resource_identifier, mode: str = "rb"): ...
     def remove(self, resource_identifier) -> None: ...
     def make_container(self, resource_identifier, recursive: bool = True) -> None: ...
     def get_container(self, resource_identifier): ...
