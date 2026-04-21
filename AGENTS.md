@@ -54,20 +54,27 @@
 ```
 source/ftrack_api/
 ├── __init__.py              # Main package exports (Session, mixin)
+├── __init__.pyi             # Type stubs for main exports
+├── py.typed                 # PEP 561 marker for typed package
 ├── session.py               # Core session implementation (2,700+ lines)
+├── session.pyi              # Type stubs for Session
 ├── entity/                  # Entity type system
 │   ├── factory.py          # Entity creation
 │   ├── base.py             # Base entity class
-│   └── location.py         # Location management
+│   ├── location.py         # Location management
+│   └── *.pyi               # Type stubs for entities
 ├── event/                   # Event system
 │   ├── hub.py              # Event hub
-│   └── base.py             # Event classes
+│   ├── base.py             # Event classes
+│   └── *.pyi               # Type stubs for events
 ├── accessor/                # Storage accessors
 │   ├── disk.py             # Local disk I/O
-│   └── server.py           # Server-based storage
+│   ├── server.py           # Server-based storage
+│   └── *.pyi               # Type stubs for accessors
 ├── structure/               # File structure patterns
 │   ├── origin.py
-│   └── entity_id.py
+│   ├── entity_id.py
+│   └── *.pyi               # Type stubs for structures
 ├── resource_identifier_transformer/
 ├── attribute.py             # Entity attributes
 ├── cache.py                # Caching layer
@@ -117,9 +124,10 @@ Required for API access:
 - `platformdirs>=4.0.0,<5` - Platform-specific directories
 
 **Development:**
-- `black` - Code formatting
+- `black==24.0` - Code formatting (updated from legacy versions)
 - `pre-commit` - Git hooks
 - `sphinx` + `sphinx_rtd_theme` - Documentation
+- `twine` - Package validation and upload
 
 **Testing:**
 - `pytest` - Test framework
@@ -275,6 +283,11 @@ ftrack_api.mixin(entity, CustomMixin, name='CustomEntity')
 - `doc/api_reference/` - API reference docs
 - `README.rst` - Package overview
 
+### Type Safety
+- `source/ftrack_api/**/*.pyi` - Type stub files (PEP 561)
+- `source/ftrack_api/py.typed` - Marker file indicating typed package
+- `test/unit/test_stubs.py` - Type stub validation tests
+
 ### Code Quality
 - `.git-blame-ignore-revs` - Git blame configuration
 - `CODEOWNERS` - GitHub code ownership
@@ -291,7 +304,7 @@ ftrack_api.mixin(entity, CustomMixin, name='CustomEntity')
 1. Understand the entity schema from ftrack server
 2. Implement in appropriate module (`entity/`, `accessor/`, etc.)
 3. Add unit tests in `test/unit/`
-4. Update type stubs in `stubs/` if applicable
+4. Update type stubs (`.pyi` files) alongside implementation for type safety
 5. Document in `doc/`
 
 ### Fixing Bugs
@@ -303,9 +316,10 @@ ftrack_api.mixin(entity, CustomMixin, name='CustomEntity')
 
 ### Code Style
 
-- **Black** formatting (enforced in CI)
+- **Black 24.0** formatting (enforced in CI)
 - Run `black .` before committing
 - Pre-commit hooks auto-format
+- Type hints: Use `.pyi` stub files for type annotations (PEP 561 compliant)
 
 ### Adding Dependencies
 
@@ -382,12 +396,21 @@ print(session.recorded_operations)
 
 ## Recent Changes
 
-Based on recent commits:
-- **60d77d0**: Fixed server accessor timeout issue
-- **47730e4**: Fixed UnboundLocalError in python-api (#59)
-- **4f26f7f**: Added support for date type (#57)
-- **89dc2c6**: Fixed publish jobs picking up correct tag (#56)
-- **95ac2ae**: Fixed thread-safe session sharing across threads (#55)
+Based on recent commits (2025-2026):
+- **51e8c27** (Apr 2026): Added comprehensive Python type stubs (.pyi files) for full type safety (#64)
+  - All modules now have corresponding `.pyi` stub files
+  - Package marked as typed with `py.typed` marker (PEP 561)
+  - Includes stubs for Session, entities, events, accessors, structures, and more
+  - Enables better IDE autocompletion and static type checking
+- **fa82e38** (Apr 2026): Updated Black formatter to version 24.0 (#65)
+- **79a5596** (2025): Enabled Python 3.13 in CI testing (#53)
+- **b2c1c36** (2025): Fixed restricted projections not being properly hidden (#49)
+- **576d2db** (2025): Augmented source event with additional data (#40)
+- **60d77d0** (2024): Fixed server accessor timeout issue
+- **47730e4** (2024): Fixed UnboundLocalError in python-api (#59)
+- **4f26f7f** (2024): Added support for date type (#57)
+- **89dc2c6** (2024): Fixed publish jobs picking up correct tag (#56)
+- **95ac2ae** (2024): Fixed thread-safe session sharing across threads (#55)
 
 ## Resources
 
@@ -408,3 +431,7 @@ Based on recent commits:
 8. **Cache implications**: Cached entities may be stale, use session.reset() or disable
 9. **Commit required**: Changes are tracked but not saved until session.commit()
 10. **Plugin system**: Extensible via plugins - check resource/plugin/ for examples
+11. **Type safety**: Package is fully typed with `.pyi` stub files (PEP 561 compliant)
+    - Use type stubs for better IDE support and static analysis
+    - When adding new code, create or update corresponding `.pyi` files
+    - Type stubs are distributed with the package in wheels and sdist
