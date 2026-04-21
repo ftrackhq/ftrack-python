@@ -1,4 +1,9 @@
-"""Verify completeness and correctness of .pyi stub files against source."""
+"""Verify completeness and correctness of .pyi stub files against source.
+
+This test suite verifies that inline stub files (.pyi) located alongside
+source files (.py) in the ftrack_api package maintain API compatibility.
+Inline stubs are used per PEP 561 for type distribution.
+"""
 
 import ast
 import pathlib
@@ -8,7 +13,8 @@ import pytest
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 SOURCE_ROOT = PROJECT_ROOT / "source" / "ftrack_api"
-STUBS_ROOT = PROJECT_ROOT / "stubs" / "ftrack_api"
+# Inline stubs are in the same directory as source files
+STUBS_ROOT = SOURCE_ROOT
 
 # Dunder methods conventionally omitted from stubs.
 EXCLUDED_DUNDERS = frozenset({"__repr__", "__str__"})
