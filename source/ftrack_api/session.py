@@ -40,6 +40,8 @@ import ftrack_api.query
 import ftrack_api.attribute
 import ftrack_api.collection
 import ftrack_api.event.hub
+import ftrack_api.event.hub_registry
+import ftrack_api.event.hub_proxy
 import ftrack_api.event.base
 import ftrack_api.plugin
 import ftrack_api.inspection
@@ -52,6 +54,7 @@ import ftrack_api._centralized_storage_scenario
 import ftrack_api.logging
 from ftrack_api.logging import LazyLogMessage as L
 
+import weakref
 from weakref import WeakMethod
 
 
@@ -91,6 +94,7 @@ class Session(object):
         cookies=None,
         headers=None,
         strict_api=False,
+        force_new_connection=False,
     ):
         """Initialise session.
 
@@ -147,6 +151,18 @@ class Session(object):
             connected event hub then it should check the event hub connection
             status explicitly. Subscribing to events does *not* require a
             connected event hub.
+
+        .. note::
+
+            By default, sessions with identical credentials share a single
+            WebSocket connection to prevent connection exhaustion. Set
+            *force_new_connection* to True to create a dedicated connection
+            for this session instead.
+
+        If *force_new_connection* is True, this session will create its own
+        dedicated EventHub connection instead of sharing one with other sessions
+        that have the same credentials. This is useful for advanced use cases
+        where connection isolation is required. Default is False (shared connection).
 
         Enable schema caching by setting *schema_cache_path* to a folder path.
         If not set, :envvar:`FTRACK_API_SCHEMA_CACHE_PATH` will be used to
@@ -277,40 +293,93 @@ class Session(object):
         # Now check compatibility of server based on retrieved information.
         self.check_server_compatibility()
 
-        # Construct event hub and load plugins.
-        self._event_hub = ftrack_api.event.hub.EventHub(
-            self._server_url,
-            self._api_user,
-            self._api_key,
-            headers=headers,
-            cookies=requests.utils.dict_from_cookiejar(self._request.cookies),
-        )
+        # Construct event hub - either dedicated or shared from registry.
+        # Track subscribers created by this session for cleanup.
+        self._session_subscribers = []
+        self._is_shared_hub = not force_new_connection
 
-        self._auto_connect_event_hub_thread = None
-        if auto_connect_event_hub:
-            # Connect to event hub in background thread so as not to block main
-            # session usage waiting for event hub connection.
-
-            # set the connection as initialising from the main thread so that
-            # we can queue up any potential published messages.
-            self._event_hub.init_connection()
-
-            self._auto_connect_event_hub_thread = threading.Thread(
-                target=self._event_hub.connect
-            )
-            self._auto_connect_event_hub_thread.daemon = True
-            self._auto_connect_event_hub_thread.start()
-
-        # Register to auto-close session on exit.
-        atexit.register(WeakMethod(self.close))
-
+        # Set plugin paths before creating EventHub (needed for hub key)
         self._plugin_paths = plugin_paths
         if self._plugin_paths is None:
             self._plugin_paths = os.environ.get("FTRACK_EVENT_PLUGIN_PATH", "").split(
                 os.pathsep
             )
 
-        self._discover_plugins(plugin_arguments=plugin_arguments)
+        if force_new_connection:
+            # Create dedicated EventHub for this session (traditional behavior)
+            self._event_hub_impl = ftrack_api.event.hub.EventHub(
+                self._server_url,
+                self._api_user,
+                self._api_key,
+                headers=headers,
+                cookies=requests.utils.dict_from_cookiejar(
+                    self._request.cookies),
+            )
+
+            self._auto_connect_event_hub_thread = None
+            if auto_connect_event_hub:
+                # Connect to event hub in background thread so as not to block main
+                # session usage waiting for event hub connection.
+
+                # set the connection as initialising from the main thread so that
+                # we can queue up any potential published messages.
+                self._event_hub_impl.init_connection()
+
+                self._auto_connect_event_hub_thread = threading.Thread(
+                    target=self._event_hub_impl.connect
+                )
+                self._auto_connect_event_hub_thread.daemon = True
+                self._auto_connect_event_hub_thread.start()
+        else:
+            # Get shared EventHub from registry (default behavior)
+            # Multiple sessions with same credentials will share one connection
+            self._hub_registry = ftrack_api.event.hub_registry.get_event_hub_registry()
+
+            # Get or create hub - plugin_paths included in key to prevent duplication
+            self._event_hub_impl, self._hub_key = self._hub_registry.get_or_create(
+                self._server_url,
+                self._api_user,
+                self._api_key,
+                plugin_paths=self._plugin_paths,
+                headers=headers,
+                cookies=requests.utils.dict_from_cookiejar(
+                    self._request.cookies),
+                auto_connect=auto_connect_event_hub,
+            )
+
+            # Register this session with the registry
+            # WeakSet will automatically create weak reference
+            self._hub_registry.register_session(self._hub_key, self)
+
+            # Set up cleanup callback for when session is garbage collected
+            # This will disconnect the hub if no other sessions are using it
+            self._hub_finalizer = weakref.finalize(
+                self,
+                self._hub_registry.on_session_deleted,
+                self._hub_key
+            )
+
+            # Auto-connect is handled by the registry
+            self._auto_connect_event_hub_thread = None
+
+        # Register to auto-close session on exit.
+        atexit.register(WeakMethod(self.close))
+
+        # Discover plugins - but skip if already discovered for this shared hub
+        should_discover = True
+        if not force_new_connection and hasattr(self, '_hub_registry'):
+            # Check if plugins already discovered for this shared hub
+            if self._hub_registry.plugins_discovered(self._hub_key):
+                should_discover = False
+                self.logger.debug(
+                    'Skipping plugin discovery - already done for shared EventHub'
+                )
+
+        if should_discover:
+            self._discover_plugins(plugin_arguments=plugin_arguments)
+            # Mark plugins as discovered for this hub
+            if not force_new_connection and hasattr(self, '_hub_registry'):
+                self._hub_registry.mark_plugins_discovered(self._hub_key)
 
         # TODO: Make schemas read-only and non-mutable (or at least without
         # rebuilding types)?
@@ -411,8 +480,17 @@ class Session(object):
 
     @property
     def event_hub(self):
-        """Return event hub."""
-        return self._event_hub
+        """Return event hub.
+
+        Returns a session-scoped proxy that tracks subscriptions created
+        by this session. This allows multiple sessions to share the same
+        underlying EventHub connection while maintaining independent subscriber
+        lists for proper cleanup.
+        """
+        # Return a proxy that tracks this session's subscribers
+        return ftrack_api.event.hub_proxy.SessionEventHubProxy(
+            self._event_hub_impl, self
+        )
 
     @property
     def _local_cache(self):
@@ -476,12 +554,28 @@ class Session(object):
         self._request.close()
         self._request = None
 
-        try:
-            self.event_hub.disconnect()
-            if self._auto_connect_event_hub_thread:
-                self._auto_connect_event_hub_thread.join()
-        except ftrack_api.exception.EventHubConnectionError:
-            pass
+        # Handle EventHub cleanup based on whether it's shared or dedicated
+        if self._is_shared_hub:
+            # Shared hub: only unsubscribe this session's subscribers
+            # The hub itself will be disconnected by the registry when the last session closes
+            for subscriber_id in self._session_subscribers[:]:
+                try:
+                    self._event_hub_impl.unsubscribe(subscriber_id)
+                except Exception as error:
+                    self.logger.debug(
+                        'Failed to unsubscribe {0}: {1}'.format(
+                            subscriber_id, error)
+                    )
+            self._session_subscribers = []
+            # Registry will auto-disconnect hub via weak reference callback if needed
+        else:
+            # Dedicated hub: disconnect it completely (traditional behavior)
+            try:
+                self._event_hub_impl.disconnect()
+                if self._auto_connect_event_hub_thread:
+                    self._auto_connect_event_hub_thread.join()
+            except ftrack_api.exception.EventHubConnectionError:
+                pass
 
         self.logger.debug("Session closed.")
 
@@ -601,7 +695,8 @@ class Session(object):
 
         if entity is not None:
             payload.update(
-                {"entity_type": entity.entity_type, "entity_key": entity.get("id")}
+                {"entity_type": entity.entity_type,
+                    "entity_key": entity.get("id")}
             )
 
         result = self.call([payload])
@@ -719,7 +814,8 @@ class Session(object):
                 # Server does not store microsecond or timezone currently so
                 # need to strip from query.
                 # TODO: When datetime handling improved, update this logic.
-                value = arrow.get(value).naive.replace(microsecond=0).isoformat()
+                value = arrow.get(value).naive.replace(
+                    microsecond=0).isoformat()
                 value = '"{0}"'.format(value)
 
             criteria.append("{0} is {1}".format(identifying_key, value))
@@ -747,7 +843,8 @@ class Session(object):
                     updated = True
 
             if updated:
-                self.logger.debug("Updating existing entity to match new data.")
+                self.logger.debug(
+                    "Updating existing entity to match new data.")
                 self.commit()
 
         return entity
@@ -757,7 +854,8 @@ class Session(object):
         if self.record_operations:
             self.recorded_operations.push(
                 ftrack_api.operation.DeleteEntityOperation(
-                    entity.entity_type, ftrack_api.inspection.primary_key(entity)
+                    entity.entity_type, ftrack_api.inspection.primary_key(
+                        entity)
                 )
             )
 
@@ -793,12 +891,14 @@ class Session(object):
 
         except KeyError:
             # Query for matching entity.
-            self.logger.debug("Entity not present in cache. Issuing new query.")
+            self.logger.debug(
+                "Entity not present in cache. Issuing new query.")
             condition = []
             for key, value in zip(primary_key_definition, entity_key):
                 condition.append('{0} is "{1}"'.format(key, value))
 
-            expression = "{0} where ({1})".format(entity_type, " and ".join(condition))
+            expression = "{0} where ({1})".format(
+                entity_type, " and ".join(condition))
 
             results = self.query(expression).all()
             if results:
@@ -817,10 +917,12 @@ class Session(object):
         cache_key = self.cache_key_maker.key(
             (str(entity_type), list(map(str, entity_key)))
         )
-        self.logger.debug(L("Checking cache for entity with key {0}", cache_key))
+        self.logger.debug(
+            L("Checking cache for entity with key {0}", cache_key))
         entity = self.cache.get(cache_key)
         self.logger.debug(
-            L("Retrieved existing entity from cache: {0} at {1}", entity, id(entity))
+            L("Retrieved existing entity from cache: {0} at {1}", entity, id(
+                entity))
         )
 
         return entity
@@ -899,7 +1001,8 @@ class Session(object):
         with self._thread_lock:
             if isinstance(value, ftrack_api.entity.base.Entity):
                 log_debug and self.logger.debug(
-                    "Merging entity into session: {0} at {1}".format(value, id(value))
+                    "Merging entity into session: {0} at {1}".format(
+                        value, id(value))
                 )
 
                 return self._merge_entity(value, merged=merged)
@@ -1005,7 +1108,8 @@ class Session(object):
                 return attached_entity
             else:
                 log_debug and self.logger.debug(
-                    "Entity not already processed for key {0}.".format(entity_key)
+                    "Entity not already processed for key {0}.".format(
+                        entity_key)
                 )
 
             # Check for existing instance of entity in cache.
@@ -1130,7 +1234,8 @@ class Session(object):
                     query = "{0} where {1} in ({2})".format(
                         query,
                         primary_key,
-                        ",".join([str(entity_key[0]) for entity_key in entity_keys]),
+                        ",".join([str(entity_key[0])
+                                 for entity_key in entity_keys]),
                     )
                 else:
                     query = "{0} where {1} is {2}".format(
@@ -1217,10 +1322,12 @@ class Session(object):
 
         for payload in batch:
             if payload["action"] == "create":
-                created.add((payload["entity_type"], str(payload["entity_key"])))
+                created.add((payload["entity_type"],
+                            str(payload["entity_key"])))
 
             elif payload["action"] == "delete":
-                deleted.add((payload["entity_type"], str(payload["entity_key"])))
+                deleted.add((payload["entity_type"],
+                            str(payload["entity_key"])))
 
         created_then_deleted = deleted.intersection(created)
         if created_then_deleted:
@@ -1393,7 +1500,8 @@ class Session(object):
 
         """
         plugin_arguments = plugin_arguments or {}
-        ftrack_api.plugin.discover(self._plugin_paths, [self], plugin_arguments)
+        ftrack_api.plugin.discover(
+            self._plugin_paths, [self], plugin_arguments)
 
     def _read_schemas_from_cache(self, schema_cache_path):
         """Return schemas and schema hash from *schema_cache_path*.
@@ -1402,10 +1510,12 @@ class Session(object):
         schemas in JSON format.
 
         """
-        self.logger.debug(L("Reading schemas from cache {0!r}", schema_cache_path))
+        self.logger.debug(
+            L("Reading schemas from cache {0!r}", schema_cache_path))
 
         if not os.path.exists(schema_cache_path):
-            self.logger.info(L("Cache file not found at {0!r}.", schema_cache_path))
+            self.logger.info(
+                L("Cache file not found at {0!r}.", schema_cache_path))
 
             return [], None
 
@@ -1425,7 +1535,8 @@ class Session(object):
 
         """
         self.logger.debug(
-            L("Updating schema cache {0!r} with new schemas.", schema_cache_path)
+            L("Updating schema cache {0!r} with new schemas.",
+              schema_cache_path)
         )
 
         with open(schema_cache_path, "w") as local_cache_file:
@@ -1476,11 +1587,13 @@ class Session(object):
                     self._write_schemas_to_cache(schemas, schema_cache_path)
                 except (IOError, TypeError):
                     self.logger.exception(
-                        L("Failed to update schema cache {0!r}.", schema_cache_path)
+                        L("Failed to update schema cache {0!r}.",
+                          schema_cache_path)
                     )
 
         else:
-            self.logger.debug(L("Using cached schemas from {0!r}", schema_cache_path))
+            self.logger.debug(
+                L("Using cached schemas from {0!r}", schema_cache_path))
 
         return schemas
 
@@ -1532,7 +1645,8 @@ class Session(object):
         # Origin.
         location = self.create(
             "Location",
-            data=dict(name="ftrack.origin", id=ftrack_api.symbol.ORIGIN_LOCATION_ID),
+            data=dict(name="ftrack.origin",
+                      id=ftrack_api.symbol.ORIGIN_LOCATION_ID),
             reconstructing=True,
         )
         ftrack_api.mixin(
@@ -1567,7 +1681,8 @@ class Session(object):
         # Review.
         location = self.create(
             "Location",
-            data=dict(name="ftrack.review", id=ftrack_api.symbol.REVIEW_LOCATION_ID),
+            data=dict(name="ftrack.review",
+                      id=ftrack_api.symbol.REVIEW_LOCATION_ID),
             reconstructing=True,
         )
         ftrack_api.mixin(
@@ -1582,7 +1697,8 @@ class Session(object):
         # Server.
         location = self.create(
             "Location",
-            data=dict(name="ftrack.server", id=ftrack_api.symbol.SERVER_LOCATION_ID),
+            data=dict(name="ftrack.server",
+                      id=ftrack_api.symbol.SERVER_LOCATION_ID),
             reconstructing=True,
         )
         ftrack_api.mixin(
@@ -1590,7 +1706,8 @@ class Session(object):
             ftrack_api.entity.location.ServerLocationMixin,
             name="ServerLocation",
         )
-        location.accessor = ftrack_api.accessor.server._ServerAccessor(session=self)
+        location.accessor = ftrack_api.accessor.server._ServerAccessor(
+            session=self)
         location.structure = ftrack_api.structure.entity_id.EntityIdStructure()
         location.priority = 150
 
@@ -1617,7 +1734,8 @@ class Session(object):
     def call(self, data):
         """Make request to server with *data* batch describing the actions."""
         url = self._server_url + "/api"
-        headers = {"content-type": "application/json", "accept": "application/json"}
+        headers = {"content-type": "application/json",
+                   "accept": "application/json"}
         data = self.encode(data, entity_attribute_strategy="modified_only")
 
         self.logger.debug(L("Calling server {0} with {1!r}", url, data))
@@ -1630,7 +1748,8 @@ class Session(object):
                 data=data,
                 timeout=self.request_timeout,
             )
-            self.logger.debug(L("Call took: {0}", response.elapsed.total_seconds()))
+            self.logger.debug(
+                L("Call took: {0}", response.elapsed.total_seconds()))
             self.logger.debug(L("Response: {0!r}", response.text))
 
             result = self.decode(response.text)
@@ -1696,7 +1815,8 @@ class Session(object):
             raise ValueError(
                 'Unsupported entity_attribute_strategy "{0}". Must be one of '
                 "{1}".format(
-                    entity_attribute_strategy, ", ".join(entity_attribute_strategies)
+                    entity_attribute_strategy, ", ".join(
+                        entity_attribute_strategies)
                 )
             )
 
@@ -1803,7 +1923,8 @@ class Session(object):
                     item = arrow.get(item["value"])
 
             elif "__entity_type__" in item:
-                item = self._create(item["__entity_type__"], item, reconstructing=True)
+                item = self._create(
+                    item["__entity_type__"], item, reconstructing=True)
 
         return item
 
@@ -1819,7 +1940,8 @@ class Session(object):
 
         # Filter.
         if filter_inaccessible:
-            locations = [location for location in locations if location.accessor]
+            locations = [
+                location for location in locations if location.accessor]
 
         # Sort by priority.
         locations = sorted(locations, key=lambda location: location.priority)
@@ -1920,7 +2042,8 @@ class Session(object):
                 "ftrackreview-webm",
                 "ftrackreview-image",
             ):
-                location = self.get("Location", ftrack_api.symbol.REVIEW_LOCATION_ID)
+                location = self.get(
+                    "Location", ftrack_api.symbol.REVIEW_LOCATION_ID)
 
             else:
                 location = self.pick_location()
@@ -1964,7 +2087,8 @@ class Session(object):
 
             if container_size is not None:
                 if len(collection.indexes) > 0:
-                    member_size = int(round(container_size / len(collection.indexes)))
+                    member_size = int(
+                        round(container_size / len(collection.indexes)))
                     for item in collection:
                         member_sizes[item] = member_size
 
@@ -2005,7 +2129,8 @@ class Session(object):
                 origin_location = self.get(
                     "Location", ftrack_api.symbol.ORIGIN_LOCATION_ID
                 )
-                location.add_component(container, origin_location, recursive=True)
+                location.add_component(
+                    container, origin_location, recursive=True)
 
             return container
 
@@ -2019,7 +2144,8 @@ class Session(object):
 
         # Add to special origin location so that it is possible to add to other
         # locations.
-        origin_location = self.get("Location", ftrack_api.symbol.ORIGIN_LOCATION_ID)
+        origin_location = self.get(
+            "Location", ftrack_api.symbol.ORIGIN_LOCATION_ID)
         origin_location.add_component(component, path, recursive=False)
 
         if location:
@@ -2075,7 +2201,8 @@ class Session(object):
 
         # Perform queries.
         if standard_components:
-            self.populate(standard_components, "component_locations.location_id")
+            self.populate(standard_components,
+                          "component_locations.location_id")
 
         if container_components:
             self.populate(
@@ -2201,7 +2328,8 @@ class Session(object):
         """
         if isinstance(media, str):
             # Media is a path to a file.
-            server_location = self.get("Location", ftrack_api.symbol.SERVER_LOCATION_ID)
+            server_location = self.get(
+                "Location", ftrack_api.symbol.SERVER_LOCATION_ID)
             if keep_original == "auto":
                 keep_original = False
 
@@ -2223,7 +2351,8 @@ class Session(object):
                 keep_original = True
 
         else:
-            raise ValueError("Unable to encode media of type: {0}".format(type(media)))
+            raise ValueError(
+                "Unable to encode media of type: {0}".format(type(media)))
 
         operation = {
             "action": "encode_media",
@@ -2305,7 +2434,8 @@ class Session(object):
         operations = []
 
         for user in users:
-            operations.append({"action": "send_user_invite", "user_id": user["id"]})
+            operations.append(
+                {"action": "send_user_invite", "user_id": user["id"]})
 
         try:
             self.call(operations)
