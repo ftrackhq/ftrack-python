@@ -1,59 +1,67 @@
-[tool.poetry]
-name = "ftrack-python-api"
-version = "0.1.0"
-description = "Python API for ftrack."
-authors = ["ftrack <support@ftrack.com>"]
-repository = "https://github.com/ftrackhq/ftrack-python"
-documentation = "https://developer.ftrack.com/api-clients/python/"
-license = "Apache-2.0"
-readme = "README.rst"
-packages = [
-    { include = "ftrack_api", from = "source" },
-]
-include = [
-    { path = "source/ftrack_api/**/*.pyi", format = ["sdist", "wheel"] },
-    { path = "source/ftrack_api/py.typed", format = ["sdist", "wheel"] },
-]
-
-[tool.poetry-dynamic-versioning]
-enable = true
-
-[tool.poetry-dynamic-versioning.substitution]
-files = ["source/ftrack_api/_version.py"]
-
-[tool.poetry-dynamic-versioning.files."source/ftrack_api/_version.py"]
-persistent-substitution = true
-initial-content = """
-__version__ = "0.0.0"
-"""
-
-[tool.poetry.dependencies]
-python = "^3.8"
-requests = ">=2,<3"
-arrow = ">=0.4.4,<1"
-pyparsing = ">=2.0,<3"
-clique = "==1.6.1"
-websocket-client = ">=0.40.0,<1"
-platformdirs = ">=4.0.0,<5"
-sphinx-notfound-page = "^1.0.4"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.0"
-pre-commit = "^3.4.0"
-twine = "^5.1.1"
-sphinx = "^7.0.6"
-sphinx_rtd_theme = ">=2.0.0,<3"
-wheel = "^0.41.2"
-lowdown = ">=0.1.0,<2"
-
-[tool.poetry.group.test.dependencies]
-pytest = "^7.4.1"
-pytest-mock = "^3.11.1"
-mock = "^5.1.0"
-flaky = "^3.7.0"
-termcolor = ">=1.1.0,<2"
-
-
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["hatchling>=1.21.0", "hatch-vcs>=0.4.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ftrack-python-api"
+description = "Python API for ftrack."
+readme = "README.rst"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.8,<4.0"
+authors = [{ name = "ftrack", email = "support@ftrack.com" }]
+dynamic = ["version"]
+dependencies = [
+    "requests>=2,<3",
+    "arrow>=0.4.4,<1",
+    "pyparsing>=2.0,<3",
+    "clique==1.6.1",
+    "websocket-client>=0.40.0,<1",
+    "platformdirs>=4.0.0,<5",
+    "sphinx-notfound-page>=1.0.4,<2",
+]
+
+[project.urls]
+Repository = "https://github.com/ftrackhq/ftrack-python"
+Documentation = "https://developer.ftrack.com/api-clients/python/"
+
+[dependency-groups]
+dev = [
+    "black>=24.0,<25",
+    "pre-commit>=3.4.0,<4",
+    "twine>=6.0.0,<7",
+    "sphinx>=7.0.6,<8",
+    "sphinx-rtd-theme>=2.0.0,<3",
+    "wheel>=0.41.2,<1",
+    "lowdown>=0.1.0,<2",
+]
+test = [
+    "pytest>=7.4.1,<8",
+    "pytest-mock>=3.11.1,<4",
+    "mock>=5.1.0,<6",
+    "flaky>=3.7.0,<4",
+    "termcolor>=1.1.0,<2",
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "source/ftrack_api/_version.py"
+template = '''__version__ = "{version}"
+'''
+
+[tool.hatch.build.targets.wheel]
+packages = ["source/ftrack_api"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/source",
+    "/resource",
+    "/doc",
+    "/test",
+    "/README.rst",
+    "/LICENSE.txt",
+    "/LICENSE.python",
+    "/MANIFEST.in",
+    "/pytest.ini",
+]

@@ -39,14 +39,19 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          fetch-depth: 0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.11.6"
+          enable-cache: true
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+      - name: Sync dependencies
+        run: uv sync --all-groups --python ${{ matrix.python-version }}
       - name: Run pytest
-        run: |
-          curl -sSL https://install.python-poetry.org | python - --version 1.8.5
-          poetry install
-          poetry run python -m pytest --disable-pytest-warnings
+        run: uv run --python ${{ matrix.python-version }} python -m pytest --disable-pytest-warnings
         env:
           FTRACK_SERVER: ${{ secrets.FTRACK_SERVER }}
           FTRACK_API_USER: ${{ secrets.FTRACK_API_USER }}
@@ -57,16 +62,17 @@ jobs:
     name: Build package distribution
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          fetch-depth: 0
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.11.6"
+          enable-cache: true
       - name: Build
-        run: |
-          curl -sSL https://install.python-poetry.org | python - --version 1.8.5
-          poetry self add "poetry-dynamic-versioning[plugin]"
-          poetry install --only=dev --no-interaction
-          poetry build --format=wheel
-          poetry run twine check dist/*
+        run: uv build
+      - name: Twine check
+        run: uvx twine check dist/*
       - uses: actions/upload-artifact@v4
         with:
           name: dist

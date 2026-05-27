@@ -90,20 +90,23 @@ source/ftrack_api/
 
 ### Prerequisites
 - Python 3.8+
-- Poetry for dependency management
+- [uv](https://docs.astral.sh/uv/) for dependency management
 - Git
 
 ### Installation
 
 ```bash
-# Install dependencies
-poetry install
+# Install runtime + all dependency groups (dev + test)
+uv sync --all-groups
 
-# Install with dev dependencies
-poetry install --with dev
+# Install runtime only
+uv sync --no-default-groups
 
-# Install with test dependencies
-poetry install --with test
+# Install with only the dev group
+uv sync --group dev
+
+# Install with only the test group
+uv sync --group test
 ```
 
 ### Environment Variables
@@ -141,16 +144,16 @@ Required for API access:
 
 ```bash
 # Run all tests
-poetry run pytest
+uv run pytest
 
 # Run with coverage
-poetry run pytest --cov=ftrack_api
+uv run pytest --cov=ftrack_api
 
 # Run specific test file
-poetry run pytest test/unit/test_session.py
+uv run pytest test/unit/test_session.py
 
 # Disable warnings (CI mode)
-poetry run pytest --disable-pytest-warnings
+uv run pytest --disable-pytest-warnings
 ```
 
 ### Test Structure
@@ -184,19 +187,19 @@ test/
 
 ### Version Management
 
-Uses **poetry-dynamic-versioning** for automatic versioning:
+Uses **hatch-vcs** (via the `hatchling` build backend) for automatic versioning:
 - Version extracted from git tags
 - Format: `v{major}.{minor}.{patch}` (e.g., v2.5.1)
-- Written to `source/ftrack_api/_version.py`
+- Written to `source/ftrack_api/_version.py` at build time
 
 ### Building
 
 ```bash
 # Build wheel
-poetry build --format=wheel
+uv build --wheel
 
 # Validate distribution
-poetry run twine check dist/*
+uvx twine check dist/*
 ```
 
 ### CI/CD Pipeline
@@ -272,7 +275,7 @@ ftrack_api.mixin(entity, CustomMixin, name='CustomEntity')
 ## Important Files & Locations
 
 ### Configuration
-- `pyproject.toml` - Poetry project config, dependencies
+- `pyproject.toml` - PEP 621 project config (build via `hatchling` + `hatch-vcs`), runtime + dev/test dependency groups
 - `pytest.ini` - Test configuration
 - `.pre-commit-config.yaml` - Pre-commit hooks
 - `setup.cfg` - Legacy setuptools config
@@ -325,13 +328,13 @@ ftrack_api.mixin(entity, CustomMixin, name='CustomEntity')
 
 ```bash
 # Runtime dependency
-poetry add package-name
+uv add package-name
 
 # Dev dependency
-poetry add --group dev package-name
+uv add --group dev package-name
 
 # Test dependency
-poetry add --group test package-name
+uv add --group test package-name
 ```
 
 ## Integration Points
