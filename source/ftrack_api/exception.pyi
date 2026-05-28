@@ -107,7 +107,7 @@ class AccessorOperationFailedError(AccessorError):
         operation: str = "",
         resource_identifier: Incomplete | None = None,
         error: Incomplete | None = None,
-        **kw
+        **kw,
     ) -> None: ...
 
 class AccessorUnsupportedOperationError(AccessorOperationFailedError):
@@ -130,7 +130,7 @@ class AccessorResourceError(AccessorError):
         operation: str = "",
         resource_identifier: Incomplete | None = None,
         error: Incomplete | None = None,
-        **kw
+        **kw,
     ) -> None: ...
 
 class AccessorResourceNotFoundError(AccessorResourceError):
