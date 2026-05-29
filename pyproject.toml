@@ -65,3 +65,6 @@ include = [
     "/MANIFEST.in",
     "/pytest.ini",
 ]
+
+[tool.uv]
+exclude-newer = "14d"
