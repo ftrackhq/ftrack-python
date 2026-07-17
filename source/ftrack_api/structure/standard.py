@@ -130,7 +130,7 @@ class StandardStructure(ftrack_api.structure.base.Structure):
 
         value = unicodedata.normalize("NFKD", str(value)).encode("ascii", "ignore")
         value = re.sub(
-            "[^\w\.-]", self.illegal_character_substitute, value.decode("utf-8")
+            r"[^\w\.-]", self.illegal_character_substitute, value.decode("utf-8")
         )
         return str(value.strip().lower())
 
