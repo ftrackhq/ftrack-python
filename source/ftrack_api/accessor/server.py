@@ -11,6 +11,7 @@ from .base import Accessor
 from ..data import String
 import ftrack_api.exception
 import ftrack_api.symbol
+import ftrack_api._uploader
 
 
 class ServerFile(String):
@@ -94,32 +95,71 @@ class ServerFile(String):
         if component["file_type"]:
             name = "{0}.{1}".format(name, component["file_type"].lstrip("."))
 
+        file_size = self._get_size()
         try:
-            metadata = self._session.get_upload_metadata(
-                component_id=self.resource_identifier,
-                file_name=name,
-                file_size=self._get_size(),
-                checksum=self._compute_checksum(),
+            parts = ftrack_api._uploader.get_part_count(file_size)
+        except ValueError as error:
+            raise ftrack_api.exception.AccessorOperationFailedError(
+                "Failed to put file to server: {0}".format(error)
             )
+
+        try:
+            metadata = None
+            if parts is not None:
+                # Content-MD5 covers a single PUT body, so it is not sent for
+                # multi-part uploads.
+                try:
+                    metadata = self._session.get_upload_metadata(
+                        component_id=self.resource_identifier,
+                        file_name=name,
+                        file_size=file_size,
+                        parts=parts,
+                    )
+                except ftrack_api.exception.ServerError as error:
+                    # Raised when multi-part uploads are enabled on the server
+                    # but its storage is not S3 compatible.
+                    self._session.logger.debug(
+                        "Multi-part upload unavailable, using single PUT: "
+                        "{0}".format(error)
+                    )
+                else:
+                    if "urls" not in metadata:
+                        # Multi-part uploads are disabled on the server.
+                        metadata = None
+
+            if metadata is None:
+                metadata = self._session.get_upload_metadata(
+                    component_id=self.resource_identifier,
+                    file_name=name,
+                    file_size=file_size,
+                    checksum=self._compute_checksum(),
+                )
         except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 "Failed to get put metadata: {0}.".format(error)
             )
 
-        # Ensure at beginning of file before put.
-        self.seek(0)
-
-        # Put the file based on the metadata.
-        response = requests.put(
-            metadata["url"],
-            data=self.wrapped_file,
-            headers=metadata["headers"],
-            timeout=self._timeout,
-        )
-
         try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as error:
+            if "urls" in metadata:
+                uploaded_parts = ftrack_api._uploader.upload_parts(
+                    self.wrapped_file, file_size, metadata["urls"], self._timeout
+                )
+                self._session.complete_multipart_upload(
+                    component_id=self.resource_identifier,
+                    upload_id=metadata["upload_id"],
+                    parts=uploaded_parts,
+                )
+            else:
+                # Ensure at beginning of file before put.
+                self.seek(0)
+                response = requests.put(
+                    metadata["url"],
+                    data=self.wrapped_file,
+                    headers=metadata["headers"],
+                    timeout=self._timeout,
+                )
+                response.raise_for_status()
+        except Exception as error:
             raise ftrack_api.exception.AccessorOperationFailedError(
                 "Failed to put file to server: {0}.".format(error)
             )

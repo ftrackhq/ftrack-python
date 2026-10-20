@@ -83,6 +83,7 @@ source/ftrack_api/
 ├── exception.py            # Custom exceptions
 ├── plugin.py               # Plugin system
 ├── operation.py            # Operation tracking
+├── _uploader.py            # Multi-part concurrent upload to ftrack.server
 └── _centralized_storage_scenario.py
 ```
 

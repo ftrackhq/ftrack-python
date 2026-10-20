@@ -2249,7 +2249,9 @@ class Session(object):
 
         return self.get("Job", result[0]["job_id"])
 
-    def get_upload_metadata(self, component_id, file_name, file_size, checksum=None):
+    def get_upload_metadata(
+        self, component_id, file_name, file_size, checksum=None, parts=None
+    ):
         """Return URL and headers used to upload data for *component_id*.
 
         *file_name* and *file_size* should match the components details.
@@ -2261,6 +2263,19 @@ class Session(object):
         the base64-encoded 128-bit MD5 digest of the message (without the
         headers) according to RFC 1864. This can be used as a message integrity
         check to verify that the data is the same data that was originally sent.
+
+        Specify *parts* to request a multi-part upload in that many parts. If
+        multi-part uploads are enabled on the server the result contains
+        ``upload_id`` and ``urls``, a list of
+        ``{"part_number": int, "signed_url": str}`` to PUT each part to,
+        instead of ``url`` and ``headers``. Finish the upload with
+        :meth:`complete_multipart_upload`. If they are disabled *parts* is
+        ignored and the result is for a single PUT. If they are enabled but the
+        server storage is not S3 compatible
+        :exc:`ftrack_api.exception.ServerError` is raised.
+
+        *checksum* only applies to a single PUT and should not be combined with
+        *parts*.
         """
         operation = {
             "action": "get_upload_metadata",
@@ -2269,6 +2284,8 @@ class Session(object):
             "file_size": file_size,
             "checksum": checksum,
         }
+        if parts is not None:
+            operation["parts"] = parts
 
         try:
             result = self.call([operation])
@@ -2285,6 +2302,22 @@ class Session(object):
                 raise
 
         return result[0]
+
+    def complete_multipart_upload(self, component_id, upload_id, parts):
+        """Assemble uploaded *parts* of multi-part upload *upload_id*.
+
+        *upload_id* is returned by :meth:`get_upload_metadata` when called with
+        *parts*. *parts* is a list of ``{"part_number": int, "e_tag": str}``
+        for every uploaded part, ordered by part number.
+        """
+        operation = {
+            "action": "complete_multipart_upload",
+            "component_id": component_id,
+            "upload_id": upload_id,
+            "parts": parts,
+        }
+
+        return self.call([operation])[0]
 
     def send_user_invite(self, user):
         """Send a invitation to the provided *user*.
