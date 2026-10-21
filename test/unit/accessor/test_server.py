@@ -105,7 +105,12 @@ def test_remove_timeout(new_component, random_binary_data, session, monkeypatch)
 
 
 def test_read_and_write_multipart(new_component, large_binary_data, session, mocker):
-    """Read and write data uploaded in multiple parts."""
+    """Read and write data uploaded in multiple parts.
+
+    Requires a server with multi-part uploads enabled on S3 compatible storage,
+    otherwise the data is uploaded with a single PUT and the test fails.
+
+    """
     mocker.patch.object(
         session,
         "complete_multipart_upload",
@@ -166,6 +171,19 @@ def test_write_multipart_part_failure(
     new_component, large_binary_data, session, mocker
 ):
     """Fail without completing the upload when a part cannot be uploaded."""
+    # Multi-part metadata is stubbed so the test does not depend on server
+    # support. No request is made to these URLs as upload_parts is patched.
+    mocker.patch.object(
+        session,
+        "get_upload_metadata",
+        return_value={
+            "urls": [
+                {"part_number": number, "signed_url": "https://example.com"}
+                for number in range(1, 4)
+            ],
+            "upload_id": "upload-id",
+        },
+    )
     mocker.patch.object(
         ftrack_api._uploader,
         "upload_parts",
